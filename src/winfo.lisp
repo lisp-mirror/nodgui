@@ -1,0 +1,53 @@
+;; This software is Copyright (c) 2003-2010  Peter Herth <herth@peter-herth.de>
+;; Portions Copyright (c) 2005-2010 Thomas F. Burdick
+;; Portions Copyright (c) 2006-2010 Cadence Design Systems
+;; Portions Copyright (c) 2010 Daniel Herring
+;; Portions Copyright (c) 2018 cage
+
+;; The  authors  grant you  the  rights  to  distribute and  use  this
+;; software as  governed by the  terms of  the Lisp Lesser  GNU Public
+;; License  (http://opensource.franz.com/preamble.html), known  as the
+;; LLGPL.
+
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT  ANY  WARRANTY;  without   even  the  implied  warranty  of
+;; MERCHANTABILITY or FITNESS  FOR A PARTICULAR PURPOSE.   See the GNU
+;; General Public License for more details.
+
+(in-package :nodgui)
+
+(defun screen-width (&optional (w nil))
+  "give the width of the screen in pixels (if w is given, of the screen the widget w is displayed on)"
+  (format-wish "senddata [winfo screenwidth ~a]" (if w (widget-path w) "."))
+  (read-data))
+
+(defun screen-height (&optional (w nil))
+  "give the height of the screen in pixels (if w is given, of the screen the widget w is displayed on)"
+  (format-wish "senddata [winfo screenheight ~a]" (if w (widget-path w) "."))
+  (read-data))
+
+(defun screen-width-mm (&optional (w nil))
+  "give the width of the screen in mm (if w is given, of the screen the widget w is displayed on)"
+  (format-wish "senddata [winfo screenmmwidth ~a]" (if w (widget-path w) "."))
+  (read-data))
+
+(defun screen-height-mm (&optional (w nil))
+  "give the height of the screen in mm (if w is given, of the screen the widget w is displayed on)"
+  (format-wish "senddata [winfo screenmmheight ~a]" (if w (widget-path w) "."))
+  (read-data))
+
+(defun screen-mouse-x (&optional (w nil))
+  "give x position of the mouse on screen (if w is given, of the screen the widget w is displayed on)"
+  (format-wish "senddata [winfo pointerx ~a]" (if w (widget-path w) "."))
+  (read-data))
+
+(defun screen-mouse-y (&optional (w nil))
+  "give y position of the mouse on screen (if w is given, of the screen the widget w is displayed on)"
+  (format-wish "senddata [winfo pointery ~a]" (if w (widget-path w) "."))
+  (read-data))
+
+(defun screen-mouse (&optional (w nil))
+  "give the position of the mouse on screen as (x y) (if w is given, of the screen the widget w is displayed on)"
+  (format-wish "senddata \"([winfo pointerxy ~a])\"" (if w (widget-path w) "."))
+  (let ((vals (read-data)))
+    (values (first vals) (second vals))))
