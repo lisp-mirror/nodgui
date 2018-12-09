@@ -16,86 +16,137 @@
 
 (in-package :nodgui)
 
+(defmacro gen-wm-constant (name name-prefix)
+  `(alexandria:define-constant ,(format-fn-symbol t "+~a-~a+" name-prefix name)
+       ,(format nil "~(~a~)" name)
+     :test #'string=))
+
+(defmacro gen-wm-type-constants (&rest names)
+  `(progn
+     ,@(loop for name in names collect
+            `(gen-wm-constant ,name type))))
+
+(gen-wm-type-constants
+ desktop
+ dock
+ toolbar
+ menu
+ utility
+ splash
+ dialog
+ dropdown_menu
+ popup_menu
+ tooltip
+ notification
+ combo
+ dnd
+ normal)
+
+(defstruct wm-attrib
+  (alpha       1.0)
+  (fullscreen  0)
+  (topmost     0)
+  (type        +type-normal+)
+  (zoomed      0))
+
 (defgeneric resizable (widget x y))
+
+(defgeneric set-wm-overrideredirect (widget value))
+
+(defgeneric wm-title (widget title))
+
+(defgeneric wm-manage (widget))
+
+(defgeneric wm-forget (widget))
+
+(defgeneric wm-state (widget))
+
+(defgeneric (setf wm-state) (new-state widget))
+
+(defgeneric minsize (widget x y))
+
+(defgeneric maxsize (widget x y))
+
+(defgeneric withdraw (toplevel))
+
+(defgeneric normalize (toplevel))
+
+(defgeneric iconify (toplevel))
+
+(defgeneric deiconify (toplevel))
+
+(defgeneric geometry (toplevel))
+
+(defgeneric (setf geometry) (geometry widget))
+
+(defgeneric set-geometry (toplevel width height x y))
+
+(defgeneric set-geometry-wh (toplevel width height))
+
+(defgeneric set-geometry-xy (toplevel x y))
+
+(defgeneric on-close (toplevel fun))
+
+(defgeneric on-focus (toplevel fun))
+
+(defgeneric icon-window (toplevel win-id))
+
+(defgeneric iconwindow (toplevel win-id))
+
+(defgeneric set-wm-attrib (toplevel attributes))
 
 (defmethod resizable ((tl widget) x y)
   (format-wish "wm resizable ~a ~a ~a" (widget-path tl) x y)
   tl)
 
-(defgeneric set-wm-overrideredirect (widget value))
-
 (defmethod set-wm-overrideredirect ((w widget) val)
   (format-wish "wm overrideredirect ~a ~a" (widget-path w) val)
   w)
-
-(defgeneric wm-title (widget title))
 
 (defmethod wm-title ((w widget) title)
   (format-wish "wm title ~a {~a}" (widget-path w) title)
   w)
 
-(defgeneric wm-manage (widget))
-
 (defmethod wm-manage ((w widget))
   (format-wish "wm manage ~a" (widget-path w))
   w)
-
-(defgeneric wm-forget (widget))
 
 (defmethod wm-forget ((w widget))
   (format-wish "wm forget ~a" (widget-path w))
   w)
 
-(defgeneric wm-state (widget))
-
 (defmethod wm-state ((w widget))
   (format-wish "senddatastring [wm state ~a]" (widget-path w))
   (read-wish))
 
-(defgeneric (setf wm-state) (new-state widget))
-
 (defmethod (setf wm-state) (new-state (w widget))
   (format-wish "wm state ~a ~a" (widget-path w) new-state)
   new-state)
-
-(defgeneric minsize (widget x y))
 
 (defmethod minsize ((w widget) x y)
   (format-wish "wm minsize ~a ~a ~a" (widget-path w)
                (tk-number x) (tk-number y))
   w)
 
-(defgeneric maxsize (widget x y))
-
 (defmethod maxsize ((w widget) x y)
   (format-wish "wm maxsize ~a ~a ~a" (widget-path w) (tk-number x) (tk-number y))
   w)
-
-(defgeneric withdraw (toplevel))
 
 (defmethod withdraw ((tl widget))
   (format-wish "wm withdraw ~a" (widget-path tl))
   tl)
 
-(defgeneric normalize (toplevel))
-
 (defmethod normalize ((tl widget))
   (format-wish "wm state ~a normal" (widget-path tl))
   tl)
-
-(defgeneric iconify (toplevel))
 
 (defmethod iconify ((tl toplevel))
   (format-wish "wm iconify ~a" (widget-path tl))
   tl)
 
-(defgeneric deiconify (toplevel))
-
 (defmethod deiconify ((tl toplevel))
   (format-wish "wm deiconify ~a" (widget-path tl))
   tl)
-
-(defgeneric geometry (toplevel))
 
 ;; TODO use regex?
 (defmethod geometry ((tl widget))
@@ -117,13 +168,9 @@
                 (setf y (- sh y))))
             (list width height x y)))))))
 
-(defgeneric (setf geometry) (geometry widget))
-
 (defmethod (setf geometry) (geometry (tl widget))
   (format-wish "wm geometry ~a ~a" (widget-path tl) geometry)
   geometry)
-
-(defgeneric set-geometry (toplevel width height x y))
 
 (defmethod set-geometry ((tl widget) width height x y)
   ;;(format-wish "wm geometry ~a ~ax~a+~a+~a" (widget-path tl) width height x y)
@@ -131,20 +178,14 @@
                (tk-number width) (tk-number height) (tk-number x) (tk-number y))
   tl)
 
-(defgeneric set-geometry-wh (toplevel width height))
-
 (defmethod set-geometry-wh ((tl widget) width height)
   (format-wish "wm geometry ~a ~ax~a" (widget-path tl)
                (tk-number width) (tk-number height))
   tl)
 
-(defgeneric set-geometry-xy (toplevel x y))
-
 (defmethod set-geometry-xy ((tl widget) x y)
   (format-wish "wm geometry ~a +~D+~D" (widget-path tl) (tk-number x) (tk-number y))
   tl)
-
-(defgeneric on-close (toplevel fun))
 
 (defmethod on-close ((tl toplevel) fun)
   (let ((name (create-name)))
@@ -164,8 +205,6 @@
     (format-wish "wm protocol . WM_DELETE_WINDOW {callback ~A}" name)
     tl))
 
-(defgeneric on-focus (toplevel fun))
-
 (defmethod on-focus ((tl toplevel) fun)
   (let ((name (create-name)))
     (add-callback name fun)
@@ -173,6 +212,22 @@
               name))
   tl)
 
-(defun iconwindow (tl wid)
-  (format-wish "wm iconwindow ~a ~a" (widget-path tl) (widget-path wid))
+(defmethod iconwindow ((tl toplevel) win-id)
+  (icon-window tl win-id))
+
+(defmethod icon-window ((tl toplevel) win-id)
+  (format-wish "wm iconwindow ~a ~a" (widget-path tl) (widget-path win-id))
   tl)
+
+(defmethod set-wm-attrib ((toplevel toplevel) (attributes wm-attrib))
+  (set-wm-attrib (widget-path toplevel) attributes))
+
+(defmethod set-wm-attrib ((toplevel string) (attributes wm-attrib))
+  (let ((*add-space-after-emitted-string* t))
+    (format-wish (tclize `(wm attributes
+                              ,toplevel
+                              -alpha      ,(wm-attrib-alpha      attributes)
+                              -fullscreen ,(wm-attrib-fullscreen attributes)
+                              -topmost    ,(wm-attrib-topmost    attributes)
+                              -type       ,(wm-attrib-type       attributes)
+                              -zoomed     ,(wm-attrib-zoomed     attributes))))))

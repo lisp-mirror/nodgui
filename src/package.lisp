@@ -1051,6 +1051,20 @@
         :nodgui.event-parser
         :nodgui.tcl-emitter)
   (:export :syntax
+           :+type-desktop+
+           :+type-dock+
+           :+type-toolbar+
+           :+type-menu+
+           :+type-utility+
+           :+type-splash+
+           :+type-dialog+
+           :+type-dropdown_menu+
+           :+type-popup_menu+
+           :+type-tooltip+
+           :+type-notificati
+           :+type-combo+
+           :+type-dnd+
+           :+type-normal+
            :*cursors*
            :*debug-tk*
            :*debug-buffers*
@@ -1165,6 +1179,13 @@
            :hscroll
            :iconify
            :iconwindow
+           :icon-window
+           :wm-attrib
+           :wm-attrib-alpha
+           :wm-attrib-fullscreen
+           :wm-attrib-topmost
+           :wm-attrib-type
+           :wm-attrib-zoomed
            :image-load
            :image-setpixel
            :cursor-index
@@ -1252,6 +1273,7 @@
            :screen-mouse-y
            :screen-width
            :screen-width-mm
+           :toplevel-pathname
            :scrollbar
            :scrolled-canvas
            :scrolled-frame

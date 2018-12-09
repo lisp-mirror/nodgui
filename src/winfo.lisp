@@ -51,3 +51,7 @@
   (format-wish "senddata \"([winfo pointerxy ~a])\"" (if w (widget-path w) "."))
   (let ((vals (read-data)))
     (values (first vals) (second vals))))
+
+(defun toplevel-pathname (widget)
+  (format-wish (tclize `(senddatastring [winfo toplevel ,(widget-path widget) ])))
+  (read-data))
