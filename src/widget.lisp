@@ -57,6 +57,12 @@
   (when grid
     (apply #'grid w grid)))
 
+;;; busy functions
+
+(defgeneric busy-hold (toplevel))
+
+(defgeneric busy-forget (toplevel))
+
 (defgeneric widget-path (widget))
 
 (defmethod widget-path ((w (eql nil))) nil)
@@ -121,6 +127,13 @@
   (format-wish "grab release ~a" (widget-path toplevel))
   toplevel)
 
+(defmethod busy-hold ((toplevel widget))
+  (format-wish (tclize `(tk busy hold ,(widget-path toplevel))))
+  toplevel)
+
+(defmethod busy-forget ((toplevel widget))
+  (format-wish (tclize `(tk busy forget ,(widget-path toplevel))))
+  toplevel)
 
 ;;; with-widget stuff
 

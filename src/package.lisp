@@ -1171,6 +1171,8 @@
            :get-save-file
            :grab
            :grab-release
+           :busy-hold
+           :busy-forget
            :grid
            :grid-columnconfigure
            :grid-configure
