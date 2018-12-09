@@ -1001,6 +1001,7 @@
         :nodgui.constants
         :nodgui.utils)
   (:export :*suppress-newline-for-tcl-statements*
+           :*add-space-after-emitted-string*
            :tcl
            :tcl-str
            :tclize

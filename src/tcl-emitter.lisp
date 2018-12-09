@@ -17,6 +17,8 @@
 
   (defparameter *suppress-newline-for-tcl-statements* nil)
 
+  (defparameter *add-space-after-emitted-string*      nil)
+
   (define-constant +to-lisp-mode+   :lisp  :test #'eq)
 
   (define-constant +to-tcl-if-mode+ :if    :test #'eq)
@@ -48,7 +50,9 @@
     (lambda () (format nil "~a " code)))
 
   (defmethod ->tcl ((code string))
-    (lambda () (format nil "~a" code)))
+    (if  *add-space-after-emitted-string*
+         (lambda () (format nil "~a " code))
+         (lambda () (format nil "~a" code))))
 
   (defmethod ->tcl ((code tcl/<))
     (lambda () "\"(\" "))

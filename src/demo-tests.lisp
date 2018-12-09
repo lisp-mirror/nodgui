@@ -645,6 +645,12 @@
              (arc2         (create-arc canvas
                                        (/ size 4) (/ size 4)
                                        (* size 3/4) (* size 3/4) :start 180 :extent 180))
+             (ball         (create-arc canvas
+                                       0 0
+                                       (* size 1/10) (* size 1/10)
+                                       :start 0
+                                       :extent 359
+                                       :fill "#0000ff"))
              (rotated-text (create-text canvas 0 20
                                         (strcat (format nil "Text can be rotated~%at an ")
                                                 "arbitrary angle like this!")
@@ -658,6 +664,7 @@
         (itemconfigure canvas arc2 "tag" "green")
         (tagbind canvas "red" "<ButtonPress-1>" #'bind-red)
         (tagbind canvas "green" "<ButtonPress-1>" #'bind-green)
+        (item-move-to canvas ball (* size 9/10) (* size 9/10))
         (pack canvas)))))
 
 (defun demo-image ()

@@ -57,8 +57,12 @@
 
 ;; wrapper class for canvas items
 (defclass canvas-item ()
-  ((canvas :accessor canvas :initarg :canvas)
-   (handle :accessor handle :initarg :handle)))
+  ((canvas
+    :accessor canvas
+    :initarg  :canvas)
+   (handle
+    :accessor handle
+    :initarg  :handle)))
 
 (defmethod print-object ((self canvas-item) stream)
   (print-unreadable-object (self stream :type t :identity nil)
@@ -77,6 +81,44 @@
 
 (defgeneric scale (canvas factor &optional factory))
 
+(defgeneric bbox (item))
+
+(defgeneric calc-scroll-region (canvas))
+
+(defgeneric set-coords* (canvas item &rest coords))
+
+(defgeneric (setf coords) (val item))
+
+(defgeneric set-coords (canvas item coords))
+
+(defgeneric coords (item))
+
+(defgeneric itembind (canvas w event fun))
+
+(defgeneric scrollregion (canvas x0 y0 x1 y1))
+
+(defgeneric canvasx (canvas screenx))
+
+(defgeneric canvasy (canvas screeny))
+
+(defgeneric itemmove (canvas item dx dy))
+
+(defgeneric itemdelete (canvas item))
+
+(defgeneric move (item dx dy))
+
+(defgeneric clear (widget))
+
+(defgeneric itemconfigure (widget item option value))
+
+(defgeneric itemlower (w i &optional below))
+
+(defgeneric itemraise (w i &optional above))
+
+(defgeneric item-move-to (object item-handle x y))
+
+(defgeneric move-to (object x y))
+
 (defmethod scale ((canvas canvas) factor &optional factory)
   (format-wish "~a scale all 0 0 ~a ~a"
                (widget-path canvas) factor (or factory factor))
@@ -85,8 +127,6 @@
 (defun move-all (canvas dx dy)
   (format-wish "~a move all ~a ~a" (widget-path canvas) dx dy)
   canvas)
-
-(defgeneric bbox (item))
 
 (defmethod bbox ((item canvas-item))
   (canvas-bbox (canvas item) (handle item)))
@@ -101,6 +141,10 @@
       (canvas-item-bbox canvas handle)
     (declare (ignore aabb))
     raw-data))
+
+(defmacro with-canvas-path ((path canvas) &body body)
+  `(with-accessors ((,path widget-path)) ,canvas
+     ,@body))
 
 (defun bbox-min-x (aabb)
   (elt aabb 0))
@@ -118,15 +162,12 @@
   (format-wish "senddata \"([~a bbox ~a])\"" (widget-path canvas) handle)
   (read-data))
 
-(defgeneric calc-scroll-region (canvas))
-
 (defmethod calc-scroll-region ((canvas canvas))
   (format-wish "~a configure -scrollregion [~a bbox all]"
                (widget-path canvas)
                (widget-path canvas))
   canvas)
 
-(defgeneric set-coords (canvas item coords))
 
 (defmethod set-coords (canvas item coords)
   (format-wish "~a coords ~a~{ ~a~}" (widget-path canvas) item coords)
@@ -135,15 +176,11 @@
 (defmethod set-coords ((canvas canvas) (item canvas-item) (coords list))
   (set-coords canvas (handle item) coords))
 
-(defgeneric set-coords* (canvas item &rest coords))
-
 (defmethod set-coords* (canvas item &rest coords)
   (funcall #'set-coords canvas item coords))
 
 (defmethod set-coords* ((canvas canvas) (item canvas-item) &rest coords)
   (funcall #'set-coords canvas (handle item) coords))
-
-(defgeneric coords (item))
 
 (defmethod coords ((item canvas-item))
   (list 0 0)) ; not implemented yet
@@ -172,14 +209,10 @@
   (with-output-to-string (s)
                          (format-number s input)))
 
-(defgeneric (setf coords) (val item))
-
 (defmethod (setf coords) (val (item canvas-item))
   (let ((coord-list (process-coords val)))
     (format-wish "~a coords ~a ~a" (widget-path (canvas item)) (handle item) coord-list)
     coord-list))
-
-(defgeneric itembind (canvas w event fun))
 
 (defmethod itembind ((canvas canvas) (item canvas-item) event fun)
   (itembind canvas (handle item) event fun))
@@ -207,8 +240,6 @@
   (format-wish "~a bind ~a ~a {~a}"
                (widget-path (canvas w)) (handle w) event code))
 
-(defgeneric scrollregion (canvas x0 y0 x1 y1))
-
 (defmethod scrollregion ((c canvas) x0 y0 x1 y1)
   (setf (scrollregion-x0 c) (tk-number x0))
   (setf (scrollregion-y0 c) (tk-number y0))
@@ -217,19 +248,13 @@
   (configure c :scrollregion (format nil "~a ~a ~a ~a" (tk-number x0) (tk-number y0) (tk-number x1) (tk-number y1)))
   c)
 
-(defgeneric canvasx (canvas screenx))
-
 (defmethod canvasx ((canvas canvas) screenx)
   (format-wish "senddata [~a canvasx ~a]" (widget-path canvas) (tk-number screenx))
   (read-data))
 
-(defgeneric canvasy (canvas screeny))
-
 (defmethod canvasy ((canvas canvas) screeny)
   (format-wish "senddata [~a canvasy ~a]" (widget-path canvas) (tk-number screeny))
   (read-data))
-
-(defgeneric itemmove (canvas item dx dy))
 
 (defmethod itemmove ((canvas canvas) (item integer) dx dy)
   (format-wish "~a move ~a ~a ~a" (widget-path canvas) item (tk-number dx) (tk-number dy))
@@ -239,9 +264,16 @@
   (itemmove (canvas item) (handle item) (tk-number dx) (tk-number dy)))
 
 (defmethod itemmove ((canvas canvas) item dx dy)
-  (format-wish "~a move {~/nodgui::down/} ~a ~a" (widget-path canvas) item (tk-number dx) (tk-number dy)))
+  (format-wish "~a move {~/nodgui::down/} ~a ~a"
+               (widget-path canvas)
+               item (tk-number dx) (tk-number dy)))
 
-(defgeneric itemdelete (canvas item))
+(defmethod item-move-to ((object canvas) (item-handle integer) x y)
+  (with-canvas-path (path object)
+    (let ((tk-x (tk-number x))
+          (tk-y (tk-number y)))
+      (let ((*add-space-after-emitted-string* t))
+        (format-wish (tclize `(,path moveto ,item-handle ,tk-x ,tk-y)))))))
 
 (defmethod itemdelete ((canvas canvas) (item integer))
   (format-wish "~a delete ~a" (widget-path canvas) item)
@@ -251,12 +283,11 @@
   (format-wish "~a delete ~a" (widget-path canvas) (handle item))
   canvas)
 
-(defgeneric move (item dx dy))
-
 (defmethod move ((item canvas-item) dx dy)
   (itemmove (canvas item) (handle item) (tk-number dx) (tk-number dy)))
 
-(defgeneric clear (widget))
+(defmethod move-to ((object canvas-item) x y)
+  (item-move-to (canvas object) x y))
 
 (defmethod clear ((canvas canvas))
   "delete all items within a canvas"
@@ -454,11 +485,21 @@
                (and bitmap (name bitmap)))
   (read-data))
 
-(defun create-arc (canvas x0 y0 x1 y1 &key (start 0) (extent 180) (style "pieslice"))
-  (format-wish "senddata [~a create arc ~a ~a ~a ~a -start ~a -extent ~a -style ~a]"
-               (widget-path canvas)
-               (tk-number x0) (tk-number y0) (tk-number x1) (tk-number y1) start extent style)
-  (read-data))
+(defun create-arc (canvas x0 y0 x1 y1
+                   &key (start 0) (extent 180) (style "pieslice") (fill "#ff0000"))
+  (with-canvas-path (path canvas)
+    (let ((*add-space-after-emitted-string* t))
+      (format-wish (tclize
+                    `(senddata [ ,path create arc
+                               ,(tk-number x0)
+                               ,(tk-number y0)
+                               ,(tk-number x1)
+                               ,(tk-number y1)
+                               -start ,start
+                               -extent ,extent
+                               -style ,style
+                               -fill ,fill ]))))
+    (read-data)))
 
 (defclass canvas-arc (canvas-item)
   ())
@@ -468,8 +509,6 @@
 
 (defclass canvas-window (canvas-item)
   ())
-
-(defgeneric itemconfigure (widget item option value))
 
 (defmethod itemconfigure ((widget canvas) item option value)
   (format-wish "~A itemconfigure ~A -~(~A~) {~A}" (widget-path widget) item option
@@ -484,8 +523,6 @@
   (format-wish "~A itemconfigure ~A -~(~A~) {~A}" (widget-path widget) item option (widget-path value))
   widget)
 
-(defgeneric itemlower (w i &optional below))
-
 (defmethod itemlower ((widget canvas) item &optional below)
   (format-wish "~A lower ~A ~@[~A~]" (widget-path widget)
                item below)
@@ -493,8 +530,6 @@
 
 (defmethod lower ((item canvas-item) &optional below)
   (itemlower (canvas item) (handle item) (and below (handle below))))
-
-(defgeneric itemraise (w i &optional above))
 
 (defmethod itemraise ((widget canvas) item &optional above)
   (format-wish "~A raise ~A ~@[~A~]" (widget-path widget)
