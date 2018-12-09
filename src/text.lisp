@@ -112,22 +112,24 @@
                (list* option value others))
   txt)
 
-(defgeneric tag-bind (txt tag event fun))
 
-(defmethod tag-bind ((txt text) tag event fun)
-  "bind fun to event of the tag of the text widget txt"
+(defgeneric tag-bind (object tag event fun &key exclusive))
+
+(defmethod tag-bind ((object text) tag event fun &key (exclusive nil))
+  "bind fun to event of the tag of the text widget object"
+  (declare (ignore exclusive))
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "~a tag bind ~a ~a {callback ~A}" (widget-path txt) tag event name)
-    )
-  txt)
+    (format-wish "~a tag bind ~a ~a {callback ~A}" (widget-path object) tag event name))
+  object)
 
 (defmethod text ((text text))
   (format-wish "senddatastring [~a get 1.0 end]" (widget-path text))
   (read-data))
 
 (defmethod (setf text) (val (text text))
-  (format-wish "~A delete 0.0 end;~A insert end {~A}" (widget-path text) (widget-path text) val)
+  (format-wish "~A delete 0.0 end;~A insert end {~A}"
+               (widget-path text) (widget-path text) val)
   val)
 
 (defgeneric save-text (txt filename))

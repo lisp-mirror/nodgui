@@ -93,21 +93,17 @@
 
 (defgeneric coords (item))
 
-(defgeneric itembind (canvas w event fun))
-
 (defgeneric scrollregion (canvas x0 y0 x1 y1))
 
 (defgeneric canvasx (canvas screenx))
 
 (defgeneric canvasy (canvas screeny))
 
+(defgeneric itembind (canvas w event fun))
+
 (defgeneric itemmove (canvas item dx dy))
 
 (defgeneric itemdelete (canvas item))
-
-(defgeneric move (item dx dy))
-
-(defgeneric clear (widget))
 
 (defgeneric itemconfigure (widget item option value))
 
@@ -115,9 +111,27 @@
 
 (defgeneric itemraise (w i &optional above))
 
+(defgeneric item-bind (canvas w event fun))
+
+(defgeneric item-move (canvas item dx dy))
+
+(defgeneric item-delete (canvas item))
+
+(defgeneric item-configure (widget item option value))
+
+(defgeneric item-lower (widget item &optional below))
+
+(defgeneric item-raise (widget item &optional above))
+
 (defgeneric item-move-to (object item-handle x y))
 
+(defgeneric tagbind  (canvas tag event fun &key exclusive))
+
 (defgeneric move-to (object x y))
+
+(defgeneric move (item dx dy))
+
+(defgeneric clear (widget))
 
 (defmethod scale ((canvas canvas) factor &optional factory)
   (format-wish "~a scale all 0 0 ~a ~a"
@@ -215,9 +229,16 @@
     coord-list))
 
 (defmethod itembind ((canvas canvas) (item canvas-item) event fun)
-  (itembind canvas (handle item) event fun))
+  (item-bind canvas item event fun))
+
+(defmethod item-bind ((canvas canvas) (item canvas-item) event fun)
+  (item-bind canvas (handle item) event fun))
 
 (defmethod itembind ((canvas canvas) (item integer) event fun)
+  "bind fun to event of the widget w"
+  (item-bind canvas item event fun))
+
+(defmethod item-bind ((canvas canvas) (item integer) event fun)
   "bind fun to event of the widget w"
   (let ((name (create-name)))
     (add-callback name fun)
@@ -225,6 +246,10 @@
   canvas)
 
 (defmethod tagbind ((canvas canvas) tag event fun &key exclusive)
+  "bind fun to event of the widget w"
+  (tag-bind canvas tag event fun :exclusive exclusive))
+
+(defmethod tag-bind ((canvas canvas) tag event fun &key exclusive)
   "bind fun to event of the widget w"
   (let ((name (create-name)))
     (add-callback name fun)
@@ -257,13 +282,22 @@
   (read-data))
 
 (defmethod itemmove ((canvas canvas) (item integer) dx dy)
+  (item-move canvas item dx dy))
+
+(defmethod item-move ((canvas canvas) (item integer) dx dy)
   (format-wish "~a move ~a ~a ~a" (widget-path canvas) item (tk-number dx) (tk-number dy))
   canvas)
 
 (defmethod itemmove ((canvas canvas) (item canvas-item) dx dy)
-  (itemmove (canvas item) (handle item) (tk-number dx) (tk-number dy)))
+  (item-move canvas item dx dy))
+
+(defmethod itemmove ((canvas canvas) (item canvas-item) dx dy)
+  (item-move (canvas item) (handle item) (tk-number dx) (tk-number dy)))
 
 (defmethod itemmove ((canvas canvas) item dx dy)
+  (item-move item dx dy))
+
+(defmethod item-move ((canvas canvas) item dx dy)
   (format-wish "~a move {~/nodgui::down/} ~a ~a"
                (widget-path canvas)
                item (tk-number dx) (tk-number dy)))
@@ -276,12 +310,18 @@
         (format-wish (tclize `(,path moveto ,item-handle ,tk-x ,tk-y)))))))
 
 (defmethod itemdelete ((canvas canvas) (item integer))
+  (item-delete canvas item))
+
+(defmethod item-delete ((canvas canvas) (item integer))
   (format-wish "~a delete ~a" (widget-path canvas) item)
   canvas)
 
 (defmethod itemdelete ((canvas canvas) (item canvas-item))
   (format-wish "~a delete ~a" (widget-path canvas) (handle item))
   canvas)
+
+(defmethod item-delete ((canvas canvas) (item canvas-item))
+  (item-delete canvas (handle item)))
 
 (defmethod move ((item canvas-item) dx dy)
   (itemmove (canvas item) (handle item) (tk-number dx) (tk-number dy)))
@@ -507,23 +547,30 @@
 (defmethod initialize-instance :after ((c canvas-arc) &key canvas x0 y0 x1 y1 (start 0) (extent 180) (style "pieslice"))
   (setf (handle c) (create-arc canvas x0 y0 x1 y1 :start start :extent extent :style style)))
 
-(defclass canvas-window (canvas-item)
-  ())
+(defclass canvas-window (canvas-item) ())
 
 (defmethod itemconfigure ((widget canvas) item option value)
+  (item-configure widget item option value))
+
+(defmethod item-configure ((widget canvas) item option value)
   (format-wish "~A itemconfigure ~A -~(~A~) {~A}" (widget-path widget) item option
             (if (stringp value) ;; There may be values that need to be passed as
                 value           ;; unmodified strings, so do not downcase strings
               (format nil "~(~a~)" value))) ;; if its not a string, print it downcased
   widget)
 
-
 ;;; for tkobjects, the name of the widget is taken
 (defmethod itemconfigure ((widget canvas) item option (value tkobject))
+  (item-configure widget item option value))
+
+(defmethod item-configure ((widget canvas) item option (value tkobject))
   (format-wish "~A itemconfigure ~A -~(~A~) {~A}" (widget-path widget) item option (widget-path value))
   widget)
 
 (defmethod itemlower ((widget canvas) item &optional below)
+  (item-lower widget item below))
+
+(defmethod item-lower ((widget canvas) item &optional below)
   (format-wish "~A lower ~A ~@[~A~]" (widget-path widget)
                item below)
   widget)
@@ -532,9 +579,13 @@
   (itemlower (canvas item) (handle item) (and below (handle below))))
 
 (defmethod itemraise ((widget canvas) item &optional above)
-  (format-wish "~A raise ~A ~@[~A~]" (widget-path widget)
-               item above)
-  widget)
+  (item-raise widget item above))
+
+(defmethod item-raise ((widget canvas) item &optional above)
+  (with-canvas-path (path widget)
+    (format-wish "~A raise ~A ~@[~A~]" (widget-path widget)
+                 item above)
+    widget))
 
 (defun item-cget (canvas item option)
   (format-wish (tcl-str (senddatastring [~a itemcget ~\(~a~\) -~\(~a~\)]))
