@@ -309,7 +309,9 @@
     (let ((tk-x (tk-number x))
           (tk-y (tk-number y)))
       (let ((*add-space-after-emitted-string* t))
-        (format-wish (tclize `(,path moveto ,(down item-handle) ,tk-x ,tk-y)))))))
+        (format-wish (tclize `(,path moveto
+                                     ,(down item-handle)
+                                     ,tk-x ,tk-y)))))))
 
 (defmethod itemdelete ((canvas canvas) (item integer))
   (item-delete canvas item))

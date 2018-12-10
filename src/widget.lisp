@@ -32,7 +32,7 @@ giving the path of tkobjects."
 (defgeneric down (object))
 
 (defmethod down (object)
-  (to-s object))
+  (format nil "~(~a~)" object))
 
 (defmethod down ((object string))
   object)
