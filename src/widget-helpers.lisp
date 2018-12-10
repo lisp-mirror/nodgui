@@ -212,7 +212,7 @@
        "~@[ -highlightthickness ~(~a~)~]"
        highlightthickness "")
       ;(image image "~@[ -image ~(~a~)~]" (and image (name image))
-      (image image "~@[ -image {~/nodgui::down/}~]" (and image (name image))
+      (image image "~@[ -image {~/nodgui::pprint-down/}~]" (and image (name image))
        "the image to display on the widget, the display is affected by the options 'anchor' and 'justify'")
       (increment
        increment

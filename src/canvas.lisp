@@ -298,16 +298,18 @@
   (item-move item dx dy))
 
 (defmethod item-move ((canvas canvas) item dx dy)
-  (format-wish "~a move {~/nodgui::down/} ~a ~a"
+  (format-wish "~a move {~/nodgui::pprint-down/} ~a ~a"
                (widget-path canvas)
-               item (tk-number dx) (tk-number dy)))
+               item
+               (tk-number dx)
+               (tk-number dy)))
 
 (defmethod item-move-to ((object canvas) (item-handle integer) x y)
   (with-canvas-path (path object)
     (let ((tk-x (tk-number x))
           (tk-y (tk-number y)))
       (let ((*add-space-after-emitted-string* t))
-        (format-wish (tclize `(,path moveto ,item-handle ,tk-x ,tk-y)))))))
+        (format-wish (tclize `(,path moveto ,(down item-handle) ,tk-x ,tk-y)))))))
 
 (defmethod itemdelete ((canvas canvas) (item integer))
   (item-delete canvas item))
@@ -415,7 +417,7 @@
              (loop
                 while item
                 do
-                (format stream " -~(~a~) {~/nodgui::down/}" (pop item) (pop item)))))
+                (format stream " -~(~a~) {~/nodgui::pprint-down/}" (pop item) (pop item)))))
     (let ((itemtype (pop item))
           (cpath (widget-path canvas)))
       (when (consp itemtype)

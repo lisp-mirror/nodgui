@@ -188,3 +188,34 @@
                         +gif89-magic-number+)
 
 (gen-check-magic-number jpg +jpeg-magic-number+)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+  (defun rgb-struct->tk-color (rgb-struct)
+    (flet ((->byte (a)
+             (round (* 255 a))))
+      (format nil "#~2,'0X~2,'0X~2,'0X"
+              (->byte (cl-colors:rgb-red   rgb-struct))
+              (->byte (cl-colors:rgb-green rgb-struct))
+              (->byte (cl-colors:rgb-blue  rgb-struct)))))
+
+  (declaim (inline rgb->tk))
+
+  (defun rgb->tk (rgb-struct)
+    (rgb-struct->tk-color rgb-struct))
+
+  (defun read-color-macro (stream char ign)
+    (declare (ignore char ign))
+    (let ((raw (do* ((r   (read-char stream nil nil) (read-char stream nil nil))
+                     (res '()))
+                    ((char= r #\%) (coerce (reverse res) 'string))
+                 (push r res))))
+      (rgb-struct->tk-color (symbol-value (format-fn-symbol :cl-colors "+~a+" raw)))))
+
+  (cl-syntax:defsyntax nodgui-color-syntax
+    (:merge :standard)
+    (:macro-char #\# :dispatch)
+    (:macro-char #\% :dispatch)
+    (:dispatch-macro-char #\# #\% #'read-color-macro))
+
+  (cl-syntax:use-syntax nodgui-color-syntax))

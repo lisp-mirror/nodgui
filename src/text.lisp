@@ -105,7 +105,7 @@
 (defgeneric tag-configure (txt tag option value &rest others))
 
 (defmethod tag-configure ((txt text) tag option value &rest others)
-  (format-wish "~a tag configure ~a~{ -~(~a~) {~/nodgui::down/}~}" (widget-path txt)
+  (format-wish "~a tag configure ~a~{ -~(~a~) {~/nodgui::pprint-down/}~}" (widget-path txt)
                (if (stringp tag)
                    tag
                  (format nil "~(~a~)" tag))

@@ -12,10 +12,7 @@
 2.1 Programs
 ────────────
 
-2.1.1 TCL/TK interpreter (version >= 8.6)
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-
-  [https://www.tcl.tk]
+  • TCL/TK interpreter (version >= 8.6) [https://www.tcl.tk]
 
 
 2.2 Lisp libraries
@@ -26,7 +23,8 @@
   • cl-lex;
   • cl-yacc;
   • clunit2;
-  • cl-syntax.
+  • cl-syntax;
+  • cl-colors2.
 
   All of the above libraries are available on quicklisp.
 
@@ -59,46 +57,46 @@
 
         1. open the file `src/spinbox.lisp' an look at the top of this
            file:
+           ┌────
+           │ (defargs spinbox ()
+           │ cursor
+           │ state
+           │ style
+           │ takefocus
+           │ validate
+           │ validatecommand
+           │ xscrollcommand
+           │ command
+           │ format
+           │ from
+           │ increment
+           │ to
+           │ values
+           │ wrap)
+           └────
 
-        ┌────
-        │ (defargs spinbox ()
-        │ cursor
-        │ state
-        │ style
-        │ takefocus
-        │ validate
-        │ validatecommand
-        │ xscrollcommand
-        │ command
-        │ format
-        │ from
-        │ increment
-        │ to
-        │ values
-        │ wrap)
-        └────
+           the symbols listed are all the options for the spinbox TK
+           command (in TCL language everything is a command) or the
+           configuration variable that you can pass as initarg for
+           `(make instance 'spinbox ...)' and, sometimes, changed after
+           object instancing via `configure' ([see the general
+           documentation])
 
-        the symbols listed are all the options for the spinbox TK
-        command (in TCL language everything is a command) or the
-        configuration variable that you can pass as initarg for `(make
-        instance 'spinbox ...)' and, sometimes, changes after object
-        instancing via `configure' ([see the general documentation])
+        2. for the meaning of this symbols refers to the [original TK
+           documentation]
 
-        1. for the meaning of this symbols refers to the
-        [original TK documentation]
+           As a general rule choose the link to the command with its
+           name prefixed with "ttk::" (if exists).
 
-        As a general rule choose the link to the command with its name
-        prefixed with "ttk::" (if exists).
+           In our example point to:
 
-        In our example point to:
+           [https://www.tcl.tk/man/tcl8.6/TkCmd/ttk_spinbox.htm]
 
-        [https://www.tcl.tk/man/tcl8.6/TkCmd/ttk_spinbox.htm]
+           and *not*
 
-        and *not*
+           [https://www.tcl.tk/man/tcl8.6/TkCmd/spinbox.htm]
 
-        [https://www.tcl.tk/man/tcl8.6/TkCmd/spinbox.htm]
-
-        You can easly understand what all the options above are for.
+           You can easly understand what all the options above are for.
 
   What are the differences between nodgui and LTK?
         1. A reader macro for events; i.e.  `#$<Alt-q>$' instead of
@@ -199,7 +197,7 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
   ────────────────────────────────────────────────────────────────────────────────
    `clipboard'             x          (canvas get missing… tricky…)
   ────────────────────────────────────────────────────────────────────────────────
-   `colors'                -          constants only
+   `colos'                 -          see 5.1
   ────────────────────────────────────────────────────────────────────────────────
    `console'               -          only on some platforms
   ────────────────────────────────────────────────────────────────────────────────
@@ -219,11 +217,13 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
   ────────────────────────────────────────────────────────────────────────────────
    `grab'
   ────────────────────────────────────────────────────────────────────────────────
+   `busy'                  x
+  ────────────────────────────────────────────────────────────────────────────────
    `grid'                  x
   ────────────────────────────────────────────────────────────────────────────────
    `image'                 x
   ────────────────────────────────────────────────────────────────────────────────
-   `keysyms'               -          constants only
+   `keysyms'               x
   ────────────────────────────────────────────────────────────────────────────────
    `label'                 x
   ────────────────────────────────────────────────────────────────────────────────
@@ -380,7 +380,36 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-5 License
+5 Notes
+═══════
+
+5.1 Colors Name
+───────────────
+
+  Color name from library cl-color can be used as follows:
+
+  • with a reader macro (`#%...%') at read time:
+    ┌────
+    │ (cl-syntax:use-syntax nodgui-color-syntax) ; do not forget that!
+    │
+    │ [...]
+    │
+    │ #%red%
+    └────
+
+    at runtime using:
+
+    ┌────
+    │ (rgb->tk cl-colors:+red+)
+    └────
+
+    the list of supported colors name can be found in: [this file].
+
+
+[this file] https://notabug.org/cage/cl-colors2/src/master/package.lisp
+
+
+6 License
 ═════════
 
   This software is Copyright (c) 2003-2010 Peter Herth

@@ -107,7 +107,7 @@ a list of numbers may be given"
 (defgeneric listbox-configure (l i &rest options))
 
 (defmethod listbox-configure ((l listbox) index &rest options)
-  (format-wish "~a itemconfigure ~a ~{ -~(~a~) {~/nodgui::down/}~}" (widget-path l) index options)
+  (format-wish "~a itemconfigure ~a ~{ -~(~a~) {~/nodgui::pprint-down/}~}" (widget-path l) index options)
   l)
 
 (defgeneric listbox-nearest (listbox y))

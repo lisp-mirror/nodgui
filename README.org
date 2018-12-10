@@ -8,8 +8,9 @@
 
 ** Programs
 
-*** TCL/TK interpreter (version >= 8.6)
+ - TCL/TK interpreter (version >= 8.6)
     https://www.tcl.tk
+
 
 ** Lisp libraries
 
@@ -18,7 +19,8 @@
  - cl-lex;
  - cl-yacc;
  - clunit2;
- - cl-syntax.
+ - cl-syntax;
+ - cl-colors2.
 
 All of the above libraries are available on quicklisp.
 
@@ -51,46 +53,45 @@ All of the above libraries are available on quicklisp.
        to solve this problem is like:
 
        1. open the file ~src/spinbox.lisp~ an look at the top of this file:
+          #+BEGIN_SRC lisp
+          (defargs spinbox ()
+          cursor
+          state
+          style
+          takefocus
+          validate
+          validatecommand
+          xscrollcommand
+          command
+          format
+          from
+          increment
+          to
+          values
+          wrap)
+          #+END_SRC
 
-       #+BEGIN_SRC lisp
-       (defargs spinbox ()
-       cursor
-       state
-       style
-       takefocus
-       validate
-       validatecommand
-       xscrollcommand
-       command
-       format
-       from
-       increment
-       to
-       values
-       wrap)
-     #+END_SRC
-
-       the symbols  listed are all the  options for the spinbox TK  command (in
-       TCL  language everything  is a  command) or  the configuration
-       variable  that you  can pass  as initarg  for ~(make  instance
-       'spinbox ...)~ and, sometimes,  changes after object instancing via ~configure~
-       ([[documentation][see the general documentation]])
+         the symbols  listed are all the  options for the spinbox TK  command (in
+         TCL  language everything  is a  command) or  the configuration
+         variable  that you  can pass  as initarg  for ~(make  instance
+         'spinbox ...)~ and, sometimes,  changed after object instancing via ~configure~
+         ([[documentation][see the general documentation]])
 
        2. for the meaning of this symbols refers to the
-       [[https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm][original TK documentation]]
+          [[https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm][original TK documentation]]
 
-       As a general rule choose the link to the command with its name
-       prefixed with "ttk::" (if exists).
+          As a general rule choose the link to the command with its name
+          prefixed with "ttk::" (if exists).
 
-       In our example point to:
+          In our example point to:
 
-       https://www.tcl.tk/man/tcl8.6/TkCmd/ttk_spinbox.htm
+          https://www.tcl.tk/man/tcl8.6/TkCmd/ttk_spinbox.htm
 
-       and *not*
+          and *not*
 
-       https://www.tcl.tk/man/tcl8.6/TkCmd/spinbox.htm
+          https://www.tcl.tk/man/tcl8.6/TkCmd/spinbox.htm
 
-       You can easly understand what all the options above are for.
+          You can easly understand what all the options above are for.
 
   - What are the differences between nodgui and LTK? ::
 
@@ -166,7 +167,7 @@ All of the above libraries are available on quicklisp.
   |------------------------+-----------+---------------------------------------------|
   | ~clipboard~            | x         | (canvas get missing... tricky...)           |
   |------------------------+-----------+---------------------------------------------|
-  | ~colors~               | -         | constants only                              |
+  | ~colos~                | -         | see [[Colors Name]]                         |
   |------------------------+-----------+---------------------------------------------|
   | ~console~              | -         | only on some platforms                      |
   |------------------------+-----------+---------------------------------------------|
@@ -186,11 +187,13 @@ All of the above libraries are available on quicklisp.
   |------------------------+-----------+---------------------------------------------|
   | ~grab~                 |           |                                             |
   |------------------------+-----------+---------------------------------------------|
+  | ~busy~                 | x         |                                             |
+  |------------------------+-----------+---------------------------------------------|
   | ~grid~                 | x         |                                             |
   |------------------------+-----------+---------------------------------------------|
   | ~image~                | x         |                                             |
   |------------------------+-----------+---------------------------------------------|
-  | ~keysyms~              | -         | constants only                              |
+  | ~keysyms~              | x         |                                             |
   |------------------------+-----------+---------------------------------------------|
   | ~label~                | x         |                                             |
   |------------------------+-----------+---------------------------------------------|
@@ -342,6 +345,31 @@ All of the above libraries are available on quicklisp.
   | MacOS          | ?           | ?   | ?   |
   |----------------+-------------+-----+-----|
   | Win            | ?           | ?   | ?   |
+
+* Notes
+
+** Colors Name
+
+Color name from library cl-color can be used as follows:
+
+- with a reader macro (~#%...%~) at read time:
+  #+BEGIN_SRC lisp
+  (cl-syntax:use-syntax nodgui-color-syntax) ; do not forget that!
+
+  [...]
+
+  #%red%
+  #+END_SRC
+
+ at runtime using:
+
+  #+BEGIN_SRC lisp
+  (rgb->tk cl-colors:+red+)
+  #+END_SRC
+
+  the list of supported colors name can be found in:
+  [[https://notabug.org/cage/cl-colors2/src/master/package.lisp][this file]].
+
 
 * License
 

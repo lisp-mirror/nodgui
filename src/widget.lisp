@@ -23,6 +23,23 @@
     :initform nil))
   (:documentation "Base class for every Tk object"))
 
+(defun pprint-down (stream object colon at)
+  "Print OBJECT to  STREAM, downcasing unless OBJECT is  a string, and
+giving the path of tkobjects."
+  (declare (ignore colon at))
+  (write-string (down object) stream))
+
+(defgeneric down (object))
+
+(defmethod down (object)
+  (to-s object))
+
+(defmethod down ((object string))
+  object)
+
+(defmethod down ((object tkobject))
+  (name object))
+
 (defclass widget (tkobject)
   ((master
     :accessor master
@@ -40,6 +57,8 @@
     :initarg  :init-command))
   (:documentation "Base class for all widget types"))
 
+(defmethod down ((object widget))
+  (widget-path object))
 
 (defmethod initialize-instance :after ((w widget) &key)
   (unless (name w) ; generate name if not given

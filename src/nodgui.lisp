@@ -664,25 +664,17 @@ set y [winfo y ~a]
 
 ;;; configure a widget parameter
 
-(defun down (stream object colon at)
-  "Print OBJECT to STREAM, downcasing unless OBJECT is a string, and giving the path of tkobjects."
-  (declare (ignore colon at))
-  (typecase object
-    (string (write-string object stream))
-    (tkobject (write-string (widget-path object) stream))
-    (t (format stream "~(~a~)" object))))
-
 (defgeneric configure (widget option value &rest others))
 
 (defmethod configure (widget option value &rest others)
-  (format-wish "~A configure~{ -~(~a~) {~/nodgui::down/}~}"
+  (format-wish "~A configure~{ -~(~a~) {~/nodgui::pprint-down/}~}"
                (widget-path widget)
                (list* option value others))
   widget)
 
 (defmethod configure ((item menuentry) option value &rest others)
   (let ((path (widget-path (master item))))
-    (format-wish "~A entryconfigure [~A index {~A}]~{ -~(~a~) {~/nodgui::down/}~}"
+    (format-wish "~A entryconfigure [~A index {~A}]~{ -~(~a~) {~/nodgui::pprint-down/}~}"
                  path
                  path
                  (text item)
@@ -690,13 +682,13 @@ set y [winfo y ~a]
   item)
 
 (defmethod configure ((item canvas-item) option value &rest others)
-  (format-wish "~A itemconfigure ~A~{ -~(~a~) {~/nodgui::down/}~}"
+  (format-wish "~A itemconfigure ~A~{ -~(~a~) {~/nodgui::pprint-down/}~}"
                (widget-path (canvas item)) (handle item)
                (list* option value others))
   item)
 
 (defmethod tag-configure ((c canvas) tag option value &rest others)
-  (format-wish "~a itemconfigure ~a~{ -~(~a~) {~/nodgui::down/}~}" (widget-path c)
+  (format-wish "~a itemconfigure ~a~{ -~(~a~) {~/nodgui::pprint-down/}~}" (widget-path c)
                (if (stringp tag)
                    tag
                  (format nil "~(~a~)" tag))
@@ -737,27 +729,27 @@ set y [winfo y ~a]
 
 
 ;;; font functions
-;; use {~/nodgui::down/} on the font name to match itemconfigure
+;; use {~/nodgui::pprint-down/} on the font name to match itemconfigure
 
 ;;(defun font-actual ...)
 
 (defun font-configure (name &key family size weight slant underline overstrike)
-  (format-wish "font configure {~/nodgui::down/}~@[ -family ~a~]~@[ -size ~a~]~@[ -weight ~(~a~)~]~@[ -slant ~(~a~)~]~@[ -underline ~a~]~@[ -overstrike ~a~]"
+  (format-wish "font configure {~/nodgui::pprint-down/}~@[ -family ~a~]~@[ -size ~a~]~@[ -weight ~(~a~)~]~@[ -slant ~(~a~)~]~@[ -underline ~a~]~@[ -overstrike ~a~]"
                name family size weight slant underline overstrike))
 
 (defun font-create (name &key family size weight slant underline overstrike)
-  (format-wish "senddatastring [font create {~/nodgui::down/}~@[ -family ~a~]~@[ -size ~a~]~@[ -weight ~(~a~)~]~@[ -slant ~(~a~)~]~@[ -underline ~a~]~@[ -overstrike ~a~]]"
+  (format-wish "senddatastring [font create {~/nodgui::pprint-down/}~@[ -family ~a~]~@[ -size ~a~]~@[ -weight ~(~a~)~]~@[ -slant ~(~a~)~]~@[ -underline ~a~]~@[ -overstrike ~a~]]"
                name family size weight slant underline overstrike)
    (read-data))
 
 (defun font-delete (&rest names)
-  (format-wish "font delete~{ {~/nodgui::down/}~}" names))
+  (format-wish "font delete~{ {~/nodgui::pprint-down/}~}" names))
 
 ;;(defun font-families ...)
 ;;(defun font-measure ...)
 
  (defun font-metrics (font)
-   (format-wish "sendpropertylist [font metrics {~/nodgui::down/}]" font)
+   (format-wish "sendpropertylist [font metrics {~/nodgui::pprint-down/}]" font)
    (read-data))
 
 ;;(defun font-names ...)

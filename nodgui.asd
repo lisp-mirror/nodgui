@@ -31,6 +31,7 @@
                :cl-lex
                :yacc
                :clunit2
+               :cl-colors2
                :cl-syntax
                :bordeaux-threads
                #-asdf3 :uiop)

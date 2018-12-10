@@ -52,7 +52,8 @@
            :read-into-array
            :pngp
            :gifp
-           :jpgp))
+           :jpgp
+           :rgb->tk))
 
 (defpackage :nodgui.base64
   (:use :cl

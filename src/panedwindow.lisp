@@ -30,7 +30,7 @@
 (defgeneric add-pane (window widget &rest options))
 
 (defmethod add-pane ((pw paned-window) (w widget) &rest options)
-  (format-wish "~a add ~a ~{ -~(~a~) {~/nodgui::down/}~}" (widget-path pw) (widget-path w) options)
+  (format-wish "~a add ~a ~{ -~(~a~) {~/nodgui::pprint-down/}~}" (widget-path pw) (widget-path w) options)
   pw)
 
 (defgeneric forget-pane (window widget))
@@ -42,7 +42,7 @@
 (defgeneric pane-configure (l i &rest options))
 
 (defmethod pane-configure ((p paned-window) (w widget)  &rest options)
-  (format-wish "~a paneconfigure ~a ~{ -~(~a~) {~/nodgui::down/}~}"
+  (format-wish "~a paneconfigure ~a ~{ -~(~a~) {~/nodgui::pprint-down/}~}"
                (widget-path p)
                (widget-path w)
                options)
