@@ -1,3 +1,18 @@
+Table of Contents
+─────────────────
+
+1 NODGUI
+2 Dependency
+.. 2.1 Programs
+.. 2.2 Lisp libraries
+3 FAQ
+4 Status
+.. 4.1 Compatibility
+5 Notes
+.. 5.1 Colors Name
+6 License
+
+
 1 NODGUI
 ════════
 
@@ -127,6 +142,9 @@
         4. Compatible only with TK 8.6;
 
         5. A general refactoring.
+
+        6. Integrated with cl-colors library (can use X11 color names or
+           rgb struct, see 5.1).
 
   Where can i find more code examples?
                check the file `src/demo-tests.lisp'

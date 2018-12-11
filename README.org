@@ -125,6 +125,9 @@ All of the above libraries are available on quicklisp.
 
       5. A general refactoring.
 
+      6. Integrated with cl-colors library (can use X11 color names or
+         rgb struct, see [[Colors Name]]).
+
   - Where can i find more code examples? ::
 
        check the file ~src/demo-tests.lisp~
