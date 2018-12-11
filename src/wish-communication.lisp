@@ -135,11 +135,10 @@
 
 (defun make-error-collecting-thread (error-stream)
   (bt:make-thread (lambda ()
-                    (loop do
-                         (let ((ch (read-char error-stream)))
-                           (unread-char ch error-stream)
-                           (error (make-condition 'tk-communication-error
-                                                  :message (read-line error-stream))))))))
+                    (let ((ch (read-char error-stream)))
+                      (unread-char ch error-stream)
+                      (error (make-condition 'tk-communication-error
+                                             :message (read-line error-stream)))))))
 
 ;;; start wish and set (wish-stream *wish*)
 (defun start-wish (&rest keys &key debugger-class remotep stream debug-tcl)
@@ -372,12 +371,15 @@
       (unread-char c stream)
       t)))
 
+(defun normalize-error (errors-list)
+  (join-with-strings (rest errors-list) " "))
+
 (defun verify-event (event)
   (cond
     ((not (listp event))
      (error "When reading from tcl, expected a list but instead got ~S" event))
     ((eq (first event) :error)
-     (error 'tk-error :message (second event)))
+     (error 'tk-error :message (normalize-error event)))
     (t event)))
 
 (defvar *in-read-event* ()
@@ -441,7 +443,7 @@ event to read and blocking is set to nil"
           (setf (wish-event-queue *wish*)
                 (append (wish-event-queue *wish*) (list data))))
          ((eq (first data) :error)
-          (error 'tk-error :message (second data)))
+          (error 'tk-error :message (normalize-error data)))
          (t
           (format t "read-data problem: ~a~%" data) (finish-output)))
      else do

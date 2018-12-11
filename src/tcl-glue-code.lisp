@@ -189,15 +189,17 @@
        (global server)
        (set cmd $buffer)
        (set buffer {})
-       (:if ([catch $cmd result] .> \ 0)
+       (set errs {})
+       (:if ([catch $cmd] .> \ 0)
             (:group
              (:lisp
               (with-flush-server
                   (tcl
-                    (\# tk_messageBox -icon error -type ok -title \" Error! \"
-                                     -message $result)
+                    (set errs [regsub -all {+ "[^[:alnum:][[:punct:] ]+" }
+                         "$::errorInfo" " " \~%% ])
+                    (puts stderr $errs)
                     (puts $server [strcat < #.+wish-to-lisp-error-reply+
-                         \"+ \\+ \"+ [escape $result]+ \\+ \"+ \"  >)))))))
+                         \"+ \\+ \"+ [escape $errs]+ \\+ \"+ \"  > ])))))))
 
      (defproc bt (txt)
        (global buffer)
