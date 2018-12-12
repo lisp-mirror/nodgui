@@ -33,14 +33,13 @@
   (setf (name p) (create-name))
   (format-wish "image create photo ~a" (name p)))
 
-(defun make-image-data (data w h channels)
+(defun make-image-data (data w h channels &key (column-offset channels))
  " (make-image-data #( 1  2  3   4  5  6  7  8  9
                       10 11 12  13 14 15 16 17 18)
                     3 2 3)
    ===> [list [list #010203 #040506 #070809 ] [list #0A0B0C #0D0E0F #101112 ] ]"
  (let ((*suppress-newline-for-tcl-statements* t)
-        (column-offset                         channels)
-        (raw-width                             (* channels w)))
+        (raw-width                            (* column-offset w)))
     (tclize `([list
               ,(loop for r from 0 below h collect
                     (tclize `([list ,(loop
@@ -49,7 +48,8 @@
                                           (let ((res "#"))
                                             (loop for i from 0 below channels do
                                                  (let ((pix-color (elt data
-                                                                       (+ (* r w channels)
+                                                                       (+ (* r w
+                                                                             column-offset)
                                                                           c i))))
                                                    (setf res (strcat res
                                                                      (format nil "~2,'0x"
@@ -58,7 +58,9 @@
                                     ])))
               ]))))
 
-(defun make-image (data &optional (w nil) (h nil) (channels 3))
+(defgeneric make-image (data &optional w h channels))
+
+(defmethod make-image ((data vector) &optional (w nil) (h nil) (channels 3))
   (let* ((res (make-instance 'photo-image)))
     (when data
       (cond
@@ -73,6 +75,21 @@
                                                put
                                                ,(make-image-data data w h channels)
                                                ]))))))
+    res))
+
+(defmethod make-image ((object pixmap) &optional (w nil) (h nil) (channels 4))
+  (declare (ignore w h channels))
+  (h-mirror object)
+  (sync-data-to-bits object)
+  (let* ((res (make-instance 'photo-image)))
+    (format-wish (tclize `(senddatastring [ ,(name res) " "
+                                          put
+                                          ,(make-image-data (bits   object)
+                                                            (width  object)
+                                                            (height object)
+                                                            3
+                                                            :column-offset 4)
+                                          ])))
     res))
 
 (defgeneric image-load (p filename))

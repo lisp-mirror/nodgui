@@ -676,17 +676,26 @@
       (setf (command b)
             #'(lambda ()
                 (let ((file (get-open-file :filetypes '(("PNG"     "*.png")
+                                                        ("TGA"     "*.tga")
                                                         ("RGB raw" "*.data")))))
                   (with-open-file (stream file :element-type '(unsigned-byte 8))
                     (let* ((data (read-into-array stream (file-length stream))))
-                      (if (cl-ppcre:scan "png$" file)
-                          (setf (image b) (make-image data))
-                          (let ((w (input-box "Pixel width?"
-                                              :title "Image size"))
-                                (h (input-box "Pixel Height?"
+                      (cond
+                        ((cl-ppcre:scan "png$" file)
+                         (setf (image b) (make-image data)))
+                        ((cl-ppcre:scan "tga$" file)
+                         (let ((bitmap (rotate-pixmap (scale-bilinear (slurp-pixmap 'tga file)
+                                                                      2.0 2.1)
+                                                      30.0
+                                                      :repeat t)))
+                           (setf (image b) (make-image bitmap))))
+                        (t
+                         (let ((w (input-box "Pixel width?"
+                                             :title "Image size"))
+                               (h (input-box "Pixel Height?"
                                               :title "Image size")))
-                          (when (and w h)
-                            (setf (image b) (make-image data
+                           (when (and w h)
+                             (setf (image b) (make-image data
                                                         (parse-integer w)
-                                                        (parse-integer h)))))))))))
+                                                        (parse-integer h))))))))))))
       (place b 0 0))))

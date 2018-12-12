@@ -119,6 +119,12 @@
     (return-whole () sequence)
     (new-index (i) (safe-delete@ sequence i))))
 
+(defun make-fresh-list (size &optional (el nil))
+  (map-into (make-list size)
+            (if (functionp el)
+                el
+                #'(lambda () el))))
+
 (defun make-array-frame (size &optional (el nil) (type t) (simplep nil))
   "All elements points to the same address/reference!"
   (make-array size
@@ -219,3 +225,98 @@
     (:dispatch-macro-char #\# #\% #'read-color-macro))
 
   (cl-syntax:use-syntax nodgui-color-syntax))
+
+(defparameter *default-epsilon* 1e-7)
+
+(defmacro with-epsilon ((epsilon) &body body)
+  `(let ((*default-epsilon* ,epsilon))
+     ,@body))
+
+(defun add-epsilon-rel (v &optional (epsilon *default-epsilon*))
+  (+ v (* epsilon v)))
+
+(defun epsilon<= (a b &optional (epsilon *default-epsilon*))
+  (or (<= a b)
+      (epsilon= a b epsilon)))
+
+(defun epsilon>= (a b &optional (epsilon *default-epsilon*))
+  (or (>= a b)
+      (epsilon= a b epsilon)))
+
+(defun epsilon= (a b &optional (epsilon *default-epsilon*))
+  (and (<= (- b epsilon) a (+ b epsilon))))
+
+;; binary parsing
+
+(defmacro define-offset-size (package prefix &rest name-offset-size)
+   `(progn
+      ,@(loop for i in name-offset-size collect
+             `(progn
+                (alexandria:define-constant
+                    ,(alexandria:format-symbol package "~@:(+~a-~a-offset+~)" prefix (first i))
+                    ,(second i) :test #'=)
+                ,(when (= (length i) 3)
+                       `(alexandria:define-constant
+                            ,(alexandria:format-symbol package "~@:(+~a-~a-size+~)" prefix
+                                                       (first i))
+                            ,(third i) :test #'=))))))
+
+(defmacro define-parse-header-chunk ((name offset size object &optional (slot name)))
+  (alexandria:with-gensyms (bytes)
+    `(progn
+       (defgeneric ,(alexandria:format-symbol t "PARSE-~:@(~a~)" name) (,object stream))
+       (defmethod ,(alexandria:format-symbol t "PARSE-~:@(~a~)" name) ((object ,object) stream)
+         (file-position stream ,offset)
+         (let* ((,bytes (make-fresh-list ,size)))
+           (read-sequence ,bytes stream)
+           ,(when (not (null slot))
+                  `(setf (,slot object) ,bytes))
+           (values ,bytes object))))))
+
+(defun byte->int (bytes)
+  (let ((res #x0000000000000000)
+        (ct  0))
+    (map nil #'(lambda (a)
+                 (setf res (boole boole-ior
+                                  (ash a ct)
+                                  res))
+                 (incf ct 8))
+         bytes)
+    res))
+
+(defmacro gen-intn->bytes (bits)
+  (let ((function-name (alexandria:format-symbol t "~:@(int~a->bytes~)" bits)))
+    `(defun ,function-name (val &optional (count 0) (res '()))
+       (if (>= count ,(/ bits 8))
+           (reverse res)
+           (,function-name (ash val -8)
+                           (1+ count)
+                           (push (boole boole-and val #x00ff)
+                                 res))))))
+
+(gen-intn->bytes 16)
+
+(gen-intn->bytes 32)
+
+(defgeneric round-all (object &key rounding-function))
+
+(defmethod round-all ((object list) &key (rounding-function #'round))
+  (mapcar #'(lambda (n) (funcall rounding-function n)) object))
+
+(defmethod round-all ((object number) &key (rounding-function #'round))
+  (funcall rounding-function object))
+
+(defmethod round-all ((object vector) &key (rounding-function #'round))
+  (map (type-of object) #'(lambda (n) (funcall rounding-function n)) object))
+
+
+(declaim (inline ->f))
+
+(defun ->f (a)
+  (coerce a 'single-float))
+
+(defun rad->deg (rad)
+  (/ (* rad 360.0) (* 2 pi)))
+
+(defun deg->rad (deg)
+  (/ (* deg 2 pi) 360.0))

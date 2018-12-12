@@ -45,6 +45,7 @@
            :make-adjustable-string
            :encode-base-52
            :split-sequence
+           :make-fresh-list
            :delete@
            :safe-delete@
            :make-array-frame
@@ -53,7 +54,21 @@
            :pngp
            :gifp
            :jpgp
-           :rgb->tk))
+           :rgb->tk
+           :*default-epsilon*
+           :with-epsilon
+           :add-epsilon-rel
+           :epsilon<=
+           :epsilon>=
+           :epsilon=
+           :define-parse-header-chunk
+           :define-offset-size
+           :byte->int
+           :int16->bytes
+           :round-all
+           :->f
+           :rad->deg
+           :deg->rad))
 
 (defpackage :nodgui.base64
   (:use :cl
@@ -62,6 +77,79 @@
         :nodgui.utils)
   (:export :encode
            :decode))
+
+(defpackage :nodgui.ubvec4
+  (:use :cl
+        :nodgui.constants
+        :nodgui.utils)
+  (:export
+   :ubvec4-type
+   :ubvec4
+   :ubvec4p
+   :copy-ubvec4
+   :make-fresh-ubvec4
+   :ubvec4=
+   :+ubvec4-zero+
+   :ubvec4*
+   :ubvec4/
+   :ubvec4=
+   :ubvec4~
+   :ubvec4+
+   :ubvec4-
+   :ubvec4-length
+   :ubvec4-normalize
+   :ubvec4-dot-product))
+
+(defpackage :nodgui.vec2
+  (:use :cl
+        :nodgui.constants
+        :nodgui.utils)
+  (:export
+      :vec2-type
+   :vec2
+   :+vec2-zero+
+   :sequence->vec2
+   :make-fresh-vec2
+   :copy-vec2
+   :vec2-x
+   :vec2-y
+   :vec2p
+   :vec2*
+   :vec2/
+   :vec2~
+   :vec2=
+   :vec2+
+   :vec2-
+   :vec2-negate
+   :vec2-length
+   :vec2-normalize
+   :vec2-dot-product
+   :vec2-perpendicular
+   :vec2-perp-dot-product
+   :vec2-rotate))
+
+(defpackage :nodgui.pixmap
+  (:use :cl
+        :alexandria
+        :nodgui.constants
+        :nodgui.utils
+        :nodgui.ubvec4
+        :nodgui.vec2)
+  (:export
+   :pixmap
+   :width
+   :height
+   :data
+   :bits
+   :sync-bits-to-data
+   :sync-data-to-bits
+   :tga
+   :slurp-pixmap
+   :h-mirror
+   :v-mirror
+   :scale-nearest
+   :scale-bilinear
+   :rotate-pixmap))
 
 (defpackage :nodgui.event-symbols
   (:use :cl
@@ -1049,6 +1137,7 @@
         :nodgui.tcl-glue-code
         :nodgui.utils
         :nodgui.conditions
+        :nodgui.pixmap
         :nodgui.event-parser
         :nodgui.tcl-emitter)
   (:export :syntax

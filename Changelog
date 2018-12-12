@@ -1,0 +1,74 @@
+2018-12-11  cage <cage-dev@twistfold.it>
+
+	* README.org, README.txt:
+	- updated README.
+
+2018-12-11  cage <cage-dev@twistfold.it>
+
+	* src/tcl-glue-code.lisp, src/wish-communication.lisp:
+	- popup TCL backtrace on error.
+
+2018-12-10  cage <cage-dev@twistfold.it>
+
+	* src/canvas.lisp, src/widget.lisp:
+	- fixed case in non specialized method "down".
+
+2018-12-10  cage <cage-dev@twistfold.it>
+
+	* README.org, README.txt, nodgui.asd, src/canvas.lisp,
+	src/listbox.lisp, src/nodgui.lisp, src/package.lisp,
+	src/panedwindow.lisp, src/text.lisp, src/utils.lisp,
+	src/widget-helpers.lisp, src/widget.lisp:
+	- integrated cl-colors name facility;
+	- changed function name "down" "pprint-down";
+	- updated README.
+
+2018-12-09  cage <cage-dev@twistfold.it>
+
+	* src/demo-tests.lisp, src/package.lisp, src/widget.lisp:
+	- added "busy" functions.
+
+2018-12-09  cage <cage-dev@twistfold.it>
+
+	* src/demo-tests.lisp, src/package.lisp, src/winfo.lisp,
+	src/wm.lisp:
+	- added wm attributes.
+
+2018-12-09  cage <cage-dev@twistfold.it>
+
+	* src/canvas.lisp, src/demo-tests.lisp, src/text.lisp:
+	- made more compliants to lisp convention some item related function
+	names.
+
+2018-12-09  cage <cage-dev@twistfold.it>
+
+	* src/canvas.lisp, src/demo-tests.lisp, src/package.lisp,
+	src/tcl-emitter.lisp:
+	- added moveto for canvas items;
+	- added fill as key parameter for arc.
+
+2018-12-08  cage <cage-dev@twistfold.it>
+
+	* - initial commit after fork.
+        - changed name from ltk to nodgui;
+	- improved README;
+	- added plain text README file;
+        - cleaned megawidgets;
+	- added lincense header;
+	- upgraded spinbox;
+	- fixed image demo for PNG images;
+	- allow load image from memory data in PNG, GIF and RAW RGB(A) format;
+        - ltk:postriscript values a string containing the postcript file;
+        - process error output from wish in a separate stream;
+	- removed call to imagemagick "convert" utility;
+	- added rotation angle option in canvas text;
+	- added canvas demo;
+	- added "get" configuration option for canvas items;
+	- moved some canvas related function to canvas.lisp;
+	- updated metadata in ASDF file;
+	- added reader macro for tk events;
+	- cleaning demo
+	- fixed notebook traversal;
+	- removed use of sb-ext;
+	- renamed package (prefixed with :nodgui)
+	- replaced deprecated function sb-debug:backtrace.
