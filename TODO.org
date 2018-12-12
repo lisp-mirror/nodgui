@@ -1,8 +1,8 @@
-* Short term goals
-
 * TODO fix notebook [20%]
 ** DONE https://github.com/herth/ltk/pull/2/commits/64cb7e86519749c9f212729ab28af92c628315aa
 ** TODO notebook-insert
 ** TODO notebook-instate
 ** TODO notebook-state
 ** TODO notebook-tabs
+** optimize pixmap loading
+   (probably the bottleneck is data -> tk list conversion, no profiling performed though)

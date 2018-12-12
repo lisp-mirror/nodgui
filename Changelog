@@ -1,11 +1,9 @@
 2018-12-11  cage <cage-dev@twistfold.it>
 
-	* README.org, README.txt:
-	- updated README.
-
-2018-12-11  cage <cage-dev@twistfold.it>
-
-	* src/tcl-glue-code.lisp, src/wish-communication.lisp:
+	- updated README
+        - added a bare minimum pixmap manipulation (scaling and rotation);
+	- added support for targa bitmap file format;
+	- added Changelog;
 	- popup TCL backtrace on error.
 
 2018-12-10  cage <cage-dev@twistfold.it>
