@@ -1,18 +1,3 @@
-Table of Contents
-─────────────────
-
-1 NODGUI
-2 Dependency
-.. 2.1 Programs
-.. 2.2 Lisp libraries
-3 FAQ
-4 Status
-.. 4.1 Compatibility
-5 Notes
-.. 5.1 Colors Name
-6 License
-
-
 1 NODGUI
 ════════
 
@@ -64,6 +49,11 @@ Table of Contents
 
         Please note that all the documentation about [the widgets] *is
         outdated* instead.
+
+        The rest of the documentation are the rare docstrings at the
+        moment.
+
+        If you wants to help please [open a pull request].
 
   Where can i found documentation about a widget?
                It is actually very simple: let's suppose you want to use
@@ -127,9 +117,9 @@ Table of Contents
 
            ┌────
            │ (tclize `([list
-           │           ,(loop for r from 0 below h collect
-           │               (tclize `([list ,(loop
-           │   ...
+           │             ,(loop for r from 0 below h collect
+           │                 (tclize `([list ,(loop
+           │ ...
            └────
 
            The `tclize' macro will transforms the backquoted forms in
@@ -174,6 +164,8 @@ http://www.peter-herth.de/ltk/ltkdoc/node42.html
 [Under the hood] http://www.peter-herth.de/ltk/ltkdoc/node43.html
 
 [the widgets] http://www.peter-herth.de/ltk/ltkdoc/node17.html
+
+[open a pull request] https://notabug.org/cage/nodgui/issues
 
 [see the general documentation] See figure (3)
 

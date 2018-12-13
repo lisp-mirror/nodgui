@@ -46,6 +46,11 @@ All of the above libraries are available on quicklisp.
        [[http://www.peter-herth.de/ltk/ltkdoc/node17.html][the widgets]]
        *is outdated* instead.
 
+       The rest of the documentation are the rare docstrings at the moment.
+
+       If you wants to help please
+       [[https://notabug.org/cage/nodgui/issues][open a pull request]].
+
   - Where can i found documentation about a widget? ::
 
        It  is actually  very  simple: let's  suppose you  want  to use  a
@@ -108,9 +113,9 @@ All of the above libraries are available on quicklisp.
          bitmap:
 
          #+BEGIN_SRC lisp
-       (tclize `([list
-                 ,(loop for r from 0 below h collect
-                     (tclize `([list ,(loop
+         (tclize `([list
+                     ,(loop for r from 0 below h collect
+                         (tclize `([list ,(loop
          ...
        #+END_SRC
 
@@ -372,7 +377,6 @@ Color name from library cl-color can be used as follows:
 
   the list of supported colors name can be found in:
   [[https://notabug.org/cage/cl-colors2/src/master/package.lisp][this file]].
-
 
 * License
 

@@ -31,39 +31,65 @@
     :initarg :data
     :initform (make-array-frame 0)
     :accessor data
-    :type vector)
+    :type vector
+    :documentation "A  vector of 'nodgui.ubvec4:ubvec4',  each element
+    of the  latter i a  (unsigned-byte 8) representing a  single color
+    channel of this bitmap. Example: #(#(Red Green Blue Alpha) ...)")
    (width
     :initarg :width
     :initform 0
     :accessor width
-    :type integer)
+    :type integer
+    :documentation "Width (in pixel) of this pixmap")
    (height
     :initarg :height
     :initform 0
     :accessor height
-    :type integer)
+    :type integer
+    :documentation "Height (in pixel) of this pixmap")
    (depth
     :initform 4
     :accessor depth
-    :initarg :depth)
+    :initarg :depth
+    :documentation  "Number   of  color  channels,  It   is  developer
+    responsibility that this  value's slot matches the  length of each
+    element of the slot 'data'")
    (bits
     :initform (make-array-frame 0)
     :accessor bits
-    :initarg :bits)))
+    :initarg :bits
+    :documentation "This  is the same  of 'data'  slots but as  a flat
+    vector (ex: #(RGBA R_1G_2B_1 ...))"))
+  (:documentation "This  class represent a  pixmap image, a  matrix of
+   pixel element, each pixel's value is described by a variable number
+   of color  channel; in the  RGB spaces the  color is described  by a
+   triplet of  \"Red\", \"Green\"  and \"Blue\" values.   Optionally a
+   channel can  specify the opacity of  the color: this is  called the
+   \"Alpha\" value. Note that this package only supports colors with 4
+   channel."))
 
 (defmacro loop-matrix ((matrix x y &optional loop-name) &body body)
+  "loop on each  element of a pixmap 'matrix' with  'x' and 'y' bounds
+to the current scanned element"
   `(loop named ,loop-name for ,y fixnum from 0 below (height ,matrix) do
         (loop for ,x fixnum from 0 below (width ,matrix) do
              ,@body)))
 
 (defun make-pixmap-frame (w h &optional (bg (ubvec4 0 0 0 0)))
+  "Instantiate a pixmap object of width 'w' and height 'h' filled with
+the color  bg. Please  note that  all the elements  of the  data slots
+points to the same memory location (i.e. bg)."
+  (assert (ubvec4p bg))
   (make-instance 'pixmap
                  :depth  4
                  :height h
                  :width  w
-                 :data (make-array-frame (* h w) bg 'ubvec4 t)))
+                 :data   (make-array-frame (* h w) bg 'ubvec4 t)))
 
 (defun make-pixmap (w h &optional (bg (ubvec4 0 0 0 0)))
+  "Instantiate a pixmap object of width 'w' and height 'h' filled with
+ enough copies of the color bg."
+  (assert (ubvec4p bg))
   (make-instance 'pixmap
                  :depth  4
                  :height h
@@ -71,6 +97,7 @@
                  :data   (make-fresh-array (* h w) bg 'ubvec4 t)))
 
 (defun copy-pixmap (object)
+  "Make a copy of a pixmap"
   (make-instance 'pixmap
                  :depth  (depth object)
                  :width  (width object)
@@ -136,6 +163,8 @@
     res))
 
 (defmethod h-mirror ((object pixmap))
+  "Make a symmetric copy of a  pixmap using an horizontal line placed
+on the middle of the pixture as reflection plane"
   (let ((row-pivot (floor (/ (height object) 2))))
     (loop for y from 0 below row-pivot do
          (loop for x from 0 below (width object) do
@@ -144,6 +173,8 @@
   object)
 
 (defmethod v-mirror ((object pixmap))
+  "Make a symmetric copy of a  pixmap using a vertical line placed
+on the middle of the pixture as reflection plane"
   (let ((col-pivot (floor (/ (width object) 2))))
     (loop for x from 0 below col-pivot do
          (loop for y from 0 below (height object) do
@@ -158,6 +189,8 @@
        px1 px2))
 
 (defmethod scale-bilinear ((object pixmap) scale-x scale-y)
+  "Scale  a  bitmap  by  factors   'scale-x'  and  'scale-y'  (in  the
+range (0-1.0]), scaling use bilinear filtering"
   (let* ((old-width   (width  object))
          (old-height  (height object))
          (dnew-width  (* scale-x old-width))
@@ -187,6 +220,8 @@
     res))
 
 (defmethod scale-nearest ((object pixmap) scale-x scale-y)
+    "Scale  a  bitmap  by  factors 'scale-x'  and  'scale-y'  (in  the
+range (0-1.0]), scaling use nearest-neighbor."
   (let* ((new-width  (* scale-x (width object)))
          (new-height (* scale-y (height object)))
          (res        (make-pixmap-frame (floor new-width) (floor new-height))))
@@ -202,6 +237,7 @@
     res))
 
 (defmethod rotate-pixmap-180-degree ((object pixmap) fill-value pivot)
+  "Rotate a pixmap 180 degrees"
   (let* ((w   (width object))
          (h   (height object))
          (res (make-pixmap-frame w h fill-value)))
@@ -218,6 +254,7 @@
     res))
 
 (defmethod rotate-pixmap-90-degree-ccw ((object pixmap) fill-value pivot)
+  "Rotate a pixmap 90° counterclockwise"
   (let* ((w        (floor (width object)))
          (h        (floor (height object)))
          (res      (make-pixmap-frame w h fill-value)))
@@ -233,6 +270,7 @@
       res))
 
 (defmethod rotate-pixmap-90-degree-cw ((object pixmap) fill-value pivot)
+  "Rotate a pixmap 90° clockwise"
   (let* ((w        (floor (width object)))
          (h        (floor (height object)))
          (res      (make-pixmap-frame w h fill-value)))
@@ -294,6 +332,11 @@
                                          (/ (height object) 2)))
                             (repeat nil)
                             (rounding-fn #'round))
+  "Rotate a  pixmap about an  arbitrary angle and around  an arbitrary
+  pivot (the center  of the image by default), The  'void' part of the
+  image  vill be  filled with  'fill-value' (a  'nodgui.ubvec4:ubvec4'
+  vector) or  with repeated parial clone  clones of the same  image if
+  'repeat' is non nil"
   (cond
     ;; using  the next tree functions because  the  usual  approach below  for
     ;; rotating did not worked for me
@@ -359,6 +402,7 @@
 
 
 (defmethod sync-data-to-bits ((object pixmap))
+  "Fill 'bits' slot of this pixmap  with the contents of 'data' slots"
   (with-accessors ((data data) (bits bits) (depth depth)) object
    (unwind-protect
         (progn
@@ -376,6 +420,7 @@
 
 
 (defmethod sync-bits-to-data ((object pixmap))
+  "Fill 'data' slot of this pixmap  with the contents of 'bits' slots"
   (with-accessors ((data   data)
                    (bits   bits)
                    (depth  depth)
@@ -398,6 +443,7 @@
     object))
 
 (defmethod save-pixmap ((object pixmap) path)
+  "Save bitmap in TARGA bitmap format"
   (with-open-file (stream path
                           :direction :output
                           :if-exists :supersede :if-does-not-exist :create
@@ -406,12 +452,14 @@
   object)
 
 (defmethod pixel@ ((object pixmap) x y)
+  "Get the color of pixel at specified coordinate from 'data' slot"
   (declare (pixmap object))
   (declare (fixnum x y))
   (elt (the (simple-array * (*)) (data object))
        (+ (* (the fixnum (width object)) y) x)))
 
 (defmethod (setf pixel@) (color (object pixmap) x y)
+  "Set the color of pixel at the specified coordinate for 'data' slot"
   (declare (pixmap object))
   (declare (fixnum x y))
   (setf (elt (the (simple-array * (*)) (data object))
@@ -426,7 +474,7 @@
   (the fixnum (* 4 (+ (the fixnum (* w y)) x))))
 
 (defmethod bits-pixel@ ((object pixmap) x y)
-  "Color is an ubvec4"
+  "Get the color of pixel at specified coordinate from 'bits' slot"
   (declare (optimize (safety 0) (debug 0) (speed 3)))
   (declare (fixnum x y))
   (with-accessors ((bits  bits)
@@ -441,7 +489,7 @@
               (elt bits (+ 3 offset))))))
 
 (defmethod (setf bits-pixel@) (color (object pixmap) x y)
-  "Color is an ubvec4"
+  "Set the color of pixel at specified coordinate for 'bits' slot"
   (declare (fixnum x y))
   (declare (ubvec4 color))
   (with-accessors ((bits  bits)
@@ -457,15 +505,13 @@
     object))
 
 (defmethod (setf alpha-bits@) (alpha-value (object pixmap) x y)
-  "value is an  unsigned byte (octect), please ensure  the slot 'bits'
-of the pixmap is a symple-array of fixnum (see: cristallize-bits)"
-  (declare (optimize (safety 0) (debug 0) (speed 3)))
+  "Set  the alpha  component  for  the 'bits'  slotys  only; value  is
+an (unsigned-byte 8)"
   (declare (fixnum x y))
   (declare ((unsigned-byte 8) alpha-value))
   (with-accessors ((bits  bits)
                    (width width)) object
     (declare (fixnum width))
-    (declare ((simple-array fixnum) bits))
     (let* ((offset (%offset-bits width x y)))
       (declare (fixnum offset))
       (setf (elt bits (+ 3 offset)) alpha-value))
@@ -475,18 +521,23 @@ of the pixmap is a symple-array of fixnum (see: cristallize-bits)"
   ((magic-number
     :initform ""
     :accessor magic-number
-    :initarg :magic-number)
+    :initarg :magic-number
+    :documentation "The number that identify this file format")
    (errors
     :initform nil
     :accessor errors
-    :initarg :errors)))
+    :initarg :errors))
+   (:documentation "A file that contain a pixmap"))
 
 (defun slurp-pixmap (type file)
+  "Makes a instance of pixmap-derived  class type with contents loaded
+from file: 'file'"
   (let ((px (make-instance type)))
     (pixmap-load px file)
     px))
 
-(defgeneric pixmap-load (object file))
+(defgeneric pixmap-load (object file)
+  (:documentation "load a fixmap form file 'file'"))
 
 (alexandria:define-constant +targa-img-rgba-rle+                  10 :test 'equalp)
 
@@ -504,7 +555,9 @@ of the pixmap is a symple-array of fixnum (see: cristallize-bits)"
     targa-img (id-len 0 1) (type 2 1) (spec 8 10)
     (id +targa-img-header-size+) (colormap-spec 3 5))
 
-(defclass tga (pixmap-file) ())
+(defclass tga (pixmap-file)
+  ()
+  (:documentation "A file in TARGA bitmap format"))
 
 (defmethod initialize-instance :after ((object tga) &key (path nil) &allow-other-keys)
   (when path
