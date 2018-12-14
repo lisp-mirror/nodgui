@@ -256,8 +256,8 @@
              (format stream "process_buffer~%")
              (dbg "process_buffer~%"))
             (t
-             (format stream "bt {~D }~%" len)
-             (dbg "bt {~D }~%" len)
+             ;; (format stream "bt {~D }~%" len)
+             ;; (dbg "bt {~D }~%" len)
              (dolist (string buffer)
                (format stream "bt \"~A~%\"~%" (tkescape2 string))
                (dbg "bt \"~A\"~%" (tkescape2 string)))

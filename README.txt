@@ -108,6 +108,13 @@
            `"<Alt-q>"' (a string), the macro will parse and check for
            trivial errors in the event definition syntax at compile
            time.
+           ┌────
+           │ (cl-syntax:use-syntax nodgui-event-syntax) ; do not forget that!
+           │
+           │ [...]
+           │
+           │ (bind *tk* #$<Alt-q>$ (lambda (event) ...
+           └────
 
            /Please note that a string is still accepted as event
            specifier./

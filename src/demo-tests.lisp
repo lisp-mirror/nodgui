@@ -19,6 +19,8 @@
 
 (cl-syntax:use-syntax nodgui-event-syntax)
 
+(cl-syntax:use-syntax nodgui-color-syntax)
+
 (defun demo ()
   (with-nodgui (:debug-tcl nil)
     (let* ((widget          (make-instance 'button
@@ -660,10 +662,10 @@
         (let ((aabb-rotated-text (canvas-item-bbox canvas rotated-text)))
           (itemmove     canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0))
         (create-text    canvas 0 0  "Slices of the pie are clickable")
-        (item-configure canvas arc1 "fill" "#ff0000")
-        (item-configure canvas arc2 "fill" "#00ff00")
-        (item-configure canvas arc1 "tag" "red")
-        (item-configure canvas arc2 "tag" "green")
+        (item-configure canvas arc1 "fill"  #%red%)    ;; using x11-colors via cl-colors2
+        (item-configure canvas arc2 "fill"  "#00ff00") ;; strings are accepted, though
+        (item-configure canvas arc1 "tag"   "red")
+        (item-configure canvas arc2 "tag"   "green")
         (tag-bind       canvas      "red"   #$<ButtonPress-1>$ #'bind-red)
         (tag-bind       canvas      "green" #$<ButtonPress-1>$ (bind-green canvas ball))
         (item-move-to   canvas ball (* size 9/10) (* size 9/10))
@@ -676,6 +678,7 @@
       (setf (command b)
             #'(lambda ()
                 (let ((file (get-open-file :filetypes '(("PNG"     "*.png")
+                                                        ("JPG"     "*.jpg")
                                                         ("TGA"     "*.tga")
                                                         ("RGB raw" "*.data")))))
                   (with-open-file (stream file :element-type '(unsigned-byte 8))
@@ -688,6 +691,9 @@
                                                                       2.0 2.1)
                                                       30.0
                                                       :repeat t)))
+                           (setf (image b) (make-image bitmap))))
+                        ((cl-ppcre:scan "jpg$" file)
+                         (let ((bitmap (slurp-pixmap 'jpeg file)))
                            (setf (image b) (make-image bitmap))))
                         (t
                          (let ((w (input-box "Pixel width?"

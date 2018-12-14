@@ -68,7 +68,8 @@
            :round-all
            :->f
            :rad->deg
-           :deg->rad))
+           :deg->rad
+           :nodgui-color-syntax))
 
 (defpackage :nodgui.base64
   (:use :cl
@@ -144,7 +145,9 @@
    :sync-bits-to-data
    :sync-data-to-bits
    :tga
+   :jpeg
    :slurp-pixmap
+   :load-from-stream
    :h-mirror
    :v-mirror
    :scale-nearest

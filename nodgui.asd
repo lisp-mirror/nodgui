@@ -33,6 +33,7 @@
                :clunit2
                :cl-colors2
                :cl-syntax
+               :cl-jpeg
                :bordeaux-threads
                #-asdf3 :uiop)
   :components ((:file "package")

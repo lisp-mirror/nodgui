@@ -26,6 +26,8 @@
 
 (alexandria:define-constant +targa-stream-element-type+ '(unsigned-byte 8) :test 'equalp)
 
+(alexandria:define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
+
 (defclass pixmap ()
   ((data
     :initarg :data
@@ -664,14 +666,14 @@ from file: 'file'"
                  `(rotatef (elt bits ,a) (elt bits ,b))))
       (cond
         ((= origin +targa-img-scanline-topleft+)
+         t)
+        ((= origin +targa-img-scanline-bottomleft+)
          (let ((scanline-length (* depth width)))
            (loop for y from 0 below (floor (/ height 2)) do
                 (loop for x from 0 below scanline-length do
                      (let ((sup (+ x (* y scanline-length)))
                            (inf (+ (* (- (1- height) y) scanline-length) x)))
                        (swap-bits sup inf))))))
-        ((= origin +targa-img-scanline-bottomleft+)
-         t)
         (t
          (push "scanline origin not-supported, top-left or bottom-left only are allowed"
                (errors object))
@@ -738,3 +740,37 @@ from file: 'file'"
     (vector-push-extend (char-code #\.) results)
     (vector-push-extend #x0 results)
     results)))
+
+(defclass jpeg (pixmap-file)
+  ()
+  (:documentation "A pixmap stored in JPG format"))
+
+(defmethod initialize-instance :after ((object tga) &key (path nil) &allow-other-keys)
+  (when path
+    (pixmap-load object path)))
+
+(defmethod pixmap-load ((object jpeg) (file string))
+  (with-open-file (stream file
+                          :element-type      +jpeg-stream-element-type+
+                          :if-does-not-exist :error)
+    (load-from-stream object stream)))
+
+(defmethod load-from-stream ((object jpeg) (stream stream))
+  (with-accessors ((data   data)
+                   (width  width)
+                   (height height)) object
+    (multiple-value-bind (raw-data image-h image-w)
+        (cl-jpeg:decode-stream stream)
+      (let ((new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
+        (loop ; add alpha channel and swap BGR -> RGB
+           for i from 0 below (length raw-data) by 3
+           for j from 0 below (length new-data) by 1 do
+             (setf (elt new-data j)
+                   (ubvec4 (elt raw-data (+ i 2))
+                           (elt raw-data (+ i 1))
+                           (elt raw-data i))))
+      (setf data   new-data
+            width  image-w
+            height image-h)
+      (sync-data-to-bits object)
+      object))))

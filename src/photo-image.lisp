@@ -71,25 +71,28 @@
                                 (name res)
                                 encoded))))
         (t ; raw image data
-         (format-wish (tclize `(senddatastring [ ,(name res) " "
-                                               put
-                                               ,(make-image-data data w h channels)
-                                               ]))))))
+         (let ((*max-line-length* nil))
+           (with-atomic
+               (format-wish (tclize `(senddatastring [ ,(name res) " "
+                                                     put
+                                                     ,(make-image-data data w h channels)
+                                                     ]))))))))
     res))
 
 (defmethod make-image ((object pixmap) &optional (w nil) (h nil) (channels 4))
   (declare (ignore w h channels))
-  (h-mirror object)
   (sync-data-to-bits object)
   (let* ((res (make-instance 'photo-image)))
-    (format-wish (tclize `(senddatastring [ ,(name res) " "
-                                          put
-                                          ,(make-image-data (bits   object)
-                                                            (width  object)
-                                                            (height object)
-                                                            3
-                                                            :column-offset 4)
-                                          ])))
+    (let ((*max-line-length* nil))
+      (with-atomic
+          (format-wish (tclize `(senddatastring [ ,(name res) " "
+                                                put
+                                                ,(make-image-data (bits   object)
+                                                                  (width  object)
+                                                                  (height object)
+                                                                  3
+                                                                  :column-offset 4)
+                                                ])))))
     res))
 
 (defgeneric image-load (p filename))
