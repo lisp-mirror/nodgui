@@ -28,6 +28,9 @@
 
 (alexandria:define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
 
+(defun make-bits-array (size)
+  (make-fresh-array size 0 '(unsigned-byte 8) t))
+
 (defclass pixmap ()
   ((data
     :initarg :data
@@ -57,11 +60,13 @@
     responsibility that this  value's slot matches the  length of each
     element of the slot 'data'")
    (bits
-    :initform (make-array-frame 0)
+    :initform (make-bits-array 0)
     :accessor bits
     :initarg :bits
     :documentation "This  is the same  of 'data'  slots but as  a flat
-    vector (ex: #(RGBA R_1G_2B_1 ...))"))
+    vector  (ex: #(RGBA  R_1G_2B_1 ...))   Notes that  this must  be a
+    simple-array of (unsigned-byte 8), use 'make-bits-array' to ensure
+    that this vector has the correct type."))
   (:documentation "This  class represent a  pixmap image, a  matrix of
    pixel element, each pixel's value is described by a variable number
    of color  channel; in the  RGB spaces the  color is described  by a
@@ -406,20 +411,13 @@ range (0-1.0]), scaling use nearest-neighbor."
 (defmethod sync-data-to-bits ((object pixmap))
   "Fill 'bits' slot of this pixmap  with the contents of 'data' slots"
   (with-accessors ((data data) (bits bits) (depth depth)) object
-   (unwind-protect
-        (progn
-          (if (/= (length data) (* depth (length bits)))
-              (progn
-                (setf bits (make-array-frame 0))
-                (loop for pixel across data do
-                     (loop for channel across pixel do
-                          (vector-push-extend channel bits))))
-              (loop for pixel-count from 0 below (length data) do
-                   (loop for channel-count from 0 below depth do
-                        (setf (elt bits (+ (* pixel-count depth) channel-count))
-                              (elt (elt data pixel-count) channel-count))))))
-     object)))
-
+    (when (/= (length data) (* depth (length bits)))
+      (setf bits (make-bits-array (* (length data) depth))))
+    (loop for pixel-count from 0 below (length data) do
+         (loop for channel-count from 0 below depth do
+              (setf (elt bits (+ (* pixel-count depth) channel-count))
+                    (elt (elt data pixel-count) channel-count))))
+    object))
 
 (defmethod sync-bits-to-data ((object pixmap))
   "Fill 'data' slot of this pixmap  with the contents of 'bits' slots"

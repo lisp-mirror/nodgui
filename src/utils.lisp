@@ -31,10 +31,12 @@
   (format nil "~a" v))
 
 (defun strcat (&rest chunks)
-  (the string (apply #'concatenate (concatenate 'list (list 'string) chunks))))
+  (strcat* chunks))
 
 (defun strcat* (chunks)
-  (reduce #'(lambda (a b) (concatenate 'string a b)) chunks))
+  (with-output-to-string (stream)
+    (loop for i in chunks do
+         (write-sequence i stream))))
 
 (defun strip-prefix (string prefix)
   (let ((re (strcat "^" prefix)))

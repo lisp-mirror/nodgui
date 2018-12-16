@@ -33,51 +33,43 @@
   (setf (name p) (create-name))
   (format-wish "image create photo ~a" (name p)))
 
-(defun make-image-data (data w h channels &key (column-offset channels))
+(defgeneric make-image (data &optional w h channels))
+
+(defun make-image-data (data-bits w h channels &key (column-offset channels))
  " (make-image-data #( 1  2  3   4  5  6  7  8  9
                       10 11 12  13 14 15 16 17 18)
                     3 2 3)
    ===> [list [list #010203 #040506 #070809 ] [list #0A0B0C #0D0E0F #101112 ] ]"
+ (declare (optimize (speed 3) (safety 0)))
+ (declare ((simple-array (unsigned-byte 8)) data-bits))
+ (declare (fixnum w h channels column-offset))
  (let ((*suppress-newline-for-tcl-statements* t)
-        (raw-width                            (* column-offset w)))
-    (tclize `([list
-              ,(loop for r from 0 below h collect
-                    (tclize `([list ,(loop
-                                        for c from 0 below raw-width by column-offset
-                                        collect
-                                          (let ((res "#"))
-                                            (loop for i from 0 below channels do
-                                                 (let ((pix-color (elt data
-                                                                       (+ (* r w
-                                                                             column-offset)
-                                                                          c i))))
-                                                   (setf res (strcat res
-                                                                     (format nil "~2,'0x"
-                                                                             pix-color)))))
-                                            (tclize (strcat res " "))))
-                                    ])))
-              ]))))
-
-(defgeneric make-image (data &optional w h channels))
-
-(defmethod make-image ((data vector) &optional (w nil) (h nil) (channels 3))
-  (let* ((res (make-instance 'photo-image)))
-    (when data
-      (cond
-        ((or (pngp data)
-             (gifp data))
-         (let ((encoded (nodgui.base64:encode data)))
-           (format-wish (format nil (tcl-str (~a put {~a}))
-                                (name res)
-                                encoded))))
-        (t ; raw image data
-         (let ((*max-line-length* nil))
-           (with-atomic
-               (format-wish (tclize `(senddatastring [ ,(name res) " "
-                                                     put
-                                                     ,(make-image-data data w h channels)
-                                                     ]))))))))
-    res))
+       (raw-width                             (the fixnum (* column-offset w)))
+       (row-list                              (make-fresh-array (* w (+ (* channels 2)
+                                                                        2))
+                                                                #\a
+                                                                'character
+                                                                nil)))
+   (declare (fixnum raw-width))
+   (flet ((make-row (r)
+            (declare (fixnum r))
+            (setf (fill-pointer row-list) 0)
+            (with-output-to-string (stream row-list)
+              (loop
+                 for c fixnum from 0 below raw-width by column-offset do
+                   (write-char #\# stream)
+                   (loop for i fixnum from 0 below channels do
+                        (let ((pix-color (elt data-bits
+                                              (+ (* r w
+                                                    column-offset)
+                                                 c i))))
+                          (format stream "~2,'0x" pix-color)))
+                   (write-char #\Space stream))
+              row-list)))
+     (tclize `([list
+               ,(loop for r from 0 below h collect
+                     (tclize `([list ,(make-row r) ])))
+               ])))))
 
 (defmethod make-image ((object pixmap) &optional (w nil) (h nil) (channels 4))
   (declare (ignore w h channels))

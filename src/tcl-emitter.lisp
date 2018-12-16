@@ -107,23 +107,23 @@
                    (string #\Newline)))
 
   (defmethod ->tcl ((code list))
-      (cond
-        ((eq (first code) +to-lisp-mode+)
-         (list (lambda () (%evl code))))
-        ((eq (first code)  +to-tcl-group+)
-         (list (lambda () (stringify-all (flatten (->tcl (rest code)))))))
-        ((eq (first code) +to-tcl-if-mode+)
-         ;; (:if test pass fail)
-         (list (lambda ()
-                 (stringify-all
-                  (flatten (list (->tcl 'if)
-                                 (->tcl `({ ,(stringify-all (->tcl (second code))) } {))
-                                 (->tcl `(,(stringify-all (->tcl (third code)))))
-                                 (->tcl '(} else {))
-                                 (->tcl `(,(stringify-all (->tcl (fourth code))) }))))))))
-        (t
-         (->tcl (make-tcl/list :data (append code (and (not *suppress-newline-for-tcl-statements*)
-                                                       (list (string #\Newline)))))))))
+    (cond
+      ((eq (first code) +to-lisp-mode+)
+       (list (lambda () (%evl code))))
+      ((eq (first code)  +to-tcl-group+)
+       (list (lambda () (stringify-all (flatten (->tcl (rest code)))))))
+      ((eq (first code) +to-tcl-if-mode+)
+       ;; (:if test pass fail)
+       (list (lambda ()
+               (stringify-all
+                (flatten (list (->tcl 'if)
+                               (->tcl `({ ,(stringify-all (->tcl (second code))) } {))
+                               (->tcl `(,(stringify-all (->tcl (third code)))))
+                               (->tcl '(} else {))
+                               (->tcl `(,(stringify-all (->tcl (fourth code))) }))))))))
+      (t
+       (->tcl (make-tcl/list :data (append code (and (not *suppress-newline-for-tcl-statements*)
+                                                     (list (string #\Newline)))))))))
 
   (defmethod ->tcl ((code (eql nil)))
     (list (lambda () "")))

@@ -137,6 +137,7 @@
         :nodgui.ubvec4
         :nodgui.vec2)
   (:export
+   :make-bits-array
    :pixmap
    :width
    :height
