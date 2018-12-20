@@ -21,9 +21,10 @@
   (format-wish "senddatastring [tk_chooseColor ~@[ -parent ~A~]~@[ -title {~A}~]~@[ -initialcolor {~A}~]]" (when parent (widget-path parent)) title initialcolor)
   (read-data))
 
-(defun get-open-file (&key (filetypes '(("All Files" "*")))
-                           (initialdir (namestring *default-pathname-defaults*))
-                           multiple parent title)
+(defun get-open-file (&key
+                        (filetypes '(("All Files" "*")))
+                        (initialdir "")
+                        multiple parent title)
   (let ((files
         (with-output-to-string (s)
           (format s "{")
@@ -45,7 +46,11 @@
                       (and parent (widget-path parent)) title))
     (read-data)))
 
-(defun get-save-file (&key (filetypes '(("All Files" "*"))))
+(defun get-save-file (&key
+                        (filetypes '(("All Files" "*")))
+                        (title      "")
+                        (parent     nil)
+                        (initialdir ""))
   (let ((files
         (with-output-to-string (s)
           (format s "{")
@@ -54,7 +59,13 @@
                   (wildcard (second type)))
               (format s "{{~a} {~a}} " name wildcard)))
           (format s "}"))))
-    (format-wish "senddatastring [tk_getSaveFile -filetypes ~a]" files)
+    (format-wish (tclize `(senddatastring ["tk_getSaveFile "
+                                          -filetypes  ,files " "
+                                          -title      {+ ,title } " "
+                                          -parent     ,(if parent
+                                                           (widget-path parent)
+                                                           (widget-path *tk*)) " "
+                                          -initialdir {+ ,initialdir }])))
     (read-data)))
 
 (defun choose-directory (&key (initialdir (namestring *default-pathname-defaults*))

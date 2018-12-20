@@ -16,9 +16,6 @@
 
 (in-package :nodgui)
 
-(defvar *tk* (make-instance 'widget :name "." :path ".")
-  "dummy widget to access the tk root object")
-
 ;;; tcl -> lisp: puts "$x" mit \ und " escaped
 ;;;  puts [regsub {"} [regsub {\\} $x {\\\\}] {\"}]
 

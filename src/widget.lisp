@@ -76,6 +76,9 @@ giving the path of tkobjects."
   (when grid
     (apply #'grid w grid)))
 
+(defvar *tk* (make-instance 'widget :name "." :path ".")
+  "dummy widget to access the tk root object")
+
 ;;; busy functions
 
 (defgeneric busy-hold (toplevel))
