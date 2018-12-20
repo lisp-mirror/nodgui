@@ -17,20 +17,27 @@
 (in-package :nodgui)
 
 (defargs spinbox ()
-  cursor
-  state
-  style
-  takefocus
-  validate
-  validatecommand
-  xscrollcommand
+  class
   command
+  cursor
   format
   from
   increment
+  state
+  style
+  takefocus
   to
+  validate
+  validatecommand
   values
-  wrap)
+  wrap
+  xscrollcommand
+  exportselection
+  invalidcommand
+  justify
+  show
+  textvariable
+  width)
 
 (defwrapper spinbox (tktextvariable widget) () "ttk::spinbox")
 
