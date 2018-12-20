@@ -103,8 +103,22 @@
 
            You can easly understand what all the options above are for.
 
+  How can I access the root window?
+               The root window is bound to the special variable `*tk*'.
+
+  I have  a bunch of widgets  placed in a  grid and I want  those to scale themselves when the window is resized, there is a way to accomplish this?
+               Sure" Use ~grid-(column|row)-configure.
+
+        ┌────
+        │ (grid-columnconfigure *tk* :all :weight 1)
+        │ (grid-rowconfigure    *tk* :all :weight 1)
+        └────
+
+        You can replace `:all' with a row or column indices to apply
+        this behaviour only to a subset of the columns or rows.
+
   What are the differences between nodgui and LTK?
-        1. A reader macro for events; i.e.  `#$<Alt-q>$' instead of
+        1. A reader macro for events i.e.  `#$<Alt-q>$' instead of
            `"<Alt-q>"' (a string), the macro will parse and check for
            trivial errors in the event definition syntax at compile
            time.
@@ -118,6 +132,7 @@
 
            /Please note that a string is still accepted as event
            specifier./
+
         2. A DSL for TCL code that allow to mix TCL code and lisp
            expression, check for example the following code to create a
            bitmap:

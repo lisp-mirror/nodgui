@@ -87,7 +87,9 @@
       (grid defwidget      4 0 :sticky :nswe)
       (grid demo-canvas    4 1 :sticky :nswe)
       (grid demo-image     4 2 :sticky :nswe)
-      (grid b-quit         5 0 :sticky :nswe :columnspan 3))))
+      (grid b-quit         5 0 :sticky :nswe :columnspan 3)
+      (grid-columnconfigure *tk* :all :weight 1)
+      (grid-rowconfigure    *tk* :all :weight 1))))
 
 (defvar *do-rotate* nil)
 

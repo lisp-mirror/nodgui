@@ -641,19 +641,22 @@ set y [winfo y ~a]
 (defgeneric grid-columnconfigure (widget c o v))
 
 (defmethod grid-columnconfigure (widget column option value)
-  (format-wish "grid columnconfigure ~a ~a -~(~a~) {~a}" (widget-path widget) column option value)
+  (format-wish "grid columnconfigure {~/nodgui::pprint-down/} {~/nodgui::pprint-down/} -~(~a~) {~a}"
+               widget column option value)
   widget)
 
 (defgeneric grid-rowconfigure (widget r o v))
 
 (defmethod grid-rowconfigure (widget row option value)
-  (format-wish "grid rowconfigure ~a ~a -~(~a~) {~a}" (widget-path widget) row option value)
+  (format-wish "grid rowconfigure {~/nodgui::pprint-down/} {~/nodgui::pprint-down/} -~(~a~) {~a}"
+               widget row option value)
   widget)
 
 (defgeneric grid-configure (widget o v))
 
 (defmethod grid-configure (widget option value)
-  (format-wish "grid configure ~a -~(~a~) {~a}" (widget-path widget) option value)
+  (format-wish "grid configure {~/nodgui::pprint-down/} -~(~a~) {~a}"
+               widget option value)
   widget)
 
 (defgeneric grid-forget (widget))
