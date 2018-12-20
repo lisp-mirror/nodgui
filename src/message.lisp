@@ -46,11 +46,11 @@
   (format-wish "senddatastring [tk_messageBox -message \"~a\" -title {~a} -type ~(~a~) -icon ~(~a~)~@[ -parent ~a~]]" (tkescape2 message) title type icon (and parent (widget-path parent)))
   (read-keyword))
 
-(defun ask-yesno(message &key (title "") parent)
+(defun ask-yesno (message &key (title "") parent)
   (equal (message-box message title "yesno" "question" :parent parent) :yes))
 
-(defun ask-okcancel(message &key (title "") parent)
+(defun ask-okcancel (message &key (title "") parent)
   (equal (message-box message title "okcancel" "question" :parent parent) :ok))
 
-(defun do-msg(message &key (title "") parent)
+(defun do-msg (message &key (title "") parent)
   (message-box message title "ok" "info" :parent parent))

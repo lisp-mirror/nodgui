@@ -68,7 +68,7 @@
                                           -initialdir {+ ,initialdir }])))
     (read-data)))
 
-(defun choose-directory (&key (initialdir (namestring *default-pathname-defaults*))
+(defun choose-directory (&key (initialdir "")
                               parent title mustexist)
   (format-wish "senddatastring [tk_chooseDirectory ~@[ -initialdir \"~a\"~]~@[ -parent ~a ~]~@[ -title {~a}~]~@[ -mustexist ~a~]]" (tkescape2 initialdir) (and parent (widget-path parent)) title (and mustexist 1))
   (read-data))

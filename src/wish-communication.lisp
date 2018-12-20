@@ -106,8 +106,7 @@
 ;      (finish-output w))
   (when *debug-tk*
     (apply #'format *trace-output* fmt args)
-    (finish-output *trace-output*)
-    ))
+    (finish-output *trace-output*)))
 
 (defmacro with-atomic (&rest code)
   `(let ((*buffer-for-atomic-output* t))
