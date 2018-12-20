@@ -44,10 +44,9 @@
       nil))
 
 (defmethod (setf value) (val (v check-button))
-  (when (or (equal val 1)
-            (equal val 0))
-    (warn (strcat "Use of 1 and 0 for check-button values is deprecated, "
-                  "use T or NIL. Treating ~A as t")
+  (when (= val 0)
+    (warn (strcat "Use of 0 for check-button values will be treated as true,"
+                  " so the checkbutton state will be \"on\"")
           val))
   (format-wish "global ~a; set ~a {~a}" (name v) (name v) (if val 1 0))
   val)
