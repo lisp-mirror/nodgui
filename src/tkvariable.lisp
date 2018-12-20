@@ -19,9 +19,15 @@
 (defclass tkvariable ()
   ())
 
-(defmethod initialize-instance :around ((v tkvariable) &key)
+(defmethod initialize-instance :around ((v tkvariable)
+                                        &key
+                                        (initial-value nil)
+                                          &allow-other-keys)
   (call-next-method)
-  (format-wish "~a configure -variable ~a ; global ~a ; set ~a {}" (widget-path v) (name v) (name v) (name v)))
+  (format-wish "~a configure -variable ~a ; global ~a ; set ~a {}"
+               (widget-path v) (name v) (name v) (name v))
+  (when initial-value
+    (setf (value v) initial-value)))
 
 (defmethod value ((v tkvariable))
   (format-wish "global ~a; senddata $~a" (name v) (name v))
