@@ -1267,6 +1267,7 @@
            :grab-release
            :busy-hold
            :busy-forget
+           :with-busy
            :grid
            :grid-columnconfigure
            :grid-configure

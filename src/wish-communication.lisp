@@ -16,6 +16,8 @@
 
 (in-package :nodgui)
 
+(alexandria:define-constant +arg-toplevel-name+ "-name" :test #'string=)
+
 (defun do-execute (program args &optional (waitp nil))
   "execute program with args a list containing the arguments passed to the program
    if waitp is non-nil, the function will wait for the execution of the program to return.
@@ -60,7 +62,6 @@
 (defmethod (setf wish-variable) (val name (wish nodgui-connection))
   (setf (gethash name (wish-variables wish)) val))
 
-
 (defmacro with-nodgui-handlers (() &body body)
   `(funcall (wish-call-with-condition-handlers-function *wish*)
             (lambda () ,@body)))
@@ -91,10 +92,15 @@
 (defvar *trace-tk* nil)
 
 (defvar *wish-pathname*
-  #+freebsd "wish8.5"
+  #+freebsd "wish8.6"
   #-freebsd "wish")
 
-(defvar *wish-args* '("-name" "NODGUI"))
+(defparameter *default-toplevel-title* "NODGUI")
+
+(defvar *wish-args* '())
+
+(defun append-wish-args (other-args)
+  (append *wish-args* other-args))
 
 (defvar *init-wish-hook* nil)
 

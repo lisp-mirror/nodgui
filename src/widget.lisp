@@ -157,6 +157,12 @@ giving the path of tkobjects."
   (format-wish (tclize `(tk busy forget ,(widget-path toplevel))))
   toplevel)
 
+(defmacro with-busy ((widget) &body body)
+  `(progn
+     (busy-hold ,widget)
+     ,@body
+     (busy-forget ,widget)))
+
 ;;; with-widget stuff
 
 (defargs widget ()

@@ -986,7 +986,8 @@ tk input to terminate"
 
 ;;; wrapper macro - initializes everything, calls body and then mainloop
 
-(defmacro with-nodgui ((&rest keys &key (debug 2) stream serve-event &allow-other-keys)
+(defmacro with-nodgui ((&rest keys
+                              &key (title "") (debug 2) stream serve-event &allow-other-keys)
                     &body body)
   "Create a new Nodgui connection, evaluate BODY, and enter the main loop.
 
@@ -1000,7 +1001,9 @@ tk input to terminate"
   BODY.
 
   If :STREAM is non-NIL, it should be a two-way stream connected to a running
-  wish.  This will be used instead of running a new wish."
+  wish.  This will be used instead of running a new wish.
+
+  With :title you can set the title of this window"
   (declare (ignore debug serve-event stream))
   `(call-with-nodgui (lambda () ,@body) ,@keys))
 
@@ -1015,7 +1018,10 @@ tk input to terminate"
                                        keys)
                           (list :debugger-class (debug-setting-condition-handler debug)))))
          (mainloop () (apply #'mainloop (filter-keys '(:serve-event) keys))))
-    (let ((*wish* (make-nodgui-connection :remotep remotep)))
+    (let* ((*default-toplevel-title* (getf keys :title "notitle"))
+           (*wish-args*              (append-wish-args (list +arg-toplevel-name+
+                                                             *default-toplevel-title*)))
+           (*wish*                   (make-nodgui-connection :remotep remotep)))
       (catch *wish*
         (unwind-protect
              (progn
