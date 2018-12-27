@@ -33,7 +33,6 @@
   width
   xscrollcommand)
 
-
 (defwrapper entry (tktextvariable widget) () "ttk::entry")
 
 (defun entry-select (e from to)
