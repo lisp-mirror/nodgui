@@ -1263,6 +1263,7 @@
            :force-focus
            :forget-pane
            :format-wish
+           :format-wish-escape-tilde
            :frame
            :geometry
            :get-open-file

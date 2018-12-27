@@ -92,14 +92,15 @@ can be passed to AFTER-CANCEL"
 
 (defun create-name ()
   "create unique widget name, append unique number to 'w'"
-  (format nil "w~A" (encode-base-52 (get-counter))))
+  (format nil "n~a" (encode-base-52 (get-counter))))
 
 (defun create-path (master name)
   "create pathname from master widget <master> and widget name <name>"
-  (let ((master-path (if (or (null master) (eql master *tk*))
+  (let ((master-path (if (or (null master)
+                             (eql master *tk*))
                          ""
                          (widget-path master))))
-    (format nil "~A.~A" master-path name)))
+    (format nil "~a.~a" master-path name)))
 
 
 #+nil(defmacro defargs (class parents &rest defs)
