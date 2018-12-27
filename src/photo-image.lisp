@@ -29,9 +29,16 @@
 (defmethod widget-path ((photo photo-image))
   (name photo))
 
-(defmethod initialize-instance :after ((p photo-image) &key &allow-other-keys)
-  (setf (name p) (create-name))
-  (format-wish "image create photo ~a" (name p)))
+(defmethod initialize-instance :after ((object photo-image) &key &allow-other-keys)
+  (with-accessors ((data data)) object
+    (setf (name object) (create-name))
+    (format-wish "image create photo ~a" (name object))
+    (when data
+      (if (stringp data)
+          (format-wish (tclize `(senddatastring [ ,(name object) " " put ,data ])))
+          (format-wish (tclize `(senddatastring [ ,(name object) " " put
+                                                ,(nodgui.base64:encode data)
+                                                ])))))))
 
 (defgeneric make-image (data &optional w h channels))
 
@@ -70,6 +77,26 @@
                ,(loop for r from 0 below h collect
                      (tclize `([list ,(make-row r) ])))
                ])))))
+
+(defmethod make-image ((object vector) &optional (w nil) (h nil) (channels 3))
+  (cond
+    ((or (pngp object)
+         (gifp object))
+     (make-instance 'photo-image
+                    :data (nodgui.base64:encode object)))
+    (t
+     (let ((*max-line-length* nil)
+           (res (make-instance 'photo-image)))
+      (with-atomic
+          (format-wish (tclize `(senddatastring [ ,(name res) " "
+                                                put
+                                                ,(make-image-data object
+                                                                  w
+                                                                  h
+                                                                  channels
+                                                                  :column-offset channels)
+                                                ]))))
+      res))))
 
 (defmethod make-image ((object pixmap) &optional (w nil) (h nil) (channels 4))
   (declare (ignore w h channels))

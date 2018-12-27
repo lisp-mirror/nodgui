@@ -30,6 +30,7 @@
                :cl-ppcre-unicode
                :cl-lex
                :yacc
+               :parse-number
                :clunit2
                :cl-colors2
                :cl-syntax

@@ -309,7 +309,8 @@ can be passed to AFTER-CANCEL"
   (format-wish "~a window create end -window ~a" (widget-path (textbox txt)) (widget-path obj))
   txt)
 
-(defgeneric see (txt pos))
+(defgeneric see (txt pos)
+  (:documentation "Makes sure the widget is visible"))
 
 (defmethod see ((txt scrolled-text) pos)
   (format-wish "~a see ~(~a~)" (widget-path (textbox txt)) pos)
@@ -460,109 +461,6 @@ set y [winfo y ~a]
          (format stream "{~{~/nodgui::tk-princ/~^ ~}}" (mapcar #'tkescape arg)))
         (t
          (format stream "~a" (tkescape arg)))))
-
-(defun treeview-insert (tree &rest options
-                        &key (parent "{}") (index "end") (id (create-name)) &allow-other-keys)
-  "Creates a new item.  Returns its id.  See also the treeitem class."
-  ;; Remove the keys that aren't optional in Tcl.
-  (remf options :parent)
-  (remf options :index)
-  (format-wish "~a insert ~a ~a~{ -~(~a~) ~/nodgui::tk-princ/~}"
-               (widget-path tree)
-               parent
-               index
-               options)
-  #| Note:
-  It is tempting to use senddata/read-data and let Tk allocate an id.
-  BAD IDEA!  Process swapping causes a massive slowdown (observed 100x longer).
-  |#
-  id)
-
-(defun treeview-item (tree item &rest options)
-  "Query or modify the options for the specified item."
-  (cond
-    ((second options) ;; modify
-     (format-wish "~a item ~a~{ -~(~a~) ~/nodgui::tk-princ/~}"
-                  (widget-path tree) item options))
-    (t ;; query
-     (format-wish "senddatastring [~a item ~a ~@[ -~(~a~)~]]"
-                  (widget-path tree) item (car options))
-     (read-data))))
-
-(defun treeview-column (tree column &rest options)
-  "Query or modify the options for the specified column."
-  (cond
-    ((second options) ;; modify
-     (format-wish "~a column ~a~{ -~(~a~) ~/nodgui::tk-princ/~}"
-                  (widget-path tree) column options))
-    (t ;; query
-     (format-wish "senddatastring [~a column ~a ~@[ -~(~a~)~]]"
-                  (widget-path tree) column (car options))
-     (read-data))))
-
-(defun treeview-heading (tree column &rest options
-                         &key command &allow-other-keys
-                         &aux (path (widget-path tree)))
-  "Query or modify the heading options for the specified column."
-  (cond
-    ((second options) ;; modify
-     (when command
-       ;; register the callback
-       (let ((cbname (format nil "~a:~a" path column)))
-         (add-callback cbname command)
-         (setf (getf options :command)
-               (concatenate 'string "{callback " cbname "}"))))
-     (format-wish "~a heading ~a~{ -~(~a~) ~/nodgui::tk-princ/~}"
-                  path column options))
-    (t ;; query
-     (format-wish "senddatastring [~a heading ~a ~@[ -~(~a~)~]]"
-                  path column (car options))
-     (read-data))))
-
-(defun treeview-move (tree item &optional parent index)
-  "Moves item to position index in parent's list of children."
-  (format-wish "~a move ~a ~a ~a"
-               (widget-path tree)
-               item
-               (or parent "{}")
-               (or index "end")))
-
-(defgeneric treeview-get-selection (w))
-
-(defmethod treeview-get-selection ((tv treeview))
-  (format-wish "senddatastrings [~a selection]" (widget-path tv))
-  (let ((names (read-data))
-        (items (items tv)))
-    (mapcar (lambda (name)
-              (find name items :key #'name :test #'equal))
-            names)))
-
-(defgeneric treeview-set-selection (w items))
-
-(defmethod treeview-set-selection ((tv treeview) items)
-  (format-wish "~a selection set {~{~a ~}}" (widget-path tv) (mapcar #'name items)))
-
-(defclass scrolled-treeview (frame)
-  ((treeview :accessor treeview)
-   (hscroll :accessor hscroll)
-   (vscroll :accessor vscroll)))
-
-(defmethod initialize-instance :after ((st scrolled-treeview) &key)
-  (setf (hscroll st) (make-scrollbar st :orientation "horizontal"))
-  (setf (vscroll st) (make-scrollbar st))
-  (setf (treeview st) (make-instance 'treeview :master st :xscroll (hscroll st) :yscroll (vscroll st)))
-  (grid (treeview st) 0 0 :sticky "news")
-  (grid (hscroll st) 1 0 :sticky "we")
-  (grid (vscroll st) 0 1 :sticky "ns")
-  (grid-columnconfigure st 0 :weight 1)
-  (grid-columnconfigure st 1 :weight 0)
-  (grid-rowconfigure st 0 :weight 1)
-  (grid-rowconfigure st 1 :weight 0)
-
-  (configure (hscroll st) "command" (concatenate 'string (widget-path (treeview st)) " xview"))
-  (configure (vscroll st) "command" (concatenate 'string (widget-path (treeview st)) " yview"))
-  (configure (treeview st) "xscrollcommand" (concatenate 'string (widget-path (hscroll st)) " set"))
-  (configure (treeview st) "yscrollcommand" (concatenate 'string (widget-path (vscroll st)) " set")))
 
 ;;;; generic methods on widgets
 
@@ -1004,7 +902,7 @@ tk input to terminate"
   wish.  This will be used instead of running a new wish.
 
   With :title you can set the title of this window"
-  (declare (ignore debug serve-event stream))
+  (declare (ignore debug serve-event stream title))
   `(call-with-nodgui (lambda () ,@body) ,@keys))
 
 (defun call-with-nodgui (thunk &rest keys &key (debug 2) stream serve-event remotep

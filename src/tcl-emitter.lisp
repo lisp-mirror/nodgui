@@ -162,4 +162,9 @@
           (progn ,@body)))
 
   (defmacro tclize (statement)
-    `(stringify-all (flatten (->tcl ,statement)))))
+    `(stringify-all (flatten (->tcl ,statement))))
+
+  (defmacro tclize-if-true (value statement)
+    `(if ,value
+         (tclize ,statement)
+         "")))

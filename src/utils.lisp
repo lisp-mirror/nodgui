@@ -186,8 +186,8 @@
     nil))
 
 (defmacro gen-check-magic-number (name &rest magic)
-  `(defun ,(format-fn-symbol t "~ap" name) (stream)
-     (check-magic-number stream ,@magic)))
+  `(defun ,(format-fn-symbol t "~ap" name) (data)
+     (check-magic-number data ,@magic)))
 
 (gen-check-magic-number png +png-magic-number+)
 
@@ -227,6 +227,18 @@
     (:dispatch-macro-char #\# #\% #'read-color-macro))
 
   (cl-syntax:use-syntax nodgui-color-syntax))
+
+(defun safe-parse-number (number &key (fix-fn #'(lambda (e) (declare (ignore e)) nil)))
+  (handler-bind ((parse-error
+                  #'(lambda(e)
+                      (return-from safe-parse-number (funcall fix-fn e))))
+                 (parse-number:invalid-number
+                  #'(lambda(e)
+                      (return-from safe-parse-number (funcall fix-fn e)))))
+    (if (or (not (stringp number))
+            (string= number "-"))
+        nil
+        (parse-number:parse-number number))))
 
 (defparameter *default-epsilon* 1e-7)
 
@@ -322,3 +334,16 @@
 
 (defun deg->rad (deg)
   (/ (* deg 2 pi) 360.0))
+
+(define-constant +valid-tcl-truth-values+ '("yes" "true") :test #'equalp)
+
+(defun lisp-bool->tcl (val)
+  (if val 1 0))
+
+(defgeneric tcl-bool->lisp (val))
+
+(defmethod tcl-bool->lisp ((val integer))
+  (/= val 0))
+
+(defmethod tcl-bool->lisp ((val string))
+  (find val +valid-tcl-truth-values+ :test #'string=))

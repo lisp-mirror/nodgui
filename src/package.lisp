@@ -55,6 +55,7 @@
            :gifp
            :jpgp
            :rgb->tk
+           :safe-parse-number
            :*default-epsilon*
            :with-epsilon
            :add-epsilon-rel
@@ -69,7 +70,9 @@
            :->f
            :rad->deg
            :deg->rad
-           :nodgui-color-syntax))
+           :nodgui-color-syntax
+           :lisp-bool->tcl
+           :tcl-bool->lisp))
 
 (defpackage :nodgui.base64
   (:use :cl
@@ -1098,6 +1101,7 @@
            :tcl
            :tcl-str
            :tclize
+           :tclize-if-true
            :defproc
            :with-flush-server
            :for-list))
@@ -1441,19 +1445,38 @@
            :phase
            :separator
            :sizegrip
+           :+treeview-root+
+           :+treeview-first-column-id+
+           :tree-item
+           :id
+           :tree
+           :index
+           :parent
+           :tag
+           :column-values
            :treeview
            :treeview-delete
+           :treeview-delete-all
            :column-configure
            :children
            :treeview-focus
            :treeview-exists
-           :dictionary-plist
+           :insert-item
            :treeview-insert
            :treeview-item
            :treeview-column
            :treeview-heading
            :treeview-move
+           :with-inner-treeview
+           :scrolled-treeview
+           :treeview-get-selection
+           :treeview-identify
+           :treeview-identify-item
+           :treeview-set-selection
+           :treeview-insert-item
+           :setup-columns
            :treeitem
+           :dictionary-plist
            :self
            :reset-scroll
            :scroll-to-top
@@ -1463,11 +1486,6 @@
            :column-values
            :listbox-insert
            :font-families
-           :scrolled-treeview
-           :treeview-get-selection
-           :treeview-identify
-           :treeview-identify-item
-           :treeview-set-selection
            :items
            :image
            :demo))

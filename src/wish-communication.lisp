@@ -427,7 +427,7 @@ event to read and blocking is set to nil"
                (read-preserving-whitespace wstream nil nil)))
             no-event-value))))
 
-(defun read-data ()
+(defun read-data (&key (expected-list-as-data nil))
   "Read data from wish. Non-data events are postponed, bogus messages (eg.
 +error-strings) are ignored."
   (loop
@@ -440,9 +440,13 @@ event to read and blocking is set to nil"
           (return nil))
          ((eq (first data) :data)
           (dbg "read-data: ~s~%" data)
-          (return (second data)))
+          (if expected-list-as-data
+              (return (rest data))
+              (return (second data))))
          ((eq (first data) :debug)
-          (tcldebug (second data)))
+          (if expected-list-as-data
+              (tcldebug (rest data))
+              (tcldebug (second data))))
          ((find (first data) #(:event :callback :keepalive))
           (dbg "postponing event: ~s~%" data)
           (setf (wish-event-queue *wish*)
