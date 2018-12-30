@@ -77,8 +77,8 @@ Widgets offered are:
 
 (defgeneric clear-history (entry))
 
-(defmethod add-history ((entry history-entry) txt)
-  (if (> (length txt) 0)
+(defmethod add-history ((entry history-entry) (txt string))
+  (when (> (length txt) 0)
       (push txt (history entry)))
   (setf (history-pos entry) -1))
 
@@ -103,8 +103,7 @@ Widgets offered are:
             (incf (history-pos entry))
             (let ((val (nth (history-pos entry) (history entry))))
             (when val
-              (setf (text entry) val)
-                    )))))
+              (setf (text entry) val))))))
   (bind entry #$<KeyPress-Down>$
         (lambda (event)
           (declare (ignore event))
@@ -113,10 +112,9 @@ Widgets offered are:
                 (decf (history-pos entry))
                 (if (>= (history-pos entry) 0)
                     (setf (text entry) (nth (history-pos entry) (history entry)))
-                  (setf (text entry) "")))
+                    (setf (text entry) "")))
             (progn
               (setf (text entry) "")))))
-
   (when command
     (setf (command entry) command)))
 
@@ -533,6 +531,10 @@ Widgets offered are:
     :accessor remove-non-matching-p
     :initform t
     :initarg :remove-non-matching-p)
+   (matching-fn
+    :initform #'cl-ppcre:scan
+    :initarg  :matching-fn
+    :accessor matching-fn)
    (displayed
     :accessor displayed
     :initform nil
@@ -551,7 +553,8 @@ Widgets offered are:
     (t)))
 
 (defmethod update-search ((lb searchable-listbox) searchstring)
-  (with-accessors ((listbox listbox)) lb
+  (with-accessors ((listbox     listbox)
+                   (matching-fn matching-fn)) lb
     (let ((data    (get-searchable-listbox-data lb)))
       (cond
         ((= (length searchstring) 0)
@@ -564,7 +567,7 @@ Widgets offered are:
         (t
          (let ((results (remove-if-not (lambda (item)
                                          (nodgui.conditions:with-default-on-error (t)
-                                             (cl-ppcre:scan searchstring item)))
+                                             (funcall matching-fn searchstring item)))
                                        (data lb))))
          (cond
            ((remove-non-matching-p lb)
@@ -600,11 +603,26 @@ Widgets offered are:
                                (update-search lb (text entry))))
     (focus entry)))
 
+(defmethod listbox-clear ((object searchable-listbox))
+  (with-accessors ((listbox listbox)
+                   (data    data)) object
+    (listbox-clear listbox)
+    (setf data nil)
+    object))
+
+(defmethod listbox-append ((object searchable-listbox) (values list))
+  (with-accessors ((listbox listbox)
+                   (data    data)) object
+    (listbox-append listbox values)
+    (setf data (append data values))
+    object))
+
 (defun searchable-listbox-demo ()
   (with-nodgui ()
     (pack (make-instance 'searchable-listbox
                          :data (loop for i from 1 to 100
-                                     collect (format nil "Nummer: ~d" i))
+                                  collect (format nil "Nummer: ~d" i))
+                         :matching-fn #'cl-ppcre:scan ; just to show the initarg
                          :remove-non-matching-p nil)
           :fill :both :expand t)))
 

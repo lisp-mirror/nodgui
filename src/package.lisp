@@ -1500,6 +1500,7 @@
    :redraw-on-resize
    :history-entry
    :history
+   :add-history
    :clear-history
    :treelist
    :treelist-has-children
@@ -1520,6 +1521,7 @@
    :list-select-display
    :selected-elements
    :searchable-listbox
+   :matching-fn
    :selected-index
    :entry))
 
