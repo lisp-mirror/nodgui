@@ -95,6 +95,8 @@
 
 (defgeneric iconwindow (toplevel win-id))
 
+(defgeneric icon-photo (object photo))
+
 (defgeneric set-wm-attrib (toplevel attributes))
 
 (defmethod resizable ((tl widget) x y)
@@ -226,6 +228,11 @@
 (defmethod icon-window ((tl toplevel) win-id)
   (format-wish "wm iconwindow ~a ~a" (widget-path tl) (widget-path win-id))
   tl)
+
+(defmethod icon-photo ((object widget) (photo photo-image))
+  (format-wish (tclize `(wm iconphoto ,(widget-path object) " "
+                            -default  ,(widget-path photo))))
+  object)
 
 (defmethod set-wm-attrib ((toplevel toplevel) (attributes wm-attrib))
   (set-wm-attrib (widget-path toplevel) attributes))

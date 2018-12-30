@@ -1282,6 +1282,7 @@
            :iconify
            :iconwindow
            :icon-window
+           :icon-photo
            :wm-attrib
            :wm-attrib-alpha
            :wm-attrib-fullscreen

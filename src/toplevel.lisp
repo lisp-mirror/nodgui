@@ -75,7 +75,8 @@
   (read-data))
 
 (defun window-transient (tl win)
-  "set the transient property of tl to be transient to win or nil"
+  "set the transient property of tl to be transient to win or nil.
+   Please use transient in wm.lisp instead"
   (format-wish "wm transient ~a ~a" (widget-path tl) (if win
                                                          (widget-path win)
                                                          "{}")))
