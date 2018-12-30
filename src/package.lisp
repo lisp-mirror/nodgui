@@ -1424,6 +1424,7 @@
            :with-remote-nodgui
            :with-widgets
            :withdraw
+           :transient
            :wm-forget
            :wm-manage
            :wm-title
@@ -1522,8 +1523,11 @@
    :selected-elements
    :searchable-listbox
    :matching-fn
+   :entry-label
    :selected-index
-   :entry))
+   :entry
+   :search-text
+   :text-input-dialog))
 
 (defpackage :nodgui-user
   (:use :common-lisp :nodgui))

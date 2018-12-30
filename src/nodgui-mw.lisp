@@ -535,6 +535,10 @@ Widgets offered are:
     :initform #'cl-ppcre:scan
     :initarg  :matching-fn
     :accessor matching-fn)
+   (entry-label
+    :initform "Search"
+    :initarg  :entry-label
+    :accessor entry-label)
    (displayed
     :accessor displayed
     :initform nil
@@ -543,6 +547,8 @@ Widgets offered are:
 (defgeneric get-searchable-listbox-data (lb))
 
 (defgeneric update-search (lb string))
+
+(defgeneric search-text (object))
 
 (defmethod get-searchable-listbox-data ((lb searchable-listbox))
   (mapcar (key lb) (data lb)))
@@ -585,23 +591,27 @@ Widgets offered are:
                 (see listbox (car indexes))))))))))))
 
 (defmethod initialize-instance :after ((lb searchable-listbox) &key)
-  (let* ((scrolled (make-instance 'scrolled-listbox :master lb))
-         (listbox (listbox scrolled))
-         (fsearch (make-instance 'frame :master lb))
-         (label (make-instance 'label :master fsearch :text "Search:"))
-         (entry (make-instance 'entry :master fsearch)))
-    (pack scrolled :side :top :fill :both :expand t)
-    (pack fsearch  :side :top :fill :x)
-    (pack label    :side :left)
-    (pack entry    :side :left :fill :x :expand t)
-    (setf (scrolled-listbox lb) scrolled
-          (listbox          lb) listbox
-          (entry            lb) entry)
-    (listbox-append listbox (data lb))
-    (bind entry #$<KeyPress>$ (lambda (event)
-                               (declare (ignore event))
-                               (update-search lb (text entry))))
-    (focus entry)))
+  (with-accessors ((entry-label entry-label)) lb
+    (let* ((scrolled (make-instance 'scrolled-listbox :master lb))
+           (listbox (listbox scrolled))
+           (fsearch (make-instance 'frame :master lb))
+           (label (make-instance 'label :master fsearch :text entry-label))
+           (entry (make-instance 'entry :master fsearch)))
+      (pack scrolled :side :top :fill :both :expand t)
+      (pack fsearch  :side :top :fill :x)
+      (pack label    :side :left)
+      (pack entry    :side :left :fill :x :expand t)
+      (setf (scrolled-listbox lb) scrolled
+            (listbox          lb) listbox
+            (entry            lb) entry)
+      (listbox-append listbox (data lb))
+      (bind entry #$<KeyPress>$ (lambda (event)
+                                  (declare (ignore event))
+                                  (update-search lb (text entry))))
+      (focus entry))))
+
+(defmethod search-text ((object searchable-listbox))
+  (text (entry object)))
 
 (defmethod listbox-clear ((object searchable-listbox))
   (with-accessors ((listbox listbox)
@@ -671,3 +681,33 @@ Widgets offered are:
   (with-nodgui ()
     (let ((f (make-list-select-demo)))
       (pack f :side :top :expand t :fill :both))))
+
+(defun text-input-dialog (parent title message
+                          &key
+                            (button-message "OK")
+                            (padding-x 2)
+                            (padding-y 2))
+  "A trivial dialog that waits for a textual imput from user"
+  (let ((res nil))
+    (with-modal-toplevel (toplevel :title title)
+      (transient toplevel parent)
+      (flet ((close-window-cb (entry)
+               (lambda ()
+                 (setf res (text entry))
+                 (setf *break-mainloop* t))))
+        (let* ((label (make-instance 'label
+                                     :master toplevel
+                                     :text   message))
+               (entry  (make-instance 'entry
+                                      :master toplevel))
+               (button (make-instance 'button
+                                      :text    button-message
+                                      :command (close-window-cb entry)
+                                      :master toplevel)))
+          (bind entry #$<Return>$ (lambda (a)
+                                    (declare (ignore a))
+                                    (funcall (close-window-cb entry))))
+          (grid label  0 0 :sticky :n :padx padding-x :pady padding-y)
+          (grid entry  1 0 :sticky :n :padx padding-x :pady padding-y)
+          (grid button 2 0 :sticky :n :padx padding-x :pady padding-y))))
+    res))

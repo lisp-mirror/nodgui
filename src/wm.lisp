@@ -69,6 +69,8 @@
 
 (defgeneric withdraw (toplevel))
 
+(defgeneric transient (toplevel master))
+
 (defgeneric normalize (toplevel))
 
 (defgeneric iconify (toplevel))
@@ -135,6 +137,12 @@
 (defmethod withdraw ((tl widget))
   (format-wish "wm withdraw ~a" (widget-path tl))
   tl)
+
+(defmethod transient ((toplevel widget) (master widget))
+  (format-wish (tclize `(wm transient ,(widget-path toplevel) " " ,(widget-path master)))))
+
+(defmethod transient ((toplevel widget) (master (eql nil)))
+  (format-wish (tclize `(wm transient ,(widget-path toplevel) " "  \"+ \"))))
 
 (defmethod normalize ((tl widget))
   (format-wish "wm state ~a normal" (widget-path tl))
