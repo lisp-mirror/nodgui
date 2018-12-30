@@ -67,9 +67,26 @@
 
 (defgeneric listbox-get-selection (l))
 
+(defgeneric listbox-get-selection-index (l))
+
+(defgeneric listbox-get-selection-value (l))
+
 (defmethod listbox-get-selection ((l listbox))
+  "please use listbox-get-selection-index; if  you want the *value* of
+   the selection use: listbox-get-selection-index instead"
   (format-wish "senddata \"([~a curselection])\"" (widget-path l))
-  (read-data))
+  (read-data :expected-list-as-data t))
+
+(defmethod listbox-get-selection-index ((object listbox))
+  (format-wish (tclize `(senddata [ ,(widget-path object) " " curselection])))
+  (read-data :expected-list-as-data t))
+
+(defmethod listbox-get-selection-value ((object listbox))
+  (let ((indices (listbox-get-selection-index object)))
+    (loop for i in indices collect
+         (progn
+           (format-wish (tclize `(senddatastrings [ ,(widget-path object) " " get ,i ])))
+           (alexandria:first-elt (read-data))))))
 
 (defgeneric listbox-select (l val))
 
@@ -116,6 +133,10 @@ a list of numbers may be given"
   (format-wish "senddata [~a nearest ~a]" (widget-path l) y)
   (read-data))
 
+(defmethod see ((lb listbox) pos)
+  (format-wish "~a see ~(~a~)" (widget-path lb) pos)
+  lb)
+
 (defclass scrolled-listbox (frame)
   ((listbox :accessor listbox)
    (hscroll :accessor hscroll)
@@ -145,10 +166,12 @@ a list of numbers may be given"
 (defmethod listbox-get-selection ((l scrolled-listbox))
   (listbox-get-selection (listbox l)))
 
+(defmethod listbox-get-selection-index ((object scrolled-listbox))
+  (listbox-get-selection-index (listbox object)))
+
+(defmethod listbox-get-selection-value ((object scrolled-listbox))
+  (listbox-get-selection-value (listbox object)))
+
 (defmethod listbox-select ((l scrolled-listbox) val)
   (listbox-select (listbox l) val)
   l)
-
-(defmethod see ((lb listbox) pos)
-  (format-wish "~a see ~(~a~)" (widget-path lb) pos)
-  lb)

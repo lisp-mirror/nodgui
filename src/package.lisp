@@ -1310,6 +1310,8 @@
            :listbox-delete
            :listbox-configure
            :listbox-get-selection
+           :listbox-get-selection-index
+           :listbox-get-selection-value
            :listbox-nearest
            :listbox-select
            :load-text

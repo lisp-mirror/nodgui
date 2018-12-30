@@ -627,6 +627,19 @@ Widgets offered are:
     (setf data (append data values))
     object))
 
+(defmethod listbox-select ((object searchable-listbox) val)
+  (listbox-select (listbox object) val)
+  object)
+
+(defmethod listbox-get-selection ((object searchable-listbox))
+  (listbox-get-selection (listbox object)))
+
+(defmethod listbox-get-selection-index ((object searchable-listbox))
+  (listbox-get-selection-index (listbox object)))
+
+(defmethod listbox-get-selection-value ((object searchable-listbox))
+  (listbox-get-selection-value (listbox object)))
+
 (defun searchable-listbox-demo ()
   (with-nodgui ()
     (pack (make-instance 'searchable-listbox
