@@ -1,7 +1,24 @@
-[html version]
+                                ━━━━━━━━
+                                 NODGUI
+                                ━━━━━━━━
 
 
-[html version] https://notabug.org/cage/nodgui/raw/master/README.html
+Table of Contents
+─────────────────
+
+1 NODGUI
+2 Dependency
+.. 2.1 Programs
+.. 2.2 Lisp libraries
+3 FAQ
+4 Status
+.. 4.1 Compatibility
+5 Notes
+.. 5.1 Colors Name
+6 License
+
+
+
 
 
 1 NODGUI

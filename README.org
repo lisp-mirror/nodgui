@@ -1,7 +1,6 @@
 #+OPTIONS: html-postamble:nil html-preamble:nil
+#+AUTHOR:
 #+TITLE: NODGUI
-
-[[https://notabug.org/cage/nodgui/raw/master/README.html][html version]]
 
 * NODGUI
 
