@@ -81,6 +81,8 @@
 
 (defgeneric listbox-nearest (listbox y))
 
+(defgeneric listbox-export-selection (object value))
+
 (defmethod listbox-append ((l listbox) values)
   "append values (which may be a list) to the list box"
   (if (listp values)
@@ -150,13 +152,20 @@ a list of numbers may be given"
   (format-wish (tclize `(,(widget-path object) " "
                           configure -selectmode ,(down mode)))))
 
+(defmethod listbox-export-selection ((object listbox) value)
+  (format-wish (tclize `(,(widget-path object) " "
+                          configure -exportselection ,(lisp-bool->tcl value)))))
+
 (defclass scrolled-listbox (frame)
   ((listbox :accessor listbox)
    (hscroll :accessor hscroll)
    (vscroll :accessor vscroll)))
 
 (defmethod initialize-instance :after ((object scrolled-listbox)
-                                       &key (select-mode :browse) &allow-other-keys)
+                                       &key
+                                         (select-mode       :browse)
+                                         (export-selection   nil)
+                                         &allow-other-keys)
   (setf (hscroll object) (make-scrollbar object :orientation "horizontal"))
   (setf (vscroll object) (make-scrollbar object))
   (setf (listbox object) (make-instance 'listbox
@@ -174,6 +183,7 @@ a list of numbers may be given"
   (configure (vscroll object) "command"        (strcat (widget-path (listbox object)) " yview"))
   (configure (listbox object) "xscrollcommand" (strcat (widget-path (hscroll object)) " set"))
   (configure (listbox object) "yscrollcommand" (strcat (widget-path (vscroll object)) " set"))
+  (listbox-export-selection object export-selection)
   (listbox-select-mode object select-mode))
 
 (defmethod listbox-append ((l scrolled-listbox) values)
@@ -195,3 +205,6 @@ a list of numbers may be given"
 
 (defmethod listbox-select-mode ((object scrolled-listbox) (mode symbol))
   (listbox-select-mode (listbox object) mode))
+
+(defmethod listbox-export-selection ((object scrolled-listbox) value)
+  (listbox-export-selection (listbox object) value))

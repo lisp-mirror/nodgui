@@ -594,11 +594,13 @@ Widgets offered are:
                                        &key
                                          (select-mode      :browse)
                                          (placeholder-text nil)
+                                         (export-selection   nil)
                                          &allow-other-keys)
   (with-accessors ((entry-label entry-label)) lb
     (let* ((scrolled (make-instance 'scrolled-listbox
-                                    :master      lb
-                                    :select-mode select-mode))
+                                    :master           lb
+                                    :export-selection export-selection
+                                    :select-mode      select-mode))
            (listbox (listbox scrolled))
            (fsearch (make-instance 'frame :master lb))
            (label (make-instance 'label :master fsearch :text entry-label))
@@ -650,6 +652,9 @@ Widgets offered are:
 
 (defmethod listbox-select-mode ((object searchable-listbox) (mode symbol))
   (listbox-select-mode (listbox object) mode))
+
+(defmethod listbox-export-selection ((object searchable-listbox) value)
+  (listbox-export-selection (listbox object) value))
 
 ;;; autocomple-listbox
 

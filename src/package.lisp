@@ -1315,6 +1315,7 @@
            :listbox-nearest
            :listbox-select
            :listbox-select-mode
+           :listbox-export-selection
            :load-text
            :lower
            :mainloop
