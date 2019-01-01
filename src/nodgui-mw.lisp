@@ -590,9 +590,12 @@ Widgets offered are:
               (when (car indexes)
                 (see listbox (car indexes))))))))))))
 
-(defmethod initialize-instance :after ((lb searchable-listbox) &key)
+(defmethod initialize-instance :after ((lb searchable-listbox)
+                                       &key (select-mode :browse) &allow-other-keys)
   (with-accessors ((entry-label entry-label)) lb
-    (let* ((scrolled (make-instance 'scrolled-listbox :master lb))
+    (let* ((scrolled (make-instance 'scrolled-listbox
+                                    :master      lb
+                                    :select-mode select-mode))
            (listbox (listbox scrolled))
            (fsearch (make-instance 'frame :master lb))
            (label (make-instance 'label :master fsearch :text entry-label))
@@ -639,6 +642,9 @@ Widgets offered are:
 
 (defmethod listbox-get-selection-value ((object searchable-listbox))
   (listbox-get-selection-value (listbox object)))
+
+(defmethod listbox-select-mode ((object searchable-listbox) (mode symbol))
+  (listbox-select-mode (listbox object) mode))
 
 (defun searchable-listbox-demo ()
   (with-nodgui ()

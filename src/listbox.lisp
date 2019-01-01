@@ -17,6 +17,9 @@
 
 (in-package :nodgui)
 
+(alexandria:define-constant +legal-select-mode-values+ '(:single :browse :multiple :extended)
+  :test #'equalp)
+
 (defargs listbox ()
   activestyle
   background
@@ -58,18 +61,32 @@
 
 (defgeneric listbox-append (l vals))
 
-(defmethod listbox-append ((l listbox) values)
-  "append values (which may be a list) to the list box"
-  (if (listp values)
-      (format-wish "~a insert end ~{ \{~a\}~}" (widget-path l) values)
-      (format-wish "~a insert end \{~a\}" (widget-path l) values))
-  l)
+(defgeneric listbox-select (l val))
 
 (defgeneric listbox-get-selection (l))
 
 (defgeneric listbox-get-selection-index (l))
 
 (defgeneric listbox-get-selection-value (l))
+
+(defgeneric listbox-select-mode (object mode))
+
+(defgeneric listbox-clear (l))
+
+(defgeneric listbox-delete (l start &optional end))
+
+(defgeneric listbox-insert (l index values))
+
+(defgeneric listbox-configure (l i &rest options))
+
+(defgeneric listbox-nearest (listbox y))
+
+(defmethod listbox-append ((l listbox) values)
+  "append values (which may be a list) to the list box"
+  (if (listp values)
+      (format-wish "~a insert end ~{ \{~a\}~}" (widget-path l) values)
+      (format-wish "~a insert end \{~a\}" (widget-path l) values))
+  l)
 
 (defmethod listbox-get-selection ((l listbox))
   "please use listbox-get-selection-index; if  you want the *value* of
@@ -88,8 +105,6 @@
            (format-wish (tclize `(senddatastrings [ ,(widget-path object) " " get ,i ])))
            (alexandria:first-elt (read-data))))))
 
-(defgeneric listbox-select (l val))
-
 (defmethod listbox-select ((l listbox) val)
   "modify the selection in listbox, if nil is given, the selection is cleared,
 if a number is given the corresponding element is selected, alternatively
@@ -101,19 +116,13 @@ a list of numbers may be given"
           (format-wish "~a selection set ~a" (widget-path l) val)))
   l)
 
-(defgeneric listbox-clear (l))
-
 (defmethod listbox-clear ((l listbox))
   (format-wish "~a delete 0 end" (widget-path l))
   l)
 
-(defgeneric listbox-delete (l start &optional end))
-
 (defmethod listbox-delete ((l listbox) start &optional end)
   (format-wish "~a delete ~a ~@[~(~a~)~]" (widget-path l) start end)
   l)
-
-(defgeneric listbox-insert (l index values))
 
 (defmethod listbox-insert ((l listbox) index values)
   (if (listp values)
@@ -121,13 +130,9 @@ a list of numbers may be given"
       (format-wish "~a insert ~a \{~a\}" (widget-path l) index values))
   l)
 
-(defgeneric listbox-configure (l i &rest options))
-
 (defmethod listbox-configure ((l listbox) index &rest options)
   (format-wish "~a itemconfigure ~a ~{ -~(~a~) {~/nodgui::pprint-down/}~}" (widget-path l) index options)
   l)
-
-(defgeneric listbox-nearest (listbox y))
 
 (defmethod listbox-nearest ((l listbox) y)
   (format-wish "senddata [~a nearest ~a]" (widget-path l) y)
@@ -137,27 +142,39 @@ a list of numbers may be given"
   (format-wish "~a see ~(~a~)" (widget-path lb) pos)
   lb)
 
+(alexandria:define-constant +legal-select-mode-values+ '(:single :browse :multiple :extended)
+  :test #'equalp)
+
+(defmethod listbox-select-mode ((object listbox) (mode symbol))
+  (assert (find mode +legal-select-mode-values+))
+  (format-wish (tclize `(,(widget-path object) " "
+                          configure -selectmode ,(down mode)))))
+
 (defclass scrolled-listbox (frame)
   ((listbox :accessor listbox)
    (hscroll :accessor hscroll)
    (vscroll :accessor vscroll)))
 
-(defmethod initialize-instance :after ((sl scrolled-listbox) &key)
-  (setf (hscroll sl) (make-scrollbar sl :orientation "horizontal"))
-  (setf (vscroll sl) (make-scrollbar sl))
-  (setf (listbox sl) (make-instance 'listbox :master sl :xscroll (hscroll sl) :yscroll (vscroll sl)))
-  (grid (listbox sl) 0 0 :sticky "news")
-  (grid (hscroll sl) 1 0 :sticky "we")
-  (grid (vscroll sl) 0 1 :sticky "ns")
-  (grid-columnconfigure sl 0 :weight 1)
-  (grid-columnconfigure sl 1 :weight 0)
-  (grid-rowconfigure sl 0 :weight 1)
-  (grid-rowconfigure sl 1 :weight 0)
-
-  (configure (hscroll sl) "command" (concatenate 'string (widget-path (listbox sl)) " xview"))
-  (configure (vscroll sl) "command" (concatenate 'string (widget-path (listbox sl)) " yview"))
-  (configure (listbox sl) "xscrollcommand" (concatenate 'string (widget-path (hscroll sl)) " set"))
-  (configure (listbox sl) "yscrollcommand" (concatenate 'string (widget-path (vscroll sl)) " set")))
+(defmethod initialize-instance :after ((object scrolled-listbox)
+                                       &key (select-mode :browse) &allow-other-keys)
+  (setf (hscroll object) (make-scrollbar object :orientation "horizontal"))
+  (setf (vscroll object) (make-scrollbar object))
+  (setf (listbox object) (make-instance 'listbox
+                                    :master  object
+                                    :xscroll (hscroll object)
+                                    :yscroll (vscroll object)))
+  (grid (listbox object) 0 0 :sticky :news)
+  (grid (hscroll object) 1 0 :sticky :we)
+  (grid (vscroll object) 0 1 :sticky :ns)
+  (grid-columnconfigure object 0 :weight 1)
+  (grid-columnconfigure object 1 :weight 0)
+  (grid-rowconfigure object 0 :weight 1)
+  (grid-rowconfigure object 1 :weight 0)
+  (configure (hscroll object) "command"        (strcat (widget-path (listbox object)) " xview"))
+  (configure (vscroll object) "command"        (strcat (widget-path (listbox object)) " yview"))
+  (configure (listbox object) "xscrollcommand" (strcat (widget-path (hscroll object)) " set"))
+  (configure (listbox object) "yscrollcommand" (strcat (widget-path (vscroll object)) " set"))
+  (listbox-select-mode object select-mode))
 
 (defmethod listbox-append ((l scrolled-listbox) values)
   (listbox-append (listbox l) values)
@@ -175,3 +192,6 @@ a list of numbers may be given"
 (defmethod listbox-select ((l scrolled-listbox) val)
   (listbox-select (listbox l) val)
   l)
+
+(defmethod listbox-select-mode ((object scrolled-listbox) (mode symbol))
+  (listbox-select-mode (listbox object) mode))

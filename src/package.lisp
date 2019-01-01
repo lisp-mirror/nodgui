@@ -1314,6 +1314,7 @@
            :listbox-get-selection-value
            :listbox-nearest
            :listbox-select
+           :listbox-select-mode
            :load-text
            :lower
            :mainloop
