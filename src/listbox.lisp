@@ -109,8 +109,8 @@
 
 (defmethod listbox-select ((l listbox) val)
   "modify the selection in listbox, if nil is given, the selection is cleared,
-if a number is given the corresponding element is selected, alternatively
-a list of numbers may be given"
+if  a  number   is  given  the  corresponding   element  is  selected,
+alternatively a list of numbers may be given"
   (if (null val)
       (format-wish "~a selection clear 0 end" (widget-path l))
       (if (listp val)
