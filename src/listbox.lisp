@@ -105,7 +105,7 @@
     (loop for i in indices collect
          (progn
            (format-wish (tclize `(senddatastring [ ,(widget-path object) " " get ,i ])))
-           (alexandria:first-elt (read-data))))))
+           (read-data)))))
 
 (defmethod listbox-select ((l listbox) val)
   "modify the selection in listbox, if nil is given, the selection is cleared,
