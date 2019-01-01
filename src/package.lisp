@@ -1531,6 +1531,8 @@
    :selected-index
    :entry
    :search-text
+   :autocomplete-listbox
+   :autocomplete-function-hook
    :text-input-dialog))
 
 (defpackage :nodgui-user

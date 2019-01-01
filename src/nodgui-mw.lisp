@@ -504,7 +504,7 @@ Widgets offered are:
                             (list-select-display select item))
                           (data select))))
 
-;;; seachable-list-box
+;;; seachable-listbox
 
 (defclass searchable-listbox (frame)
   ((scrolled-listbox
@@ -591,7 +591,10 @@ Widgets offered are:
                 (see listbox (car indexes))))))))))))
 
 (defmethod initialize-instance :after ((lb searchable-listbox)
-                                       &key (select-mode :browse) &allow-other-keys)
+                                       &key
+                                         (select-mode      :browse)
+                                         (placeholder-text nil)
+                                         &allow-other-keys)
   (with-accessors ((entry-label entry-label)) lb
     (let* ((scrolled (make-instance 'scrolled-listbox
                                     :master      lb
@@ -608,6 +611,8 @@ Widgets offered are:
             (listbox          lb) listbox
             (entry            lb) entry)
       (listbox-append listbox (data lb))
+      (when placeholder-text
+        (setf (text entry) placeholder-text))
       (bind entry #$<KeyPress>$ (lambda (event)
                                   (declare (ignore event))
                                   (update-search lb (text entry))))
@@ -646,6 +651,45 @@ Widgets offered are:
 (defmethod listbox-select-mode ((object searchable-listbox) (mode symbol))
   (listbox-select-mode (listbox object) mode))
 
+;;; autocomple-listbox
+
+(defclass autocomplete-listbox (searchable-listbox)
+  ((autocomplete-function-hook
+    :accessor autocomplete-function-hook
+    :initform nil
+    :initarg  :autocomplete-function-hook)))
+
+(defmethod initialize-instance :after ((object autocomplete-listbox)
+                                       &key (select-mode :browse) &allow-other-keys)
+  (with-accessors ((listbox                    listbox)
+                   (entry                      entry)
+                   (autocomplete-function-hook autocomplete-function-hook)) object
+    (listbox-select-mode listbox select-mode)
+    (bind entry #$<KeyPress>$ (lambda (event)
+                                (declare (ignore event))
+                                (listbox-clear listbox)
+                                (when autocomplete-function-hook
+                                  (listbox-append listbox (funcall autocomplete-function-hook
+                                                                   (search-text object))))))))
+
+;;; demos
+
+(defun autocomplete-listbox-demo ()
+  (flet ((autocomplete (text)
+           (remove-if-not #'(lambda (a)
+                              (nodgui.conditions:with-default-on-error (nil)
+                                (and text
+                                     (not (string= text ""))
+                                     (cl-ppcre:scan text a))))
+                          '("A" "B" "C" "a" "aa" "b" "c" "foo" "bar" "lisp"))))
+  (with-nodgui ()
+    (pack (make-instance 'autocomplete-listbox
+                         :placeholder-text           "type a regexp"
+                         :autocomplete-function-hook #'autocomplete
+                         :remove-non-matching-p nil)
+          :fill :both :expand t))))
+
+
 (defun searchable-listbox-demo ()
   (with-nodgui ()
     (pack (make-instance 'searchable-listbox
@@ -654,8 +698,6 @@ Widgets offered are:
                          :matching-fn #'cl-ppcre:scan ; just to show the initarg
                          :remove-non-matching-p nil)
           :fill :both :expand t)))
-
-;;; demo
 
 (defclass list-select-demo-entry ()
   ((file

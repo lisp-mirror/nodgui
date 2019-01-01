@@ -102,7 +102,7 @@
   (let ((indices (listbox-get-selection-index object)))
     (loop for i in indices collect
          (progn
-           (format-wish (tclize `(senddatastrings [ ,(widget-path object) " " get ,i ])))
+           (format-wish (tclize `(senddatastring [ ,(widget-path object) " " get ,i ])))
            (alexandria:first-elt (read-data))))))
 
 (defmethod listbox-select ((l listbox) val)
