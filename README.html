@@ -1,0 +1,1302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2019-01-01 mar 12:10 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NODGUI</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="cage" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">NODGUI</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgc41cec2">1. NODGUI</a></li>
+<li><a href="#orgf79914f">2. Dependency</a>
+<ul>
+<li><a href="#org4cc2426">2.1. Programs</a></li>
+<li><a href="#org69ebec1">2.2. Lisp libraries</a></li>
+</ul>
+</li>
+<li><a href="#org2a41732">3. FAQ</a></li>
+<li><a href="#orgbf168a8">4. Status</a>
+<ul>
+<li><a href="#orgebc9c85">4.1. Compatibility</a></li>
+</ul>
+</li>
+<li><a href="#orgd090654">5. Notes</a>
+<ul>
+<li><a href="#org8996499">5.1. Colors Name</a></li>
+</ul>
+</li>
+<li><a href="#orgba05db8">6. License</a></li>
+</ul>
+</div>
+</div>
+<p>
+<a href="https://notabug.org/cage/nodgui/raw/master/README.html">html version</a>
+</p>
+
+<div id="outline-container-orgc41cec2" class="outline-2">
+<h2 id="orgc41cec2"><span class="section-number-2">1</span> NODGUI</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<i>"No Drama GUI"</i>
+</p>
+
+<p>
+Common Lisp bindings for the Tk GUI toolkit.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf79914f" class="outline-2">
+<h2 id="orgf79914f"><span class="section-number-2">2</span> Dependency</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-org4cc2426" class="outline-3">
+<h3 id="org4cc2426"><span class="section-number-3">2.1</span> Programs</h3>
+<div class="outline-text-3" id="text-2-1">
+<ul class="org-ul">
+<li>TCL/TK interpreter (version &gt;= 8.6)
+<a href="https://www.tcl.tk">https://www.tcl.tk</a></li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-org69ebec1" class="outline-3">
+<h3 id="org69ebec1"><span class="section-number-3">2.2</span> Lisp libraries</h3>
+<div class="outline-text-3" id="text-2-2">
+<ul class="org-ul">
+<li>alexandria;</li>
+<li>cl-ppcre-unicode;</li>
+<li>cl-lex;</li>
+<li>cl-yacc;</li>
+<li>clunit2;</li>
+<li>cl-syntax;</li>
+<li>cl-colors2.</li>
+</ul>
+
+<p>
+All of the above libraries are available on quicklisp.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2a41732" class="outline-2">
+<h2 id="org2a41732"><span class="section-number-2">3</span> FAQ</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+<a id="orgf90d879"></a>
+</p>
+<dl class="org-dl">
+<dt>Where is the documentation?</dt><dd><p>
+       nodgui is just the results of  a code refactoring of LTK with
+some   syntax   sugar   on    top.    This   means   that   the
+<a href="http://www.peter-herth.de/ltk/ltkdoc/">original documentation</a>
+can be <b>almost</b> used as a good reference also for this library; the chapters
+that are still valid are listed below:
+</p>
+
+<ul class="org-ul">
+<li><a href="http://www.peter-herth.de/ltk/ltkdoc/node2.html">Introduction</a> ;</li>
+<li><a href="http://www.peter-herth.de/ltk/ltkdoc/node4.html">Tutorial</a> ;</li>
+<li><a href="http://www.peter-herth.de/ltk/ltkdoc/node14.html">Event handling</a> ;</li>
+<li><a href="http://www.peter-herth.de/ltk/ltkdoc/node41.html">Screen functions</a> ;</li>
+<li><a href="http://www.peter-herth.de/ltk/ltkdoc/node42.html">Window manager functions</a> ;</li>
+<li><a href="http://www.peter-herth.de/ltk/ltkdoc/node43.html">Under the hood</a> .</li>
+</ul>
+
+<p>
+Please     note     that     all    the     documentation     about
+<a href="http://www.peter-herth.de/ltk/ltkdoc/node17.html">the widgets</a>
+<b>is outdated</b> instead.
+</p>
+
+<p>
+The rest of the documentation are the rare docstrings at the moment.
+</p>
+
+<p>
+If you wants to help please
+<a href="https://notabug.org/cage/nodgui/issues">open a pull request</a>.
+</p></dd>
+
+<dt>Where can i found documentation about a widget?</dt><dd>It  is actually  very  simple: let's  suppose you  want  to use  a
+spinbox widget in your program and you have no idea how to do, the idea
+to solve this problem is like:
+
+<ol class="org-ol">
+<li><p>
+open the file <code>src/spinbox.lisp</code> an look at the top of this file:
+</p>
+<div class="org-src-container">
+<pre class="src src-lisp">(defargs spinbox ()
+cursor
+state
+style
+takefocus
+validate
+validatecommand
+xscrollcommand
+command
+format
+from
+increment
+to
+values
+wrap)
+</pre>
+</div>
+
+<p>
+the symbols  listed are all the  options for the spinbox TK  command (in
+TCL  language everything  is a  command) or  the configuration
+variable  that you  can pass  as initarg  for <code>(make  instance
+      'spinbox ...)</code> and, sometimes,  changed after object instancing via <code>configure</code>
+(<a href="#orgf90d879">see the general documentation</a>)
+</p></li>
+
+<li><p>
+for the meaning of this symbols refers to the
+<a href="https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm">original TK documentation</a>
+</p>
+
+<p>
+As a general rule choose the link to the command with its name
+prefixed with "ttk::" (if exists).
+</p>
+
+<p>
+In our example point to:
+</p>
+
+<p>
+<a href="https://www.tcl.tk/man/tcl8.6/TkCmd/ttk_spinbox.htm">https://www.tcl.tk/man/tcl8.6/TkCmd/ttk_spinbox.htm</a>
+</p>
+
+<p>
+and <b>not</b>
+</p>
+
+<p>
+<a href="https://www.tcl.tk/man/tcl8.6/TkCmd/spinbox.htm">https://www.tcl.tk/man/tcl8.6/TkCmd/spinbox.htm</a>
+</p>
+
+<p>
+You can easly understand what all the options above are for.
+</p></li>
+</ol></dd>
+
+<dt>How can I access the root window?</dt><dd>The root window is bound to the special variable <code>*tk*</code>.</dd>
+
+<dt>I have  a bunch of widgets  placed in a  grid and I want  those to scale themselves when the window is resized, there is a way to accomplish this?</dt><dd><p>
+       Sure! Use <code>grid-(column|row)-configure</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(grid-columnconfigure *tk* <span style="color: #6c71c4;">:all</span> <span style="color: #6c71c4;">:weight</span> 1)
+(grid-rowconfigure    *tk* <span style="color: #6c71c4;">:all</span> <span style="color: #6c71c4;">:weight</span> 1)
+</pre>
+</div>
+
+<p>
+You can replace <code>:all</code> with a  row or column indices to apply this
+behaviour only to a subset of the columns or rows.
+</p></dd>
+
+<dt>What are the differences between nodgui and LTK?</dt><dd>The  two libraries  begin  to diverge  a bit  now,  the API  is
+compatible with ltk no more.
+
+<ol class="org-ol">
+<li><p>
+A  reader  macro  for events
+i.e.  <code>#$&lt;Alt-q&gt;$</code>  instead  of
+<code>"&lt;Alt-q&gt;"</code>  (a string),  the macro  will parse  and check  for
+trivial errors in the event definition syntax at compile time.
+</p>
+<div class="org-src-container">
+<pre class="src src-lisp">(cl-syntax:use-syntax nodgui-event-syntax) <span style="color: #586e75; font-style: italic;">; do not forget that!</span>
+
+[...]
+
+(bind *tk* #$&lt;Alt-q&gt;$ (<span style="color: #859900;">lambda</span> (event) ...
+</pre>
+</div>
+
+<p>
+<i>Please  note  that  a  string   is  still  accepted  as  event
+specifier.</i>
+</p></li>
+
+<li><p>
+A DSL  for  TCL code  that  allow  to mix  TCL  code and  lisp
+expression, check  for example the  following code to  create a
+bitmap:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(tclize `([list
+            ,(<span style="color: #859900;">loop</span> for r from 0 below h collect
+                (tclize `([list ,(<span style="color: #859900;">loop</span>
+...
+</pre>
+</div>
+
+<p>
+The <code>tclize</code> macro will transforms  the backquoted forms in tcl
+code,  the   unquoted  forms  will  be   evaluated  before  the
+translation occurs.
+</p></li>
+
+<li>The function <a href="https://www.tcl.tk/man/tcl8.6/TkCmd/canvas.htm#M61"><code>postscript</code></a>
+returns a postscript file as string instead of write a file on disk;</li>
+
+<li>Support for  images in GIF, PNG, TGA, JPEG  and raw RGB format,
+limited manipulation for the  latest three is provided (scaling
+and rotation).</li>
+
+<li>Compatible only with TK 8.6;</li>
+
+<li>A general refactoring.</li>
+
+<li>Integrated with cl-colors library (can use X11 color names or
+rgb struct, see <a href="#org8996499">5.1</a>).</li>
+
+<li>Some bugs fixed (and more added of course :-) )</li>
+</ol></dd>
+
+<dt>Where can i find more code examples?</dt><dd>check the file <code>src/demo-tests.lisp</code></dd>
+
+<dt>Can I contribute to this project?</dt><dd><p>
+       Yes, of  course! Please  open an  issue or a  pull request  on the
+<a href="https://notabug.org/cage/nodgui">web repository</a>,  if you do
+not feel comfortable with coding documentation improvements are
+very welcome too! :)
+</p>
+
+<p>
+Also i would appreciate  <a href="#orgebc9c85">testing</a> if the library
+works on different environment than mine (debian GNU/Linux with
+SBCL).
+</p></dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-orgbf168a8" class="outline-2">
+<h2 id="orgbf168a8"><span class="section-number-2">4</span> Status</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+All tk commands as of version 8.4 with support information. "-" means not
+supported by purpose (look comment), "x" means supported, though some
+options may not be supported.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">command</th>
+<th scope="col" class="org-left">supported</th>
+<th scope="col" class="org-left">comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>bell</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>bind</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>bindtags</code></td>
+<td class="org-left">modify</td>
+<td class="org-left">modify the tag list of a widget that</td>
+</tr>
+
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">describes which events it gets</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>bitmap</code></td>
+<td class="org-left">-</td>
+<td class="org-left">see image</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>button</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>canvas</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>checkbutton</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>clipboard</code></td>
+<td class="org-left">x</td>
+<td class="org-left">(canvas get missing&#x2026; tricky&#x2026;)</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>colors</code></td>
+<td class="org-left">-</td>
+<td class="org-left">see <a href="#org8996499">5.1</a></td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>console</code></td>
+<td class="org-left">-</td>
+<td class="org-left">only on some platforms</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>cursors</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>destroy</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>entry</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>event</code></td>
+<td class="org-left">create</td>
+<td class="org-left">create and manage virtual events</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>focus</code></td>
+<td class="org-left">x</td>
+<td class="org-left">focus management functions</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>font</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>frame</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>grab</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>busy</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>grid</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>image</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>keysyms</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>label</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>labelframe</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>listbox</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>loadTk</code></td>
+<td class="org-left">-</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>lower</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>menu</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>menubutton</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>message</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>option</code></td>
+<td class="org-left">-</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>options</code></td>
+<td class="org-left">-</td>
+<td class="org-left">only helpfile</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>pack</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>panedwindow</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>photo</code></td>
+<td class="org-left">x</td>
+<td class="org-left">support for PNG, GIF, JPEG and raw RGB(A) format.</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>place</code></td>
+<td class="org-left">x</td>
+<td class="org-left">geometry manager using coordinates</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>radiobutton</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>raise</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>scale</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>scrollbar</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>selection</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>send</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>spinbox</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>text</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_bisque</code></td>
+<td class="org-left">-</td>
+<td class="org-left">only for tk backwards compatibility</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_chooseColor</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_chooseDirectory</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_dialog</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_focusFollowsMouse</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_focusNext</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_focusPrev</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_getOpenFile</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_getSaveFile</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_menuSetFocus</code></td>
+<td class="org-left">-</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_messageBox</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_optionMenu</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_popup</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_setPalette</code></td>
+<td class="org-left">-</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_textCopy</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_textCut</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tk_textPaste</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tkerror</code></td>
+<td class="org-left">-</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tkvars</code></td>
+<td class="org-left">-</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>tkwait</code></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>toplevel</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>treeview</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>winfo</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>wm</code></td>
+<td class="org-left">x</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+support of all config args as keywords to make-instance:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left"><code>bitmap</code></th>
+<th scope="col" class="org-left">&#xa0;</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left"><code>button</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>canvas</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>checkbutton</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>entry</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>frame</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>image</code></td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>label</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>labelframe</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>listbox</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>menu</code></td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>menubutton</code></td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>message</code></td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>panedwindow</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>photo</code></td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>radiobutton</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>scale</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>scrollbar</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>spinbox</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>text</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left"><code>toplevel</code></td>
+<td class="org-left">x</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+<div id="outline-container-orgebc9c85" class="outline-3">
+<h3 id="orgebc9c85"><span class="section-number-3">4.1</span> Compatibility</h3>
+<div class="outline-text-3" id="text-4-1">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">OS / compiler</th>
+<th scope="col" class="org-left">SBCL 1.4.14</th>
+<th scope="col" class="org-left">ECL</th>
+<th scope="col" class="org-left">CCL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Debian testing</td>
+<td class="org-left">x</td>
+<td class="org-left">?</td>
+<td class="org-left">?</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">MacOS</td>
+<td class="org-left">?</td>
+<td class="org-left">?</td>
+<td class="org-left">?</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">Win</td>
+<td class="org-left">?</td>
+<td class="org-left">?</td>
+<td class="org-left">?</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd090654" class="outline-2">
+<h2 id="orgd090654"><span class="section-number-2">5</span> Notes</h2>
+<div class="outline-text-2" id="text-5">
+</div>
+<div id="outline-container-org8996499" class="outline-3">
+<h3 id="org8996499"><span class="section-number-3">5.1</span> Colors Name</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+Color name from library cl-color can be used as follows:
+</p>
+
+<ul class="org-ul">
+<li><p>
+with a reader macro (<code>#%...%</code>) at read time:
+</p>
+<div class="org-src-container">
+<pre class="src src-lisp">(cl-syntax:use-syntax nodgui-color-syntax) <span style="color: #586e75; font-style: italic;">; do not forget that!</span>
+
+[...]
+
+#%red%
+</pre>
+</div>
+
+<p>
+at runtime using:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(rgb-&gt;tk cl-colors:+red+)
+</pre>
+</div>
+
+<p>
+the list of supported colors name can be found in:
+<a href="https://notabug.org/cage/cl-colors2/src/master/package.lisp">this file</a>.
+</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgba05db8" class="outline-2">
+<h2 id="orgba05db8"><span class="section-number-2">6</span> License</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+This software is Copyright (c) 2003-2010  Peter Herth &lt;herth@peter-herth.de&gt;
+Portions Copyright (c) 2005-2010 Thomas F. Burdick
+Portions Copyright (c) 2006-2010 Cadence Design Systems
+Portions Copyright (c) 2010 Daniel Herring
+Portions Copyright (c) 2018 cage
+</p>
+
+<p>
+The authors grant you the rights to distribute
+and use this software as governed by the terms
+of the Lisp Lesser GNU Public License
+(<a href="http://opensource.franz.com/preamble.html">http://opensource.franz.com/preamble.html</a>),
+known as the LLGPL.
+</p>
+
+<p>
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+</p>
+</div>
+</div>
+</div>
+</body>
+</html>
