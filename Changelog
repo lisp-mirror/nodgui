@@ -1,4 +1,4 @@
-2018-12-11  cage <cage-dev@twistfold.it>
+2018-12-11  cage
 
 	- updated README
         - added a bare minimum pixmap manipulation (scaling and rotation);
@@ -6,12 +6,12 @@
 	- added Changelog;
 	- popup TCL backtrace on error.
 
-2018-12-10  cage <cage-dev@twistfold.it>
+2018-12-10  cage
 
 	* src/canvas.lisp, src/widget.lisp:
 	- fixed case in non specialized method "down".
 
-2018-12-10  cage <cage-dev@twistfold.it>
+2018-12-10  cage
 
 	* README.org, README.txt, nodgui.asd, src/canvas.lisp,
 	src/listbox.lisp, src/nodgui.lisp, src/package.lisp,
@@ -21,31 +21,31 @@
 	- changed function name "down" "pprint-down";
 	- updated README.
 
-2018-12-09  cage <cage-dev@twistfold.it>
+2018-12-09  cage
 
 	* src/demo-tests.lisp, src/package.lisp, src/widget.lisp:
 	- added "busy" functions.
 
-2018-12-09  cage <cage-dev@twistfold.it>
+2018-12-09  cage
 
 	* src/demo-tests.lisp, src/package.lisp, src/winfo.lisp,
 	src/wm.lisp:
 	- added wm attributes.
 
-2018-12-09  cage <cage-dev@twistfold.it>
+2018-12-09  cage
 
 	* src/canvas.lisp, src/demo-tests.lisp, src/text.lisp:
 	- made more compliants to lisp convention some item related function
 	names.
 
-2018-12-09  cage <cage-dev@twistfold.it>
+2018-12-09  cage
 
 	* src/canvas.lisp, src/demo-tests.lisp, src/package.lisp,
 	src/tcl-emitter.lisp:
 	- added moveto for canvas items;
 	- added fill as key parameter for arc.
 
-2018-12-08  cage <cage-dev@twistfold.it>
+2018-12-08  cage
 
 	* - initial commit after fork.
         - changed name from ltk to nodgui;
