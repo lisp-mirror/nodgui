@@ -212,7 +212,7 @@ Widgets offered are:
 (defmethod treelist-clearlist ((tree treelist) index)
   (when (< index (depth tree))
     (setf (aref (entries tree) index) nil)
-    (listbox-clear (aref (listbox tree) index))
+    (listbox-delete (aref (listbox tree) index))
     (treelist-clearlist tree (1+ index))))
 
 (defmethod treelist-setlist ((tree treelist) parent-node nr)
@@ -498,7 +498,7 @@ Widgets offered are:
               selection))))
 
 (defmethod (setf data) :after (val (select list-select))
-  (listbox-clear select)
+  (listbox-delete select)
   (listbox-append select
                   (mapcar (lambda (item)
                             (list-select-display select item))
@@ -566,7 +566,7 @@ Widgets offered are:
         ((= (length searchstring) 0)
          (cond
            ((remove-non-matching-p lb)
-            (listbox-clear listbox)
+            (listbox-delete listbox)
             (listbox-append listbox data))
            (t
             (listbox-select listbox nil))))
@@ -577,7 +577,7 @@ Widgets offered are:
                                        (data lb))))
          (cond
            ((remove-non-matching-p lb)
-            (listbox-clear listbox)
+            (listbox-delete listbox)
             (when results
               (listbox-append listbox results)))
            (t
@@ -623,10 +623,16 @@ Widgets offered are:
 (defmethod search-text ((object searchable-listbox))
   (text (entry object)))
 
-(defmethod listbox-clear ((object searchable-listbox))
+(defmethod listbox-clear ((object searchable-listbox) &optional (start 0) (end :end))
   (with-accessors ((listbox listbox)
                    (data    data)) object
-    (listbox-clear listbox)
+    (listbox-clear listbox start end)
+    object))
+
+(defmethod listbox-delete ((object searchable-listbox) &optional (start 0) (end :end))
+  (with-accessors ((listbox listbox)
+                   (data    data)) object
+    (listbox-delete listbox start end)
     (setf data nil)
     object))
 
@@ -666,7 +672,7 @@ Widgets offered are:
 
 (defun %autocomplete (listbox)
   (with-accessors ((autocomplete-function-hook autocomplete-function-hook)) listbox
-    (listbox-clear listbox)
+    (listbox-delete listbox)
     (when autocomplete-function-hook
       (listbox-append listbox (funcall autocomplete-function-hook
                                        (search-text listbox))))))

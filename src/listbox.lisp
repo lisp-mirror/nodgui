@@ -71,9 +71,9 @@
 
 (defgeneric listbox-select-mode (object mode))
 
-(defgeneric listbox-clear (l))
+(defgeneric listbox-clear (l &optional start end))
 
-(defgeneric listbox-delete (l start &optional end))
+(defgeneric listbox-delete (l &optional start end))
 
 (defgeneric listbox-insert (l index values))
 
@@ -118,12 +118,19 @@ alternatively a list of numbers may be given"
           (format-wish "~a selection set ~a" (widget-path l) val)))
   l)
 
-(defmethod listbox-clear ((l listbox))
-  (format-wish "~a delete 0 end" (widget-path l))
+(defmethod listbox-clear ((l listbox) &optional (start 0) (end :end))
+  "Clear listbox selection"
+  (format-wish (tclize `(,(widget-path l) " "
+                          selection clear {+ ,(down start) } {+ ,(down end) })))
   l)
 
-(defmethod listbox-delete ((l listbox) start &optional end)
-  (format-wish "~a delete ~a ~@[~(~a~)~]" (widget-path l) start end)
+(defmethod listbox-delete ((l listbox) &optional (start 0) (end :end))
+  "Delete elements from listbox"
+  (format-wish (tclize `(,(widget-path l) " "
+                         delete
+                         {+ ,(down start) }
+                         ,(tclize-if-true end
+                             `({+ ,(down end) })))))
   l)
 
 (defmethod listbox-insert ((l listbox) index values)
@@ -208,3 +215,16 @@ alternatively a list of numbers may be given"
 
 (defmethod listbox-export-selection ((object scrolled-listbox) value)
   (listbox-export-selection (listbox object) value))
+
+(defmethod listbox-clear ((object scrolled-listbox) &optional (start 0) (end :end))
+  (with-accessors ((listbox listbox)
+                   (data    data)) object
+    (listbox-clear listbox start end)
+    object))
+
+(defmethod listbox-delete ((object scrolled-listbox) &optional (start 0) (end :end))
+  (with-accessors ((listbox listbox)
+                   (data    data)) object
+    (listbox-delete listbox start end)
+    (setf data nil)
+    object))
