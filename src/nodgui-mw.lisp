@@ -230,10 +230,10 @@ Widgets offered are:
 
 (defmethod treelist-listbox-select ((tree treelist) nr)
   (let* ((listbox (aref (listbox tree) nr))
-         (xxx (aref (entries tree) nr)))
-    (when xxx
-      (let* ((oldsel (selected-node xxx))
-             (sel (car (listbox-get-selection listbox))))
+         (entry   (aref (entries tree) nr)))
+    (when entry
+      (let* ((oldsel (selected-node entry))
+             (sel    (first (listbox-get-selection-index listbox))))
         (when oldsel
           (listbox-configure listbox oldsel :background :white :foreground :black))
         (setf (selected-node (aref (entries tree) nr)) sel)
