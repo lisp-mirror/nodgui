@@ -47,7 +47,7 @@
  "after <time> msec call function <fun>, returns the after event id,
 which can be passed to AFTER-CANCEL"
  (let ((name (format nil "after~a" (incf (wish-after-counter *wish*)))))
-   (format-wish (tcl-str (senddatastring [after ~a {callback ~A}])) time name)
+   (format-wish (tcl-str (senddatastring [after {~a} {callback ~A}])) time name)
    ;(senddatastring "[after ~a {callback ~A}]" time name)
    (let ((id (read-data))
          (blah (wish-after-ids *wish*)))
@@ -75,7 +75,7 @@ can be passed to AFTER-CANCEL"
 
 (defun after-cancel (id)
  "cancels a call scheduled with AFTER or AFTER-IDLE by its id"
- (format-wish "after cancel ~a" id)
+ (format-wish "after cancel {~a}" id)
  (let ((blah (wish-after-ids *wish*)))
    (remove-callback (gethash id blah))
    (remhash id blah)))
@@ -197,7 +197,7 @@ can be passed to AFTER-CANCEL"
   (let ((name (create-name)))
     (add-callback name fun)
     ;;(format-wish "bind  ~a ~a {sendevent ~A %x %y %k %K %w %h %X %Y}" (widget-path w) event name)
-    (format-wish "bind  ~a ~a {~:[~;+~]sendevent ~A %x %y %k %K %w %h %X %Y %b ~:[~;;break~]}"
+    (format-wish "bind  ~a {~a} {~:[~;+~]sendevent ~A %x %y %k %K %w %h %X %Y %b ~:[~;;break~]}"
                  (widget-path w) event append name exclusive)
     w))
 
@@ -206,7 +206,7 @@ can be passed to AFTER-CANCEL"
   (let ((name (create-name)))
     (add-callback name fun)
     ;;(format-wish "bind  ~a ~a {sendevent ~A %x %y %k %K %w %h %X %Y}" s event name)
-    (format-wish "bind  ~a ~a {~:[~;+~]sendevent ~A %x %y %k %K %w %h %X %Y %b ~:[~;;break~]}"
+    (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %k %K %w %h %X %Y %b ~:[~;;break~]}"
                  s event append name exclusive)))
 
 ;;; window menu bar
@@ -222,7 +222,7 @@ can be passed to AFTER-CANCEL"
   (format-wish "menu ~a -tearoff 0 -type menubar" (widget-path mb))
   (format-wish "~a configure -menu ~a" (if (master mb)
                                            (widget-path (master mb))
-                                           ".")
+                                           (widget-path *tk*))
                (widget-path mb)))
 
 ;;; method to pop up a menue at the root window coordinates x and y
@@ -237,34 +237,19 @@ can be passed to AFTER-CANCEL"
 (defgeneric menu-delete (menu index &optional end))
 
 (defmethod menu-delete ((menu menu) index &optional (end :end))
-  (format-wish "~A delete ~A ~@[ ~(~A~)~]" (widget-path menu) index end)
+  (format-wish "~A delete {~a} ~@[ {~(~A~)}~]" (widget-path menu) index (down end))
   menu)
 
 (defgeneric sash-coord (window index))
 
-#+:tk84
 (defmethod sash-coord ((pw paned-window) index)
-  (format-wish "senddata \"([~a sash coord ~a])\"" (widget-path pw) index)
+  (format-wish "senddata \"([~a sashpos {~a}])\"" (widget-path pw) index)
   (read-data))
 
-#-:tk84
-(defmethod sash-coord ((pw paned-window) index)
-  (format-wish "senddata \"([~a sashpos ~a])\"" (widget-path pw) index)
-  (read-data))
-
-#+:tk84
-(defgeneric sash-place (window index x y))
-
-#+:tk84
-(defmethod sash-place ((pw paned-window) index x y)
-  (format-wish "~a sash place ~a ~a ~a" (widget-path pw) index x y))
-
-#-:tk84
 (defgeneric sash-place (window index pos))
 
-#-:tk84
 (defmethod sash-place ((pw paned-window) index pos)
-  (format-wish "~a sashpos ~a ~a" (widget-path pw) index pos))
+  (format-wish "~a sashpos {~a} {~a}" (widget-path pw) index pos))
 
 ;;; scrolled-text
 
@@ -295,7 +280,8 @@ can be passed to AFTER-CANCEL"
 (defgeneric append-text (txt text &rest tags))
 
 (defmethod append-text ((txt scrolled-text) text &rest tags )
-  (format-wish "~a insert end \"~a\" {~{ ~(~a~)~}}" (widget-path (textbox txt)) (tkescape text) tags)
+  (format-wish "~a insert end \"~a\" {~{ ~(~a~)~}}" (widget-path (textbox txt))
+               (tkescape text) tags)
   txt)
 
 (defmethod text ((self scrolled-text))
@@ -307,14 +293,16 @@ can be passed to AFTER-CANCEL"
 (defgeneric insert-object (txt object))
 
 (defmethod insert-object ((txt scrolled-text) obj)
-  (format-wish "~a window create end -window ~a" (widget-path (textbox txt)) (widget-path obj))
+  (format-wish "~a window create end -window ~a"
+               (widget-path (textbox txt))
+               (widget-path obj))
   txt)
 
 (defgeneric see (txt pos)
   (:documentation "Makes sure the widget is visible"))
 
 (defmethod see ((txt scrolled-text) pos)
-  (format-wish "~a see ~(~a~)" (widget-path (textbox txt)) pos)
+  (format-wish "~a see {~(~a~)}" (widget-path (textbox txt)) pos)
   txt)
 
 (defclass scrolled-frame (frame)
@@ -349,6 +337,7 @@ can be passed to AFTER-CANCEL"
     (grid-columnconfigure sf 1 "weight" 0)
     (grid-rowconfigure sf 0 "weight" 1)
     (grid-rowconfigure sf 1 "weight" 0)
+    ;; TODO: use tclize
     (format-wish
      "
 ~a configure -xscrollcommand [list ~a set] -yscrollcommand [list ~a set]
@@ -366,8 +355,7 @@ bind ~a <Configure> [list resetscroll ~a]
      (widget-path (vscroll sf)) (widget-path canvas)
      (widget-path canvas) (widget-path f)
      (widget-path canvas)
-     (widget-path f) (widget-path canvas)
-     )))
+     (widget-path f) (widget-path canvas))))
 
 #+nil
 (defclass scrolled-frame (frame)
@@ -474,8 +462,19 @@ set y [winfo y ~a]
          (warn "Using a string for the :SIDE parameter is deprecated."))
         ((stringp fill)
          (warn "Using a string for the :FILL parameter is deprecated.")))
-  (format-wish "pack ~A -side ~(~A~) -fill ~(~A~)~@[~* -expand 1~]~@[ -after ~A~]~@[ -before ~A~]~@[ -padx ~A~]~@[ -pady ~A~]~@[ -ipadx ~A~]~@[ -ipady ~A~]~@[ -anchor ~(~A~)~]"
-          (widget-path w) side fill expand (and after (widget-path after)) (and before (widget-path before)) padx pady ipadx ipady anchor)
+  ;; TODO: use tclize
+  (format-wish "pack ~A -side {~(~A~)} -fill {~(~A~)} ~@[~* -expand 1~]~@[ -after ~A~]~@[ -before ~A~]~@[ -padx {~a}~]~@[ -pady {~a}~]~@[ -ipadx {~a}~]~@[ -ipady {~a}~]~@[ -anchor {~(~A~)}~]"
+               (widget-path w)
+               side
+               fill
+               expand
+               (and after (widget-path after))
+               (and before (widget-path before))
+               padx
+               pady
+               ipadx
+               ipady
+               anchor)
   w)
 
 (defmethod pack ((list list) &rest rest)
@@ -488,6 +487,7 @@ set y [winfo y ~a]
 (defmethod pack-propagate ((w widget) flag)
   (format-wish "pack propagate ~A ~A"
                (widget-path w)
+               ;; TODO: use lisp-bool->tcl
                (if flag "true" "false"))
   w)
 
@@ -509,13 +509,18 @@ set y [winfo y ~a]
 (defgeneric place (widget x y &key anchor bordermode width height in relheight relwidth relx rely))
 
 (defmethod place (widget x y &key anchor width bordermode height in relheight relwidth relx rely)
-  (format-wish "place ~A -x ~A -y ~A~@[ -anchor ~a~]~@[ -width ~a~]~@[ -height ~a~]~@[ -bordermode ~a~]~@[ -in ~a~]~@[ -relheight ~a~]~@[ -relwidth ~a~]~@[ -relx ~a~]~@[ -rely ~a~]" (widget-path widget)
-               (tk-number x) (tk-number y)
+  (format-wish "place ~A -x ~A -y ~A~@[ -anchor {~a}~]~@[ -width ~a~]~@[ -height ~a~]~@[ -bordermode {~a}~]~@[ -in {~a}~]~@[ -relheight ~a~]~@[ -relwidth ~a~]~@[ -relx ~a~]~@[ -rely ~a~]" (widget-path widget)
+               (tk-number x)
+               (tk-number y)
                anchor
                (tk-number width)
                (tk-number height)
-               bordermode in (tk-number relheight) (tk-number relwidth) (tk-number relx) (tk-number rely)
-               )
+               bordermode
+               in
+               (tk-number relheight)
+               (tk-number relwidth)
+               (tk-number relx)
+               (tk-number rely))
   widget)
 
 (defgeneric place-forget (widget))
@@ -529,29 +534,41 @@ set y [winfo y ~a]
 (defgeneric grid (widget r c &key columnspan ipadx ipady padx pady rowspan sticky))
 
 (defmethod grid ((w widget) row column &key columnspan ipadx ipady padx pady rowspan sticky)
-  (format-wish "grid ~a -row ~a -column ~a~@[ -columnspan ~a~]~@[ -ipadx ~a~]~
-             ~@[ -ipady ~a~]~@[ -padx ~a~]~@[ -pady ~a~]~@[ -rowspan ~a~]~
-             ~@[ -sticky ~(~a~)~]" (widget-path w) row column columnspan ipadx ipady padx pady rowspan sticky)
+  ;; TODO use tclize
+  (format-wish "grid {~a} -row {~a} -column {~a} ~@[ -columnspan {~a}~]~@[ -ipadx {~a}~]~
+             ~@[ -ipady {~a}~]~@[ -padx {~a}~]~@[ -pady {~a}~]~@[ -rowspan {~a}~]~
+             ~@[ -sticky {~(~a~)}~]"
+               (widget-path w)
+               row
+               column
+               columnspan
+               ipadx
+               ipady
+               padx
+               pady
+               rowspan
+               sticky)
   w)
 
 (defgeneric grid-columnconfigure (widget c o v))
 
 (defmethod grid-columnconfigure (widget column option value)
-  (format-wish "grid columnconfigure {~/nodgui::pprint-down/} {~/nodgui::pprint-down/} -~(~a~) {~a}"
+  ;; TODO use tclize
+  (format-wish "grid columnconfigure {~/nodgui::pprint-down/} {~/nodgui::pprint-down/} {-~(~a~)} {~a}"
                widget column option value)
   widget)
 
 (defgeneric grid-rowconfigure (widget r o v))
 
 (defmethod grid-rowconfigure (widget row option value)
-  (format-wish "grid rowconfigure {~/nodgui::pprint-down/} {~/nodgui::pprint-down/} -~(~a~) {~a}"
+  (format-wish "grid rowconfigure {~/nodgui::pprint-down/} {~/nodgui::pprint-down/} {-~(~a~)} {~a}"
                widget row option value)
   widget)
 
 (defgeneric grid-configure (widget o v))
 
 (defmethod grid-configure (widget option value)
-  (format-wish "grid configure {~/nodgui::pprint-down/} -~(~a~) {~a}"
+  (format-wish "grid configure {~/nodgui::pprint-down/} {-~(~a~)} {~a}"
                widget option value)
   widget)
 
@@ -566,14 +583,14 @@ set y [winfo y ~a]
 (defgeneric configure (widget option value &rest others))
 
 (defmethod configure (widget option value &rest others)
-  (format-wish "~A configure~{ -~(~a~) {~/nodgui::pprint-down/}~}"
+  (format-wish "~A configure~{ {-~(~a~)} {~/nodgui::pprint-down/}~}"
                (widget-path widget)
                (list* option value others))
   widget)
 
 (defmethod configure ((item menuentry) option value &rest others)
   (let ((path (widget-path (master item))))
-    (format-wish "~A entryconfigure [~A index {~A}]~{ -~(~a~) {~/nodgui::pprint-down/}~}"
+    (format-wish "~A entryconfigure [~A index {~A}]~{ {-~(~a~)} {~/nodgui::pprint-down/}~}"
                  path
                  path
                  (text item)
@@ -581,28 +598,29 @@ set y [winfo y ~a]
   item)
 
 (defmethod configure ((item canvas-item) option value &rest others)
-  (format-wish "~A itemconfigure ~A~{ -~(~a~) {~/nodgui::pprint-down/}~}"
+  (format-wish "~A itemconfigure ~A~{ {-~(~a~)} {~/nodgui::pprint-down/}~}"
                (widget-path (canvas item)) (handle item)
                (list* option value others))
   item)
 
 (defmethod tag-configure ((c canvas) tag option value &rest others)
-  (format-wish "~a itemconfigure ~a~{ -~(~a~) {~/nodgui::pprint-down/}~}" (widget-path c)
+  (format-wish "~a itemconfigure {~a}~{ {-~(~a~)} {~/nodgui::pprint-down/}~}" (widget-path c)
                (if (stringp tag)
                    tag
-                 (format nil "~(~a~)" tag))
+                   (format nil "~(~a~)" tag))
                (list* option value others))
   c)
 
 ;;; for tkobjects, the name of the widget is taken
 (defmethod configure (widget option (value tkobject) &rest others)
-  (format-wish "~A configure -~(~A~) {~A} ~{ -~(~a~) {~(~a~)}~}" (widget-path widget) option (widget-path value) others)
+  (format-wish "~A configure {-~(~A~)} {~A} ~{ {-~(~a~)} {~(~a~)}~}"
+               (widget-path widget) option (widget-path value) others)
   widget)
 
 (defgeneric cget (widget option))
 
 (defmethod cget ((widget widget) option)
-  (format-wish "senddatastring [~a cget -~(~a~)]" (widget-path widget) option)
+  (format-wish "senddatastring [~a cget {-~(~a~)}]" (widget-path widget) option)
   (read-data))
 
 ;(defun background (widget)
@@ -633,11 +651,11 @@ set y [winfo y ~a]
 ;;(defun font-actual ...)
 
 (defun font-configure (name &key family size weight slant underline overstrike)
-  (format-wish "font configure {~/nodgui::pprint-down/}~@[ -family ~a~]~@[ -size ~a~]~@[ -weight ~(~a~)~]~@[ -slant ~(~a~)~]~@[ -underline ~a~]~@[ -overstrike ~a~]"
+  (format-wish "font configure {~/nodgui::pprint-down/}~@[ -family {~a}~]~@[ -size {~a}~]~@[ -weight {~(~a~)}~]~@[ -slant {~(~a~)}~]~@[ -underline {~a}~]~@[ -overstrike {~a}~]"
                name family size weight slant underline overstrike))
 
 (defun font-create (name &key family size weight slant underline overstrike)
-  (format-wish "senddatastring [font create {~/nodgui::pprint-down/}~@[ -family ~a~]~@[ -size ~a~]~@[ -weight ~(~a~)~]~@[ -slant ~(~a~)~]~@[ -underline ~a~]~@[ -overstrike ~a~]]"
+  (format-wish "senddatastring [font create {~/nodgui::pprint-down/}~@[ -family {~a}~]~@[ -size {~a}~]~@[ -weight {~(~a~)}~]~@[ -slant {~(~a~)}~]~@[ -underline {~a}~]~@[ -overstrike {~a}~]]"
                name family size weight slant underline overstrike)
    (read-data))
 
@@ -660,7 +678,7 @@ set y [winfo y ~a]
 ;;; misc functions
 
 (defun use-theme (name)
-  (format-wish "ttk::style theme use ~a" name))
+  (format-wish "ttk::style theme use {~a}" name))
 
 (defun theme-names ()
   (send-wish "senddatastrings [ttk::style theme names]")

@@ -264,6 +264,7 @@
         (pack bprogress :side :left)
         (pack fscale :side :top :fill :x)
         (pack scale :side :left :fill :x :padx 20)
+        (setf (command scale) (lambda (a) (format t "scale changed ~a~%" a)))
         (pack separator :side :left)
         (configure separator :orient :vertical)
         (pack fcheck :side :top :fill :x)
@@ -553,6 +554,7 @@
       (pack b2 :side :top)
       (notebook-add nb f1 :text "Frame 1")
       (notebook-add nb f2 :text "Frame 2")
+      (notebook-tab nb f2 :text "Frame 2 (changed after adding)")
       (append-text t1 "Foo Bar Baz"))))
 
 (defwidget nbw (frame)

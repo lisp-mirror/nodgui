@@ -36,7 +36,7 @@
 (defwrapper entry (tktextvariable widget) () "ttk::entry")
 
 (defun entry-select (e from to)
-  (format-wish "~a selection range ~a ~a" (widget-path e) from to)
+  (format-wish "~a selection range {~a} {~a}" (widget-path e) from to)
   e)
 
 (defgeneric cursor-index (widget)

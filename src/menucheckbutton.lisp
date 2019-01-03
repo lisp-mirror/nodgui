@@ -16,7 +16,7 @@
 
 (in-package :nodgui)
 
-(defclass menucheckbutton(menuentry)
+(defclass menucheckbutton (menuentry)
   ((command
     :accessor command
     :initarg :command
@@ -25,7 +25,7 @@
 (defmethod initialize-instance :after ((m menucheckbutton) &key)
   (when (command m)
     (add-callback (name m) (command m)))
-  (format-wish "~A add checkbutton -label {~A} -variable ~a ~@[ -command {callback ~a}~]"
+  (format-wish "~A add checkbutton -label {~a} -variable ~a ~@[ -command {callback ~a}~]"
                (widget-path (master m)) (text m) (name m) (and (command m) (name m))))
 
 (defmethod value ((cb menucheckbutton))
@@ -33,5 +33,5 @@
   (read-data))
 
 (defmethod (setf value) (val (cb menucheckbutton))
-  (format-wish "global ~a; set ~a ~a" (name cb) (name cb) val)
+  (format-wish "global ~a; set ~a {~a}" (name cb) (name cb) val)
   val)

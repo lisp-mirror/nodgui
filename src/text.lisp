@@ -63,8 +63,8 @@
 (defmethod cursor-index ((text text))
   (format-wish "senddatastring [~a index insert]" (widget-path text))
   (let* ((index (split-sequence (read-data) ".")))
-        (values (parse-integer  (first index))
-                (parse-integer  (second index)))))
+    (values (parse-integer  (first index))
+            (parse-integer  (second index)))))
 
 (defun make-text (master &key (width nil) (height nil))
   (make-instance 'text :master master :width width :height height))
@@ -87,28 +87,28 @@
   txt)
 
 (defmethod see ((txt text) pos)
-  (format-wish "~a see ~(~a~)" (widget-path txt) pos)
+  (format-wish "~a see {~(~a~)}" (widget-path txt) pos)
   txt)
 
 (defgeneric search-all-text (text pattern))
 
 (defmethod search-all-text ((txt text) pattern)
-  (format-wish "searchall ~a ~a" (widget-path txt) pattern)
+  (format-wish "searchall ~a {~a}" (widget-path txt) pattern)
   txt)
 
 (defgeneric search-next-text (text pattern))
 
 (defmethod search-next-text ((txt text) pattern)
-  (format-wish "searchnext ~a ~a" (widget-path txt) pattern)
+  (format-wish "searchnext ~a {~a}" (widget-path txt) pattern)
   txt)
 
 (defgeneric tag-configure (txt tag option value &rest others))
 
 (defmethod tag-configure ((txt text) tag option value &rest others)
-  (format-wish "~a tag configure ~a~{ -~(~a~) {~/nodgui::pprint-down/}~}" (widget-path txt)
+  (format-wish "~a tag configure {~a}~{ {-~(~a~)} {~/nodgui::pprint-down/}~}" (widget-path txt)
                (if (stringp tag)
                    tag
-                 (format nil "~(~a~)" tag))
+                   (format nil "~(~a~)" tag))
                (list* option value others))
   txt)
 
@@ -120,7 +120,7 @@
   (declare (ignore exclusive))
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "~a tag bind ~a ~a {callback ~A}" (widget-path object) tag event name))
+    (format-wish "~a tag bind {~a} {~a} {callback ~A}" (widget-path object) tag event name))
   object)
 
 (defmethod text ((text text))
@@ -136,7 +136,9 @@
 
 (defmethod save-text ((txt text) filename)
   "save the content of the text widget into the file <filename>"
-  (format-wish "set file [open {~a} \"w\"];puts $file [~a get 1.0 end];close $file;puts \"asdf\"" filename (widget-path txt))
+  (format-wish "set file [open {~a} \"w\"];puts $file [~a get 1.0 end];close $file;puts \"asdf\""
+               filename
+               (widget-path txt))
   (read-line (wish-stream *wish*))
   txt)
 
@@ -145,5 +147,6 @@
 (defmethod load-text((txt text) filename)
   "load the content of the file <filename>"
 ;  (format-wish "set file [open {~a} \"r\"];~a delete 1.0 end;~a insert end [read $file];close $file;puts \"asdf\"" filename (widget-path txt) (widget-path txt))
-  (format-wish "set file [open {~a} \"r\"];~a delete 1.0 end;~a insert end [read $file];close $file;puts \"(:DATA asdf)\"" filename (widget-path txt) (widget-path txt))
+  (format-wish "set file [open {~a} \"r\"];~a delete 1.0 end;~a insert end [read $file];close $file;puts \"(:DATA asdf)\""
+               filename (widget-path txt) (widget-path txt))
   (read-data))

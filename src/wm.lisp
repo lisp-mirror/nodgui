@@ -100,11 +100,11 @@
 (defgeneric set-wm-attrib (toplevel attributes))
 
 (defmethod resizable ((tl widget) x y)
-  (format-wish "wm resizable ~a ~a ~a" (widget-path tl) x y)
+  (format-wish "wm resizable ~a {~a} {~a}" (widget-path tl) x y)
   tl)
 
 (defmethod set-wm-overrideredirect ((w widget) val)
-  (format-wish "wm overrideredirect ~a ~a" (widget-path w) val)
+  (format-wish "wm overrideredirect ~a {~a}" (widget-path w) val)
   w)
 
 (defmethod wm-title ((w widget) title)
@@ -124,7 +124,7 @@
   (read-wish))
 
 (defmethod (setf wm-state) (new-state (w widget))
-  (format-wish "wm state ~a ~a" (widget-path w) new-state)
+  (format-wish "wm state ~a {~a}" (widget-path w) new-state)
   new-state)
 
 (defmethod minsize ((w widget) x y)
@@ -179,7 +179,7 @@
             (list width height x y)))))))
 
 (defmethod (setf geometry) (geometry (tl widget))
-  (format-wish "wm geometry ~a ~a" (widget-path tl) geometry)
+  (format-wish "wm geometry ~a {~a}" (widget-path tl) geometry)
   geometry)
 
 (defmethod set-geometry ((tl widget) width height x y)

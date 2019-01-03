@@ -134,12 +134,12 @@
 (defgeneric clear (widget))
 
 (defmethod scale ((canvas canvas) factor &optional factory)
-  (format-wish "~a scale all 0 0 ~a ~a"
+  (format-wish "~a scale all 0 0 {~a} {~a}"
                (widget-path canvas) factor (or factory factor))
   canvas)
 
 (defun move-all (canvas dx dy)
-  (format-wish "~a move all ~a ~a" (widget-path canvas) dx dy)
+  (format-wish "~a move all {~a} {~a}" (widget-path canvas) dx dy)
   canvas)
 
 (defmethod bbox ((item canvas-item))
@@ -173,7 +173,7 @@
   (elt aabb 3))
 
 (defun canvas-item-bbox (canvas handle)
-  (format-wish "senddata \"([~a bbox ~a])\"" (widget-path canvas) handle)
+  (format-wish "senddata \"([~a bbox {~a}])\"" (widget-path canvas) handle)
   (read-data))
 
 (defmethod calc-scroll-region ((canvas canvas))
@@ -182,9 +182,8 @@
                (widget-path canvas))
   canvas)
 
-
 (defmethod set-coords (canvas item coords)
-  (format-wish "~a coords ~a~{ ~a~}" (widget-path canvas) item coords)
+  (format-wish "~a coords {~a}~{ {~a}~}" (widget-path canvas) item coords)
   canvas)
 
 (defmethod set-coords ((canvas canvas) (item canvas-item) (coords list))
@@ -197,7 +196,7 @@
   (funcall #'set-coords canvas (handle item) coords))
 
 (defmethod coords ((item canvas-item))
-  (list 0 0)) ; not implemented yet
+  (error "not implemented, patches welcome! :)"))
 
 (defun format-number (stream number)
   (cond
@@ -221,11 +220,11 @@
 
 (defun process-coords (input)
   (with-output-to-string (s)
-                         (format-number s input)))
+    (format-number s input)))
 
 (defmethod (setf coords) (val (item canvas-item))
   (let ((coord-list (process-coords val)))
-    (format-wish "~a coords ~a ~a" (widget-path (canvas item)) (handle item) coord-list)
+    (set-coords (canvas item) (handle item) (cl-ppcre:split " " (trim coord-list)))
     coord-list))
 
 (defmethod itembind ((canvas canvas) (item canvas-item) event fun)
@@ -242,7 +241,8 @@
   "bind fun to event of the widget w"
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "~a bind ~a ~a {sendevent ~A %x %y %k %K %w %h %X %Y %b}" (widget-path canvas) item event name))
+    (format-wish "~a bind ~a {~a} {sendevent ~a %x %y %k %K %w %h %X %Y %b}"
+                 (widget-path canvas) item event name))
   canvas)
 
 (defmethod tagbind ((canvas canvas) tag event fun &key exclusive)
@@ -253,7 +253,8 @@
   "bind fun to event of the widget w"
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "~a bind ~(~a~) ~a {sendevent ~A %x %y %k %K %w %h %X %Y %b ~:[~;;break~]}" (widget-path canvas) tag event name exclusive))
+    (format-wish "~a bind {~(~a~)} {~a} {sendevent ~a %x %y %k %K %w %h %X %Y %b ~:[~;;break~]}"
+                 (widget-path canvas) tag event name exclusive))
   canvas)
 
 (defmethod bind ((w canvas-item) event fun &key append exclusive)
@@ -262,8 +263,11 @@
 
 (defmethod tcl-bind ((w canvas-item) event code &key append exclusive)
   (declare (ignore append exclusive))
-  (format-wish "~a bind ~a ~a {~a}"
-               (widget-path (canvas w)) (handle w) event code))
+  (format-wish "~a bind ~a {~a} {~a}"
+               (widget-path (canvas w))
+               (handle w)
+               event
+               code))
 
 (defmethod scrollregion ((c canvas) x0 y0 x1 y1)
   (setf (scrollregion-x0 c) (tk-number x0))
@@ -490,9 +494,10 @@
 (defun create-text (canvas x y text &key (anchor :nw) (justify :left) (angle 0.0))
   (assert (find justify '(:left :right :center)))
   (format-wish (tcl-str (senddata [~a create text ~a ~a
-                                  -angle   ~a
+                                  -angle   {~a}
                                   -justify ~\(~a~\)
-                                  -anchor ~\(~a~\) -text {~a}]))
+                                  -anchor  {~\(~a~\)}
+                                  -text    {~a}]))
                (widget-path canvas)
                (tk-number x) (tk-number y)
                angle
@@ -520,11 +525,18 @@
   (setf (handle c) (create-image canvas x y :image image)))
 
 (defun image-setpixel (image data x y &optional x2 y2 )
-  (format-wish "~A put {~{{~:{#~2,'0X~2,'0X~2,'0X ~} } ~} } -to ~a ~a~@[ ~a~]~@[ ~a~]" (name image) data x y x2 y2)
+  (format-wish "~A put {~{{~:{#~2,'0X~2,'0X~2,'0X ~} } ~} } -to ~a ~a~@[ ~a~]~@[ ~a~]"
+               (name image)
+               data
+               (tk-number  x)
+               (tk-number  y)
+               (tk-number x2)
+               (tk-number y2))
   image)
 
 (defun create-bitmap (canvas x y &key (bitmap nil))
-  (format-wish "senddata [~a create image ~a ~a -anchor nw~@[ -bitmap ~a~]]" (widget-path canvas)
+  (format-wish "senddata [~a create image ~a ~a -anchor nw~@[ -bitmap ~a~]]"
+               (widget-path canvas)
                (tk-number x) (tk-number y)
                (and bitmap (name bitmap)))
   (read-data))
@@ -557,25 +569,33 @@
   (item-configure widget item option value))
 
 (defmethod item-configure ((widget canvas) item option value)
-  (format-wish "~A itemconfigure ~A -~(~A~) {~A}" (widget-path widget) item option
-            (if (stringp value) ;; There may be values that need to be passed as
-                value           ;; unmodified strings, so do not downcase strings
-              (format nil "~(~a~)" value))) ;; if its not a string, print it downcased
+  (format-wish "~A itemconfigure {~A} {-~(~A~)} {~A}"
+               (widget-path widget)
+               item
+               option
+               (if (stringp value) ;; There may be values that need to be passed as
+                   value           ;; unmodified strings, so do not downcase strings
+                   (format nil "~(~a~)" value))) ;; if its not a string, print it downcased
   widget)
 
 ;;; for tkobjects, the name of the widget is taken
 (defmethod itemconfigure ((widget canvas) item option (value tkobject))
   (item-configure widget item option value))
 
+;; TODO: call less specialized method
 (defmethod item-configure ((widget canvas) item option (value tkobject))
-  (format-wish "~A itemconfigure ~A -~(~A~) {~A}" (widget-path widget) item option (widget-path value))
+  (format-wish "~A itemconfigure {~A} {-~(~A~)} {~A}"
+               (widget-path widget)
+               item
+               option
+               (widget-path value))
   widget)
 
 (defmethod itemlower ((widget canvas) item &optional below)
   (item-lower widget item below))
 
 (defmethod item-lower ((widget canvas) item &optional below)
-  (format-wish "~A lower ~A ~@[~A~]" (widget-path widget)
+  (format-wish "~A lower {~A} ~@[{~A}~]" (widget-path widget)
                item below)
   widget)
 
@@ -585,23 +605,28 @@
 (defmethod itemraise ((widget canvas) item &optional above)
   (item-raise widget item above))
 
+;; TODO: refactor item-lower and item-raise, duplicated code
 (defmethod item-raise ((widget canvas) item &optional above)
   (with-canvas-path (path widget)
-    (format-wish "~A raise ~A ~@[~A~]" (widget-path widget)
+    (format-wish "~A raise {~A} ~@[{~A}~]" (widget-path widget)
                  item above)
     widget))
 
 (defun item-cget (canvas item option)
-  (format-wish (tcl-str (senddatastring [~a itemcget ~\(~a~\) -~\(~a~\)]))
-               (widget-path canvas) item option)
+  (format-wish (tcl-str (senddatastring [~a itemcget {~\(~a~\)} {-~\(~a~\)}]))
+               (widget-path canvas) item (down option))
   (read-data))
 
 (defmethod initialize-instance :after ((c canvas-window) &key canvas (x 0) (y 0) widget (anchor :nw))
   (setf (handle c) (create-window canvas x y widget :anchor anchor)))
 
 (defun create-window (canvas x y widget &key (anchor :nw))
-  (format-wish "senddata [~a create window ~a ~a -anchor ~(~a~) -window ~a]"
-               (widget-path canvas) (tk-number x) (tk-number y) anchor (widget-path widget))
+  (format-wish "senddata [~a create window ~a ~a -anchor {~(~a~)} -window ~a]"
+               (widget-path canvas)
+               (tk-number x)
+               (tk-number y)
+               (down anchor)
+               (widget-path widget))
   (read-data))
 
 (defun postscript (canvas &key rotate pagewidth pageheight)
@@ -614,8 +639,7 @@
                 (scrollregion-x0 canvas) (scrollregion-y0 canvas)
                 (- (scrollregion-x1 canvas) (scrollregion-x0 canvas))
                 (- (scrollregion-y1 canvas) (scrollregion-y0 canvas))
-                rotate pageheight pagewidth
-                )
+                (tk-number rotate) (tk-number pageheight) (tk-number pagewidth))
     (format-wish "senddatastring [~a postscript -colormode color]" (widget-path canvas)))
   (read-data))
 

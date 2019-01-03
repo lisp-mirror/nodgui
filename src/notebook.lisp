@@ -37,7 +37,7 @@
 (defgeneric notebook-tab (nb widget option value))
 
 (defmethod notebook-tab ((nb notebook) (w widget) option value)
-  (format-wish "~a tab ~a -~(~a~) {~a}" (widget-path nb)
+  (format-wish "~a tab ~a {-~(~a~)} {~a}" (widget-path nb)
                (widget-path w) option value))
 
 (defgeneric notebook-forget (nb widget))
@@ -53,7 +53,7 @@
 (defgeneric notebook-identify (nb x y))
 
 (defmethod notebook-identify ((nb notebook) x y)
-  (format-wish "senddatastring [~a identify ~a ~a]" (widget-path nb) x y)
+  (format-wish "senddatastring [~a identify {~a} {~a}]" (widget-path nb) x y)
   (read-data))
 
 (defgeneric notebook-index (nb tab))

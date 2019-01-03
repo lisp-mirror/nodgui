@@ -214,15 +214,15 @@ not equal to all the others. The test is performed calling :test"
                             :column-values column-values))))
 
 (defmethod (setf text) (val (item tree-item))
-  (format-wish "~a item ~a -text {~A}" (widget-path (tree item)) (id item) val)
+  (format-wish "~a item {~a} -text {~A}" (widget-path (tree item)) (id item) val)
   val)
 
 (defmethod (setf image) (val (item tree-item))
-  (format-wish "~a item ~a -image {~A}" (widget-path (tree item)) (id item) val)
+  (format-wish "~a item {~a} -image {~A}" (widget-path (tree item)) (id item) val)
   val)
 
 (defmethod see ((tv treeview) (item tree-item))
-  (format-wish "~a see ~a" (widget-path tv) (id item))
+  (format-wish "~a see {~a}" (widget-path tv) (id item))
   tv)
 
 (defgeneric children (tree item))
@@ -241,10 +241,10 @@ not equal to all the others. The test is performed calling :test"
 (defgeneric (setf children) (val tree item))
 
 (defmethod (setf children) (val (tree treeview) item)
-  (format-wish "~a children ~a {~{~a~^ ~}}" (widget-path tree) item val))
+  (format-wish "~a children {~a} {~{~a~^ ~}}" (widget-path tree) item val))
 
 (defmethod (setf children) (val (tree treeview) (item tree-item))
-  (format-wish "~a children ~a {~{~a~^ ~}}" (widget-path tree) (id item) val))
+  (format-wish "~a children {~a} {~{~a~^ ~}}" (widget-path tree) (id item) val))
 
 (defgeneric column-configure (tree column option value &rest rest))
 
@@ -304,7 +304,7 @@ not equal to all the others. The test is performed calling :test"
 
 (defmethod treeview-exists ((tree treeview) item)
   "Check if tree contains item"
-  (format-wish "senddata [~a exists ~a]" (widget-path tree) item)
+  (format-wish "senddata [~a exists {~a}]" (widget-path tree) item)
   (tcl-bool->lisp (read-data)))
 
 (defgeneric treeview-focus (tree))
@@ -317,17 +317,19 @@ not equal to all the others. The test is performed calling :test"
 (defgeneric treeview-identify-item (tree x y))
 
 (defmethod treeview-identify-item ((tree treeview) x y)
-  (format-wish "senddatastring [~a identify row ~a ~a ]" (widget-path tree) x y)
+  (format-wish "senddatastring [~a identify row ~a ~a ]" (widget-path tree)
+               (tk-number x)
+               (tk-number y))
   (let ((name (read-data)))
     (find name (items tree) :key #'id :test #'equal)))
 
 (defgeneric (setf treeview-focus) (item tree))
 
 (defmethod (setf treeview-focus) (item tree)
-  (format-wish "~a focus ~a" (widget-path tree) item))
+  (format-wish "~a focus {~a}" (widget-path tree) item))
 
 (defmethod (setf treeview-focus) ((item tree-item) tree)
-  (format-wish "~a focus ~a" (widget-path tree) (id item)))
+  (format-wish "~a focus {~a}" (widget-path tree) (id item)))
 
 (defun treeview-insert (tree &rest options
                         &key
@@ -338,7 +340,7 @@ not equal to all the others. The test is performed calling :test"
   ;; Remove the keys that aren't optional in Tcl.
   (remf options :parent)
   (remf options :index)
-  (format-wish "~a insert ~a ~a~{ -~(~a~) ~/nodgui::tk-princ/~}"
+  (format-wish "~a insert {~a} {~a} ~{ -~(~a~) ~/nodgui::tk-princ/~}"
                (widget-path tree)
                parent
                index
@@ -353,10 +355,10 @@ not equal to all the others. The test is performed calling :test"
   "Query or modify the options for the specified item."
   (cond
     ((second options) ;; modify
-     (format-wish "~a item ~a~{ -~(~a~) ~/nodgui::tk-princ/~}"
+     (format-wish "~a item {~a} ~{ -~(~a~) ~/nodgui::tk-princ/~}"
                   (widget-path tree) item options))
     (t ;; query
-     (format-wish "senddatastring [~a item ~a ~@[ -~(~a~)~]]"
+     (format-wish "senddatastring [~a item {~a} ~@[ -~(~a~)~]]"
                   (widget-path tree) item (car options))
      (read-data))))
 
@@ -364,10 +366,10 @@ not equal to all the others. The test is performed calling :test"
   "Query or modify the options for the specified column."
   (cond
     ((second options) ;; modify
-     (format-wish "~a column ~a~{ -~(~a~) ~/nodgui::tk-princ/~}"
+     (format-wish "~a column {~a} ~{ -~(~a~) ~/nodgui::tk-princ/~}"
                   (widget-path tree) column options))
     (t ;; query
-     (format-wish "senddatastring [~a column ~a ~@[ -~(~a~)~]]"
+     (format-wish "senddatastring [~a column {~a} ~@[ {-~(~a~)}~]]"
                   (widget-path tree) column (car options))
      (read-data))))
 
@@ -548,3 +550,8 @@ not equal to all the others. The test is performed calling :test"
 (defmethod treeview-delete-all ((object scrolled-treeview))
   (with-inner-treeview (treeview object)
     (treeview-delete-all treeview)))
+
+(defmethod treeview-exists ((object scrolled-treeview) item)
+  "Check if tree contains item"
+  (with-inner-treeview (treeview object)
+    (treeview-exists treeview item)))

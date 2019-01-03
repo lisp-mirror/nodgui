@@ -44,7 +44,7 @@ e.g. 'configure'."))
 (defmethod initialize-instance :after ((m menubutton) &key command underline accelerator state)
   (when command
     (add-callback (name m) command))
-  (format-wish "~A add command -label {~A}  -command {callback ~A}~@[ -underline ~a ~]~@[ -accelerator {~a} ~]~@[ -state ~(~a~)~]"
+  (format-wish "~A add command -label {~A}  -command {callback ~A}~@[ -underline {~a} ~]~@[ -accelerator {~a} ~]~@[ -state {~(~a~)}~]"
                (widget-path (master m)) (text m) (name m) underline accelerator state))
 
 (defun make-menubutton(menu text command &key underline accelerator state)

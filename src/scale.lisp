@@ -33,5 +33,5 @@
 (defmethod (setf command) (val (scale scale))
   (add-callback (name scale) val)
   (format-wish "proc ~a-command {val} {callbackval ~a $val}" (name scale) (name scale))
-  (format-wish "~a configure -command ~a-command" (widget-path scale) (name scale))
+  (format-wish "~a configure -command {~a-command}" (widget-path scale) (name scale))
   val)

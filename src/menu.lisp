@@ -45,12 +45,13 @@
 ;(defmethod create ((m menu))
 
 (defmethod initialize-instance :after ((m menu) &key underline (tearoff 0))
+  ;; TODO investigate removing
   (when (menu-help m) ;; special treatment for help menu
     (setf (name m) "help")
     (setf (slot-value m 'widget-path) (create-path (master m) (name m))))
-  (format-wish "menu ~A -tearoff ~a" (widget-path m) tearoff)
+  (format-wish "menu ~A -tearoff {~a}" (widget-path m) tearoff)
   (when (master m)
-    (format-wish "~A add cascade -label {~A} -menu ~a~@[ -underline ~a ~]"
+    (format-wish "~A add cascade -label {~A} -menu ~a ~@[ -underline {~a} ~]"
                  (widget-path (master m)) (text m) (widget-path m) underline)))
 
 (defun make-menu (menu text &key underline name (tearoff 0))

@@ -86,8 +86,8 @@
 (defmethod listbox-append ((l listbox) values)
   "append values (which may be a list) to the list box"
   (if (listp values)
-      (format-wish "~a insert end ~{ \{~a\}~}" (widget-path l) values)
-      (format-wish "~a insert end \{~a\}" (widget-path l) values))
+      (format-wish "~a insert end ~{ {~a}~}" (widget-path l) values)
+      (format-wish "~a insert end {~a}" (widget-path l) values))
   l)
 
 (defmethod listbox-get-selection ((l listbox))
@@ -115,8 +115,8 @@ alternatively a list of numbers may be given"
   (if (null val)
       (format-wish "~a selection clear 0 end" (widget-path l))
       (if (listp val)
-          (format-wish "~a selection set ~{ ~a~}" (widget-path l) val)
-          (format-wish "~a selection set ~a" (widget-path l) val)))
+          (format-wish "~a selection set ~{ {~a}~}" (widget-path l) val)
+          (format-wish "~a selection set {~a}" (widget-path l) val)))
   l)
 
 (defmethod listbox-clear ((l listbox) &optional (start 0) (end :end))
@@ -136,20 +136,23 @@ alternatively a list of numbers may be given"
 
 (defmethod listbox-insert ((l listbox) index values)
   (if (listp values)
-      (format-wish "~a insert ~a ~{ \{~a\}~}" (widget-path l) index values)
-      (format-wish "~a insert ~a \{~a\}" (widget-path l) index values))
+      (format-wish "~a insert {~a} ~{ {~a}~}" (widget-path l) index values)
+      (format-wish "~a insert {~a} {~a}" (widget-path l) index values))
   l)
 
 (defmethod listbox-configure ((l listbox) index &rest options)
-  (format-wish "~a itemconfigure ~a ~{ -~(~a~) {~/nodgui::pprint-down/}~}" (widget-path l) index options)
+  (format-wish "~a itemconfigure {~a} ~{ {-~(~a~)} {~/nodgui::pprint-down/}~}"
+               (widget-path l)
+               index
+               options)
   l)
 
 (defmethod listbox-nearest ((l listbox) y)
-  (format-wish "senddata [~a nearest ~a]" (widget-path l) y)
+  (format-wish "senddata [~a nearest {~a}]" (widget-path l) y)
   (read-data))
 
 (defmethod see ((lb listbox) pos)
-  (format-wish "~a see ~(~a~)" (widget-path lb) pos)
+  (format-wish "~a see {~(~a~)}" (widget-path lb) pos)
   lb)
 
 (alexandria:define-constant +legal-select-mode-values+ '(:single :browse :multiple :extended)

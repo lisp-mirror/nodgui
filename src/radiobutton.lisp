@@ -46,17 +46,25 @@
   "reads the content of the shared variable of the radio button set"
   (if (radio-button-variable rb)
       (progn
-        (format-wish "global ~a; senddata $~a" (radio-button-variable rb) (radio-button-variable rb))
+        (format-wish "global ~a; senddata ${~a}"
+                     (radio-button-variable rb)
+                     (radio-button-variable rb))
         (read-data))
       nil))
 
 (defmethod (setf value) (val (rb radio-button))
   "sets the content of the shared variable of the radio button set"
   (when (radio-button-variable rb)
-    (format-wish "global ~a; set ~a ~a" (radio-button-variable rb) (radio-button-variable rb) val))
+    (format-wish "global ~a; set ~a {~a}"
+                 (radio-button-variable rb)
+                 (radio-button-variable rb) val))
   val)
 
 (defmethod (setf command) (val (rb radio-button))
   (add-callback (name rb) val)
-  (format-wish "~a configure -command {global ~a;callbackval ~a $~a}" (widget-path rb) (name rb) (name rb) (radio-button-variable rb))
+  (format-wish "~a configure -command {global ~a;callbackval ~a $~a}"
+               (widget-path rb)
+               (name rb)
+               (name rb)
+               (radio-button-variable rb))
   val)
