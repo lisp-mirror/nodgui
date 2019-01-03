@@ -1535,7 +1535,9 @@
    :search-text
    :autocomplete-listbox
    :autocomplete-function-hook
-   :text-input-dialog))
+   :launch-autocompletion
+   :text-input-dialog
+   :listbox-dialog))
 
 (defpackage :nodgui-user
   (:use :common-lisp :nodgui))

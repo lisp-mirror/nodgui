@@ -664,6 +664,13 @@ Widgets offered are:
     :initform nil
     :initarg  :autocomplete-function-hook)))
 
+(defun %autocomplete (listbox)
+  (with-accessors ((autocomplete-function-hook autocomplete-function-hook)) listbox
+    (listbox-clear listbox)
+    (when autocomplete-function-hook
+      (listbox-append listbox (funcall autocomplete-function-hook
+                                       (search-text listbox))))))
+
 (defmethod initialize-instance :after ((object autocomplete-listbox)
                                        &key (select-mode :browse) &allow-other-keys)
   (with-accessors ((listbox                    listbox)
@@ -672,10 +679,12 @@ Widgets offered are:
     (listbox-select-mode listbox select-mode)
     (bind entry #$<KeyPress>$ (lambda (event)
                                 (declare (ignore event))
-                                (listbox-clear listbox)
-                                (when autocomplete-function-hook
-                                  (listbox-append listbox (funcall autocomplete-function-hook
-                                                                   (search-text object))))))))
+                                (%autocomplete object)))))
+
+(defgeneric launch-autocompletion (object))
+
+(defmethod launch-autocompletion ((object autocomplete-listbox))
+  (%autocomplete object))
 
 ;;; demos
 
@@ -751,9 +760,9 @@ Widgets offered are:
 (defun text-input-dialog (parent title message
                           &key
                             (button-message "OK")
-                            (padding-x 2)
-                            (padding-y 2))
-  "A trivial dialog that waits for a textual imput from user"
+                            (padding-x         2)
+                            (padding-y         2))
+  "A trivial dialog that waits for a textual input from user"
   (let ((res nil))
     (with-modal-toplevel (toplevel :title title)
       (transient toplevel parent)
@@ -761,9 +770,9 @@ Widgets offered are:
                (lambda ()
                  (setf res (text entry))
                  (setf *break-mainloop* t))))
-        (let* ((label (make-instance 'label
-                                     :master toplevel
-                                     :text   message))
+        (let* ((label  (make-instance 'label
+                                      :master toplevel
+                                      :text   message))
                (entry  (make-instance 'entry
                                       :master toplevel))
                (button (make-instance 'button
@@ -776,4 +785,47 @@ Widgets offered are:
           (grid label  0 0 :sticky :n :padx padding-x :pady padding-y)
           (grid entry  1 0 :sticky :n :padx padding-x :pady padding-y)
           (grid button 2 0 :sticky :n :padx padding-x :pady padding-y))))
+    res))
+
+(alexandria:define-constant +selection-mode-allow-double-click+ '(:single :browse) :test #'equalp)
+
+(defun listbox-dialog (parent title message data
+                       &key
+                         (select-mode       :browse)
+                         (key               #'identity)
+                         (button-message "OK")
+                         (padding-x         2)
+                         (padding-y         2))
+  "A trivial dialog with a listbox that waits for user to select input"
+  (let ((res nil))
+    (with-modal-toplevel (toplevel :title title)
+      (transient toplevel parent)
+      (flet ((close-window-cb (sc-listbox)
+               (lambda ()
+                 (setf res (listbox-get-selection-value sc-listbox))
+                 (setf *break-mainloop* t))))
+        (let* ((label      (make-instance 'label
+                                          :master toplevel
+                                          :text   message))
+               (sc-listbox (make-instance 'scrolled-listbox
+                                          :select-mode select-mode
+                                          :master      toplevel))
+               (button     (make-instance 'button
+                                          :text    button-message
+                                          :command (close-window-cb sc-listbox)
+                                          :master  toplevel)))
+          (dolist (datum data)
+            (listbox-append sc-listbox (funcall key datum)))
+          (when (find select-mode +selection-mode-allow-double-click+)
+            (bind (listbox sc-listbox) ; internal slot
+                  #$<Double-1>$
+                  (lambda (event)
+                    (declare (ignore event))
+                    (funcall (close-window-cb sc-listbox)))
+                  :append    t))
+          (grid label      0 0 :sticky :n :padx padding-x :pady padding-y)
+          (grid sc-listbox 1 0 :sticky :news :padx padding-x :pady padding-y)
+          (grid button     2 0 :sticky :n :padx padding-x :pady padding-y)
+          (grid-rowconfigure    toplevel 1 :weight 1)
+          (grid-columnconfigure toplevel 0 :weight 1))))
     res))
