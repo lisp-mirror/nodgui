@@ -103,8 +103,9 @@
 (defmethod listbox-get-selection-value ((object listbox))
   (let ((indices (listbox-get-selection-index object)))
     (loop for i in indices collect
-         (progn
-           (format-wish (tclize `(senddatastring [ ,(widget-path object) " " get ,i ])))
+         (let ((*add-space-after-emitted-unspecialized-element* nil))
+           (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                                                 get ,(wrap-braces i) ])))
            (read-data)))))
 
 (defmethod listbox-select ((l listbox) val)
@@ -157,7 +158,7 @@ alternatively a list of numbers may be given"
 (defmethod listbox-select-mode ((object listbox) (mode symbol))
   (assert (find mode +legal-select-mode-values+))
   (format-wish (tclize `(,(widget-path object) " "
-                          configure -selectmode ,(down mode)))))
+                          configure -selectmode ,(wrap-braces (down mode))))))
 
 (defmethod listbox-export-selection ((object listbox) value)
   (format-wish (tclize `(,(widget-path object) " "

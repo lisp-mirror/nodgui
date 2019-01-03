@@ -19,6 +19,8 @@
 
   (defparameter *add-space-after-emitted-string*      nil)
 
+  (defparameter *add-space-after-emitted-unspecialized-element*  t)
+
   (define-constant +to-lisp-mode+   :lisp  :test #'eq)
 
   (define-constant +to-tcl-if-mode+ :if    :test #'eq)
@@ -47,7 +49,9 @@
   (defgeneric ->tcl (code))
 
   (defmethod ->tcl (code)
-    (lambda () (format nil "~a " code)))
+    (if *add-space-after-emitted-unspecialized-element*
+        (lambda () (format nil "~a " code))
+        (lambda () (format nil "~a" code))))
 
   (defmethod ->tcl ((code string))
     (if  *add-space-after-emitted-string*
@@ -167,4 +171,10 @@
   (defmacro tclize-if-true (value statement)
     `(if ,value
          (tclize ,statement)
-         "")))
+         ""))
+
+  (defmacro wrap-braces (value &optional (add-space-after t))
+    `(let ((*suppress-newline-for-tcl-statements* t))
+       ,(if add-space-after
+            `(tclize `({+ ,,value } " "))
+            `(tclize `({+ ,,value }))))))

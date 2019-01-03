@@ -532,17 +532,17 @@
 (defun create-arc (canvas x0 y0 x1 y1
                    &key (start 0) (extent 180) (style "pieslice") (fill "#ff0000"))
   (with-canvas-path (path canvas)
-    (let ((*add-space-after-emitted-string* t))
-      (format-wish (tclize
-                    `(senddata [ ,path create arc
-                               ,(tk-number x0)
-                               ,(tk-number y0)
-                               ,(tk-number x1)
-                               ,(tk-number y1)
-                               -start ,start
-                               -extent ,extent
-                               -style ,style
-                               -fill ,fill ]))))
+    (format-wish (tclize
+                  `(senddata [ ,path         " "
+                             create arc
+                             ,(tk-number x0) " "
+                             ,(tk-number y0) " "
+                             ,(tk-number x1) " "
+                             ,(tk-number y1) " "
+                             -start  ,(wrap-braces start)
+                             -extent ,(wrap-braces extent)
+                             -style  ,(wrap-braces style)
+                             -fill   ,(wrap-braces fill) ])))
     (read-data)))
 
 (defclass canvas-arc (canvas-item)

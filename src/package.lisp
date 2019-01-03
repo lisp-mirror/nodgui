@@ -1098,10 +1098,12 @@
         :nodgui.utils)
   (:export :*suppress-newline-for-tcl-statements*
            :*add-space-after-emitted-string*
+           :*add-space-after-emitted-unspecialized-element*
            :tcl
            :tcl-str
            :tclize
            :tclize-if-true
+           :wrap-braces
            :defproc
            :with-flush-server
            :for-list))

@@ -61,7 +61,7 @@
           (format s "}"))))
     (format-wish (tclize `(senddatastring ["tk_getSaveFile "
                                           -filetypes  ,files " "
-                                          -title      {+ ,title } " "
+                                          -title      ,(wrap-braces title)
                                           -parent     ,(if parent
                                                            (widget-path parent)
                                                            (widget-path *tk*)) " "

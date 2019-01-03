@@ -35,7 +35,7 @@
     (format-wish "image create photo ~a" (name object))
     (when data
       (if (stringp data)
-          (format-wish (tclize `(senddatastring [ ,(name object) " " put ,data ])))
+          (format-wish (tclize `(senddatastring [ ,(name object) " " put ,(wrap-braces data) ])))
           (format-wish (tclize `(senddatastring [ ,(name object) " " put
                                                 ,(nodgui.base64:encode data)
                                                 ])))))))
