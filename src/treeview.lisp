@@ -384,7 +384,7 @@ not equal to all the others. The test is performed calling :test"
                                (anchor  nil)
                                (command nil))
   "Add properties (text, callback etc.) to the header of this treeview"
-  (let ((callback-name (format nil "{~a:~a}" (widget-path object) column-id))
+  (let ((callback-name (format nil "~a:~a" (widget-path object) (tkescape column-id)))
         (*suppress-newline-for-tcl-statements* t))
     (when command
       ;; register the callback
