@@ -249,7 +249,8 @@ not equal to all the others. The test is performed calling :test"
 (defgeneric column-configure (tree column option value &rest rest))
 
 (defmethod column-configure ((tree treeview) column option value &rest rest)
-  (format-wish "~a column ~a -~(~a~) {~a}~{ -~(~a~) {~(~a~)}~}" (widget-path tree) column
+  (format-wish "{~a} column {~a} {-~(~a~)} {~a}~{ {-~(~a~)} {~(~a~)}~}"
+               (widget-path tree) column
                option value rest))
 
 (defgeneric treeview-delete (tree items))
@@ -340,7 +341,7 @@ not equal to all the others. The test is performed calling :test"
   ;; Remove the keys that aren't optional in Tcl.
   (remf options :parent)
   (remf options :index)
-  (format-wish "~a insert {~a} {~a} ~{ -~(~a~) ~/nodgui::tk-princ/~}"
+  (format-wish "~a insert {~a} {~a} ~{ {-~(~a~)} {~/nodgui::tk-princ/}~}"
                (widget-path tree)
                parent
                index
@@ -355,7 +356,7 @@ not equal to all the others. The test is performed calling :test"
   "Query or modify the options for the specified item."
   (cond
     ((second options) ;; modify
-     (format-wish "~a item {~a} ~{ {-~(~a~)} ~/nodgui::tk-princ/~}"
+     (format-wish "~a item {~a} ~{ {-~(~a~)} {~/nodgui::tk-princ/}~}"
                   (widget-path tree) item options))
     (t ;; query
      (format-wish "senddatastring [~a item {~a} ~@[ {-~(~a~)}~]]"
@@ -366,7 +367,7 @@ not equal to all the others. The test is performed calling :test"
   "Query or modify the options for the specified column."
   (cond
     ((second options) ;; modify
-     (format-wish "~a column {~a} ~{ {-~(~a~)} ~/nodgui::tk-princ/~}"
+     (format-wish "~a column {~a} ~{ {-~(~a~)} {~/nodgui::tk-princ/}~}"
                   (widget-path tree) column options))
     (t ;; query
      (format-wish "senddatastring [~a column {~a} ~@[ {-~(~a~)}~]]"

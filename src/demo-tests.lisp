@@ -674,7 +674,12 @@
         (tag-bind       canvas      "green" #$<ButtonPress-1>$ (bind-green canvas ball))
         (item-move-to   canvas ball (* size 9/10) (* size 9/10))
         (item-raise     canvas ball arc1)
-        (pack           canvas)))))
+        (make-items canvas `((:rectangle 0  ,(/ size 2) 50 ,(+ (/ size 2) 50))
+                             (:arc       0  ,(+ (/ size 2) 10)
+                                         50 ,(+ (/ size 2) 60)
+                                         :start 0 :extent 180 :fill #%purple%)
+                             (:line      0 ,size ,size ,(- size 10) :width 5)))
+        (pack canvas)))))
 
 (defun demo-image ()
   (with-nodgui ()

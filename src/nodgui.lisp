@@ -698,7 +698,7 @@ set y [winfo y ~a]
 (defun cm (tree widget-path)
   (cond
    ((eq tree :separator)
-    (send-wish (format nil "~A add separator" widget-path)))
+    (send-wish (format nil "{~A} add separator" widget-path)))
    ((listp (second tree))
     (let ((newpath (format nil "~A.~A" widget-path (create-name))))
       (when (and (equal widget-path ".menubar")
@@ -706,15 +706,19 @@ set y [winfo y ~a]
                      (equal (first tree) "help")
                      (equal (first tree) "Hilfe")))
         (setf newpath ".menubar.help"))
-      (send-wish (format nil "menu ~A -tearoff 0" newpath))
-      (send-wish (format nil "~a add cascade -label \"~a\" -menu ~a" widget-path (first tree) newpath))
+      (send-wish (format nil "menu {~A} -tearoff 0" newpath))
+      (send-wish (format nil "~a add cascade -label {~a} -menu {~a}"
+                         widget-path
+                         (first tree)
+                         newpath))
       (dolist (entry (second tree))
         (cm entry newpath))))
    (t
     (let* ((name (create-name)))
       (add-callback name (second tree))
-      (send-wish (format nil "~A add command -label {~A} -command {puts -nonewline  {(\"~A\")};flush $server}" widget-path (first tree) name))
-      ))))
+      (send-wish (format nil
+                         "{~A} add command -label {~A} -command {puts -nonewline  {(\"~A\")};flush $server}"
+                         widget-path (first tree) name))))))
 
 (defun create-menu2 (menutree)
   (send-wish (format nil "menu .menubar -tearoff 0 -type menubar"))

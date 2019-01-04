@@ -388,7 +388,6 @@
 (defun make-oval (canvas x0 y0 x1 y1)
   (make-instance 'canvas-oval :canvas canvas :x0 x0 :y0 y0 :x1 x1 :y1 y1))
 
-
 (defun create-rectangle (canvas x0 y0 x1 y1)
   (format-wish "senddata [~a create rectangle ~a ~a ~a ~a]" (widget-path canvas)
                (tk-number x0) (tk-number y0) (tk-number x1) (tk-number y1))
@@ -410,7 +409,7 @@
    and rest any number of option value pairs.
    Understood item types are:
      :rectangle x0 y0 y1 y2
-     :arc x0 y0 y1 y2
+     :arc x0 y0 x1 y1
      :line x0 y0 x1 y1
      :text x y text
      :ctext x y text
@@ -423,7 +422,9 @@
              (loop
                 while item
                 do
-                (format stream " -~(~a~) {~/nodgui::pprint-down/}" (pop item) (pop item)))))
+                  (format stream " {-~a} {~a}"
+                          (down (pop item))
+                          (down (pop item))))))
     (let ((itemtype (pop item))
           (cpath (widget-path canvas)))
       (when (consp itemtype)
@@ -506,8 +507,7 @@
                text)
   (read-data))
 
-(defclass canvas-text (canvas-item)
-  ())
+(defclass canvas-text (canvas-item) ())
 
 (defmethod initialize-instance :after ((c canvas-text) &key canvas x y text)
   (setf (handle c) (create-text canvas x y text)))
