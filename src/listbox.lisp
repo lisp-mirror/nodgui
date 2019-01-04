@@ -53,7 +53,7 @@
 
 (defmethod (setf command) (val (listbox listbox))
   (add-callback (name listbox) val)
-  (format-wish "bind ~a <<ListboxSelect>> {callbackval ~a ([~a curselection])}"
+  (format-wish "bind ~a <<ListboxSelect>> {callbackval {~a} ([~a curselection])}"
                (widget-path listbox)
                (name listbox)
                (widget-path listbox))

@@ -20,9 +20,9 @@
   ())
 
 (defmethod text ((v tktextvariable))
-  (format-wish "global text_~a ; senddatastring $text_~a" (name v) (name v))
+  (format-wish "global {text_~a} ; senddatastring ${text_~a}" (name v) (name v))
   (read-data))
 
 (defmethod (setf text) (val (v tktextvariable))
-  (format-wish "global text_~a ; set text_~a \"~a\""  (name v)  (name v) (tkescape2 val))
+  (format-wish "global {text_~a} ; set {text_~a} \"~a\""  (name v)  (name v) (tkescape2 val))
   val)
