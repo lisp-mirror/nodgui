@@ -1314,6 +1314,8 @@
            :listbox-get-selection
            :listbox-get-selection-index
            :listbox-get-selection-value
+           :listbox-values-in-range
+           :listbox-all-values
            :listbox-nearest
            :listbox-select
            :listbox-select-mode

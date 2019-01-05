@@ -647,6 +647,7 @@ Widgets offered are:
   (listbox-select (listbox object) val)
   object)
 
+;; TODO: use a macro to generate all those methods
 (defmethod listbox-get-selection ((object searchable-listbox))
   (listbox-get-selection (listbox object)))
 
@@ -661,6 +662,12 @@ Widgets offered are:
 
 (defmethod listbox-export-selection ((object searchable-listbox) value)
   (listbox-export-selection (listbox object) value))
+
+(defmethod listbox-values-in-range ((object searchable-listbox) &key (from 0) (to :end))
+  (listbox-values-in-range (listbox object) :from from :to to))
+
+(defmethod listbox-all-values ((object searchable-listbox))
+  (listbox-all-values (listbox object)))
 
 ;;; autocomple-listbox
 

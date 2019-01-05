@@ -83,6 +83,10 @@
 
 (defgeneric listbox-export-selection (object value))
 
+(defgeneric listbox-values-in-range (object &key from to))
+
+(defgeneric listbox-all-values (object))
+
 (defmethod listbox-append ((l listbox) values)
   "append values (which may be a list) to the list box"
   (if (listp values)
@@ -167,6 +171,20 @@ alternatively a list of numbers may be given"
   (format-wish (tclize `(,(widget-path object) " "
                           configure -exportselection ,(lisp-bool->tcl value)))))
 
+(defmethod listbox-values-in-range ((object listbox) &key (from 0) (to :end))
+  "Get the values of the entries in a listbox in range [from to]"
+  (format-wish (tclize
+                `(senddata [ ,(widget-path object) " "
+                           get
+                           ,(wrap-braces from)
+                           ,(wrap-braces (down to))
+                           ])))
+  (read-data :expected-list-as-data t))
+
+(defmethod listbox-all-values ((object listbox))
+  "Get all values of a listbox"
+  (listbox-values-in-range object :from 0 :to :end))
+
 (defclass scrolled-listbox (frame)
   ((listbox
     :initform nil
@@ -233,7 +251,14 @@ alternatively a list of numbers may be given"
     object))
 
 (defmethod listbox-delete ((object scrolled-listbox) &optional (start 0) (end :end))
-  (with-accessors ((listbox listbox)
-                   (data    data)) object
+  (with-accessors ((listbox listbox)) object
     (listbox-delete listbox start end)
     object))
+
+(defmethod listbox-values-in-range ((object scrolled-listbox) &key (from 0) (to :end))
+  (with-accessors ((listbox listbox)) object
+    (listbox-values-in-range listbox :from from :to to)))
+
+(defmethod listbox-all-values ((object scrolled-listbox))
+  (with-accessors ((listbox listbox)) object
+    (listbox-all-values listbox)))
