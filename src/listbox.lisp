@@ -168,9 +168,15 @@ alternatively a list of numbers may be given"
                           configure -exportselection ,(lisp-bool->tcl value)))))
 
 (defclass scrolled-listbox (frame)
-  ((listbox :accessor listbox)
-   (hscroll :accessor hscroll)
-   (vscroll :accessor vscroll)))
+  ((listbox
+    :initform nil
+    :accessor listbox)
+   (hscroll
+    :initform nil
+    :accessor hscroll)
+   (vscroll
+    :initform nil
+    :accessor vscroll)))
 
 (defmethod initialize-instance :after ((object scrolled-listbox)
                                        &key
@@ -180,9 +186,9 @@ alternatively a list of numbers may be given"
   (setf (hscroll object) (make-scrollbar object :orientation "horizontal"))
   (setf (vscroll object) (make-scrollbar object))
   (setf (listbox object) (make-instance 'listbox
-                                    :master  object
-                                    :xscroll (hscroll object)
-                                    :yscroll (vscroll object)))
+                                        :master  object
+                                        :xscroll (hscroll object)
+                                        :yscroll (vscroll object)))
   (grid (listbox object) 0 0 :sticky :news)
   (grid (hscroll object) 1 0 :sticky :we)
   (grid (vscroll object) 0 1 :sticky :ns)
@@ -230,5 +236,4 @@ alternatively a list of numbers may be given"
   (with-accessors ((listbox listbox)
                    (data    data)) object
     (listbox-delete listbox start end)
-    (setf data nil)
     object))
