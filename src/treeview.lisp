@@ -42,9 +42,18 @@
 ;;; treeview widget
 
 (defwrapper treeview (tktextvariable widget)
-  ((xscroll :accessor xscroll :initarg :xscroll :initform nil)
-   (yscroll :accessor yscroll :initarg :yscroll :initform nil)
-   (items   :accessor items   :initform nil :initarg :items))
+  ((xscroll
+    :accessor xscroll
+    :initarg  :xscroll
+    :initform nil)
+   (yscroll
+    :accessor yscroll
+    :initarg  :yscroll
+    :initform nil)
+   (items
+    :accessor items
+    :initarg :items
+    :initform nil))
   "ttk::treeview")
 
 (defgeneric setup-columns (object column-ids
