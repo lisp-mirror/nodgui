@@ -117,7 +117,7 @@
          (tcl
            (global server)
            (puts $server [strcat < #.+wish-to-lisp-event-reply+ \\+ \"+ $s+ \\+ \"
-                                   $x \ % $y \ % $keycode \ % $char \ %
+                                   $x \ % $y \ % $keycode \ % \\+ \"+ $char+ \\+ \" \ %
                                    $width \ % $height \ %
                                    $root_x \ % $root_y \ % $mouse_button \ %
                                  > ])))))

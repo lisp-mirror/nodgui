@@ -180,14 +180,14 @@ can be passed to AFTER-CANCEL"
 (defun construct-tk-event (properties)
   "create an event structure from a list of values as read from tk"
   (make-event
-   :x (first properties)
-   :y (second properties)
-   :keycode (third properties)
-   :char (fourth properties)
-   :width (fifth properties)
-   :height (sixth properties)
-   :root-x (seventh properties)
-   :root-y (eighth properties)
+   :x            (first properties)
+   :y            (second properties)
+   :keycode      (third properties)
+   :char         (coerce (alexandria:first-elt (fourth properties)) 'character)
+   :width        (fifth properties)
+   :height       (sixth properties)
+   :root-x       (seventh properties)
+   :root-y       (eighth properties)
    :mouse-button (ninth properties)))
 
 (defgeneric bind (w event fun &key append exclusive))
