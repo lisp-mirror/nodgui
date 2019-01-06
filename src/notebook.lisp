@@ -32,13 +32,14 @@
 (defgeneric notebook-add (nb widget &rest options))
 
 (defmethod notebook-add ((nb notebook) (w widget) &rest options)
-  (format-wish "~a add ~a ~{-~(~a~) {~a}~}" (widget-path nb) (widget-path w) options))
+  (format-wish "~a add ~a ~{ -~(~a~) {~a}~}" (widget-path nb) (widget-path w)
+               (mapcar #'down options)))
 
 (defgeneric notebook-tab (nb widget option value))
 
 (defmethod notebook-tab ((nb notebook) (w widget) option value)
-  (format-wish "~a tab ~a {-~(~a~)} {~a}" (widget-path nb)
-               (widget-path w) option value))
+  (format-wish "~a tab ~a { -~(~a~)} {~a}" (widget-path nb)
+               (widget-path w) (down option) (down value)))
 
 (defgeneric notebook-forget (nb widget))
 
