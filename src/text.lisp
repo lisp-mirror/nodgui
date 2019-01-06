@@ -56,8 +56,14 @@
 ;;; text widget
 
 (defwrapper text (widget)
-  ((xscroll :accessor xscroll :initarg :xscroll :initform nil)
-   (yscroll :accessor yscroll :initarg :yscroll :initform nil))
+  ((xscroll
+    :accessor xscroll
+    :initarg  :xscroll
+    :initform nil)
+   (yscroll
+    :accessor yscroll
+    :initarg  :yscroll
+    :initform nil))
   "text")
 
 (defmethod cursor-index ((text text))
@@ -132,21 +138,24 @@
                (widget-path text) (widget-path text) val)
   val)
 
-(defgeneric save-text (txt filename))
+(defgeneric save-text (txt filename &key if-exists if-does-not-exist))
 
-(defmethod save-text ((txt text) filename)
+(defmethod save-text ((txt text) filename
+                      &key
+                        (if-exists         :supersede)
+                        (if-does-not-exist :create))
   "save the content of the text widget into the file <filename>"
-  (format-wish "set file [open {~a} \"w\"];puts $file [~a get 1.0 end];close $file;puts \"asdf\""
-               filename
-               (widget-path txt))
-  (read-line (wish-stream *wish*))
+  (let ((data (text txt)))
+    (with-open-file (stream filename
+                            :direction         :output
+                            :if-exists         if-exists
+                            :if-does-not-exist if-does-not-exist)
+      (write-sequence data stream)))
   txt)
 
 (defgeneric load-text (txt filename))
 
 (defmethod load-text((txt text) filename)
   "load the content of the file <filename>"
-;  (format-wish "set file [open {~a} \"r\"];~a delete 1.0 end;~a insert end [read $file];close $file;puts \"asdf\"" filename (widget-path txt) (widget-path txt))
-  (format-wish "set file [open {~a} \"r\"];~a delete 1.0 end;~a insert end [read $file];close $file;puts \"(:DATA asdf)\""
-               filename (widget-path txt) (widget-path txt))
-  (read-data))
+  (setf (text txt) (alexandria:read-file-into-string filename))
+  txt)

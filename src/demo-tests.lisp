@@ -554,6 +554,7 @@
       (notebook-add nb f1 :text "Frame 1")
       (notebook-add nb f2 :text "Frame 2")
       (notebook-tab nb f2 :text "Frame 2 (changed after adding)")
+      (notebook-enable-traversal nb)
       (append-text t1 "Foo Bar Baz"))))
 
 (defwidget nbw (frame)
