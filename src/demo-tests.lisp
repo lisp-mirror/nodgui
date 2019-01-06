@@ -512,8 +512,16 @@
 (defwidget treeviewtest (frame)
   ()
   ((tree treeview :pack (:side :top :expand t :fill :both)))
-  (let* ((first  (treeview-insert-item tree :text "Hallo")))
-    (treeview-insert-item tree :text "Welt" :parent (id first))))
+  (let* ((parent (make-instance 'tree-item
+                                :text   "Hallo"
+                                :parent +treeview-root+
+                                :index  +treeview-last-index+))
+         (child  (make-instance 'tree-item
+                                :text   "Welt"
+                                :parent (id parent)
+                                :index  +treeview-last-index+)))
+    (treeview-insert-item tree :item parent)
+    (treeview-insert-item tree :item child)))
 
 (defun demo-treeview ()
   (with-nodgui ()
