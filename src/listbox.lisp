@@ -145,10 +145,10 @@ alternatively a list of numbers may be given"
   l)
 
 (defmethod listbox-configure ((l listbox) index &rest options)
-  (format-wish "~a itemconfigure {~a} ~{ {-~(~a~)} {~/nodgui::pprint-down/}~}"
+  (format-wish "~a itemconfigure {~a} ~{ {-~(~a~)} {~a}~}"
                (widget-path l)
                index
-               options)
+               (mapcar #'down options))
   l)
 
 (defmethod listbox-nearest ((l listbox) y)

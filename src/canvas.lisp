@@ -302,9 +302,9 @@
   (item-move item dx dy))
 
 (defmethod item-move ((canvas canvas) item dx dy)
-  (format-wish "~a move {~/nodgui::pprint-down/} ~a ~a"
+  (format-wish "~a move {~a} ~a ~a"
                (widget-path canvas)
-               item
+               (down item)
                (tk-number dx)
                (tk-number dy)))
 

@@ -339,32 +339,12 @@ not equal to all the others. The test is performed calling :test"
 (defmethod (setf treeview-focus) ((item tree-item) tree)
   (format-wish "~a focus {~a}" (widget-path tree) (id item)))
 
-(defun treeview-insert (tree &rest options
-                        &key
-                          (parent +treeview-root+)
-                          (index  +treeview-last-index+)
-                          (id (create-name)) &allow-other-keys)
-  "Better use treeview-insert-item"
-  ;; Remove the keys that aren't optional in Tcl.
-  (remf options :parent)
-  (remf options :index)
-  (format-wish "~a insert {~a} {~a} ~{ {-~(~a~)} {~/nodgui::tk-princ/}~}"
-               (widget-path tree)
-               parent
-               index
-               options)
-  #| Note:
-  It is tempting to use senddata/read-data and let Tk allocate an id.
-  BAD IDEA!  Process swapping causes a massive slowdown (observed 100x longer).
-  |#
-  id)
-
 (defun treeview-item (tree item &rest options)
   "Query or modify the options for the specified item."
   (cond
     ((second options) ;; modify
-     (format-wish "~a item {~a} ~{ {-~(~a~)} {~/nodgui::tk-princ/}~}"
-                  (widget-path tree) item options))
+     (format-wish "~a item {~a} ~{ {-~(~a~)} {~a}~}"
+                  (widget-path tree) item (mapcar #'down options)))
     (t ;; query
      (format-wish "senddatastring [~a item {~a} ~@[ {-~(~a~)}~]]"
                   (widget-path tree) item (car options))
@@ -374,8 +354,8 @@ not equal to all the others. The test is performed calling :test"
   "Query or modify the options for the specified column."
   (cond
     ((second options) ;; modify
-     (format-wish "~a column {~a} ~{ {-~(~a~)} {~/nodgui::tk-princ/}~}"
-                  (widget-path tree) column options))
+     (format-wish "~a column {~a} ~{ {-~(~a~)} {~a}~}"
+                  (widget-path tree) column (mapcar #'down options)))
     (t ;; query
      (format-wish "senddatastring [~a column {~a} ~@[ {-~(~a~)}~]]"
                   (widget-path tree) column (car options))
