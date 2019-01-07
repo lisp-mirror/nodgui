@@ -307,9 +307,7 @@
       (textvariable text "~@[ -textvariable {text_~a}~]"
        (progn
          (format-wish "global {text_~a} ; set {text_~a} \"~a\"" (name widget) (name widget)
-                      (if text
-                          (tkescape text)
-                          "" ))
+                      (or text "" ))
          (name widget)) "")
       (tickinterval tickinterval "~@[ -tickinterval {~(~a~)}~]" tickinterval "")
       (title title "~@[ -title {~(~a~)}~]" title "")

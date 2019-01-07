@@ -45,33 +45,33 @@
                                            :text    "scrolled frame"
                                            :command #'(lambda () (demo-sct))))
            (button-text     (make-instance 'button
-                                           :text    "button text"
-                                           :command #'(lambda () (demo-etest))))
-           (treeview       (make-instance 'button
-                                          :text    "treeview"
-                                          :command #'(lambda () (demo-treeview))))
-           (w/widget       (make-instance 'button
-                                          :text    "with widget macro"
-                                          :command #'(lambda () (demo-with-widgets))))
-           (notebook-1     (make-instance 'button
-                                          :text    "notebook 1"
-                                          :command #'(lambda () (demo-notebook))))
-           (notebook-2     (make-instance 'button
-                                          :text    "notebook 2"
-                                          :command #'(lambda () (demo-notebook-2))))
-           (defwidget      (make-instance 'button
-                                          :text    "defwidget"
-                                          :command #'(lambda () (demo-defwidget))))
-           (demo-canvas    (make-instance 'button
-                                          :text    "canvas"
-                                          :command #'(lambda () (demo-canvas))))
-           (demo-image     (make-instance 'button
-                                          :text    "images"
-                                          :command #'(lambda () (demo-image))))
-           (b-quit         (make-instance 'button
-                                          :text    "quit lisp :)"
-                                          :command #'(lambda ()
-                                                       (uiop:quit)))))
+                                           :text    "button text escaped"
+                                           :command #'(lambda () (demo-escape-text))))
+           (treeview       (make-instance  'button
+                                           :text    "treeview"
+                                           :command #'(lambda () (demo-treeview))))
+           (w/widget       (make-instance  'button
+                                           :text    "with widget macro"
+                                           :command #'(lambda () (demo-with-widgets))))
+           (notebook-1     (make-instance  'button
+                                           :text    "notebook 1"
+                                           :command #'(lambda () (demo-notebook))))
+           (notebook-2     (make-instance  'button
+                                           :text    "notebook 2"
+                                           :command #'(lambda () (demo-notebook-2))))
+           (defwidget      (make-instance  'button
+                                           :text    "defwidget"
+                                           :command #'(lambda () (demo-defwidget))))
+           (demo-canvas    (make-instance  'button
+                                           :text    "canvas"
+                                           :command #'(lambda () (demo-canvas))))
+           (demo-image     (make-instance  'button
+                                           :text    "images"
+                                           :command #'(lambda () (demo-image))))
+           (b-quit         (make-instance  'button
+                                           :text    "quit lisp :)"
+                                           :command #'(lambda ()
+                                                        (uiop:quit)))))
       (grid widget         0 0 :sticky :nswe)
       (grid eyes           0 1 :sticky :nswe)
       (grid modal          0 2 :sticky :nswe)
@@ -498,13 +498,11 @@
       (pack sf :side :top :fill :both :expand t)
       (pack b1 :side :left))))
 
-(defun demo-etest ()
+(defun demo-escape-text ()
   (with-nodgui ()
-    (let ((b (make-instance 'button :text " a button :)")))
+    (let ((b (make-instance 'button :text " a button [a] :)")))
       (pack b)
-      ;;(send-wish (format nil "~a configure -text \" a } button\"" (widget-path b)))
-      (setf (text b) " )} xasdf ")
-      ;(send-wish "button }\"")
+      (setf (text b) " )} [eee] ")
       (flush-wish))))
 
 ;;; treeview tests

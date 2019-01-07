@@ -294,12 +294,12 @@
 
 (defun format-wish (control &rest args)
   "format 'args using 'control as control string to wish"
-  (send-wish (apply #'format nil control args)))
+  (send-wish (apply #'format nil control (mapcar #'sanitize args))))
 
 (defun format-wish-escape-tilde (control &rest args)
   "format 'args using 'control as control string to wish"
-  (send-wish (apply #'format nil (cl-ppcre:regex-replace-all "~" control "~~") args)))
-
+  (send-wish (apply #'format nil (cl-ppcre:regex-replace-all "~" control "~~")
+                    (mapcar #'sanitize args))))
 #+nil
 (defmacro format-wish (control &rest args)
   "format 'args using 'control as control string to wish"
@@ -491,6 +491,20 @@ event to read and blocking is set to nil"
 
 ;;; sanitizing strings: lisp -> tcl (format (wish-stream *wish*) "{~a}" string)
 ;;; in string escaped : {} mit \{ bzw \}  und \ mit \\
+
+(defgeneric sanitize (object))
+
+(defmethod sanitize (object)
+  (sanitize (to-s object)))
+
+(defmethod sanitize ((object string))
+  (tkescape object))
+
+(defmethod sanitize ((object list))
+  (map 'list #'sanitize object))
+
+(defmethod sanitize ((object (eql nil)))
+  nil)
 
 (defun brace-tkescape (text)
   text)

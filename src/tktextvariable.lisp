@@ -24,5 +24,5 @@
   (read-data))
 
 (defmethod (setf text) (val (v tktextvariable))
-  (format-wish "global {text_~a} ; set {text_~a} \"~a\""  (name v)  (name v) (tkescape2 val))
+  (format-wish "global {text_~a} ; set {text_~a} {~a}" (name v)  (name v) val)
   val)
