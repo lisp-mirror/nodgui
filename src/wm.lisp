@@ -238,14 +238,11 @@
   (set-wm-attrib (widget-path toplevel) attributes))
 
 (defmethod set-wm-attrib ((toplevel string) (attributes wm-attrib))
-  (flet ((wrap (a)
-           (let ((*add-space-after-emitted-string* nil))
-             (wrap-braces (down a)))))
-    (let ((*add-space-after-emitted-string* t))
-      (format-wish (tclize `(wm attributes
-                                ,toplevel
-                                -alpha      ,(wrap (wm-attrib-alpha      attributes))
-                                -fullscreen ,(wrap (wm-attrib-fullscreen attributes))
-                                -topmost    ,(wrap (wm-attrib-topmost    attributes))
-                                -type       ,(wrap (wm-attrib-type       attributes))
-                                -zoomed     ,(wrap (wm-attrib-zoomed     attributes))))))))
+  (let ((*add-space-after-emitted-string* t))
+    (format-wish (tclize `(wm attributes
+                              ,toplevel
+                              -alpha      {+ ,(down (wm-attrib-alpha      attributes)) }
+                              -fullscreen {+ ,(down (wm-attrib-fullscreen attributes)) }
+                              -topmost    {+ ,(down (wm-attrib-topmost    attributes)) }
+                              -type       {+ ,(down (wm-attrib-type       attributes)) }
+                              -zoomed     {+ ,(down (wm-attrib-zoomed     attributes)) })))))

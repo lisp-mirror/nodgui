@@ -25,25 +25,24 @@
                         (filetypes '(("All Files" "*")))
                         (initialdir "")
                         multiple parent title)
-  (let ((files
-        (with-output-to-string (s)
-          (format s "{")
-          (dolist (type filetypes)
-            (let ((name (first type))
-                  (wildcard (second type)))
-              (format s "{{~a} {~a}} " name wildcard)))
-          (format s "}"))))
+  (let ((files (with-output-to-string (s)
+                 (dolist (type filetypes)
+                   (let ((name (first type))
+                         (wildcard (second type)))
+                     (format s "{{~a} {~a}} " name wildcard))))))
     (if multiple
         (format-wish "senddatastrings [tk_getOpenFile ~
                       -filetypes ~a ~@[ -initialdir {~a}~] -multiple 1 ~
                       ~@[ -parent ~a~] ~@[ -title {~a}~]]"
-                      files initialdir
-                      (and parent (widget-path parent)) title)
+                     (rem-trouble-chars-and-then-wrap files)
+                     initialdir
+                     (and parent (widget-path parent)) title)
         (format-wish "senddatastring [tk_getOpenFile ~
                       -filetypes ~a ~@[ -initialdir {~a}~]  ~
                       ~@[ -parent ~a~] ~@[ -title {~a}~]]"
-                      files initialdir
-                      (and parent (widget-path parent)) title))
+                     (rem-trouble-chars-and-then-wrap files)
+                     initialdir
+                     (and parent (widget-path parent)) title))
     (read-data)))
 
 (defun get-save-file (&key
@@ -51,17 +50,14 @@
                         (title      "")
                         (parent     nil)
                         (initialdir ""))
-  (let ((files
-        (with-output-to-string (s)
-          (format s "{")
-          (dolist (type filetypes)
-            (let ((name (first type))
-                  (wildcard (second type)))
-              (format s "{{~a} {~a}} " name wildcard)))
-          (format s "}"))))
+  (let ((files (with-output-to-string (s)
+                 (dolist (type filetypes)
+                   (let ((name (first type))
+                         (wildcard (second type)))
+                     (format s "{{~a} {~a}} " name wildcard))))))
     (format-wish (tclize `(senddatastring ["tk_getSaveFile "
-                                          -filetypes  ,files " "
-                                          -title      ,(wrap-braces title)
+                                          -filetypes  ,(rem-trouble-chars-and-then-wrap files) " "
+                                          -title      {+ ,title }
                                           -parent     ,(if parent
                                                            (widget-path parent)
                                                            (widget-path *tk*)) " "
@@ -70,5 +66,5 @@
 
 (defun choose-directory (&key (initialdir "")
                               parent title mustexist)
-  (format-wish "senddatastring [tk_chooseDirectory ~@[ -initialdir \"~a\"~]~@[ -parent ~a ~]~@[ -title {~a}~]~@[ -mustexist ~a~]]" (tkescape2 initialdir) (and parent (widget-path parent)) title (and mustexist 1))
+  (format-wish "senddatastring [tk_chooseDirectory ~@[ -initialdir \"~a\"~]~@[ -parent ~a ~]~@[ -title {~a}~]~@[ -mustexist ~a~]]" initialdir (and parent (widget-path parent)) title (and mustexist 1))
   (read-data))

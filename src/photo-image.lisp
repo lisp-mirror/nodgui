@@ -35,7 +35,8 @@
     (format-wish "image create photo ~a" (name object))
     (when data
       (if (stringp data)
-          (format-wish (tclize `(senddatastring [ ,(name object) " " put ,(wrap-braces data) ])))
+          (format-wish (tclize `(senddatastring [ ,(name object) " "
+                                                put {+ ,data } ])))
           (format-wish (tclize `(senddatastring [ ,(name object) " " put
                                                 ,(nodgui.base64:encode data)
                                                 ])))))))
@@ -117,5 +118,5 @@
 (defgeneric image-load (p filename))
 
 (defmethod image-load((p photo-image) filename)
-  (send-wish (format nil "~A read {~A} -shrink" (name p) filename))
+  (format-wish "~A read {~A} -shrink" (name p) filename)
   p)

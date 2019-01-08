@@ -158,6 +158,24 @@
    :scale-bilinear
    :rotate-pixmap))
 
+(defpackage :nodgui.sanitize
+  (:use :cl
+        :alexandria
+        :cl-ppcre
+        :nodgui.constants
+        :nodgui.utils)
+  (:export
+   :tkescape
+   :tkescape2
+   :make-protect-escape
+   :protect-escape-data
+   :make-bypass-escape
+   :bypass-escape-data
+   :rem-trouble-chars-and-then-wrap
+   :sanitize
+   :sanitize
+   :sanitize-remove))
+
 (defpackage :nodgui.event-symbols
   (:use :cl
         :alexandria
@@ -1095,15 +1113,15 @@
         :cl-ppcre
         :nodgui.config
         :nodgui.constants
-        :nodgui.utils)
+        :nodgui.utils
+        :nodgui.sanitize)
   (:export :*suppress-newline-for-tcl-statements*
            :*add-space-after-emitted-string*
            :*add-space-after-emitted-unspecialized-element*
            :tcl
            :tcl-str
            :tclize
-           :tclize-if-true
-           :wrap-braces
+           :empty-string-if-nil
            :defproc
            :with-flush-server
            :for-list))
@@ -1149,6 +1167,7 @@
         :nodgui.conditions
         :nodgui.pixmap
         :nodgui.event-parser
+        :nodgui.sanitize
         :nodgui.tcl-emitter)
   (:export :syntax
            :+type-desktop+

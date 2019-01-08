@@ -509,14 +509,17 @@
 
 (defwidget treeviewtest (frame)
   ()
-  ((tree treeview :pack (:side :top :expand t :fill :both)))
+  ((tree treeview
+         :pack (:side :top :expand t :fill :both)
+         :columns (list "a" "b")))
   (let* ((parent (make-instance 'tree-item
                                 :text   "Hallo"
                                 :parent +treeview-root+
                                 :index  +treeview-last-index+))
          (child  (make-instance 'tree-item
-                                :text   "Welt"
+                                :text   "W[e]lt"
                                 :parent (id parent)
+                                :column-values '("} [hello]" "[world]")
                                 :index  +treeview-last-index+)))
     (treeview-insert-item tree :item parent)
     (treeview-insert-item tree :item child)))
@@ -561,7 +564,7 @@
       (notebook-add nb f2 :text "Frame 2")
       (notebook-tab nb f2 :text "Frame 2 (changed after adding)")
       (notebook-enable-traversal nb)
-      (append-text t1 "Foo Bar Baz"))))
+      (append-text t1 "Foo [Bar] {Baz}"))))
 
 (defwidget nbw (frame)
   ()
@@ -579,7 +582,7 @@
                           (finish-output))))))
   (notebook-add nb f1 :text "Frame 1")
   (notebook-add nb f2 :text "Frame 2")
-  (append-text t1 "Foo Bar Baz"))
+  (append-text t1 "Foo [Bar] [[[Baz]]]"))
 
 (defun demo-notebook-2 ()
   (with-nodgui ()

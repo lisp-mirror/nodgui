@@ -76,7 +76,7 @@
   (make-instance 'text :master master :width width :height height))
 
 (defmethod append-text ((txt text) text &rest tags)
-  (format-wish "~a insert end \"~a\" {~{ ~(~a~)~}}" (widget-path txt) (tkescape text) tags)
+  (format-wish "~a insert end \"~a\" {~{ ~(~a~)~}}" (widget-path txt) text tags)
   txt)
 
 (defmethod insert-object ((txt text) obj)

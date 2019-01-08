@@ -21,6 +21,8 @@
 
   (defparameter *add-space-after-emitted-unspecialized-element*  t)
 
+  (defparameter *sanitize*                                       nil)
+
   (define-constant +to-lisp-mode+   :lisp  :test #'eq)
 
   (define-constant +to-tcl-if-mode+ :if    :test #'eq)
@@ -49,14 +51,20 @@
   (defgeneric ->tcl (code))
 
   (defmethod ->tcl (code)
-    (if *add-space-after-emitted-unspecialized-element*
-        (lambda () (format nil "~a " code))
-        (lambda () (format nil "~a" code))))
+    (let ((actual-code (if *sanitize*
+                           (sanitize code)
+                           code)))
+      (if *add-space-after-emitted-unspecialized-element*
+          (lambda () (format nil "~a " actual-code))
+          (lambda () (format nil "~a"  actual-code)))))
 
   (defmethod ->tcl ((code string))
-    (if  *add-space-after-emitted-string*
-         (lambda () (format nil "~a " code))
-         (lambda () (format nil "~a" code))))
+    (let ((actual-code (if *sanitize*
+                           (sanitize code)
+                           code)))
+      (if  *add-space-after-emitted-string*
+           (lambda () (format nil "~a " actual-code))
+           (lambda () (format nil "~a"  actual-code)))))
 
   (defmethod ->tcl ((code tcl/<))
     (lambda () "\"(\" "))
@@ -165,16 +173,11 @@
     `(loop for ,var in ,l collect
           (progn ,@body)))
 
-  (defmacro tclize (statement)
-    `(stringify-all (flatten (->tcl ,statement))))
+  (defmacro tclize (statement &key (sanitize t))
+    `(let ((*sanitize* ,sanitize))
+       (stringify-all (flatten (->tcl ,statement)))))
 
-  (defmacro tclize-if-true (value statement)
+  (defmacro empty-string-if-nil (value statement)
     `(if ,value
-         (tclize ,statement)
-         ""))
-
-  (defmacro wrap-braces (value &optional (add-space-after t))
-    `(let ((*suppress-newline-for-tcl-statements* t))
-       ,(if add-space-after
-            `(tclize `({+ ,,value } " "))
-            `(tclize `({+ ,,value }))))))
+         ,statement
+         "")))

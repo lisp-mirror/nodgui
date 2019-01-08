@@ -301,7 +301,7 @@
        "if true, the widget can take the focus")
       (tearoff tearoff "~@[ -tearoff {~(~a~)}~]" tearoff "if true, the menu can be torn off")
       (tearoffcommand tearoffcommand "~@[ -tearoffcommand {~(~a~)}~]" tearoffcommand "")
-      (text text "~@[ -text \"~a\"~]" (tkescape text) "")
+      (text text "~@[ -text \"~a\"~]" text "")
       ;;(textvariable textvariable
       ;;"~@[ -textvariable text_~a~]" (and textvariable (name widget)) "")
       (textvariable text "~@[ -textvariable {text_~a}~]"

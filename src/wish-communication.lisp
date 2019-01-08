@@ -300,6 +300,7 @@
   "format 'args using 'control as control string to wish"
   (send-wish (apply #'format nil (cl-ppcre:regex-replace-all "~" control "~~")
                     (mapcar #'sanitize args))))
+
 #+nil
 (defmacro format-wish (control &rest args)
   "format 'args using 'control as control string to wish"
@@ -470,51 +471,3 @@ event to read and blocking is set to nil"
                                 (string-upcase string)
                                 (string-downcase string))
                       :keyword)))))
-
-(defun %tkescape (text escapable-chars)
-  (unless (stringp text)
-    (setf text (format nil "~a" text)))
-  (loop with result = (make-adjustable-string)
-     for c across text do
-       (when (member c escapable-chars)
-         (vector-push-extend #\\ result))
-       (vector-push-extend c result)
-     finally (return result)))
-
-;; Much faster version. For one test run it takes 2 seconds, where the
-;; other implementation requires 38 minutes.
-(defun tkescape (text)
-  (%tkescape text '(#\\ #\$ #\[ #\] #\{ #\} #\")))
-
-(defun tkescape2 (text)
-  (%tkescape text '(#\\ #\$ #\[ #\] #\")))
-
-;;; sanitizing strings: lisp -> tcl (format (wish-stream *wish*) "{~a}" string)
-;;; in string escaped : {} mit \{ bzw \}  und \ mit \\
-
-(defgeneric sanitize (object))
-
-(defmethod sanitize (object)
-  (sanitize (to-s object)))
-
-(defmethod sanitize ((object string))
-  (tkescape object))
-
-(defmethod sanitize ((object list))
-  (map 'list #'sanitize object))
-
-(defmethod sanitize ((object (eql nil)))
-  nil)
-
-(defun brace-tkescape (text)
-  text)
-#|
-  (unless (stringp text)
-    (setf text (format nil "~a" text)))
-  (loop with result = (make-adjustable-string)
-     for c across text do
-       (when (member c '(#\\ #\{ #\}))
-         (vector-push-extend #\\ result))
-       (vector-push-extend c result)
-     finally (return result)))
-  |#

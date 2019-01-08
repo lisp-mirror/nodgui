@@ -116,12 +116,12 @@ giving the path of tkobjects."
 (defgeneric lower (widget &optional other))
 
 (defmethod lower ((widget widget) &optional other)
-  (send-wish (format nil "lower ~a~@[ ~a~]" (widget-path widget) (and other (widget-path other)))))
+  (format-wish "lower ~a~@[ ~a~]" (widget-path widget) (and other (widget-path other))))
 
 (defgeneric raise (widget &optional above))
 
 (defmethod raise ((widget widget) &optional above)
-  (send-wish (format nil "raise ~a~@[ ~a~]" (widget-path widget) (and above (widget-path above)))))
+  (format-wish "raise ~a~@[ ~a~]" (widget-path widget) (and above (widget-path above))))
 
 (defgeneric canvas (w))
 

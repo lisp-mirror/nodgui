@@ -109,7 +109,7 @@
     (loop for i in indices collect
          (let ((*add-space-after-emitted-unspecialized-element* nil))
            (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
-                                                 get ,(wrap-braces i) ])))
+                                                 get {+ ,i } ])))
            (read-data)))))
 
 (defmethod listbox-select ((l listbox) val)
@@ -134,7 +134,7 @@ alternatively a list of numbers may be given"
   (format-wish (tclize `(,(widget-path l) " "
                          delete
                          {+ ,(down start) }
-                         ,(tclize-if-true end
+                         ,(empty-string-if-nil end
                              `({+ ,(down end) })))))
   l)
 
@@ -165,7 +165,7 @@ alternatively a list of numbers may be given"
 (defmethod listbox-select-mode ((object listbox) (mode symbol))
   (assert (find mode +legal-select-mode-values+))
   (format-wish (tclize `(,(widget-path object) " "
-                          configure -selectmode ,(wrap-braces (down mode))))))
+                          configure -selectmode {+ ,(down mode) }))))
 
 (defmethod listbox-export-selection ((object listbox) value)
   (format-wish (tclize `(,(widget-path object) " "
@@ -176,8 +176,8 @@ alternatively a list of numbers may be given"
   (format-wish (tclize
                 `(senddata [ ,(widget-path object) " "
                            get
-                           ,(wrap-braces from)
-                           ,(wrap-braces (down to))
+                           {+ ,(down from) }
+                           {+ ,(down to) }
                            ])))
   (read-data :expected-list-as-data t))
 

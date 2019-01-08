@@ -45,6 +45,7 @@
                (:file "ubvec4")
                (:file "vec2")
                (:file "pixmap")
+               (:file "sanitize")
                (:file "event-symbols")
                (:file "conditions")
                (:file "tcl-emitter")

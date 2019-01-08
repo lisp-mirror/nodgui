@@ -551,10 +551,10 @@
                              ,(tk-number y0) " "
                              ,(tk-number x1) " "
                              ,(tk-number y1) " "
-                             -start  ,(wrap-braces start)
-                             -extent ,(wrap-braces extent)
-                             -style  ,(wrap-braces style)
-                             -fill   ,(wrap-braces fill) ])))
+                             -start  {+ ,start  }
+                             -extent {+ ,extent }
+                             -style  {+ ,style  }
+                             -fill   {+ ,fill   } ])))
     (read-data)))
 
 (defclass canvas-arc (canvas-item)
