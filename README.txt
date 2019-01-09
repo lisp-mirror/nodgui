@@ -164,15 +164,26 @@ Table of Contents
            bitmap:
 
            ┌────
+           │ (cl-syntax:use-syntax nodgui-force-escape-syntax)
+           │
+           │ [...]
+           │
            │ (tclize `([list
-           │             ,(loop for r from 0 below h collect
-           │                 (tclize `([list ,(loop
+           │             ,#[loop for r from 0 below h collect
+           │                 (tclize `([list ,#[loop
            │ ...
            └────
 
            The `tclize' macro will transforms the backquoted forms in
            tcl code, the unquoted forms will be evaluated before the
            translation occurs.
+
+           Please always wrap the unquoted form in `#[ ... 'a space' ]'
+           because this will force escaping of the data (e.g.  from:
+           `'{'' to `\{').
+
+           You should put a space before the closing square brackets,
+           this is an annoyng bug that will be solved soon or later.
 
         3. The function [`postscript'] returns a postscript file as
            string instead of write a file on disk;
