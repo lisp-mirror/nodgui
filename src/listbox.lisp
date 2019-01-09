@@ -176,12 +176,12 @@ alternatively a list of numbers may be given"
 (defmethod listbox-values-in-range ((object listbox) &key (from 0) (to :end))
   "Get the values of the entries in a listbox in range [from to]"
   (format-wish (tclize
-                `(senddata [ ,#[widget-path object ] " "
-                           get
-                           {+ ,#[down from ] }
-                           {+ ,#[down to ] }
+                `(senddatastrings [ ,#[widget-path object ] " "
+                                  get
+                                  {+ ,#[down from ] }
+                                  {+ ,#[down to ] }
                            ])))
-  (read-data :expected-list-as-data t))
+  (read-data))
 
 (defmethod listbox-all-values ((object listbox))
   "Get all values of a listbox"
