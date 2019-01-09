@@ -617,8 +617,7 @@ Widgets offered are:
         (setf (text entry) placeholder-text))
       (bind entry #$<KeyPress>$ (lambda (event)
                                   (declare (ignore event))
-                                  (update-search lb (text entry))))
-      (focus entry))))
+                                  (update-search lb (text entry)))))))
 
 (defmethod search-text ((object searchable-listbox))
   (text (entry object)))
