@@ -29,7 +29,7 @@
 (alexandria:define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
 
 (defun make-bits-array (size)
-  (make-fresh-array size 0 '(unsigned-byte 8) t))
+  (make-fresh-array size 0 '(unsigned-byte 8) nil))
 
 (defclass pixmap ()
   ((data
