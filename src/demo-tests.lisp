@@ -514,6 +514,7 @@
          :columns (list "a" "b")))
   (let* ((parent (make-instance 'tree-item
                                 :text   "Hallo"
+                                :id     "[a]"
                                 :parent +treeview-root+
                                 :index  +treeview-last-index+))
          (child  (make-instance 'tree-item
@@ -667,7 +668,8 @@
                                        (* size 1/10) (* size 1/10)
                                        :start 0
                                        :extent 359
-                                       :fill "#0000ff"))
+                                       :style :pieslice
+                                       :fill  "#0000ff"))
              (rotated-text (create-text canvas 0 20
                                         (strcat (format nil "Text can be rotated~%at an ")
                                                 "arbitrary angle like this!")

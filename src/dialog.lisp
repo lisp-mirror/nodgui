@@ -17,8 +17,13 @@
 
 (in-package :nodgui)
 
+(cl-syntax:use-syntax nodgui-force-escape-syntax)
+
 (defun choose-color (&key parent title initialcolor )
-  (format-wish "senddatastring [tk_chooseColor ~@[ -parent ~A~]~@[ -title {~A}~]~@[ -initialcolor {~A}~]]" (when parent (widget-path parent)) title initialcolor)
+  (format-wish "senddatastring [tk_chooseColor ~@[ -parent ~A~]~@[ -title {~A}~]~@[ -initialcolor {~A}~]]"
+               (when parent
+                 (widget-path parent))
+               title initialcolor)
   (read-data))
 
 (defun get-open-file (&key
@@ -57,14 +62,18 @@
                      (format s "{{~a} {~a}} " name wildcard))))))
     (format-wish (tclize `(senddatastring ["tk_getSaveFile "
                                           -filetypes  ,(rem-trouble-chars-and-then-wrap files) " "
-                                          -title      {+ ,title }
-                                          -parent     ,(if parent
+                                          -title      \"+ ,#[title ] \"
+                                          -parent     ,#[if parent
                                                            (widget-path parent)
-                                                           (widget-path *tk*)) " "
-                                          -initialdir {+ ,initialdir }])))
+                                                           (widget-path *tk*) ] " "
+                                          -initialdir {+ ,#[initialdir ] } ])))
     (read-data)))
 
 (defun choose-directory (&key (initialdir "")
                               parent title mustexist)
-  (format-wish "senddatastring [tk_chooseDirectory ~@[ -initialdir \"~a\"~]~@[ -parent ~a ~]~@[ -title {~a}~]~@[ -mustexist ~a~]]" initialdir (and parent (widget-path parent)) title (and mustexist 1))
+  (format-wish "senddatastring [tk_chooseDirectory ~@[ -initialdir \"~a\"~]~@[ -parent ~a ~]~@[ -title {~a}~]~@[ -mustexist ~a~]]"
+               initialdir
+               (and parent (widget-path parent))
+               title
+               (and mustexist 1))
   (read-data))

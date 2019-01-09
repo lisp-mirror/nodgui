@@ -17,6 +17,8 @@
 
 (in-package :nodgui)
 
+(cl-syntax:use-syntax nodgui-force-escape-syntax)
+
 (defargs canvas ()
   background
   borderwidth
@@ -314,7 +316,7 @@
           (tk-y (tk-number y)))
       (let ((*add-space-after-emitted-string* t))
         (format-wish (tclize `(,path moveto
-                                     ,(down item-handle)
+                                     ,#[down item-handle ] " "
                                      ,tk-x ,tk-y)))))))
 
 (defmethod itemdelete ((canvas canvas) (item integer))
@@ -551,10 +553,10 @@
                              ,(tk-number y0) " "
                              ,(tk-number x1) " "
                              ,(tk-number y1) " "
-                             -start  {+ ,start  }
-                             -extent {+ ,extent }
-                             -style  {+ ,style  }
-                             -fill   {+ ,fill   } ])))
+                             -start  {+ ,#[down start  ] }
+                             -extent {+ ,#[down extent ] }
+                             -style  {+ ,#[down style  ] }
+                             -fill   {+ ,#[down fill   ] } ])))
     (read-data)))
 
 (defclass canvas-arc (canvas-item)

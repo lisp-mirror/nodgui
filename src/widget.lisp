@@ -16,6 +16,8 @@
 
 (in-package :nodgui)
 
+(cl-syntax:use-syntax nodgui-force-escape-syntax)
+
 (defclass tkobject ()
   ((name
     :accessor name
@@ -150,11 +152,11 @@ giving the path of tkobjects."
   toplevel)
 
 (defmethod busy-hold ((toplevel widget))
-  (format-wish (tclize `(tk busy hold ,(widget-path toplevel))))
+  (format-wish (tclize `(tk busy hold ,#[widget-path toplevel ])))
   toplevel)
 
 (defmethod busy-forget ((toplevel widget))
-  (format-wish (tclize `(tk busy forget ,(widget-path toplevel))))
+  (format-wish (tclize `(tk busy forget ,#[widget-path toplevel ])))
   toplevel)
 
 (defmacro with-busy ((widget) &body body)

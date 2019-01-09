@@ -17,6 +17,8 @@
 
 (in-package :nodgui)
 
+(cl-syntax:use-syntax nodgui-force-escape-syntax)
+
 (alexandria:define-constant +legal-select-mode-values+ '(:single :browse :multiple :extended)
   :test #'equalp)
 
@@ -101,15 +103,15 @@
   (read-data :expected-list-as-data t))
 
 (defmethod listbox-get-selection-index ((object listbox))
-  (format-wish (tclize `(senddata [ ,(widget-path object) " " curselection])))
+  (format-wish (tclize `(senddata [ ,#[widget-path object ] " " curselection])))
   (read-data :expected-list-as-data t))
 
 (defmethod listbox-get-selection-value ((object listbox))
   (let ((indices (listbox-get-selection-index object)))
     (loop for i in indices collect
          (let ((*add-space-after-emitted-unspecialized-element* nil))
-           (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
-                                                 get {+ ,i } ])))
+           (format-wish (tclize `(senddatastring [ ,#[widget-path object ] " "
+                                                 get {+ ,#[i ]} ])))
            (read-data)))))
 
 (defmethod listbox-select ((l listbox) val)
@@ -126,16 +128,16 @@ alternatively a list of numbers may be given"
 (defmethod listbox-clear ((l listbox) &optional (start 0) (end :end))
   "Clear listbox selection"
   (format-wish (tclize `(,(widget-path l) " "
-                          selection clear {+ ,(down start) } {+ ,(down end) })))
+                          selection clear {+ ,#[down start ] } {+ ,#[down end ] })))
   l)
 
 (defmethod listbox-delete ((l listbox) &optional (start 0) (end :end))
   "Delete elements from listbox"
-  (format-wish (tclize `(,(widget-path l) " "
+  (format-wish (tclize `(,#[widget-path l ] " "
                          delete
-                         {+ ,(down start) }
+                         {+ ,#[down start ] }
                          ,(empty-string-if-nil end
-                             `({+ ,(down end) })))))
+                             `({+ ,#[down end ] })))))
   l)
 
 (defmethod listbox-insert ((l listbox) index values)
@@ -164,20 +166,20 @@ alternatively a list of numbers may be given"
 
 (defmethod listbox-select-mode ((object listbox) (mode symbol))
   (assert (find mode +legal-select-mode-values+))
-  (format-wish (tclize `(,(widget-path object) " "
-                          configure -selectmode {+ ,(down mode) }))))
+  (format-wish (tclize `(,#[widget-path object ] " "
+                          configure -selectmode {+ ,#[down mode ] }))))
 
 (defmethod listbox-export-selection ((object listbox) value)
-  (format-wish (tclize `(,(widget-path object) " "
-                          configure -exportselection ,(lisp-bool->tcl value)))))
+  (format-wish (tclize `(,#[widget-path object ] " "
+                          configure -exportselection ,#[lisp-bool->tcl value ]))))
 
 (defmethod listbox-values-in-range ((object listbox) &key (from 0) (to :end))
   "Get the values of the entries in a listbox in range [from to]"
   (format-wish (tclize
-                `(senddata [ ,(widget-path object) " "
+                `(senddata [ ,#[widget-path object ] " "
                            get
-                           {+ ,(down from) }
-                           {+ ,(down to) }
+                           {+ ,#[down from ] }
+                           {+ ,#[down to ] }
                            ])))
   (read-data :expected-list-as-data t))
 

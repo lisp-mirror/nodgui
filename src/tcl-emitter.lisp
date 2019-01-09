@@ -173,6 +173,21 @@
     `(loop for ,var in ,l collect
           (progn ,@body)))
 
+
+  (defun force-string-read-macro (stream char ign)
+    (declare (ignore char ign))
+    (let ((raw (read-delimited-list #\] stream)))
+      (if (= (length raw) 1)
+          `(to-s ,(first raw))
+          `(to-s ,raw))))
+
+  (cl-syntax:defsyntax nodgui-force-escape-syntax
+    (:merge :standard)
+    (:macro-char #\# :dispatch)
+    (:dispatch-macro-char #\# #\[ #' force-string-read-macro))
+
+  (cl-syntax:use-syntax nodgui-force-escape-syntax)
+
   (defmacro tclize (statement &key (sanitize t))
     `(let ((*sanitize* ,sanitize))
        (stringify-all (flatten (->tcl ,statement)))))

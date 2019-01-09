@@ -1120,6 +1120,7 @@
            :*add-space-after-emitted-unspecialized-element*
            :tcl
            :tcl-str
+           :nodgui-force-escape-syntax
            :tclize
            :empty-string-if-nil
            :defproc

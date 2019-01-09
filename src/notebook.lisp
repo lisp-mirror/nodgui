@@ -18,6 +18,8 @@
 
 (cl-syntax:use-syntax nodgui-event-syntax)
 
+(cl-syntax:use-syntax nodgui-force-escape-syntax)
+
 (defargs notebook ()
   class
   cursor
@@ -74,4 +76,4 @@
 (defgeneric notebook-enable-traversal (nb))
 
 (defmethod notebook-enable-traversal ((nb notebook))
-  (format-wish (tclize `("ttk::notebook::enableTraversal " ,(widget-path nb)))))
+  (format-wish (tclize `("ttk::notebook::enableTraversal " ,#[widget-path nb ]))))
