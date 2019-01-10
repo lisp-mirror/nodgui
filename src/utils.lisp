@@ -46,6 +46,27 @@
   (let ((re "\\s"))
     (cl-ppcre:regex-replace re string "")))
 
+(defun common-prefix (&rest strings)
+  (let* ((prefix-count    0)
+         (sorted-strings (sort strings #'(lambda (a b) (> (length a) (length b)))))
+         (pivot-string   (first-elt sorted-strings))
+         (actual-strings (rest sorted-strings))
+         (res            (string (first-elt pivot-string))))
+    (labels ((advance-res ()
+               (incf prefix-count)
+               (setf res (strcat res (string (elt pivot-string prefix-count)))))
+             (%advance ()
+               (loop for i in actual-strings do
+                    (when (not (cl-ppcre:scan (strcat "^" res) i))
+                      (setf res (subseq res 0 (1- (length res))))
+                      (return-from %advance nil)))
+               (when (< (1+ prefix-count)
+                        (length pivot-string))
+                 (advance-res)
+                 (%advance))))
+      (%advance)
+      res)))
+
 (defun join-with-strings (strings junction)
   (reduce #'(lambda (a b) (strcat a junction b)) strings))
 

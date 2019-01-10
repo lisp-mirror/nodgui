@@ -37,6 +37,7 @@
            :to-s
            :strcat
            :strcat*
+           :common-prefix
            :strip-prefix
            :strip-withespaces
            :join-with-strings
@@ -1314,6 +1315,8 @@
            :image-load
            :image-setpixel
            :cursor-index
+           :set-selection
+           :set-cursor-index
            :input-box
            :insert-object
            :interior
@@ -1525,7 +1528,9 @@
 (defpackage :nodgui.mw
   (:use
    :cl
+   :cl-ppcre
    :nodgui.event-parser
+   :nodgui.utils
    :nodgui)
   (:export
    :redraw-on-resize

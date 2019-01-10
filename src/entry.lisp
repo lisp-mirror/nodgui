@@ -17,6 +17,8 @@
 
 (in-package :nodgui)
 
+(cl-syntax:use-syntax nodgui-force-escape-syntax)
+
 (defargs entry ()
   class
   cursor
@@ -36,12 +38,32 @@
 (defwrapper entry (tktextvariable widget) () "ttk::entry")
 
 (defun entry-select (e from to)
+  (warn "entry-select is deprecated, use 'set-selection' instead")
   (format-wish "~a selection range {~a} {~a}" (widget-path e) from to)
   e)
 
 (defgeneric cursor-index (widget)
   (:documentation "returns the cursor index in the widget"))
 
+(defgeneric set-selection (object from to)
+  (:documentation "set the selected text in range 'from', 'to'."))
+
+(defgeneric set-cursor-index (object index)
+  (:documentation "set cursor position; index can assume the value ':end'"))
+
 (defmethod cursor-index ((e entry))
   (format-wish "senddata [~a index insert]" (widget-path e))
   (read-data))
+
+(defmethod set-selection ((object entry) from to)
+  (format-wish (tclize `(,#[widget-path object ]
+                                        " selection range "
+                                        ,#[down from ] " "
+                                        ,#[down to ])))
+  object)
+
+(defmethod set-cursor-index ((object entry) index)
+  (format-wish (tclize  `(,#[widget-path object ]
+                                         " icursor "
+                                         ,#[down index ])))
+  object)
