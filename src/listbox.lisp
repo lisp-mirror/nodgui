@@ -126,7 +126,7 @@ alternatively a list of numbers may be given"
   l)
 
 (defmethod listbox-clear ((l listbox) &optional (start 0) (end :end))
-  "Clear listbox selection"
+  "Clear selected elements of this listbox"
   (format-wish (tclize `(,(widget-path l) " "
                           selection clear {+ ,#[down start ] } {+ ,#[down end ] })))
   l)

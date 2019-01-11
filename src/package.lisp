@@ -1259,6 +1259,7 @@
            :create-rectangle
            :create-text
            :create-window
+           :break-mainloop
            :*debug-settings-table*
            :defargs
            :deiconify
