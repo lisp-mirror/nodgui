@@ -147,12 +147,14 @@
    :height
    :data
    :bits
+   :errors
    :sync-bits-to-data
    :sync-data-to-bits
    :tga
    :jpeg
    :slurp-pixmap
    :load-from-stream
+   :pixmap->tga-file
    :h-mirror
    :v-mirror
    :scale-nearest
