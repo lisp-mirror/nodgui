@@ -22,8 +22,7 @@
   :maintainer       "cage"
   :bug-tracker      "https://notabug.org/cage/nodgui/issues"
   :licence          "LLGPL"
-  :description      "LTK"
-  :long-description "Lisp bindings for the Tk toolkit"
+  :description      "Lisp bindings for the Tk toolkit"
   :pathname         "src"
   :serial      t
   :depends-on (:alexandria
