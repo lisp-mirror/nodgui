@@ -50,6 +50,10 @@
 
   (defgeneric ->tcl (code))
 
+  (defmethod ->tcl ((code bypass-escape))
+    (let ((*sanitize* nil))
+      (->tcl (bypass-escape-data code))))
+
   (defmethod ->tcl (code)
     (let ((actual-code (if *sanitize*
                            (sanitize code)

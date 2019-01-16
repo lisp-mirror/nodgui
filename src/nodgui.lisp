@@ -183,7 +183,7 @@ can be passed to AFTER-CANCEL"
    :x            (first properties)
    :y            (second properties)
    :keycode      (third properties)
-   :char         (coerce (alexandria:first-elt (fourth properties)) 'character)
+   :char         (fourth properties)
    :width        (fifth properties)
    :height       (sixth properties)
    :root-x       (seventh properties)

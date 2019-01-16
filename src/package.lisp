@@ -172,6 +172,7 @@
    :tkescape2
    :make-protect-escape
    :protect-escape-data
+   :bypass-escape
    :make-bypass-escape
    :bypass-escape-data
    :rem-trouble-chars-and-then-wrap
