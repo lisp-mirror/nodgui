@@ -417,6 +417,7 @@
            ,slots)
          (defmethod initialize-instance :after ((widget ,class) &key ,@keylist)
            (setf (init-command widget)
-                 (format nil ,cmdstring (widget-class-name widget) ,@codelist))
+                 (format nil ,cmdstring (widget-class-name widget)
+                         ,@(mapcar (lambda (a) `(sanitize ,a)) codelist)))
            ,@code)
          ,@accessors))))
