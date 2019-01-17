@@ -122,20 +122,29 @@ Widgets offered are:
       (bind entry #$<KeyPress-Tab>$
             (lambda (event)
               (declare (ignore event))
-              (when history
-                (let* ((sorted-history (sort history (lambda (a b) (> (length a) (length b)))))
-                       (candidates     (remove-if-not (lambda (a)
-                                                        (scan (strcat "^" text-entry)
-                                                              a))
-                                                      sorted-history))
-                       (prefix         (apply #'common-prefix candidates))
-                       (new-text       (if (> (length candidates) 1)
-                                           (strcat prefix
-                                                   (to-s candidates))
-                                           prefix)))
-                  (setf text-entry new-text)
-                  (set-cursor-index entry (length prefix))
-                  (set-selection    entry (length prefix) :end))))
+              (flet ((format-candidates (candidates)
+                       (format nil "~{ ~a ~}"
+                               (mapcar (lambda (a)
+                                         (format nil
+                                                 "~a~a~a"
+                                                 #\MEDIUM_LEFT_PARENTHESIS_ORNAMENT
+                                                 a
+                                                 #\MEDIUM_RIGHT_PARENTHESIS_ORNAMENT))
+                                       candidates))))
+                (when history
+                  (when-let* ((sorted-history (sort history (lambda (a b) (> (length a) (length b)))))
+                              (candidates     (remove-if-not (lambda (a)
+                                                               (scan (strcat "^" text-entry)
+                                                                     a))
+                                                             sorted-history))
+                              (prefix         (apply #'common-prefix candidates))
+                              (new-text       (if (> (length candidates) 1)
+                                                  (strcat prefix
+                                                          (format-candidates candidates))
+                                                  prefix)))
+                    (setf text-entry new-text)
+                    (set-cursor-index entry (length prefix))
+                    (set-selection    entry (length prefix) :end)))))
             :exclusive t)
       (when command
         (setf (command entry) command))))

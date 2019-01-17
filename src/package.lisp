@@ -1532,6 +1532,7 @@
 (defpackage :nodgui.mw
   (:use
    :cl
+   :alexandria
    :cl-ppcre
    :nodgui.event-parser
    :nodgui.utils
