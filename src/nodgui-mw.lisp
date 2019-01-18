@@ -73,7 +73,10 @@ Widgets offered are:
    (keepinput
     :initform nil
     :initarg  :keepinput
-    :accessor keepinput)))
+    :accessor keepinput))
+  (:documentation  "An entry  widget keeping  the history  of previous
+    input (which can be browsed through  with cursor up and down), the
+    input can be also autocompleted pressing the TAB key."))
 
 (defgeneric add-history (entry txt))
 
@@ -182,7 +185,9 @@ Widgets offered are:
    (selection
     :accessor selection
     :initform nil
-    :documentation "list of selected values")))
+    :documentation "list of selected values"))
+  (:documentation "A widget to display  a tree-like structure by a set
+  of listboxes."))
 
 (defclass tree-entry ()
   ((nodes
@@ -451,9 +456,18 @@ Widgets offered are:
 ;;;; graphical tree widget
 
 (defclass gtree (canvas)
-  ((data :accessor data
-         :initform nil
-         :initarg :data)))
+  ((data
+    :accessor data
+    :initform nil
+    :initarg :data))
+  (:documentation "Render a tree.
+   Data should be tree in a form of cons cell like:
+   '(a (b (d (h)
+             (i))
+          (e (j)
+             (k)))
+       (c (f)
+          (g)))"))
 
 (defgeneric render-tree (g d x y))
 
@@ -504,7 +518,8 @@ Widgets offered are:
                                         (c (f)
                                          (g))))))
       (pack tree :side :left :expand t :fill :both)
-      (format t "data: ~s~%" (data tree)) (force-output))))
+      (format t "data: ~s~%" (data tree))
+      (force-output))))
 
 ;;; list-select box widget
 
@@ -553,27 +568,39 @@ Widgets offered are:
    (data
     :accessor data
     :initform nil
-    :initarg  :data)
+    :initarg  :data
+    :documentation "The items of this listbox")
    (key
     :accessor key
     :initform #'identity
-    :initarg  :key)
+    :initarg  :key
+    :documentation "This function i applied to every element in 'data'
+    before the actual match is performed")
    (remove-non-matching-p
     :accessor remove-non-matching-p
     :initform t
-    :initarg :remove-non-matching-p)
+    :initarg :remove-non-matching-p
+    :documentation  "If true  (generilazed boolean)  non-matching item
+    are removed from the listbox, if nil just unselected")
    (matching-fn
     :initform #'cl-ppcre:scan
     :initarg  :matching-fn
-    :accessor matching-fn)
+    :accessor matching-fn
+    :documentation "The  filter function  for list entries,  if values
+    nil the  entry is removed or  uselected depending of the  value of
+    'remove-non-matching-p'.  The parameter ar the text of 'entry' and
+    the value of the item.")
    (entry-label
     :initform "Search"
     :initarg  :entry-label
-    :accessor entry-label)
+    :accessor entry-label
+    :documentation  "The  label  near  the  text  entry  where  filter
+    criteria is typed")
    (displayed
     :accessor displayed
     :initform nil
-    :initarg :displayed)))
+    :initarg :displayed))
+   (:documentation "A listbox with an entry to filter its contents"))
 
 (defgeneric get-searchable-listbox-data (lb))
 
@@ -699,13 +726,17 @@ Widgets offered are:
 (defmethod listbox-all-values ((object searchable-listbox))
   (listbox-all-values (listbox object)))
 
-;;; autocomple-listbox
+;;; autocomplete-listbox
 
 (defclass autocomplete-listbox (searchable-listbox)
   ((autocomplete-function-hook
     :accessor autocomplete-function-hook
     :initform nil
-    :initarg  :autocomplete-function-hook)))
+    :initarg  :autocomplete-function-hook))
+  (:documentation "Acts like 'searchable-listbox'  but the items added
+  comes form  the results  from apply  'autocomplete-function-hook' to
+  the content of  the text entry.  This function is  triggered after a
+  character are inserted into the entry."))
 
 (defun %autocomplete (listbox)
   (with-accessors ((autocomplete-function-hook autocomplete-function-hook)) listbox
