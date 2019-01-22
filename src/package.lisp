@@ -1541,6 +1541,7 @@
    :redraw-on-resize
    :history-entry
    :history
+   :compare-history-candidate-fn
    :add-history
    :clear-history
    :treelist

@@ -73,7 +73,14 @@ Widgets offered are:
    (keepinput
     :initform nil
     :initarg  :keepinput
-    :accessor keepinput))
+    :accessor keepinput)
+   (compare-history-candidate-predicate
+    :initform #'string=
+    :initarg  :compare-history-candidate-predicate
+    :accessor compare-history-candidate-predicate
+    :documentation "An new candidate is added to the history only if
+                    (funcall compare-history-candidate-predicate candidate old-entry) is
+                    nil for all elements in history"))
   (:documentation  "An entry  widget keeping  the history  of previous
     input (which can be browsed through  with cursor up and down), the
     input can be also autocompleted pressing the TAB key."))
@@ -83,9 +90,11 @@ Widgets offered are:
 (defgeneric clear-history (entry))
 
 (defmethod add-history ((entry history-entry) (txt string))
-  (when (> (length txt) 0)
-      (push txt (history entry)))
-  (setf (history-pos entry) -1))
+  (with-accessors ((compare-history-candidate-predicate compare-history-candidate-predicate))
+      entry
+    (when (> (length txt) 0)
+      (pushnew txt (history entry) :test compare-history-candidate-predicate))
+    (setf (history-pos entry) -1)))
 
 (defmethod clear-history ((entry history-entry))
   (setf (history entry) nil)
@@ -833,6 +842,7 @@ Widgets offered are:
 
 (defun text-input-dialog (parent title message
                           &key
+                            (text           nil)
                             (button-message "OK")
                             (padding-x         2)
                             (padding-y         2))
@@ -848,6 +858,7 @@ Widgets offered are:
                                       :master toplevel
                                       :text   message))
                (entry  (make-instance 'entry
+                                      :text   text
                                       :master toplevel))
                (button (make-instance 'button
                                       :text    button-message
