@@ -109,7 +109,7 @@
   (with-nodgui (:debug-tcl nil)
     (flet ((write-postscript (canvas)
              #'(lambda ()
-                 (let ((file (get-save-file :filetypes '(("Encapsulated Postscript" "*.ps")))))
+                 (let ((file (get-save-file :file-types '(("Encapsulated Postscript" "*.ps")))))
                    (with-open-file (stream file
                                            :if-exists :supersede
                                            :direction :output)
@@ -697,10 +697,10 @@
     (let ((b (make-instance 'button :text "load image")))
       (setf (command b)
             #'(lambda ()
-                (let ((file (get-open-file :filetypes '(("PNG"     "*.png")
-                                                        ("JPG"     "*.jpg")
-                                                        ("TGA"     "*.tga")
-                                                        ("RGB raw" "*.data")))))
+                (let ((file (get-open-file :file-types '(("PNG"     "*.png")
+                                                         ("JPG"     "*.jpg")
+                                                         ("TGA"     "*.tga")
+                                                         ("RGB raw" "*.data")))))
                   (with-open-file (stream file :element-type '(unsigned-byte 8))
                     (let* ((data (read-into-array stream (file-length stream))))
                       (cond

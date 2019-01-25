@@ -19,60 +19,72 @@
 
 (cl-syntax:use-syntax nodgui-force-escape-syntax)
 
-(defun choose-color (&key parent title initialcolor )
+(defun choose-color (&key parent title initial-color )
   (format-wish "senddatastring [tk_chooseColor ~@[ -parent ~A~]~@[ -title {~A}~]~@[ -initialcolor {~A}~]]"
                (when parent
                  (widget-path parent))
-               title initialcolor)
+               title
+               initial-color)
   (read-data))
 
 (defun get-open-file (&key
-                        (filetypes '(("All Files" "*")))
-                        (initialdir "")
+                        (initial-file nil)
+                        (file-types    '(("All Files" "*")))
+                        (initial-dir   "")
                         multiple parent title)
   (let ((files (with-output-to-string (s)
-                 (dolist (type filetypes)
+                 (dolist (type file-types)
                    (let ((name (first type))
                          (wildcard (second type)))
                      (format s "{{~a} {~a}} " name wildcard))))))
     (if multiple
         (format-wish "senddatastrings [tk_getOpenFile ~
                       -filetypes ~a ~@[ -initialdir {~a}~] -multiple 1 ~
+                      ~@[ -initialfile \"~a\"~] ~
                       ~@[ -parent ~a~] ~@[ -title {~a}~]]"
                      (rem-trouble-chars-and-then-wrap files)
-                     initialdir
+                     initial-dir
+                     initial-file
                      (and parent (widget-path parent)) title)
         (format-wish "senddatastring [tk_getOpenFile ~
                       -filetypes ~a ~@[ -initialdir {~a}~]  ~
+                      ~@[ -initialfile \"~a\"~] ~
                       ~@[ -parent ~a~] ~@[ -title {~a}~]]"
                      (rem-trouble-chars-and-then-wrap files)
-                     initialdir
+                     initial-dir
+                     initial-file
                      (and parent (widget-path parent)) title))
     (read-data)))
 
 (defun get-save-file (&key
-                        (filetypes '(("All Files" "*")))
+                        (initial-file nil)
+                        (file-types '(("All Files" "*")))
                         (title      "")
                         (parent     nil)
-                        (initialdir ""))
+                        (initial-dir nil))
   (let ((files (with-output-to-string (s)
-                 (dolist (type filetypes)
+                 (dolist (type file-types)
                    (let ((name (first type))
                          (wildcard (second type)))
-                     (format s "{{~a} {~a}} " name wildcard))))))
+                     (format s "{{~a} {~a}} " name wildcard)))))
+        (*suppress-newline-for-tcl-statements* t))
     (format-wish (tclize `(senddatastring ["tk_getSaveFile "
                                           -filetypes  ,(rem-trouble-chars-and-then-wrap files) " "
                                           -title      \"+ ,#[title ] \"
                                           -parent     ,#[if parent
-                                                           (widget-path parent)
-                                                           (widget-path *tk*) ] " "
-                                          -initialdir {+ ,#[initialdir ] } ])))
+                                                            (widget-path parent)
+                                                            (widget-path *tk*) ] " "
+                                          ,(empty-string-if-nil initial-file
+                                               `(-initialfile  \"+ ,#[initial-file ] \" " "))
+                                          ,(empty-string-if-nil initial-dir
+                                               `(-initialdir \"+ ,#[initial-dir ] \"))
+                                          ])))
     (read-data)))
 
-(defun choose-directory (&key (initialdir "")
+(defun choose-directory (&key (initial-dir nil)
                               parent title mustexist)
   (format-wish "senddatastring [tk_chooseDirectory ~@[ -initialdir \"~a\"~]~@[ -parent ~a ~]~@[ -title {~a}~]~@[ -mustexist ~a~]]"
-               initialdir
+               initial-dir
                (and parent (widget-path parent))
                title
                (and mustexist 1))
