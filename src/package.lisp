@@ -1291,6 +1291,7 @@
            :forget-pane
            :format-wish
            :format-wish-escape-tilde
+           :flush-wish
            :frame
            :geometry
            :get-open-file
@@ -1326,11 +1327,15 @@
            :interior
            :itembind
            :itemconfigure
+           :item-configure
            :itemdelete
            :itemmove
            :itemlower
            :itemraise
            :item-cget
+           :item-delete
+           :item-move-to
+           :item-raise
            :label
            :labelframe
            :listbox
@@ -1422,7 +1427,6 @@
            :search-next-text
            :see
            :send-lazy
-           :send-wish
            :set-coords
            :set-coords*
            :set-focus-next
@@ -1485,6 +1489,7 @@
            :sizegrip
            :+treeview-root+
            :+treeview-first-column-id+
+           :+treeview-last-index+
            :tree-item
            :id
            :tree
@@ -1525,9 +1530,10 @@
            :column-values
            :listbox-insert
            :font-families
+           :theme-names
+           :use-theme
            :items
-           :image
-           :demo))
+           :image))
 
 (defpackage :nodgui.mw
   (:use
@@ -1573,6 +1579,18 @@
    :launch-autocompletion
    :text-input-dialog
    :listbox-dialog))
+
+(defpackage :nodgui.demo
+  (:use :cl
+        :alexandria
+        :cl-ppcre
+        :nodgui.event-parser
+        :nodgui.utils
+        :nodgui
+        :nodgui.mw)
+  (:shadow :alexandria :rotate)
+  (:export
+   :demo))
 
 (defpackage :nodgui-user
   (:use :common-lisp :nodgui))

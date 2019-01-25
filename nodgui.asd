@@ -88,8 +88,8 @@
                (:file "wm")
                (:file "winfo")
                (:file "trivial-debugger")
-               (:file "demo-tests")
                (:file "nodgui-mw")
+               (:file "demo-tests")
                (:module tests
                         :components ((:file "package")
                                      (:file "all-tests")

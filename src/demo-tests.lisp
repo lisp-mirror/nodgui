@@ -15,7 +15,7 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 
-(in-package :nodgui)
+(in-package :nodgui.demo)
 
 (cl-syntax:use-syntax nodgui-event-syntax)
 
@@ -68,26 +68,69 @@
            (demo-image     (make-instance  'button
                                            :text    "images"
                                            :command #'(lambda () (demo-image))))
-           (b-quit         (make-instance  'button
-                                           :text    "quit lisp :)"
-                                           :command #'(lambda ()
-                                                        (uiop:quit)))))
-      (grid widget         0 0 :sticky :nswe)
-      (grid eyes           0 1 :sticky :nswe)
-      (grid modal          0 2 :sticky :nswe)
-      (grid combo          1 0 :sticky :nswe)
-      (grid packtest1      1 1 :sticky :nswe)
-      (grid packtest2      1 2 :sticky :nswe)
-      (grid scrolled-frame 2 0 :sticky :nswe)
-      (grid button-text    2 1 :sticky :nswe)
-      (grid treeview       2 2 :sticky :nswe)
-      (grid w/widget       3 0 :sticky :nswe)
-      (grid notebook-1     3 1 :sticky :nswe)
-      (grid notebook-2     3 2 :sticky :nswe)
-      (grid defwidget      4 0 :sticky :nswe)
-      (grid demo-canvas    4 1 :sticky :nswe)
-      (grid demo-image     4 2 :sticky :nswe)
-      (grid b-quit         5 0 :sticky :nswe :columnspan 3)
+           (demo-treelist  (make-instance  'button
+                                           :text    "(mw) treelist"
+                                           :command #'(lambda () (nodgui.mw::treelist-test))))
+           (demo-tooltip   (make-instance  'button
+                                           :text    "(mw) tooltip"
+                                           :command #'(lambda () (nodgui.mw::tooltip-test))))
+           (demo-gtree     (make-instance  'button
+                                           :text    "(mw) graphical tree"
+                                           :command #'(lambda () (nodgui.mw::gtree-demo))))
+           (demo-auto-listbox (make-instance 'button
+                                             :text    "(mw) autocomplete listbox"
+                                             :command #'(lambda ()
+                                                          (nodgui.mw::autocomplete-listbox-demo))))
+           (demo-search-listbox (make-instance 'button
+                                             :text    "(mw) searchable listbox"
+                                             :command #'(lambda ()
+                                                          (nodgui.mw::searchable-listbox-demo))))
+           (demo-list-select    (make-instance 'button
+                                               :text    "(mw) list select demo"
+                                               :command #'(lambda ()
+                                                            (nodgui.mw::list-select-demo))))
+           (demo-listbox-dialog (make-instance 'button
+                                               :text    "(mw) listbox dialog"
+                                               :command #'(lambda ()
+                                                            (let ((chosen (nodgui.mw:listbox-dialog
+                                                                           *tk*
+                                                                           "listbox dialog"
+                                                                           "Choose an entry"
+                                                                           '("hello" "world"))))
+                                                              (message-box (format nil
+                                                                                   "chosen ~s~%"
+                                                                                   chosen)
+                                                                           "info"
+                                                                           :ok
+                                                                           "info"
+                                                                           :parent *tk*)))))
+           (b-quit              (make-instance  'button
+                                                :text    "quit lisp :)"
+                                                :command #'(lambda ()
+                                                             (uiop:quit)))))
+      (grid widget              0 0 :sticky :nswe)
+      (grid eyes                0 1 :sticky :nswe)
+      (grid modal               0 2 :sticky :nswe)
+      (grid combo               1 0 :sticky :nswe)
+      (grid packtest1           1 1 :sticky :nswe)
+      (grid packtest2           1 2 :sticky :nswe)
+      (grid scrolled-frame      2 0 :sticky :nswe)
+      (grid button-text         2 1 :sticky :nswe)
+      (grid treeview            2 2 :sticky :nswe)
+      (grid w/widget            3 0 :sticky :nswe)
+      (grid notebook-1          3 1 :sticky :nswe)
+      (grid notebook-2          3 2 :sticky :nswe)
+      (grid defwidget           4 0 :sticky :nswe)
+      (grid demo-canvas         4 1 :sticky :nswe)
+      (grid demo-image          4 2 :sticky :nswe)
+      (grid demo-treelist       5 0 :sticky :nswe)
+      (grid demo-tooltip        5 1 :sticky :nswe)
+      (grid demo-gtree          5 2 :sticky :nswe)
+      (grid demo-auto-listbox   6 0 :sticky :nswe)
+      (grid demo-search-listbox 6 1 :sticky :nswe)
+      (grid demo-list-select    6 2 :sticky :nswe)
+      (grid demo-listbox-dialog 7 0 :sticky :nswe)
+      (grid b-quit              8 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
 
@@ -707,13 +750,15 @@
                         ((cl-ppcre:scan "png$" file)
                          (setf (image b) (make-image data)))
                         ((cl-ppcre:scan "tga$" file)
-                         (let ((bitmap (rotate-pixmap (scale-bilinear (slurp-pixmap 'tga file)
-                                                                      2.0 2.1)
-                                                      30.0
-                                                      :repeat t)))
+                         (let ((bitmap (nodgui.pixmap:rotate-pixmap
+                                        (nodgui.pixmap:scale-bilinear
+                                         (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:tga file)
+                                         2.0 2.1)
+                                        30.0
+                                        :repeat t)))
                            (setf (image b) (make-image bitmap))))
                         ((cl-ppcre:scan "jpg$" file)
-                         (let ((bitmap (slurp-pixmap 'jpeg file)))
+                         (let ((bitmap (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:jpeg file)))
                            (setf (image b) (make-image bitmap))))
                         (t
                          (let ((w (input-box "Pixel width?"

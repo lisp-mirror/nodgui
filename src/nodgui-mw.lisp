@@ -786,7 +786,6 @@ Widgets offered are:
                          :remove-non-matching-p nil)
           :fill :both :expand t))))
 
-
 (defun searchable-listbox-demo ()
   (with-nodgui ()
     (pack (make-instance 'searchable-listbox
