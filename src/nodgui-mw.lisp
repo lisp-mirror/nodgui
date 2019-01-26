@@ -1126,10 +1126,16 @@ Widgets offered are:
     (date-refresh date-object)))
 
 (defun right-arrow ()
-  (string #\RIGHTWARDS_ARROW))
+  (string #\RIGHTWARDS_BLACK_ARROW))
 
 (defun left-arrow ()
-  (string #\LEFTWARDS_ARROW))
+  (string #\LEFTWARDS_BLACK_ARROW))
+
+(defun double-right-arrow ()
+  (string #\U2BEE))
+
+(defun double-left-arrow ()
+  (string #\U2BEC))
 
 (defmethod initialize-instance :after ((object date-picker) &key &allow-other-keys)
   (with-accessors ((current-year-entry  current-year-entry)
@@ -1146,15 +1152,15 @@ Widgets offered are:
                                         :master  top-frame))
            (a-year-less  (make-instance 'button
                                         :command (subtract-a-year-clsr object)
-                                        :text    (strcat (left-arrow) (left-arrow))
+                                        :text    (double-left-arrow)
                                         :master  top-frame))
            (a-year-more  (make-instance 'button
                                         :command (add-a-year-clsr object)
-                                        :text    (strcat (right-arrow) (right-arrow))
+                                        :text    (double-right-arrow)
                                         :master  top-frame))
            (today        (make-instance 'button
                                         :command (date-jump-today object)
-                                        :text    (string #\BULLET)
+                                        :text    (string #\BLACK_LARGE_CIRCLE)
                                         :master  top-frame)))
       (setf current-month-entry (make-instance 'entry
                                                :text   (date-format-month  object)
@@ -1177,17 +1183,24 @@ Widgets offered are:
                                          :text       (date-format-week-day object col))))
              (grid weekday 1 col :sticky :ns)))
       (date-refresh object)
+      (grid-columnconfigure top-frame :all :weight 1)
+      (grid-rowconfigure    top-frame :all :weight 1)
+      (grid-columnconfigure object :all :weight 1)
+      (grid-rowconfigure    object :all :weight 1)
       object)))
 
 (defun date-picker-demo ()
   (let ((res nil))
     (with-modal-toplevel (toplevel)
+      (set-geometry-wh toplevel 256 256)
       (let* ((widget (make-instance 'date-picker
                                     :master        toplevel
                                     :on-pressed-cb (lambda (a)
                                                      (setf res (universal-timestamp a))
                                                      (break-mainloop)))))
-        (grid widget 0 0 :sticky :news)))
+        (grid widget 0 0 :sticky :news)
+        (grid-columnconfigure toplevel :all :weight 1)
+        (grid-rowconfigure    toplevel :all :weight 1)))
     (and res
          (message-box (format nil
                               "chosen ~s~%"
