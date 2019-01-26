@@ -111,13 +111,14 @@
     (set range [$sb get])
     ($sb set 0 [expr [lindex $range 1] - [lindex $range 0]]))
 
-  (defproc sendevent (s x y keycode char width height root_x root_y mouse_button)
+  (defproc sendevent (s x y charcode keycode char width height root_x root_y mouse_button)
      (:lisp
      (with-flush-server
          (tcl
            (global server)
            (puts $server [strcat < #.+wish-to-lisp-event-reply+ \\+ \"+ $s+ \\+ \"
-                                   $x \ % $y \ % $keycode \ % \\+ \"+ $char+ \\+ \" \ %
+                                   \ % $x \ % $y \ %  $charcode
+                                   \ % $keycode \ % \\+ \"+ $char+ \\+ \" \ %
                                    $width \ % $height \ %
                                    $root_x \ % $root_y \ % $mouse_button \ %
                                  > ])))))

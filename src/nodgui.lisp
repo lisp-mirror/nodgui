@@ -169,6 +169,7 @@ can be passed to AFTER-CANCEL"
 (defstruct event
   x
   y
+  char-code
   keycode
   char
   width
@@ -182,13 +183,14 @@ can be passed to AFTER-CANCEL"
   (make-event
    :x            (first properties)
    :y            (second properties)
-   :keycode      (third properties)
-   :char         (fourth properties)
-   :width        (fifth properties)
-   :height       (sixth properties)
-   :root-x       (seventh properties)
-   :root-y       (eighth properties)
-   :mouse-button (ninth properties)))
+   :char-code    (third properties)
+   :keycode      (fourth properties)
+   :char         (fifth properties)
+   :width        (sixth properties)
+   :height       (seventh properties)
+   :root-x       (eighth properties)
+   :root-y       (ninth properties)
+   :mouse-button (tenth properties)))
 
 (defgeneric bind (w event fun &key append exclusive))
 
@@ -196,8 +198,7 @@ can be passed to AFTER-CANCEL"
   "bind fun to event of the widget w"
   (let ((name (create-name)))
     (add-callback name fun)
-    ;;(format-wish "bind  ~a ~a {sendevent ~A %x %y %k %K %w %h %X %Y}" (widget-path w) event name)
-    (format-wish "bind  ~a {~a} {~:[~;+~]sendevent ~A %x %y %k %K %w %h %X %Y %b ~:[~;;break~]}"
+    (format-wish "bind  ~a {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b ~:[~;;break~]}"
                  (widget-path w) event append name exclusive)
     w))
 
@@ -205,8 +206,7 @@ can be passed to AFTER-CANCEL"
   "bind fun to event within context indicated by string ie. 'all' or 'Button'"
   (let ((name (create-name)))
     (add-callback name fun)
-    ;;(format-wish "bind  ~a ~a {sendevent ~A %x %y %k %K %w %h %X %Y}" s event name)
-    (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %k %K %w %h %X %Y %b ~:[~;;break~]}"
+    (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b ~:[~;;break~]}"
                  s event append name exclusive)))
 
 ;;; window menu bar

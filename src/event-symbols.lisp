@@ -13,11 +13,17 @@
 
 (in-package :nodgui.event-symbols)
 
+(define-constant +first-non-printable-keysym+ 65288 :test #'=)
+
 (defparameter *all-event-modifier* '())
 
 (defparameter *all-event-type*     '())
 
 (defparameter *all-event-details* '())
+
+(defun keysym-printable-p (num-code)
+  "Is the keysymbol, identified by its numerical code, printable?"
+  (< num-code +first-non-printable-keysym+))
 
 (defmacro gen-key-symbol (sym bag)
   (let* ((normalized-name (regex-replace-all "_" sym "-"))

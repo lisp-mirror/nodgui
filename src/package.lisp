@@ -199,6 +199,7 @@
    :*all-event-details*
    :*all-event-modifier*
    :*all-event-type*
+   :keysym-printable-p
    ;; details
    :+space+
    :+exclam+
@@ -1285,6 +1286,7 @@
            :event
            :event-x
            :event-y
+           :event-char-code
            :event-keycode
            :event-char
            :event-mouse-button
@@ -1591,7 +1593,10 @@
    :listbox-dialog
    :date-picker
    :on-pressed-cb
-   :universal-timestamp))
+   :universal-timestamp
+   :password-entry
+   :secret-string
+   :show-password))
 
 (defpackage :nodgui.demo
   (:use :cl

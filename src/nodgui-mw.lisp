@@ -1196,3 +1196,67 @@ Widgets offered are:
                       :ok
                       "info"
                       :parent *tk*))))
+
+(define-constant +password-char-placeholder+ (string #\BULLET) :test #'string=)
+
+(defclass password-entry (entry)
+  ((secret-string
+    :initform nil
+    :initarg  :secret-string
+    :accessor secret-string
+    :documentation "The secret data kept by thi instance")
+   (show-password
+    :initform nil
+    :initarg  :show-password
+    :reader   show-password-p
+    :writer   (setf show-password)
+    :documentation "Show the password if double click on the entry? Default is nil")))
+
+(defmethod initialize-instance :after ((object password-entry) &key &allow-other-keys)
+  (with-accessors ((secret-string   secret-string)
+                   (text            text)
+                   (show-password-p show-password-p))
+  (bind object #$<KeyPress>$
+        (lambda (a) (declare (ignore a)))
+        :exclusive t
+        :append nil)
+  (bind object #$<KeyRelease>$
+        (lambda (a)
+          (cond
+            ((string= (event-char a) nodgui.event-symbols:+backspace+)
+             (when (> (length secret-string) 0)
+               (setf secret-string (subseq secret-string 0 (1- (length secret-string))))
+               (setf text          (subseq text          0 (1- (length text))))))
+            ((nodgui.event-symbols:keysym-printable-p (event-char-code a))
+             (setf secret-string (strcat secret-string (event-char a)))
+             (setf text          (strcat text          +password-char-placeholder+)))))
+        :exclusive t
+        :append nil)
+  (when show-password-p
+    (bind object #$<Double-1>$
+          (lambda (a)
+            (declare (ignore a))
+            (setf text secret-string))
+          :exclusive t
+          :append nil))))
+
+(defun password-entry-demo ()
+  (let ((res nil))
+    (with-modal-toplevel (toplevel)
+      (let* ((widget    (make-instance 'password-entry
+                                       :show-password t
+                                       :master        toplevel))
+             (ok-button (make-instance 'button
+                                       :text   "OK"
+                                       :master toplevel
+                                       :command (lambda ()
+                                                  (setf res (secret-string widget))
+                                                  (break-mainloop)))))
+        (grid widget    0 0 :sticky :news)
+        (grid ok-button 0 1 :sticky :news)))
+    (and res
+         (message-box (format nil "pssst: ~s" res)
+                      "info"
+                      :ok
+                      "info"
+                      :parent *tk*))))
