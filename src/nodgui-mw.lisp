@@ -409,7 +409,7 @@ Widgets offered are:
                (string
                 text)
                (t
-                (format nil "~a" text)))))
+                (to-s text)))))
     (when (and txt (> (length txt) 0))
       (setf (text (tooltip-label tooltip)) txt)
       (set-geometry-xy tooltip (truncate x)  (truncate y))
@@ -447,8 +447,8 @@ Widgets offered are:
                              (cancel-tooltip tooltip)
                              (schedule-tooltip tooltip
                                                content
-                                               (+ 30 (event-root-x event))
-                                               (+ 10 (event-root-y event))
+                                               (+ (event-root-x event) 10)
+                                               (- (event-root-y event) 10)
                                                (popup-time tooltip)))
         :append t)
   widget)
