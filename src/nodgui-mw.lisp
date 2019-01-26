@@ -1192,7 +1192,7 @@ Widgets offered are:
 (defun date-picker-demo ()
   (let ((res nil))
     (with-modal-toplevel (toplevel)
-      (set-geometry-wh toplevel 256 256)
+      (set-geometry-wh toplevel 380 256)
       (let* ((widget (make-instance 'date-picker
                                     :master        toplevel
                                     :on-pressed-cb (lambda (a)
