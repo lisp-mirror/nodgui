@@ -104,6 +104,10 @@
                                                                            :ok
                                                                            "info"
                                                                            :parent *tk*)))))
+           (demo-date-picker (make-instance 'button
+                                               :text    "(mw) date picker"
+                                               :command #'(lambda ()
+                                                            (nodgui.mw::date-picker-demo))))
            (b-quit              (make-instance  'button
                                                 :text    "quit lisp :)"
                                                 :command #'(lambda ()
@@ -130,6 +134,7 @@
       (grid demo-search-listbox 6 1 :sticky :nswe)
       (grid demo-list-select    6 2 :sticky :nswe)
       (grid demo-listbox-dialog 7 0 :sticky :nswe)
+      (grid demo-date-picker    7 1 :sticky :nswe)
       (grid b-quit              8 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))

@@ -37,6 +37,7 @@
            :to-s
            :strcat
            :strcat*
+           :wrap-with
            :common-prefix
            :strip-prefix
            :strip-withespaces
@@ -73,7 +74,16 @@
            :deg->rad
            :nodgui-color-syntax
            :lisp-bool->tcl
-           :tcl-bool->lisp))
+           :tcl-bool->lisp
+           :time-second-of
+           :time-minutes-of
+           :time-hour-of
+           :time-date-of
+           :time-month-of
+           :time-year-of
+           :time-day-of
+           :time-daylight-p-of
+           :time-zone-of))
 
 (defpackage :nodgui.base64
   (:use :cl
@@ -1578,7 +1588,10 @@
    :autocomplete-function-hook
    :launch-autocompletion
    :text-input-dialog
-   :listbox-dialog))
+   :listbox-dialog
+   :date-picker
+   :on-pressed-cb
+   :universal-timestamp))
 
 (defpackage :nodgui.demo
   (:use :cl
@@ -1593,4 +1606,6 @@
    :demo))
 
 (defpackage :nodgui-user
-  (:use :common-lisp :nodgui))
+  (:use
+   :cl
+   :nodgui))

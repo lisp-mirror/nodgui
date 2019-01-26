@@ -45,6 +45,8 @@ Widgets offered are:
 
 (cl-syntax:use-syntax nodgui-event-syntax)
 
+(cl-syntax:use-syntax nodgui-color-syntax)
+
 ;;;; mixin class for widget construction
 ;;;; for widgets inheriting from redraw-on-resize the generic function
 ;;;; redraw is called, whenever the widget is resized (e.g. by window resize)
@@ -913,3 +915,284 @@ Widgets offered are:
           (grid-rowconfigure    toplevel 1 :weight 1)
           (grid-columnconfigure toplevel 0 :weight 1))))
     res))
+
+(define-constant +date-today-dom-wrapper+  "*" :test #'string=)
+
+(defclass date-picker (frame)
+  ((on-pressed-cb
+    :initform #'identity
+    :initarg  :on-pressed-cb
+    :accessor on-pressed-cb
+    :documentation  "When  a  day  button   is  pressed  the  date  is
+    updated  (see slot  'date') and  this function  is called  with an
+    istance of 'date-picker' as parameter")
+   (universal-timestamp
+    :initform (get-universal-time)
+    :initarg  :universal-timestamp
+    :accessor universal-timestamp
+    :documentation "Universal time of the selected date")
+   (months-name
+    :initform '("January"
+                "February"
+                "March"
+                "April"
+                "May"
+                "June"
+                "July"
+                "August"
+                "September"
+                "October"
+                "November"
+                "December")
+    :initarg  :months-name
+    :accessor months-name
+    :documentation "List of labels for months names")
+   (weekday-names
+    :initform '("Mon"
+                "Tue"
+                "Wed"
+                "Thu"
+                "Fry"
+                "Sat"
+                "Sun")
+    :initarg  :weekday-names
+    :accessor weekday-names
+    :documentation "List of labels for the days of the abbreviated week names")
+   (current-month-entry
+    :initform nil
+    :initarg :current-month-entry
+    :accessor current-month-entry)
+   (current-year-entry
+    :initform nil
+    :initarg :current-year-entry
+    :accessor current-year-entry)
+   (all-days-buttons
+    :initform '()
+    :accessor all-days-buttons))
+  (:documentation "A widget to choose a date"))
+
+(defun time-as-list (univ-time)
+  (multiple-value-list (decode-universal-time univ-time)))
+
+(defmacro with-time-as-list ((decoded-time universal-time) &body body)
+  `(let ((,decoded-time (time-as-list ,universal-time)))
+     ,@body))
+
+(defun date-format-month (date-object)
+  (with-accessors ((universal-timestamp universal-timestamp)
+                   (months-name         months-name)) date-object
+    (with-time-as-list (decoded-time universal-timestamp)
+      (elt months-name (1- (time-month-of decoded-time))))))
+
+(defun date-format-year (date-object)
+  (with-accessors ((universal-timestamp universal-timestamp)) date-object
+    (with-time-as-list (decoded-time universal-timestamp)
+      (time-year-of decoded-time))))
+
+(defun date-format-week-day (date-object &optional (day nil))
+  (with-accessors ((universal-timestamp universal-timestamp)
+                   (weekday-names weekday-names)) date-object
+    (with-time-as-list (decoded-time universal-timestamp)
+      (if day
+          (elt weekday-names (rem day 7))
+          (elt weekday-names (time-day-of decoded-time))))))
+
+(defun date-sundayp (index)
+  (and (> index 0)
+       (= (rem index 6) 0)))
+
+(defun date-color-by-week (idx)
+  (if (date-sundayp idx)
+      #%red%
+      #%black%))
+
+(defun date-month-name->month-num (date-object name)
+  (1+ (position name (months-name date-object) :test #'string=)))
+
+(defun date-month-num->month-name (date-object idx)
+  (elt (months-name date-object) (1- idx)))
+
+(defun date-build-universal-time (year month day)
+  (flet ((parse (n)
+           (floor (if (numberp n) n (parse-integer n)))))
+    (let ((month    (parse month))
+          (year-num (parse year))
+          (day-num  (parse day)))
+      (encode-universal-time 0 0 0 day-num month year-num 0))))
+
+(defun date-build-universal-time* (date-object day)
+  (with-accessors ((current-year-entry  current-year-entry)
+                   (current-month-entry current-month-entry)
+                   (universal-timestamp universal-timestamp)) date-object
+    (with-time-as-list (decoded universal-timestamp)
+      (date-build-universal-time (time-year-of decoded)
+                                 (time-month-of decoded)
+                                 day))))
+
+(defun date-refresh (date-object)
+  (with-accessors ((current-year-entry  current-year-entry)
+                   (current-month-entry current-month-entry)
+                   (all-days-buttons    all-days-buttons)
+                   (universal-timestamp universal-timestamp)
+                   (on-pressed-cb       on-pressed-cb)) date-object
+    (map nil #'destroy all-days-buttons)
+    (with-time-as-list (decoded-now (get-universal-time))
+      (with-time-as-list (decoded-current universal-timestamp)
+        (let* ((decoded-time-this-month (time-as-list (date-build-universal-time* date-object 1)))
+               (start-dow               (time-day-of  decoded-time-this-month)))
+          (setf (text current-year-entry)  (time-year-of decoded-current))
+          (setf (text current-month-entry)
+                (date-month-num->month-name date-object
+                                            (time-month-of decoded-current)))
+          (let ((all-days (loop for i from 0 below 31 collect i)))
+            (map nil
+                 (lambda (dom)
+                   (with-time-as-list (decoded-probe (date-build-universal-time* date-object
+                                                                                 (1+ dom)))
+                     (let ((current-month (time-month-of decoded-current)))
+                       (when (= current-month (time-month-of decoded-probe))
+                         (let* ((dom-button (make-instance 'button
+                                                           :command
+                                                           (lambda ()
+                                                             (funcall on-pressed-cb
+                                                                      (set-date date-object
+                                                                                (1+ dom))))
+                                                           :master date-object
+                                                           :text   (time-date-of decoded-probe)))
+                                (row         (floor (/ (+ start-dow
+                                                          dom)
+                                                       7)))
+                                (col         (- (+ start-dow dom)
+                                                (* 7 row))))
+                           (when (= (time-date-of decoded-now)
+                                    (time-date-of decoded-probe))
+                             (setf (text dom-button) (wrap-with (text dom-button)
+                                                                +date-today-dom-wrapper+)))
+                           (grid dom-button (+ row 3) col :sticky :news)
+                           (push dom-button all-days-buttons))))))
+                 all-days))))))
+    date-object)
+
+(defun shift-date (date-object month-shift-fn year-shift-fn)
+  (with-time-as-list (decoded-now (get-universal-time))
+    (with-time-as-list (decoded (date-build-universal-time* date-object
+                                                            (time-date-of decoded-now)))
+      (let ((new (encode-universal-time 0 0 0
+                                        (time-date-of           decoded-now)
+                                        (funcall month-shift-fn (time-month-of decoded))
+                                        (funcall year-shift-fn  (time-year-of  decoded))
+                                        0)))
+        (setf (universal-timestamp date-object) new)
+        (date-refresh date-object)))))
+
+(defun set-date (date-object day)
+  (setf (universal-timestamp date-object) (date-build-universal-time* date-object day))
+  date-object)
+
+(defun add-a-month-clsr (date-object)
+  (lambda ()
+    (shift-date date-object
+                #'(lambda (a)
+                    (if (< a 12)
+                        (1+ a)
+                        1))
+                #'identity)))
+
+(defun subtract-a-month-clsr (date-object)
+  (lambda ()
+    (shift-date date-object
+                #'(lambda (a)
+                    (if (<= (1- a) 0)
+                        12
+                        (1- a)))
+                #'identity)))
+
+(defun add-a-year-clsr (date-object)
+  (lambda ()
+    (shift-date date-object #'identity #'1+)))
+
+(defun subtract-a-year-clsr (date-object)
+  (lambda ()
+    (shift-date date-object
+                #'identity
+                #'(lambda (a)
+                    (if (> a 1900)
+                        (1- a)
+                        a)))))
+
+(defun date-jump-today (date-object)
+  (lambda ()
+    (setf (universal-timestamp date-object) (get-universal-time))
+    (date-refresh date-object)))
+
+(defun right-arrow ()
+  (string #\RIGHTWARDS_ARROW))
+
+(defun left-arrow ()
+  (string #\LEFTWARDS_ARROW))
+
+(defmethod initialize-instance :after ((object date-picker) &key &allow-other-keys)
+  (with-accessors ((current-year-entry  current-year-entry)
+                   (current-month-entry current-month-entry)
+                   (all-days-buttons    all-days-buttons)) object
+    (let* ((top-frame    (make-instance 'frame             :master object))
+           (a-month-less (make-instance 'button
+                                        :command (subtract-a-month-clsr object)
+                                        :text    (left-arrow)
+                                        :master  top-frame))
+           (a-month-more (make-instance 'button
+                                        :command (add-a-month-clsr object)
+                                        :text    (right-arrow)
+                                        :master  top-frame))
+           (a-year-less  (make-instance 'button
+                                        :command (subtract-a-year-clsr object)
+                                        :text    (strcat (left-arrow) (left-arrow))
+                                        :master  top-frame))
+           (a-year-more  (make-instance 'button
+                                        :command (add-a-year-clsr object)
+                                        :text    (strcat (right-arrow) (right-arrow))
+                                        :master  top-frame))
+           (today        (make-instance 'button
+                                        :command (date-jump-today object)
+                                        :text    (string #\BULLET)
+                                        :master  top-frame)))
+      (setf current-month-entry (make-instance 'entry
+                                               :text   (date-format-month  object)
+                                               :master top-frame))
+      (setf current-year-entry (make-instance 'entry
+                                               :text   (date-format-year object)
+                                               :master top-frame))
+      (grid a-year-less         0 0)
+      (grid a-month-less        0 1)
+      (grid today               0 2)
+      (grid a-month-more        0 3)
+      (grid a-year-more         0 4)
+      (grid current-month-entry 0 5)
+      (grid current-year-entry  0 6)
+      (grid top-frame           0 0 :sticky :news :columnspan 7)
+      (loop for col from 0 below 7 do
+           (let ((weekday (make-instance 'label
+                                         :foreground (date-color-by-week col)
+                                         :master     object
+                                         :text       (date-format-week-day object col))))
+             (grid weekday 1 col :sticky :ns)))
+      (date-refresh object)
+      object)))
+
+(defun date-picker-demo ()
+  (let ((res nil))
+    (with-modal-toplevel (toplevel)
+      (let* ((widget (make-instance 'date-picker
+                                    :master        toplevel
+                                    :on-pressed-cb (lambda (a)
+                                                     (setf res (universal-timestamp a))
+                                                     (break-mainloop)))))
+        (grid widget 0 0 :sticky :news)))
+    (and res
+         (message-box (format nil
+                              "chosen ~s~%"
+                              (multiple-value-list (decode-universal-time res)))
+                      "info"
+                      :ok
+                      "info"
+                      :parent *tk*))))

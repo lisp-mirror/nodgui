@@ -38,6 +38,9 @@
     (loop for i in chunks do
          (write-sequence i stream))))
 
+(defun wrap-with (s wrapper)
+  (strcat wrapper s wrapper))
+
 (defun strip-prefix (string prefix)
   (let ((re (strcat "^" prefix)))
     (cl-ppcre:regex-replace re string "")))
@@ -244,7 +247,6 @@
   (cl-syntax:defsyntax nodgui-color-syntax
     (:merge :standard)
     (:macro-char #\# :dispatch)
-    (:macro-char #\% :dispatch)
     (:dispatch-macro-char #\# #\% #'read-color-macro))
 
   (cl-syntax:use-syntax nodgui-color-syntax))
@@ -344,7 +346,6 @@
 (defmethod round-all ((object vector) &key (rounding-function #'round))
   (map (type-of object) #'(lambda (n) (funcall rounding-function n)) object))
 
-
 (declaim (inline ->f))
 
 (defun ->f (a)
@@ -368,3 +369,22 @@
 
 (defmethod tcl-bool->lisp ((val string))
   (find val +valid-tcl-truth-values+ :test #'string=))
+
+(defmacro gen-time-access (name pos)
+  `(defun ,(format-fn-symbol t "time-~a-of" name) (time-list)
+     (elt time-list ,pos)))
+
+(defmacro gen-all-time-access (&rest name-pos)
+  `(progn
+     ,@(loop for i in name-pos collect
+            `(gen-time-access ,(car i) ,(cdr i)))))
+
+(gen-all-time-access (second     . 0)
+                     (minutes    . 1)
+                     (hour       . 2)
+                     (date       . 3)
+                     (month      . 4)
+                     (year       . 5)
+                     (day        . 6)
+                     (daylight-p . 7)
+                     (zone       . 8))
