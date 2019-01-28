@@ -146,7 +146,8 @@ Widgets offered are:
                                                  #\MEDIUM_RIGHT_PARENTHESIS_ORNAMENT))
                                        candidates))))
                 (when history
-                  (when-let* ((sorted-history (sort history (lambda (a b) (> (length a) (length b)))))
+                  (when-let* ((sorted-history (sort (copy-list history)
+                                                    (lambda (a b) (> (length a) (length b)))))
                               (candidates     (remove-if-not (lambda (a)
                                                                (scan (strcat "^" text-entry)
                                                                      a))
