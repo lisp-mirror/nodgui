@@ -105,64 +105,64 @@ Widgets offered are:
 (defmethod initialize-instance :after ((entry history-entry) &key command &allow-other-keys)
   (with-accessors ((history    history)
                    (text-entry text)) entry
-      (bind entry #$<KeyPress-Return>$
-            (lambda (event)
-              (declare (ignore event))
-              (let ((txt (text entry)))
-                (add-history entry txt)
-                (if (keepinput entry)
-                    (entry-select entry 0 "end")
-                    (setf (text entry) ""))
-                (nodgui::callback (nodgui::name entry) (list txt)))))
-      (bind entry #$<KeyPress-Up>$
-            (lambda (event)
-              (declare (ignore event))
-              (when (< (history-pos entry) (1- (length (history entry))))
-                (incf (history-pos entry))
-                (let ((val (nth (history-pos entry) (history entry))))
-                  (when val
-                    (setf (text entry) val))))))
-      (bind entry #$<KeyPress-Down>$
-            (lambda (event)
-              (declare (ignore event))
-              (if (>= (history-pos entry) 0)
-                  (progn
-                    (decf (history-pos entry))
-                    (if (>= (history-pos entry) 0)
-                        (setf (text entry) (nth (history-pos entry) (history entry)))
-                        (setf (text entry) "")))
-                  (progn
-                    (setf (text entry) "")))))
-      (bind entry #$<KeyPress-Tab>$
-            (lambda (event)
-              (declare (ignore event))
-              (flet ((format-candidates (candidates)
-                       (format nil "~{ ~a ~}"
-                               (mapcar (lambda (a)
-                                         (format nil
-                                                 "~a~a~a"
-                                                 #\MEDIUM_LEFT_PARENTHESIS_ORNAMENT
-                                                 a
-                                                 #\MEDIUM_RIGHT_PARENTHESIS_ORNAMENT))
-                                       candidates))))
-                (when history
-                  (when-let* ((sorted-history (sort (copy-list history)
-                                                    (lambda (a b) (> (length a) (length b)))))
-                              (candidates     (remove-if-not (lambda (a)
-                                                               (scan (strcat "^" text-entry)
-                                                                     a))
-                                                             sorted-history))
-                              (prefix         (apply #'common-prefix candidates))
-                              (new-text       (if (> (length candidates) 1)
-                                                  (strcat prefix
-                                                          (format-candidates candidates))
-                                                  prefix)))
-                    (setf text-entry new-text)
-                    (set-cursor-index entry (length prefix))
-                    (set-selection    entry (length prefix) :end)))))
-            :exclusive t)
-      (when command
-        (setf (command entry) command))))
+    (bind entry #$<KeyPress-Return>$
+          (lambda (event)
+            (declare (ignore event))
+            (let ((txt (text entry)))
+              (add-history entry txt)
+              (if (keepinput entry)
+                  (entry-select entry 0 "end")
+                  (setf (text entry) ""))
+              (nodgui::callback (nodgui::name entry) (list txt)))))
+    (bind entry #$<KeyPress-Up>$
+          (lambda (event)
+            (declare (ignore event))
+            (when (< (history-pos entry) (1- (length (history entry))))
+              (incf (history-pos entry))
+              (let ((val (nth (history-pos entry) (history entry))))
+                (when val
+                  (setf (text entry) val))))))
+    (bind entry #$<KeyPress-Down>$
+          (lambda (event)
+            (declare (ignore event))
+            (if (>= (history-pos entry) 0)
+                (progn
+                  (decf (history-pos entry))
+                  (if (>= (history-pos entry) 0)
+                      (setf (text entry) (nth (history-pos entry) (history entry)))
+                      (setf (text entry) "")))
+                (progn
+                  (setf (text entry) "")))))
+    (bind entry #$<KeyPress-Tab>$
+          (lambda (event)
+            (declare (ignore event))
+            (flet ((format-candidates (candidates)
+                     (format nil "~{ ~a ~}"
+                             (mapcar (lambda (a)
+                                       (format nil
+                                               "~a~a~a"
+                                               #\MEDIUM_LEFT_PARENTHESIS_ORNAMENT
+                                               a
+                                               #\MEDIUM_RIGHT_PARENTHESIS_ORNAMENT))
+                                     candidates))))
+              (when history
+                (when-let* ((sorted-history (sort (copy-list history)
+                                                  (lambda (a b) (> (length a) (length b)))))
+                            (candidates     (remove-if-not (lambda (a)
+                                                             (scan (strcat "^" text-entry)
+                                                                   a))
+                                                           sorted-history))
+                            (prefix         (apply #'common-prefix candidates))
+                            (new-text       (if (> (length candidates) 1)
+                                                (strcat prefix
+                                                        (format-candidates candidates))
+                                                prefix)))
+                  (setf text-entry new-text)
+                  (set-cursor-index entry (length prefix))
+                  (set-selection    entry (length prefix) :end)))))
+          :exclusive t)
+    (when command
+      (setf (command entry) command))))
 
 (defmethod (setf command) (val (entry history-entry))
   (nodgui::add-callback (nodgui::name entry) val))
