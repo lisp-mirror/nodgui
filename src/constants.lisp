@@ -26,3 +26,5 @@
 (define-constant +wish-to-lisp-keepalive-reply+ :keepalive :test #'eq)
 
 (define-constant +wish-to-lisp-event-reply+     :event     :test #'eq)
+
+(define-constant +2pi+                          (* 2 pi)   :test #'=)

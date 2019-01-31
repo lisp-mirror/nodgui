@@ -26,7 +26,8 @@
            :+wish-to-lisp-error-reply+
            :+wish-to-lisp-callback-reply+
            :+wish-to-lisp-keepalive-reply+
-           :+wish-to-lisp-event-reply+))
+           :+wish-to-lisp-event-reply+
+           :+2pi+))
 
 (defpackage :nodgui.utils
   (:use :cl
@@ -1178,6 +1179,7 @@
         #+(or :cmu :scl) :ext
         :nodgui.config
         :nodgui.constants
+        :nodgui.vec2
         :nodgui.tcl-glue-code
         :nodgui.utils
         :nodgui.conditions
@@ -1263,6 +1265,7 @@
            :coords
            :configure
            :create-arc
+           :create-star
            :create-bitmap
            :create-image
            :create-line
