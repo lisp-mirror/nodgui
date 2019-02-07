@@ -102,6 +102,18 @@ Widgets offered are:
   (setf (history entry) nil)
   (setf (history-pos entry) -1))
 
+(defmacro try-unicode (char-name fallback)
+  #+(or :sb-unicode :unicode :utf-8)
+  (or (cl-unicode:character-named char-name :try-lisp-names-p t)
+      fallback)
+  #-(or :sb-unicode :unicode :utf-8) fallback)
+
+(defun left-parens-ornament ()
+  (try-unicode "MEDIUM_LEFT_PARENTHESIS_ORNAMENT" #\( ))
+
+(defun right-parens-ornament ()
+  (try-unicode "MEDIUM_RIGHT_PARENTHESIS_ORNAMENT" #\)))
+
 (defmethod initialize-instance :after ((entry history-entry) &key command &allow-other-keys)
   (with-accessors ((history    history)
                    (text-entry text)) entry
@@ -141,9 +153,9 @@ Widgets offered are:
                              (mapcar (lambda (a)
                                        (format nil
                                                "~a~a~a"
-                                               #\MEDIUM_LEFT_PARENTHESIS_ORNAMENT
+                                               (left-parens-ornament)
                                                a
-                                               #\MEDIUM_RIGHT_PARENTHESIS_ORNAMENT))
+                                               (right-parens-ornament)))
                                      candidates))))
               (when history
                 (when-let* ((sorted-history (sort (copy-list history)
@@ -1127,16 +1139,25 @@ Widgets offered are:
     (date-refresh date-object)))
 
 (defun right-arrow ()
-  (string #\RIGHTWARDS_BLACK_ARROW))
+  (string (try-unicode "RIGHTWARDS_BLACK_ARROW" ">")))
 
 (defun left-arrow ()
-  (string #\LEFTWARDS_BLACK_ARROW))
+  (string (try-unicode "LEFTWARDS_BLACK_ARROW" "<")))
 
 (defun double-right-arrow ()
-  (string #\U2BEE))
+  (string (try-unicode "U2BEE" ">>")))
 
 (defun double-left-arrow ()
-  (string #\U2BEC))
+  (string (try-unicode "U2BEC" "<<")))
+
+(defun big-dot ()
+  (string (try-unicode "BLACK_LARGE_CIRCLE" ".")))
+
+(defun bullet ()
+  (string (try-unicode "BULLET" "*")))
+
+(defun password-char-placeholder ()
+  (bullet))
 
 (defmethod initialize-instance :after ((object date-picker) &key &allow-other-keys)
   (with-accessors ((current-year-entry  current-year-entry)
@@ -1161,7 +1182,7 @@ Widgets offered are:
                                         :master  top-frame))
            (today        (make-instance 'button
                                         :command (date-jump-today object)
-                                        :text    (string #\BLACK_LARGE_CIRCLE)
+                                        :text    (big-dot)
                                         :master  top-frame)))
       (setf current-month-entry (make-instance 'entry
                                                :text   (date-format-month  object)
@@ -1211,8 +1232,6 @@ Widgets offered are:
                       "info"
                       :parent *tk*))))
 
-(define-constant +password-char-placeholder+ (string #\BULLET) :test #'string=)
-
 (defclass password-entry (entry)
   ((secret-string
     :initform nil
@@ -1243,7 +1262,7 @@ Widgets offered are:
                (setf text          (subseq text          0 (1- (length text))))))
             ((nodgui.event-symbols:keysym-printable-p (event-char-code a))
              (setf secret-string (strcat secret-string (event-char a)))
-             (setf text          (strcat text          +password-char-placeholder+)))))
+             (setf text          (strcat text          (password-char-placeholder))))))
         :exclusive t
         :append nil)
   (when show-password-p

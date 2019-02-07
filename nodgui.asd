@@ -26,6 +26,7 @@
   :pathname         "src"
   :serial      t
   :depends-on (:alexandria
+               :cl-unicode
                :cl-ppcre-unicode
                :cl-lex
                :yacc
