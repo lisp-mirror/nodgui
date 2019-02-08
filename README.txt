@@ -10,12 +10,14 @@ Table of Contents
 2 Dependency
 .. 2.1 Programs
 .. 2.2 Lisp libraries
-3 FAQ
-4 Status
-.. 4.1 Compatibility
-5 Notes
-.. 5.1 Colors Name
-6 License
+3 Widget pack
+.. 3.1 Megawidget list
+4 FAQ
+5 Status
+.. 5.1 Compatibility
+6 Notes
+.. 6.1 Colors Name
+7 License
 
 
 
@@ -52,7 +54,86 @@ Table of Contents
   All of the above libraries are available on quicklisp.
 
 
-3 FAQ
+3 Widget pack
+═════════════
+
+  This library define a few additional widgets (called /"MegaWidget"/).
+
+  All these widget are defined in file `src/nogui-mw.lisp', there should
+  be a decent quantity of documentation as docstrings on the sources.
+
+  Probably checking [the excellent quickdocs] could be useful too (note
+  that the documentation there does not always reflects the latest
+  version of this library).
+
+
+[the excellent quickdocs]
+http://quickdocs.org/nodgui/api#package-NODGUI.MW
+
+3.1 Megawidget list
+───────────────────
+
+  history-entry
+            An entry widget keeping the history of previous input (which
+        can be browsed through with cursor up and down), the input can
+        be also autocompleted pressing the TAB key.
+
+
+  treelist
+            Display a tree-like structure by a set of listboxes.
+
+        [screenshot]
+
+  tooltip
+            Display a little informative box for the widget under the
+            mouse pointer position.
+
+        [screenshot]
+
+        [License for the image].
+
+  gtree
+            Render a tree.
+
+        [screenshot]
+
+  searchable-listbox
+             A [listbox] with an entry to filter its contents
+
+  autocomplete-listbox
+             Acts like 'searchable-listbox' but the items added comes
+        from the results from apply 'autocomplete-function-hook' to the
+        content of the text entry.  This function is triggered after a
+        character is inserted into the entry.
+
+  date-picker
+        A widget to choose a date
+
+        [screenshot]
+
+  password-entry
+        A widget to input a password (the actual characters are not
+        shown when typed, a placeholder is rendered instead).
+
+
+[screenshot]
+https://www.autistici.org/interzona/img/nodgui/tree-list.png
+
+[screenshot] https://www.autistici.org/interzona/img/nodgui/tooltip.png
+
+[License for the image]
+https://notabug.org/cage/fulci/src/master/LICENSES.org
+
+[screenshot]
+https://www.autistici.org/interzona/img/nodgui/graphical-tree.png
+
+[listbox] https://www.tcl.tk/man/tcl8.6/TkCmd/listbox.htm#M12
+
+[screenshot]
+https://www.autistici.org/interzona/img/nodgui/date-picker.png
+
+
+4 FAQ
 ═════
 
 
@@ -197,7 +278,7 @@ Table of Contents
         6. A general refactoring.
 
         7. Integrated with cl-colors library (can use X11 color names or
-           rgb struct, see 5.1).
+           rgb struct, see 6.1).
 
         8. Some bugs fixed (and more added of course :-) )
 
@@ -232,7 +313,7 @@ http://www.peter-herth.de/ltk/ltkdoc/node42.html
 
 [open a pull request] https://notabug.org/cage/nodgui/issues
 
-[see the general documentation] See figure (3)
+[see the general documentation] See figure (4)
 
 [original TK documentation]
 https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
@@ -241,10 +322,10 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
 
 [web repository] https://notabug.org/cage/nodgui
 
-[testing] See section 4.1
+[testing] See section 5.1
 
 
-4 Status
+5 Status
 ════════
 
   All tk commands as of version 8.4 with support information. "-" means
@@ -272,7 +353,7 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
   ──────────────────────────────────────────────────────────────────────────────────────
    `clipboard'             x          (canvas get missing… tricky…)
   ──────────────────────────────────────────────────────────────────────────────────────
-   `colors'                -          see 5.1
+   `colors'                -          see 6.1
   ──────────────────────────────────────────────────────────────────────────────────────
    `console'               -          only on some platforms
   ──────────────────────────────────────────────────────────────────────────────────────
@@ -443,7 +524,7 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
   ━━━━━━━━━━━━━━━━━━
 
 
-4.1 Compatibility
+5.1 Compatibility
 ─────────────────
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -457,10 +538,10 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-5 Notes
+6 Notes
 ═══════
 
-5.1 Colors Name
+6.1 Colors Name
 ───────────────
 
   Color name from library cl-color can be used as follows:
@@ -486,7 +567,7 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
 [this file] https://notabug.org/cage/cl-colors2/src/master/package.lisp
 
 
-6 License
+7 License
 ═════════
 
   This software is Copyright (c) 2003-2010 Peter Herth

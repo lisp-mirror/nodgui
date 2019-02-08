@@ -758,9 +758,9 @@ Widgets offered are:
     :initform nil
     :initarg  :autocomplete-function-hook))
   (:documentation "Acts like 'searchable-listbox'  but the items added
-  comes form  the results  from apply  'autocomplete-function-hook' to
+  comes from  the results  from apply  'autocomplete-function-hook' to
   the content of  the text entry.  This function is  triggered after a
-  character are inserted into the entry."))
+  character is inserted into the entry."))
 
 (defun %autocomplete (listbox)
   (with-accessors ((autocomplete-function-hook autocomplete-function-hook)) listbox

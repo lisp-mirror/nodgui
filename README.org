@@ -28,6 +28,63 @@
 
 All of the above libraries are available on quicklisp.
 
+* Widget pack
+  This library define a few additional widgets (called /"MegaWidget"/).
+
+  All  these widget  are  defined in  file ~src/nogui-mw.lisp~,  there
+  should be  a decent quantity  of documentation as docstrings  on the
+  sources.
+
+  Probably checking
+  [[http://quickdocs.org/nodgui/api#package-NODGUI.MW][the excellent quickdocs]]
+  could be useful too (note that the documentation there
+  does not always reflects the latest version of this library).
+
+** Megawidget list
+
+   - history-entry ::
+    An entry widget  keeping the history of previous  input (which can
+    be browsed through with cursor up and down), the input can be also
+    autocompleted pressing the TAB key.
+
+
+   - treelist ::
+    Display  a tree-like structure by a set  of listboxes.
+
+    [[https://www.autistici.org/interzona/img/nodgui/tree-list.png][screenshot]]
+
+   - tooltip ::
+    Display a little informative box for the widget under the mouse pointer position.
+
+    [[https://www.autistici.org/interzona/img/nodgui/tooltip.png][screenshot]]
+
+    [[https://notabug.org/cage/fulci/src/master/LICENSES.org][License for the image]].
+
+   - gtree ::
+    Render a tree.
+
+    [[https://www.autistici.org/interzona/img/nodgui/graphical-tree.png][screenshot]]
+
+   - searchable-listbox ::
+     A [[https://www.tcl.tk/man/tcl8.6/TkCmd/listbox.htm#M12][listbox]]
+     with an entry to filter its contents
+
+   - autocomplete-listbox ::
+     Acts like 'searchable-listbox'  but the items added
+     comes from  the results  from apply  'autocomplete-function-hook' to
+     the content of the text entry.   This function is triggered after a
+     character is inserted into the entry.
+
+   - date-picker :: A widget to choose a date
+
+     [[https://www.autistici.org/interzona/img/nodgui/date-picker.png][screenshot]]
+
+   - password-entry :: A   widget  to  input  a   password  (the  actual
+     characters are  not shown when  typed, a placeholder  is rendered
+     instead).
+
+
+
 * FAQ
 
     <<documentation>>
