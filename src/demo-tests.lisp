@@ -726,7 +726,7 @@
              (bicolor-star (make-two-color-star canvas 80 0.5
                                                 #%yellow% #%yellow%
                                                 #%gray%   #%yellow%
-                                                5
+                                                10
                                                 :outline-width 10))
              (rotated-text (create-text canvas 0 20
                                         (strcat (format nil "Text can be rotated~%at an ")

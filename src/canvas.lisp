@@ -494,20 +494,23 @@
                             'canvas-item)))
              (make-instance class :canvas canvas :handle handle))))))
 
-(defun create-text (canvas x y text &key (anchor :nw) (justify :left) (angle 0.0))
+(defun create-text (canvas x y text &key
+                                      (anchor :nw) (justify :left)
+                                      (angle 0.0)  (font nil))
   (assert (find justify '(:left :right :center)))
-  (format-wish (tcl-str (senddata [~a create text ~a ~a
-                                  -angle   {~a}
-                                  -justify ~\(~a~\)
-                                  -anchor  {~\(~a~\)}
-                                  -text    {~a}]))
-               (widget-path canvas)
-               (tk-number x) (tk-number y)
-               angle
-               justify
-               anchor
-               text)
-  (read-data))
+  (with-canvas-path (path canvas)
+    (format-wish (tclize
+                  `(senddata [ ,path                         " "
+                             create text
+                             ,(tk-number x)                  " "
+                             ,(tk-number y)                  " "
+                             ,(empty-string-if-nil font
+                                  `(-font    {+ ,#[font ] }  " "))
+                             -angle   ,(tk-number angle)     " "
+                             -justify {+ ,#[down justify ] } " "
+                             -anchor  {+ ,#[down anchor  ] } " "
+                             -text    {+ ,#[text ] } ])))
+    (read-data)))
 
 (defclass canvas-text (canvas-item) ())
 
