@@ -169,7 +169,7 @@
 
 (defparameter  *bbox-scale-fix* 1.0
   "According to the  tk documentation the calculated aabb  for a shape
-  may overstemite  the boudaries  by \"a  few pixels\".  This variable
+  may overstimate  the boudaries  by \"a  few pixels\".  This variable
   scale the bounding box.")
 
 (defun bbox-min-x (aabb)
