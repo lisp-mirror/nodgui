@@ -201,7 +201,7 @@
                                                     (setf (value progress) 0)))
                                        :master fprogress))
              (fscale (make-instance 'frame :master bar))
-             (scale (make-instance 'scale :master fscale :from 0 :to 100 :length 150 ))
+             (scale (make-instance 'scale :master fscale :from 0 :to 100 :length 150))
              (separator (make-instance 'separator :master fscale))
              (fcheck (make-instance 'frame :master bar))
              (lcheck (make-instance 'label :master fcheck :text "Add:"))
