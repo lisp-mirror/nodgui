@@ -1241,9 +1241,11 @@
            :canvas-text
            :canvas-image
            :canvas-item
+           :canvas-holder
            :canvas-arc
            :canvas-bbox
            :canvas-item-bbox
+           :*bbox-scale-fix*
            :bbox-min-x
            :bbox-max-x
            :bbox-min-y
@@ -1265,14 +1267,12 @@
            :coords
            :configure
            :create-arc
-           :create-star
            :create-bitmap
            :create-image
            :create-line
            :create-line*
            :create-menu2
            :create-oval
-           :create-polygon
            :create-rectangle
            :create-text
            :create-window
@@ -1307,6 +1307,7 @@
            :format-wish
            :format-wish-escape-tilde
            :flush-wish
+           :read-data
            :frame
            :geometry
            :get-open-file
@@ -1345,12 +1346,14 @@
            :item-configure
            :itemdelete
            :itemmove
+           :item-move
            :itemlower
            :itemraise
            :item-cget
            :item-delete
            :item-move-to
            :item-raise
+           :process-coords
            :label
            :labelframe
            :listbox
@@ -1550,6 +1553,41 @@
            :items
            :image))
 
+(defpackage :nodgui.shapes
+  (:use
+   :cl
+   :alexandria
+   #+(or :cmu :scl) :ext
+   :nodgui.config
+   :nodgui.constants
+   :nodgui.vec2
+   :nodgui.tcl-glue-code
+   :nodgui.utils
+   :nodgui.conditions
+   :nodgui.pixmap
+   :nodgui.event-parser
+   :nodgui.sanitize
+   :nodgui.tcl-emitter
+   :nodgui)
+  (:shadow :alexandria :rotate)
+  (:export
+   :canvas-handler-holder ()
+   :handle
+   :shape
+   :fill-color
+   :outline-color
+   :outline-width
+   :shape-move
+   :shape-move-to
+   :shape-delete
+   :create-polygon
+   :polygon
+   :make-polygon
+   :star
+   :make-star
+   :two-color-star
+   :make-two-color-star))
+
 (defpackage :nodgui.mw
   (:use
    :cl
@@ -1608,6 +1646,7 @@
         :nodgui.event-parser
         :nodgui.utils
         :nodgui
+        :nodgui.shapes
         :nodgui.mw)
   (:shadow :alexandria :rotate)
   (:export

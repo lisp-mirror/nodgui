@@ -722,14 +722,20 @@
                                        :extent 359
                                        :style :pieslice
                                        :fill  "#0000ff"))
-             (star         (create-star canvas 80 0.5 #%yellow% #%orange% 5))
+             (star         (make-star canvas 80 0.5 #%red% #%black% 5))
+             (bicolor-star (make-two-color-star canvas 80 0.5
+                                                #%yellow% #%yellow%
+                                                #%gray%   #%yellow%
+                                                5
+                                                :outline-width 10))
              (rotated-text (create-text canvas 0 20
                                         (strcat (format nil "Text can be rotated~%at an ")
                                                 "arbitrary angle like this!")
                                         :angle -80)))
         (let ((aabb-rotated-text (canvas-item-bbox canvas rotated-text)))
-          (itemmove     canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0))
-        (item-move-to   canvas (handle star) 30 30)
+          (item-move    canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0))
+        (shape-move-to  bicolor-star (/ size 2) (/ size 2))
+        (shape-move-to  star 30 30)
         (create-text    canvas 0 0  "Slices of the pie are clickable")
         (item-configure canvas arc1 "fill"  #%red%)    ;; using x11-colors via cl-colors2
         (item-configure canvas arc2 "fill"  "#00ff00") ;; strings are accepted, though

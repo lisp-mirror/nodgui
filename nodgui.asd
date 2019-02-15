@@ -82,6 +82,7 @@
                (:file "text")
                (:file "frame")
                (:file "canvas")
+               (:file "canvas-shapes")
                (:file "toplevel")
                (:file "dialog")
                (:file "error-handling")

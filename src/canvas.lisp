@@ -59,12 +59,15 @@
    (scrollregion-y1 :accessor scrollregion-y1 :initform nil))
   "canvas")
 
-;; wrapper class for canvas items
-(defclass canvas-item ()
+(defclass canvas-holder ()
   ((canvas
-    :accessor canvas
-    :initarg  :canvas)
-   (handle
+    :initform nil
+    :initarg  :canvas
+    :accessor canvas)))
+
+;; wrapper class for canvas items
+(defclass canvas-item (canvas-holder)
+  ((handle
     :accessor handle
     :initarg  :handle)))
 
@@ -164,6 +167,11 @@
   `(with-accessors ((,path widget-path)) ,canvas
      ,@body))
 
+(defparameter  *bbox-scale-fix* 1.0
+  "According to the  tk documentation the calculated aabb  for a shape
+  may overstemite  the boudaries  by \"a  few pixels\".  This variable
+  scale the bounding box.")
+
 (defun bbox-min-x (aabb)
   (elt aabb 0))
 
@@ -178,7 +186,10 @@
 
 (defun canvas-item-bbox (canvas handle)
   (format-wish "senddata \"([~a bbox {~a}])\"" (widget-path canvas) handle)
-  (read-data))
+  (let ((bbox (read-data)))
+    (if (epsilon= *bbox-scale-fix* 1.0)
+        bbox
+        (mapcar (lambda (a) (round (* a *bbox-scale-fix*))) bbox))))
 
 (defmethod calc-scroll-region ((canvas canvas))
   (format-wish "~a configure -scrollregion [~a bbox all]"
@@ -363,49 +374,6 @@
 
 (defun make-line (canvas coords)
   (make-instance 'canvas-line :canvas canvas :coords coords))
-
-(defun create-polygon (canvas coords &key (fill-color #%blue%) (outline-color #%red%))
-  (let ((*suppress-newline-for-tcl-statements* t))
-    (format-wish (tclize `(senddata [,(widget-path canvas) " "
-                                    create polygon
-                                    ,(process-coords coords) " "
-                                    ,(empty-string-if-nil fill-color
-                                         `(-fill  {+ ,#[fill-color ] }))
-                                    ,(empty-string-if-nil outline-color
-                                         `(-outline  {+ ,#[outline-color ] }))
-                                    ])))
-    (read-data)))
-
-(defclass canvas-polygon (canvas-item)
-  ((fill-color
-    :initform #%white%
-    :initarg  :fill-color
-    :accessor fill-color)
-   (outline-color
-    :initform #%gray%
-    :initarg  :outline-color
-    :accessor outline-color)
-   (coords
-    :initform '()
-    :initarg  :coords
-    :accessor coords)))
-
-(defmethod initialize-instance :after ((object canvas-polygon) &key &allow-other-keys)
-  (with-accessors ((handle        handle)
-                   (fill-color    fill-color)
-                   (coords        coords)
-                   (canvas        canvas)
-                   (outline-color outline-color)) object
-    (setf handle (create-polygon canvas coords
-                                 :fill-color    fill-color
-                                 :outline-color outline-color))))
-
-(defun make-polygon (canvas coords &key (fill-color #%white%) (outline-color #%gray%))
-  (make-instance 'canvas-polygon
-                 :canvas        canvas
-                 :coords        coords
-                 :fill-color    fill-color
-                 :outline-color outline-color))
 
 (defun create-oval (canvas x0 y0 x1 y1)
   (format-wish "senddata [~a create oval ~a ~a ~a ~a]" (widget-path canvas)
@@ -599,44 +567,6 @@
                                          canvas x0 y0 x1 y1
                                          (start 0) (extent 180) (style "pieslice"))
   (setf (handle c) (create-arc canvas x0 y0 x1 y1 :start start :extent extent :style style)))
-
-(defun create-star (canvas ext-radius inner-radius-ratio inner-color outer-color corners)
-  "draw a star shaped polygon.
-   canvas:             the canvas where draw this star to
-   ext-radius:         the external radius of the circle that inscribe this star
-   inner-radius-ratio: the ratio between concave and convex point length of this star
-   inner-color:        the color of this star
-   outer-color:        the color of the outline of this star
-   corners:            the number of spikes for this star
-"
-  (assert (> corners 0))
-  (flet ((make-points (start num)
-           (let ((inc (->f (/ nodgui.constants:+2pi+ num)))
-                 (dir (vec2-normalize start)))
-             (loop
-                repeat num
-                for angle from 0.0 by inc collect
-                  (let* ((rotated (vec2-rotate dir     angle))
-                         (scaled  (vec2*       rotated (vec2-length start))))
-                    (vector (floor (vec2-x scaled))
-                            (floor (vec2-y scaled))))))))
-    (let* ((starting-angle (if (oddp corners)
-                               (->f (/ nodgui.constants:+2pi+
-                                       (* 2 corners)))
-                               (->f (/ nodgui.constants:+2pi+
-                                       corners))))
-           (ext-start      (vec2-rotate (vec2 0.0 (->f ext-radius))
-                                                    starting-angle))
-           (ext-points     (make-points ext-start corners))
-           (inner-start    (vec2-rotate (vec2* ext-start
-                                               inner-radius-ratio)
-                                        (->f (/ nodgui.constants:+2pi+
-                                                (* 2 corners)))))
-           (inner-points   (make-points inner-start corners))
-           (points         (alexandria:flatten (mapcar #'list ext-points inner-points))))
-      (make-polygon canvas points
-                    :fill-color    inner-color
-                    :outline-color outer-color))))
 
 (defclass canvas-window (canvas-item) ())
 
