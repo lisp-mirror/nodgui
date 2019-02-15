@@ -499,18 +499,19 @@
                                       (angle 0.0)  (font nil))
   (assert (find justify '(:left :right :center)))
   (with-canvas-path (path canvas)
-    (format-wish (tclize
-                  `(senddata [ ,path                         " "
-                             create text
-                             ,(tk-number x)                  " "
-                             ,(tk-number y)                  " "
-                             ,(empty-string-if-nil font
-                                  `(-font    {+ ,#[font ] }  " "))
-                             -angle   ,(tk-number angle)     " "
-                             -justify {+ ,#[down justify ] } " "
-                             -anchor  {+ ,#[down anchor  ] } " "
-                             -text    {+ ,#[text ] } ])))
-    (read-data)))
+    (let ((*suppress-newline-for-tcl-statements* t))
+      (format-wish (tclize
+                    `(senddata [ ,path                         " "
+                               create text
+                               ,(tk-number x)                  " "
+                               ,(tk-number y)                  " "
+                               ,(empty-string-if-nil font
+                                    `(-font    {+ ,#[font ] }  " "))
+                               -angle   ,(tk-number angle)     " "
+                               -justify {+ ,#[down justify ] } " "
+                               -anchor  {+ ,#[down anchor  ] } " "
+                               -text    {+ ,#[text ] } ])))
+      (read-data))))
 
 (defclass canvas-text (canvas-item) ())
 
