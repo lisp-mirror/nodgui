@@ -1411,15 +1411,15 @@ Widgets offered are:
 
 (defun star-progress-demo ()
   (with-modal-toplevel (toplevel)
-    (let* ((widget           (make-instance 'progress-bar-star
-                                            :star-num 5
-                                            :width    200
-                                            :height   40
-                                            :master toplevel))
-           (scale            (make-instance 'scale
-                                            :master  toplevel
-                                            :form    0
-                                            :to      100)))
+    (let* ((widget (make-instance 'progress-bar-star
+                                   :star-num 5
+                                   :width    200
+                                   :height   40
+                                   :master toplevel))
+           (scale  (make-instance 'scale
+                                  :master  toplevel
+                                  :form    0
+                                  :to      100)))
       (setf (command scale) (lambda (a)
                               (declare (ignore a))
                               (let ((v (/ (value scale)
