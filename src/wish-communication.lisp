@@ -123,6 +123,10 @@
   `(let ((*buffer-for-atomic-output* t))
      ,@code))
 
+(defmacro with-lazy (&rest code)
+  `(let ((*buffer-for-atomic-output* t))
+     ,@code))
+
 ;;; setup of wish
 ;;; put any tcl function definitions needed for running nodgui here
 (defun init-wish ()

@@ -104,17 +104,21 @@
                                                                            :ok
                                                                            "info"
                                                                            :parent *tk*)))))
-           (demo-date-picker (make-instance 'button
-                                               :text    "(mw) date picker"
-                                               :command #'(lambda ()
-                                                            (nodgui.mw::date-picker-demo))))
-           (demo-password    (make-instance 'button
-                                            :text    "(mw) password entry"
+           (demo-date-picker   (make-instance 'button
+                                              :text    "(mw) date picker"
+                                              :command #'(lambda ()
+                                                           (nodgui.mw::date-picker-demo))))
+           (demo-password      (make-instance 'button
+                                              :text    "(mw) password entry"
+                                              :command #'(lambda ()
+                                                           (nodgui.mw::password-entry-demo))))
+           (demo-star-progress (make-instance 'button
+                                            :text    "(mw) star progress bar"
                                             :command #'(lambda ()
-                                                         (nodgui.mw::password-entry-demo))))
-           (b-quit           (make-instance  'button
-                                             :text    "quit lisp :)"
-                                             :command #'(lambda () (uiop:quit)))))
+                                                         (nodgui.mw::star-progress-demo))))
+           (b-quit             (make-instance  'button
+                                               :text    "quit lisp :)"
+                                               :command #'(lambda () (uiop:quit)))))
       (grid widget              0 0 :sticky :nswe)
       (grid eyes                0 1 :sticky :nswe)
       (grid modal               0 2 :sticky :nswe)
@@ -139,7 +143,8 @@
       (grid demo-listbox-dialog 7 0 :sticky :nswe)
       (grid demo-date-picker    7 1 :sticky :nswe)
       (grid demo-password       7 2 :sticky :nswe)
-      (grid b-quit              8 0 :sticky :nswe :columnspan 3)
+      (grid demo-star-progress  8 0 :sticky :nswe)
+      (grid b-quit              9 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
 

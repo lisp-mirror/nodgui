@@ -211,7 +211,11 @@ outline-width: the width in pixel of the outline of this polygon"
                      :outline-color outer-color))))
 
 (defclass two-color-star (shape)
-  ((left-side
+  ((bbox-fix
+    :initform +star-bbox-fix-scale+
+    :initarg  :bbox-fix
+    :accessor bbox-fix)
+   (left-side
     :initform nil
     :initarg  :left-side
     :accessor left-side
@@ -273,7 +277,7 @@ outline-width: the width in pixel of the outline of this polygon"
                    (right-side right-side)) object
     (with-accessors ((left-side-handle handle)
                      (canvas           canvas)) left-side
-      (let* ((*bbox-scale-fix* +star-bbox-fix-scale+)
+      (let* ((*bbox-scale-fix* (bbox-fix object))
              (aabb             (canvas-item-bbox canvas left-side-handle))
              (max-x            (bbox-max-x aabb))
              (min-x            (bbox-min-x aabb))
@@ -292,3 +296,16 @@ outline-width: the width in pixel of the outline of this polygon"
                    (right-side right-side)) object
     (shape-delete left-side)
     (shape-delete right-side)))
+
+(defun two-color-star-handle (object accessor)
+  (handle (funcall accessor object)))
+
+(defgeneric left-side-handle (object))
+
+(defgeneric right-side-handle (object))
+
+(defmethod left-side-handle ((object two-color-star))
+  (two-color-star-handle object #'left-side))
+
+(defmethod right-side-handle ((object two-color-star))
+  (two-color-star-handle object #'right-side))

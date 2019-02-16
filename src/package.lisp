@@ -1234,6 +1234,8 @@
            :button
            :calc-scroll-region
            :canvas
+           :width
+           :height
            :canvas-line
            :canvas-oval
            :canvas-polygon
@@ -1445,6 +1447,7 @@
            :search-next-text
            :see
            :send-lazy
+           :with-lazy
            :set-coords
            :set-coords*
            :set-focus-next
@@ -1586,6 +1589,11 @@
    :star
    :make-star
    :two-color-star
+   :bbox-fix
+   :left-side
+   :right-side
+   :left-side-handle
+   :right-side-handle
    :make-two-color-star))
 
 (defpackage :nodgui.mw
@@ -1637,7 +1645,9 @@
    :universal-timestamp
    :password-entry
    :secret-string
-   :show-password))
+   :show-password
+   :progress-bar-star
+   :value))
 
 (defpackage :nodgui.demo
   (:use :cl

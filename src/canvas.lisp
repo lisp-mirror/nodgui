@@ -59,6 +59,16 @@
    (scrollregion-y1 :accessor scrollregion-y1 :initform nil))
   "canvas")
 
+(defgeneric width (object))
+
+(defgeneric height (object))
+
+(defmethod width (object)
+  (parse-integer (cget object :width)))
+
+(defmethod height (object)
+  (parse-integer (cget object :height)))
+
 (defclass canvas-holder ()
   ((canvas
     :initform nil

@@ -1293,3 +1293,137 @@ Widgets offered are:
                       :ok
                       "info"
                       :parent *tk*))))
+
+(defclass progress-bar-star (canvas)
+  ((star-num
+    :initform 5
+    :initarg :star-num
+    :accessor star-num
+    :documentation "The number of stars forming this bar")
+   (stars
+    :accessor stars
+    :documentation "The single star-shaped item in canvas (as instance
+    of bicolor-star)")
+   (reached-color
+    :initform #%yellow%
+    :accessor reached-color
+    :documentation "The color of star when reached")
+   (not-reached-color
+    :initform #%gray%
+    :accessor not-reached-color
+    :documentation "The color of star when not reached")
+   (value
+    :initform 0.0
+    :initarg :value
+    :reader   value
+    :documentation "The status of the progress in [0.0, 1.0]")))
+
+(defun colorize-progress-star (progress-widget)
+  (with-lazy
+      (with-accessors ((star-num          star-num)
+                       (value             value)
+                       (reached-color     reached-color)
+                       (not-reached-color not-reached-color)
+                       (stars             stars)) progress-widget
+        (multiple-value-bind (full-colored partial-colored)
+            (calc-color-stars progress-widget value)
+          (loop for i from 0 below full-colored do
+               (let* ((star         (elt stars i))
+                      (left-handle  (nodgui.shapes:left-side-handle star))
+                      (right-handle (nodgui.shapes:right-side-handle star)))
+                 (item-configure progress-widget left-handle  :fill    reached-color)
+                 (item-configure progress-widget left-handle  :outline reached-color)
+                 (item-configure progress-widget right-handle :fill    reached-color)
+                 (item-configure progress-widget right-handle :outline reached-color)))
+          (when (>= partial-colored 0)
+            (let* ((half-star    (elt stars partial-colored))
+                   (left-handle  (nodgui.shapes:left-side-handle half-star)))
+              (item-configure progress-widget left-handle :outline reached-color)
+              (item-configure progress-widget left-handle :fill    reached-color)))))))
+
+(defmethod (setf value) (new-value (object progress-bar-star))
+  (clear-star-progress-star object)
+  (setf (slot-value object 'value) (alexandria:clamp new-value 0.0 1.0))
+  (colorize-progress-star object))
+
+(defun progress-star-radius (canvas)
+  (/ (width canvas)
+     (* 2 (star-num canvas))))
+
+(defun %make-progress-star (canvas left-color right-color bbox-fix)
+  (let* ((radius (progress-star-radius canvas))
+         (star   (nodgui.shapes:make-two-color-star canvas radius 0.5
+                                                    left-color  left-color
+                                                    right-color left-color
+                                                    5
+                                                    :outline-width 0)))
+    (setf (nodgui.shapes:bbox-fix star) bbox-fix)
+    star))
+
+(defun clear-star-progress-star (bar)
+  (with-lazy
+      (loop for star in (stars bar) do
+           (let* ((left-handle  (nodgui.shapes:left-side-handle star))
+                  (right-handle (nodgui.shapes:right-side-handle star)))
+             (item-configure bar left-handle  :fill    (not-reached-color bar))
+             (item-configure bar left-handle  :outline (not-reached-color bar))
+             (item-configure bar right-handle :fill    (not-reached-color bar))
+             (item-configure bar right-handle :outline (not-reached-color bar))))))
+
+(defun calc-color-stars (bar progress-value)
+  (with-accessors ((star-num star-num)
+                   (value    value)) bar
+    (let* ((star-height         (* 2 (progress-star-radius bar)))
+           (bar-width           (width bar))
+           (filled-width        (* progress-value bar-width))
+           (stars-colored-fract (/ filled-width star-height)))
+      (multiple-value-bind (integer-part fractional-part)
+          (floor stars-colored-fract)
+        (let ((full-colored    integer-part)
+              (partial-colored -1))
+          (when (not (epsilon= fractional-part 0.0))
+            (cond
+              ((> fractional-part 0.5)
+               (incf full-colored))
+              (t
+               (if (= full-colored 0)
+                   (setf partial-colored 0)
+                   (setf partial-colored full-colored)))))
+          (values full-colored partial-colored))))))
+
+(defmethod initialize-instance :after ((object progress-bar-star)
+                                       &key (bbox-fix 0.95)  &allow-other-keys)
+  (with-accessors ((star-num          star-num)
+                   (value             value)
+                   (reached-color     reached-color)
+                   (not-reached-color not-reached-color)
+                   (stars             stars)) object
+    (setf stars (loop repeat star-num collect
+                     (%make-progress-star object
+                                          not-reached-color
+                                          not-reached-color
+                                          bbox-fix)))
+    (loop
+       for star in stars
+       for x from 0 by (* 2 (progress-star-radius object)) do
+         (nodgui.shapes:shape-move-to star x 0))
+    (colorize-progress-star object)))
+
+(defun star-progress-demo ()
+  (with-modal-toplevel (toplevel)
+    (let* ((widget           (make-instance 'progress-bar-star
+                                            :star-num 5
+                                            :width    200
+                                            :height   40
+                                            :master toplevel))
+           (scale            (make-instance 'scale
+                                            :master  toplevel
+                                            :form    0
+                                            :to      100)))
+      (setf (command scale) (lambda (a)
+                              (declare (ignore a))
+                              (let ((v (/ (value scale)
+                                          100)))
+                                (setf (value widget) v))))
+      (grid widget 0 0 :sticky :news)
+      (grid scale  1 0 :sticky :news))))
