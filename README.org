@@ -83,7 +83,9 @@ All of the above libraries are available on quicklisp.
      characters are  not shown when  typed, a placeholder  is rendered
      instead).
 
+   - progress-bar-star :: a progress bar that display stars to show progress
 
+     [[https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png][screenshot]]
 
 * FAQ
 

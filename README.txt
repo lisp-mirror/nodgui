@@ -115,6 +115,11 @@ http://quickdocs.org/nodgui/api#package-NODGUI.MW
         A widget to input a password (the actual characters are not
         shown when typed, a placeholder is rendered instead).
 
+  progress-bar-star
+        a progress bar that display stars to show progress
+
+        [screenshot]
+
 
 [screenshot]
 https://www.autistici.org/interzona/img/nodgui/tree-list.png
@@ -131,6 +136,9 @@ https://www.autistici.org/interzona/img/nodgui/graphical-tree.png
 
 [screenshot]
 https://www.autistici.org/interzona/img/nodgui/date-picker.png
+
+[screenshot]
+https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
 
 
 4 FAQ
