@@ -537,11 +537,11 @@
           ;(sleep 0.1)
           ))))
 
-(defun demo-sct()
+(defun demo-sct ()
   (with-nodgui (:debug-tcl t)
     (let* ((sf (make-instance 'scrolled-frame))
-           (f (interior sf))
-           (n 1)
+           (f  (interior sf))
+           (n  1)
            (b1 (make-instance 'button
                               :master  f
                               :text    "Button 1"

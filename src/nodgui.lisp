@@ -306,12 +306,20 @@ can be passed to AFTER-CANCEL"
   txt)
 
 (defclass scrolled-frame (frame)
-  ((frame-class :accessor frame-class :initform 'frame :initarg :frame-class)
-   (canvas      :accessor canvas      :initform nil    :initarg :canvas)
-   (inner :accessor interior)
-   (hscroll :accessor hscroll)
-   (vscroll :accessor vscroll)
-   ))
+  ((frame-class
+    :accessor frame-class
+    :initform 'frame
+    :initarg  :frame-class)
+   (canvas
+    :accessor canvas
+    :initform nil
+    :initarg :canvas)
+   (inner
+    :accessor interior)
+   (hscroll
+    :accessor hscroll)
+   (vscroll
+    :accessor vscroll)))
 
 (defmethod reset-scroll ((sf scrolled-frame))
   (format-wish "after idle {resetscroll ~a}" (widget-path (canvas sf))))
