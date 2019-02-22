@@ -564,23 +564,53 @@
 
 ;;; treeview tests
 
-(defwidget treeviewtest (frame)
-  ()
-  ((tree treeview
-         :pack (:side :top :expand t :fill :both)
-         :columns (list "a" "b")))
-  (let* ((parent (make-instance 'tree-item
-                                :text   "Hallo"
-                                :id     "[a]"
-                                :parent +treeview-root+
-                                :index  +treeview-last-index+))
-         (child  (make-instance 'tree-item
-                                :text   "W[e]lt"
-                                :parent (id parent)
-                                :column-values '("} [hello]" "[world]")
-                                :index  +treeview-last-index+)))
-    (treeview-insert-item tree :item parent)
-    (treeview-insert-item tree :item child)))
+(defclass treeviewtest (frame)
+   ((tree :accessor tree :initform nil :initarg :tree)))
+
+(defmethod initialize-instance :after ((object treeviewtest) &key)
+  (let ((tree (make-instance 'scrolled-treeview
+                             :master  object
+                             :pack    '(:side :top :expand t :fill :both)
+                             ;; the following are going  to be the ids
+                             ;; of  the  column   and  theirs  default
+                             ;; labels too
+                             ;; note: every item has an implicit first column
+                             :columns (list "cid1" "cid2"))))
+    (setf (tree object) tree)
+    ;; a tree-item's instance represent a row, with or without parent,
+    ;; of this treeview
+    (let* ((parent  (make-instance 'tree-item
+                                   :text    "hallo" ; text of the first column
+                                   :id      "[a]"
+                                   ;; the parent of this item is the root of the treeview
+                                   :parent  +treeview-root+
+                                   :index   +treeview-last-index+))
+           (child   (make-instance 'tree-item
+                                   ;; text of the first column
+                                   :text          "w[e]lt"
+                                   ;; the parent of this item is the first item defined
+                                   :parent        (id parent)
+                                   ;; text of the second and third column
+                                   :column-values '("} [hello]" "[world]")
+                                   :index          +treeview-last-index+)))
+       ;; setup headers
+       (treeview-heading tree     +treeview-first-column-id+ ; or #0
+                         :text    "column 0"
+                         :command (lambda ()
+                                    (do-msg "You clicked on column 1")))
+       (treeview-heading tree     "cid1" ; or "#1"
+                         :text    "column 1"
+                         :command (lambda ()
+                                    (treeview-delete tree parent)
+                                    (do-msg "First row deleted")))
+       (treeview-heading tree     "cid2" ; or '#2' or +treeview-last-index+ in this case
+                         :text    "column 1"
+                         :command (lambda ()
+                                    (do-msg "You clicked on column 1")))
+       (treeview-insert-item tree :item parent) ; first row
+       (treeview-insert-item tree :item child)  ; child of first row
+       ;; you can insert value without instancing a tree-item object
+       (treeview-insert-item tree :column-values '("foo" "bar"))))) ; actual second row
 
 (defun demo-treeview ()
   (with-nodgui ()
