@@ -187,7 +187,6 @@
 
   (cl-syntax:defsyntax nodgui-force-escape-syntax
     (:merge :standard)
-    (:macro-char #\# :dispatch)
     (:dispatch-macro-char #\# #\[ #' force-string-read-macro))
 
   (cl-syntax:use-syntax nodgui-force-escape-syntax)

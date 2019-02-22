@@ -236,7 +236,6 @@
 
   (cl-syntax:defsyntax nodgui-event-syntax
     (:merge :standard)
-    (:macro-char #\$ :dispatch)
     (:dispatch-macro-char #\# #\$ #'read-event-macro))
 
   (cl-syntax:use-syntax nodgui-event-syntax))

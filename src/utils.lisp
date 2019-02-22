@@ -246,7 +246,6 @@
 
   (cl-syntax:defsyntax nodgui-color-syntax
     (:merge :standard)
-    (:macro-char #\# :dispatch)
     (:dispatch-macro-char #\# #\% #'read-color-macro))
 
   (cl-syntax:use-syntax nodgui-color-syntax))
