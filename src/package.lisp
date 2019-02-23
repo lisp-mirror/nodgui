@@ -1538,6 +1538,7 @@
            :treeview-identify-item
            :treeview-set-selection
            :treeview-insert-item
+           :treeview-find-item
            :treeview-insert-item-new
            :setup-columns
            :treeitem
