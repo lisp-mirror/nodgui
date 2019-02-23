@@ -246,9 +246,9 @@
 
   (cl-syntax:defsyntax nodgui-color-syntax
     (:merge :standard)
-    (:dispatch-macro-char #\# #\% #'read-color-macro))
+    (:dispatch-macro-char #\# #\% #'read-color-macro)))
 
-  (cl-syntax:use-syntax nodgui-color-syntax))
+;  (cl-syntax:use-syntax nodgui-color-syntax))
 
 (defun safe-parse-number (number &key (fix-fn #'(lambda (e) (declare (ignore e)) nil)))
   (handler-bind ((parse-error

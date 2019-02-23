@@ -189,7 +189,7 @@
     (:merge :standard)
     (:dispatch-macro-char #\# #\[ #' force-string-read-macro))
 
-  (cl-syntax:use-syntax nodgui-force-escape-syntax)
+  ;(cl-syntax:use-syntax nodgui-force-escape-syntax)
 
   (defmacro tclize (statement &key (sanitize t))
     `(let ((*sanitize* ,sanitize))
