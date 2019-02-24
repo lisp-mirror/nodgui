@@ -267,10 +267,10 @@ not equal to all the others. The test is performed calling :test"
   (children tree (id item)))
 
 (defmethod children ((tree treeview) (item string))
-  (format-wish (tclize `(senddata [,(widget-path tree) " "
-                                  children
-                                  ,(escape-node-if-not-root item)
-                                  ])))
+  (format-wish (tclize `(senddatastrings [,(widget-path tree) " "
+                                         children
+                                         ,(escape-node-if-not-root item)
+                                         ])))
   (read-data :expected-list-as-data t))
 
 (defgeneric (setf children) (val tree item))
@@ -342,7 +342,8 @@ not equal to all the others. The test is performed calling :test"
 
 (defmethod treeview-delete-all ((tree treeview))
   "Delete all items contained in tree, if any"
-  (treeview-delete tree (children tree +treeview-root+)))
+  (let ((children (children tree +treeview-root+)))
+    (treeview-delete tree children)))
 
 (defgeneric treeview-exists (tree item))
 
