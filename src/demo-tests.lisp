@@ -600,7 +600,7 @@
                          :command (lambda ()
                                     (when (> (length (items (treeview tree))) 1)
                                       (setf (children tree parent) (list child second-row))
-                                      (do-msg "You clicked on column 1, row collapsed."))))
+                                      (do-msg "You clicked on column 0, row collapsed."))))
        (treeview-heading tree     "cid1" ; or "#1"
                          :text    "column 1"
                          :command (lambda ()
@@ -608,9 +608,9 @@
                                       (treeview-delete tree parent)
                                       (do-msg "First row deleted"))))
        (treeview-heading tree     "cid2" ; or '#2' or +treeview-last-index+ in this case
-                         :text    "column 1"
+                         :text    "column 2"
                          :command (lambda ()
-                                    (do-msg "You clicked on column 1")))
+                                    (do-msg "You clicked on column 2")))
        (treeview-insert-item tree :item parent) ; first row
        (treeview-insert-item tree :item child)  ; child of first row
        ;; you can insert value without instancing a tree-item object

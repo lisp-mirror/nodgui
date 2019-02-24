@@ -424,13 +424,22 @@ not equal to all the others. The test is performed calling :test"
                                                `(-command { callback ,callback-name }))
                                           ])))))
 
-(defun treeview-move (tree item &optional parent index)
-  "Moves item to position index in parent's list of children."
-  (format-wish "~a move {~a} {~a} {~a}"
-               (widget-path tree)
-               item
-               (or parent +treeview-root+)
-               (or index  +treeview-last-index+)))
+(defun treeview-move* (tree item &optional (test #'eq) (key #'identity) (parent nil) (index nil))
+  (let ((child     (treeview-find-item tree item :test test :key key))
+        (parent-id (or parent +treeview-root+)))
+    (assert child)
+    (setf (parent child) parent-id)
+    (format-wish "~a move \"~a\" \"~a\" \"~a\""
+                 (widget-path tree)
+                 (id item)
+                 parent-id
+                 (or index  +treeview-last-index+))))
+
+(defgeneric treeview-move (object item &key test key parent index))
+
+(defmethod  treeview-move ((object treeview) item
+                           &key (test #'eq) (key #'identity) (parent nil) (index nil))
+  (treeview-move* object item test key parent index))
 
 (defgeneric treeview-get-selection (w))
 
@@ -590,8 +599,30 @@ not equal to all the others. The test is performed calling :test"
   (with-inner-treeview (treeview object)
     (treeview-exists treeview item)))
 
+(defmethod treeview-move ((object scrolled-treeview) (item tree-item)
+                          &key (test #'eq) (key #'identity) (parent nil) (index nil))
+  "Moves item, and all its descendant, to position index in parent's list of children.
+   If parent is nil the root of the tree is assumed.
+   If index is nil  the last index is assumed."
+  (with-inner-treeview (treeview object)
+    (let ((actual-parent (if (typep parent 'tree-item)
+                             (id parent)
+                             +treeview-root+))
+          (actual-index  (or index +treeview-last-index+)))
+      (treeview-move treeview
+                     item
+                     :test   test
+                     :key    key
+                     :parent actual-parent
+                     :index  actual-index))))
+
+(defmethod children ((object scrolled-treeview) (item tree-item))
+  "List the children of item. Item must be contained in tree"
+   (with-inner-treeview (treeview object)
+     (children treeview (id item))))
+
 (defmethod (setf children) (val (object scrolled-treeview) item)
-  "set the child of a node"
+  "Set the children of a node: e.g. '(setf (children tree item) (list item1 item2...))"
   (with-inner-treeview (treeview object)
     (setf (children treeview item) val)))
 
