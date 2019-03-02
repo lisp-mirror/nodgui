@@ -17,7 +17,7 @@
 
 (in-package :nodgui)
 
-(cl-syntax:use-syntax nodgui-force-escape-syntax)
+(cl-syntax:use-syntax 'nodgui-force-escape-syntax)
 
 (defun choose-color (&key parent title initial-color )
   (format-wish "senddatastring [tk_chooseColor ~@[ -parent ~A~]~@[ -title {~A}~]~@[ -initialcolor {~A}~]]"

@@ -17,9 +17,9 @@
 
 (in-package :nodgui)
 
-(cl-syntax:use-syntax nodgui-force-escape-syntax)
+(cl-syntax:use-syntax 'nodgui-force-escape-syntax)
 
-(cl-syntax:use-syntax nodgui-color-syntax)
+(cl-syntax:use-syntax 'nodgui-color-syntax)
 
 (defargs canvas ()
   background

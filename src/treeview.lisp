@@ -16,7 +16,7 @@
 
 (in-package :nodgui)
 
-(cl-syntax:use-syntax nodgui-force-escape-syntax)
+(cl-syntax:use-syntax 'nodgui-force-escape-syntax)
 
 (alexandria:define-constant +treeview-root+             "{}" :test #'string=)
 

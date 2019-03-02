@@ -235,7 +235,7 @@
       (parse-event raw)))
 
   (cl-syntax:defsyntax nodgui-event-syntax
-    (:merge :standard)
+    (:fuze :standard)
     (:dispatch-macro-char #\# #\$ #'read-event-macro)))
 
 ;  (cl-syntax:use-syntax nodgui-event-syntax))

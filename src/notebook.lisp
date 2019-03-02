@@ -16,9 +16,9 @@
 
 (in-package :nodgui)
 
-(cl-syntax:use-syntax nodgui-event-syntax)
+(cl-syntax:use-syntax 'nodgui-event-syntax)
 
-(cl-syntax:use-syntax nodgui-force-escape-syntax)
+(cl-syntax:use-syntax 'nodgui-force-escape-syntax)
 
 (defargs notebook ()
   class

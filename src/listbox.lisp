@@ -17,7 +17,7 @@
 
 (in-package :nodgui)
 
-(cl-syntax:use-syntax nodgui-force-escape-syntax)
+(cl-syntax:use-syntax 'nodgui-force-escape-syntax)
 
 (alexandria:define-constant +legal-select-mode-values+ '(:single :browse :multiple :extended)
   :test #'equalp)

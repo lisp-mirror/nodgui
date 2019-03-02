@@ -43,9 +43,9 @@ Widgets offered are:
 
 (in-package :nodgui.mw)
 
-(cl-syntax:use-syntax nodgui-event-syntax)
+(cl-syntax:use-syntax 'nodgui-event-syntax)
 
-(cl-syntax:use-syntax nodgui-color-syntax)
+(cl-syntax:use-syntax 'nodgui-color-syntax)
 
 ;;;; mixin class for widget construction
 ;;;; for widgets inheriting from redraw-on-resize the generic function

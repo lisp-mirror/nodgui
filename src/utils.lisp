@@ -245,7 +245,7 @@
       (rgb-struct->tk-color (symbol-value (format-fn-symbol :cl-colors "+~a+" raw)))))
 
   (cl-syntax:defsyntax nodgui-color-syntax
-    (:merge :standard)
+    (:fuze :standard)
     (:dispatch-macro-char #\# #\% #'read-color-macro)))
 
 ;  (cl-syntax:use-syntax nodgui-color-syntax))

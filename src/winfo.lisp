@@ -16,7 +16,7 @@
 
 (in-package :nodgui)
 
-(cl-syntax:use-syntax nodgui-force-escape-syntax)
+(cl-syntax:use-syntax 'nodgui-force-escape-syntax)
 
 (defun screen-width (&optional (w nil))
   "give the width of the screen in pixels (if w is given, of the screen the widget w is displayed on)"
