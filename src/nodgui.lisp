@@ -955,7 +955,7 @@ tk input to terminate"
           ;(*buffer-for-atomic-output* nil)
           )
      (send-wish "update idletasks")
-    (unwind-protect
+     (unwind-protect
          (catch 'modal-toplevel
            (block nil
              (on-close ,var (lambda () (return)))
@@ -964,9 +964,9 @@ tk input to terminate"
                  (progn ,@body)
                (flush-wish)
                (mainloop))))
-      (grab-release ,var)
-      (withdraw ,var)
-      (flush-wish))))
+       (grab-release ,var)
+       (withdraw ,var)
+       (flush-wish))))
 
 (defun input-box (prompt &key (title "Input") default)
   (let* ((*exit-mainloop* nil)

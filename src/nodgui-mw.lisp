@@ -1427,3 +1427,50 @@ Widgets offered are:
                                 (setf (value widget) v))))
       (grid widget 0 0 :sticky :news)
       (grid scale  1 0 :sticky :news))))
+
+(defun message-with-timeout (parent message timeout close-button-label &rest label-options)
+  "Create a window with a message that automatically close after a timeout
+   - parent:             the new window will be placed on top of parent
+   - message:            the label to display
+   - close-button-label: the label of the button to close this window
+   - label-options:      the optional options for the message label (e.g. '(:font \"bold\"))"
+  (let* ((toplevel (make-instance 'toplevel))
+         (label            (apply #'make-instance
+                                  'label
+                                  (append (list :text   message)
+                                          (list :master toplevel)
+                                          label-options)))
+         (progress-timeout (make-instance 'progressbar
+                                          :master toplevel
+                                          :initial-value 0.0))
+         (ok-button        (make-instance 'button
+                                          :text    close-button-label
+                                          :master  toplevel
+                                          :command (lambda () (break-mainloop))))
+         (wish-subprocess  *wish*)
+         (exit-mainloop    *exit-mainloop*)
+         (break-main-loop  *break-mainloop*))
+    (grid label            0 0 :sticky :news)
+    (grid progress-timeout 1 0 :sticky :news)
+    (grid ok-button        2 0 :sticky :ns)
+    (on-close toplevel (lambda () nil))
+    (raise toplevel parent)
+    (destructuring-bind (w-parent h-parent x-parent y-parent)
+        (geometry parent)
+      (destructuring-bind (w h x y)
+          (geometry parent)
+        (declare (ignore x y))
+        (set-geometry-xy toplevel
+                         (- (+ x-parent (/ w-parent 2))
+                            (/ w 2))
+                         (- (+ y-parent (/ h-parent 2))
+                            (/ h 2)))))
+    (bt:make-thread (lambda ()
+                      (let ((*wish*           wish-subprocess)
+                            (*break-mainloop* break-main-loop)
+                            (*exit-mainloop*  exit-mainloop))
+                        (loop for i from 0 below timeout do
+                             (sleep 1)
+                             (setf (value progress-timeout)
+                                   (* 100 (coerce (/ i timeout) 'single-float))))
+                        (withdraw toplevel))))))

@@ -1648,7 +1648,8 @@
    :secret-string
    :show-password
    :progress-bar-star
-   :value))
+   :value
+   :message-with-timeout))
 
 (defpackage :nodgui.demo
   (:use :cl
