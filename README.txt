@@ -535,15 +535,15 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
 5.1 Compatibility
 ─────────────────
 
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   OS / compiler   SBCL 1.4.14  ECL  CCL
-  ───────────────────────────────────────
-   Debian testing  x            ?    ?
-  ───────────────────────────────────────
-   MacOS           ?            ?    ?
-  ───────────────────────────────────────
-   Win             ?            ?    ?
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   OS / compiler  SBCL 1.4.14  ECL  CCL 1.11.5
+  ─────────────────────────────────────────────
+   GNU/Linux      x            ?    x[1]
+  ─────────────────────────────────────────────
+   MacOS          ?            ?    ?
+  ─────────────────────────────────────────────
+   Win            ?            ?    ?
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
 6 Notes
@@ -592,3 +592,10 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   General Public License for more details.
+
+
+
+Footnotes
+─────────
+
+[1] It requires ASDF update

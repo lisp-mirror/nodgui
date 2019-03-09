@@ -454,13 +454,13 @@ All of the above libraries are available on quicklisp.
 
 ** Compatibility
 
-  | OS / compiler  | SBCL 1.4.14 | ECL | CCL |
-  |----------------+-------------+-----+-----|
-  | Debian testing | x           | ?   | ?   |
-  |----------------+-------------+-----+-----|
-  | MacOS          | ?           | ?   | ?   |
-  |----------------+-------------+-----+-----|
-  | Win            | ?           | ?   | ?   |
+  | OS / compiler | SBCL 1.4.14 | ECL | CCL 1.11.5     |
+  |---------------+-------------+-----+----------------|
+  | GNU/Linux     | x           | ?   | x[fn:ccl-asdf] |
+  |---------------+-------------+-----+----------------|
+  | MacOS         | ?           | ?   | ?              |
+  |---------------+-------------+-----+----------------|
+  | Win           | ?           | ?   | ?              |
 
 * Notes
 
@@ -504,3 +504,5 @@ Color name from library cl-color can be used as follows:
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
+
+[fn:ccl-asdf] It requires ASDF update
