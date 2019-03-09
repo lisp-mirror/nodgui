@@ -187,7 +187,7 @@ All of the above libraries are available on quicklisp.
        ~"<Alt-q>"~  (a string),  the macro  will parse  and check  for
        trivial errors in the event definition syntax at compile time.
        #+BEGIN_SRC lisp
-        (cl-syntax:use-syntax nodgui-event-syntax) ; do not forget that!
+        (cl-syntax:use-syntax 'nodgui-event-syntax) ; do not forget that!
 
         [...]
 
@@ -202,7 +202,7 @@ All of the above libraries are available on quicklisp.
        bitmap:
 
        #+BEGIN_SRC lisp
-       (cl-syntax:use-syntax nodgui-force-escape-syntax)
+       (cl-syntax:use-syntax 'nodgui-force-escape-syntax)
 
        [...]
 
@@ -470,7 +470,7 @@ Color name from library cl-color can be used as follows:
 
 - with a reader macro (~#%...%~) at read time:
   #+BEGIN_SRC lisp
-  (cl-syntax:use-syntax nodgui-color-syntax) ; do not forget that!
+  (cl-syntax:use-syntax 'nodgui-color-syntax) ; do not forget that!
 
   [...]
 

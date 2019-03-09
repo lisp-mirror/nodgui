@@ -238,7 +238,7 @@ https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
            trivial errors in the event definition syntax at compile
            time.
            ┌────
-           │ (cl-syntax:use-syntax nodgui-event-syntax) ; do not forget that!
+           │ (cl-syntax:use-syntax 'nodgui-event-syntax) ; do not forget that!
            │
            │ [...]
            │
@@ -253,7 +253,7 @@ https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
            bitmap:
 
            ┌────
-           │ (cl-syntax:use-syntax nodgui-force-escape-syntax)
+           │ (cl-syntax:use-syntax 'nodgui-force-escape-syntax)
            │
            │ [...]
            │
@@ -556,7 +556,7 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
 
   • with a reader macro (`#%...%') at read time:
     ┌────
-    │ (cl-syntax:use-syntax nodgui-color-syntax) ; do not forget that!
+    │ (cl-syntax:use-syntax 'nodgui-color-syntax) ; do not forget that!
     │
     │ [...]
     │
