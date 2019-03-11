@@ -633,3 +633,13 @@ not equal to all the others. The test is performed calling :test"
   (format-wish "{~a} column {~a} {-~(~a~)} {~a}~{ {-~(~a~)} {~(~a~)}~}"
                (widget-path tree) column
                option value rest))
+
+(defmethod items ((object scrolled-treeview))
+  "Get the items of this treeview"
+  (with-inner-treeview (treeview object)
+    (items treeview)))
+
+(defmethod (setf items) (val (object scrolled-treeview))
+  "Set the items of this treeview"
+  (with-inner-treeview (treeview object)
+    (setf (items treeview) val)))
