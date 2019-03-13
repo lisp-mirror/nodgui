@@ -1434,7 +1434,9 @@ Widgets offered are:
    - message:            the label to display
    - close-button-label: the label of the button to close this window
    - label-options:      the optional options for the message label (e.g. '(:font \"bold\"))"
-  (let* ((toplevel (make-instance 'toplevel))
+  (let* ((lock             (bt:make-lock))
+         (button-clicked-p nil)
+         (toplevel         (make-instance 'toplevel))
          (label            (apply #'make-instance
                                   'label
                                   (append (list :text   message)
@@ -1446,7 +1448,10 @@ Widgets offered are:
          (ok-button        (make-instance 'button
                                           :text    close-button-label
                                           :master  toplevel
-                                          :command (lambda () (break-mainloop))))
+                                          :command (lambda ()
+                                                     (bt:with-lock-held (lock)
+                                                       (setf button-clicked-p t)
+                                                       (withdraw toplevel)))))
          (wish-subprocess  *wish*)
          (exit-mainloop    *exit-mainloop*)
          (break-main-loop  *break-mainloop*))
@@ -1471,6 +1476,10 @@ Widgets offered are:
                             (*exit-mainloop*  exit-mainloop))
                         (loop for i from 0 below timeout do
                              (sleep 1)
-                             (setf (value progress-timeout)
-                                   (* 100 (coerce (/ i timeout) 'single-float))))
-                        (withdraw toplevel))))))
+                             (bt:with-lock-held (lock)
+                               (when (not button-clicked-p)
+                                 (setf (value progress-timeout)
+                                       (* 100 (coerce (/ i timeout) 'single-float))))))
+                        (bt:with-lock-held (lock)
+                          (when (not button-clicked-p)
+                            (withdraw toplevel))))))))

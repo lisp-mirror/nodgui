@@ -116,6 +116,10 @@
                                             :text    "(mw) star progress bar"
                                             :command #'(lambda ()
                                                          (nodgui.mw::star-progress-demo))))
+           (demo-timeout-dialog (make-instance 'button
+                                               :text    "(mw) message dialog with timeout"
+                                               :command #'(lambda ()
+                                                            (demo-message-timeout *tk*))))
            (b-quit             (make-instance  'button
                                                :text    "quit lisp :)"
                                                :command #'(lambda () (uiop:quit)))))
@@ -144,6 +148,7 @@
       (grid demo-date-picker    7 1 :sticky :nswe)
       (grid demo-password       7 2 :sticky :nswe)
       (grid demo-star-progress  8 0 :sticky :nswe)
+      (grid demo-timeout-dialog 8 1 :sticky :nswe)
       (grid b-quit              9 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
@@ -830,3 +835,6 @@
                                                         (parse-integer w)
                                                         (parse-integer h))))))))))))
       (place b 0 0))))
+
+(defun demo-message-timeout (parent)
+  (nodgui.mw:message-with-timeout parent "This window will be closed after 10 seconds" 10 "OK"))
