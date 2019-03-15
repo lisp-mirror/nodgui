@@ -412,18 +412,17 @@ not equal to all the others. The test is performed calling :test"
     (when command
       ;; register the callback
       (add-callback callback-name command))
-    (format-wish (tclize `(senddatastring [,(widget-path object) " "
-                                          heading                " "
-                                          {+ ,#[column-id ]}
-                                          ,(empty-string-if-nil text
-                                               `(-text  {+  ,#[text ]}))
-                                          ,(empty-string-if-nil image
-                                               `(-image {+  ,#[image ]}))
-                                          ,(empty-string-if-nil anchor
-                                               `(-anchor {+ ,#[down text ] }))
-                                          ,(empty-string-if-nil command
-                                               `(-command { callback ,callback-name }))
-                                          ])))))
+    (format-wish (tclize `(,(widget-path object) " "
+                            heading                " "
+                            {+ ,#[column-id ]}
+                            ,(empty-string-if-nil text
+                                 `(-text  {+  ,#[text ]}))
+                            ,(empty-string-if-nil image
+                                 `(-image {+  ,#[image ]}))
+                            ,(empty-string-if-nil anchor
+                                 `(-anchor {+ ,#[down text ] }))
+                            ,(empty-string-if-nil command
+                                 `(-command { callback ,callback-name })))))))
 
 (defun treeview-move* (tree item &optional (test #'eq) (key #'identity) (parent nil) (index nil))
   (let ((child     (treeview-find-item tree item :test test :key key))
