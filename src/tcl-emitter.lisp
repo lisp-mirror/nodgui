@@ -177,13 +177,15 @@
     `(loop for ,var in ,l collect
           (progn ,@body)))
 
+  (defun %to-safe-format-string (a)
+    (cl-ppcre:regex-replace-all "~" (to-s a) "~~"))
 
   (defun force-string-read-macro (stream char ign)
     (declare (ignore char ign))
     (let ((raw (read-delimited-list #\] stream)))
       (if (= (length raw) 1)
-          `(to-s ,(first raw))
-          `(to-s ,raw))))
+          `(%to-safe-format-string ,(first raw))
+          `(%to-safe-format-string ,raw))))
 
   (cl-syntax:defsyntax nodgui-force-escape-syntax
     (:fuze :standard)

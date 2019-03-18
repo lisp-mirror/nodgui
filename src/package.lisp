@@ -1307,7 +1307,6 @@
            :force-focus
            :forget-pane
            :format-wish
-           :format-wish-escape-tilde
            :flush-wish
            :read-data
            :frame

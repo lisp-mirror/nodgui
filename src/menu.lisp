@@ -70,8 +70,8 @@
                      :tearoff tearoff)))
 
 (defun add-separator (menu)
-   (format-wish "~A add separator" (widget-path menu))
-   menu)
+  (format-wish "~A add separator" (widget-path menu))
+  menu)
 
 (defgeneric state (menu menu-label state))
 
