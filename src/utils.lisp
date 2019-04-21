@@ -50,7 +50,7 @@
     (cl-ppcre:regex-replace re string "")))
 
 (defun common-prefix (&rest strings)
-  (let* ((prefix-count    0)
+  (let* ((prefix-count   0)
          (sorted-strings (sort strings #'(lambda (a b) (> (length a) (length b)))))
          (pivot-string   (first-elt sorted-strings))
          (actual-strings (rest sorted-strings))

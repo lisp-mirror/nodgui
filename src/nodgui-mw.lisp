@@ -85,7 +85,10 @@ Widgets offered are:
                     nil for all elements in history"))
   (:documentation  "An entry  widget keeping  the history  of previous
     input (which can be browsed through  with cursor up and down), the
-    input can be also autocompleted pressing the TAB key."))
+    input  can  be also  autocompleted  pressing  the TAB  key.   When
+    autocompletion items  are shown  the user  can press  the function
+    key,  from F1  to  F10, to  complete the  text  with the  proposed
+    completion corresponding to the number of the function key."))
 
 (defgeneric add-history (entry txt))
 
@@ -114,67 +117,103 @@ Widgets offered are:
 (defun right-parens-ornament ()
   (try-unicode "MEDIUM_RIGHT_PARENTHESIS_ORNAMENT" #\)))
 
+(defmacro bind-quick-choice (entry history saved-text-entry event-type position)
+  `(bind ,entry ,event-type
+         (lambda (event)
+           (declare (ignore event))
+           (let* ((sorted-history (sort (copy-list ,history)
+                                        (lambda (a b) (> (length a) (length b)))))
+                  (candidates     (remove-if-not (lambda (a)
+                                                   (scan (strcat "^"
+                                                                 ,saved-text-entry)
+                                                         a))
+                                                 sorted-history)))
+             (when (< ,position  (length candidates))
+               (setf text-entry (elt candidates ,position))
+               (set-selection    entry 0 0)
+               (set-cursor-index entry :end))))))
+
+(defmacro bind-quick-choices (entry history saved-text-entry &rest event-types-and-positions)
+  `(progn
+     ,@(loop for (event-type . position) in event-types-and-positions collect
+            `(bind-quick-choice ,entry ,history ,saved-text-entry ,event-type ,position))))
+
 (defmethod initialize-instance :after ((entry history-entry) &key command &allow-other-keys)
   (with-accessors ((history    history)
                    (text-entry text)) entry
-    (bind entry #$<KeyPress-Return>$
-          (lambda (event)
-            (declare (ignore event))
-            (let ((txt (text entry)))
-              (add-history entry txt)
-              (if (keepinput entry)
-                  (entry-select entry 0 "end")
-                  (setf (text entry) ""))
-              (nodgui::callback (nodgui::name entry) (list txt)))))
-    (bind entry #$<KeyPress-Up>$
-          (lambda (event)
-            (declare (ignore event))
-            (when (< (history-pos entry) (1- (length (history entry))))
-              (incf (history-pos entry))
-              (let ((val (nth (history-pos entry) (history entry))))
-                (when val
-                  (setf (text entry) val))))))
-    (bind entry #$<KeyPress-Down>$
-          (lambda (event)
-            (declare (ignore event))
-            (if (>= (history-pos entry) 0)
-                (progn
-                  (decf (history-pos entry))
-                  (if (>= (history-pos entry) 0)
-                      (setf (text entry) (nth (history-pos entry) (history entry)))
-                      (setf (text entry) "")))
-                (progn
-                  (setf (text entry) "")))))
-    (bind entry #$<KeyPress-Tab>$
-          (lambda (event)
-            (declare (ignore event))
-            (flet ((format-candidates (candidates)
-                     (format nil "~{ ~a ~}"
-                             (mapcar (lambda (a)
-                                       (format nil
-                                               "~a~a~a"
-                                               (left-parens-ornament)
-                                               a
-                                               (right-parens-ornament)))
-                                     candidates))))
-              (when history
-                (when-let* ((sorted-history (sort (copy-list history)
-                                                  (lambda (a b) (> (length a) (length b)))))
-                            (candidates     (remove-if-not (lambda (a)
-                                                             (scan (strcat "^" text-entry)
-                                                                   a))
-                                                           sorted-history))
-                            (prefix         (apply #'common-prefix candidates))
-                            (new-text       (if (> (length candidates) 1)
-                                                (strcat prefix
-                                                        (format-candidates candidates))
-                                                prefix)))
-                  (setf text-entry new-text)
-                  (set-cursor-index entry (length prefix))
-                  (set-selection    entry (length prefix) :end)))))
-          :exclusive t)
-    (when command
-      (setf (command entry) command))))
+    (let ((saved-text-entry ""))
+      (bind entry #$<KeyPress-Return>$
+            (lambda (event)
+              (declare (ignore event))
+              (let ((txt (text entry)))
+                (add-history entry txt)
+                (if (keepinput entry)
+                    (entry-select entry 0 "end")
+                    (setf (text entry) ""))
+                (nodgui::callback (nodgui::name entry) (list txt)))))
+      (bind entry #$<KeyPress-Up>$
+            (lambda (event)
+              (declare (ignore event))
+              (when (< (history-pos entry) (1- (length (history entry))))
+                (incf (history-pos entry))
+                (let ((val (nth (history-pos entry) (history entry))))
+                  (when val
+                    (setf (text entry) val))))))
+      (bind entry #$<KeyPress-Down>$
+            (lambda (event)
+              (declare (ignore event))
+              (if (>= (history-pos entry) 0)
+                  (progn
+                    (decf (history-pos entry))
+                    (if (>= (history-pos entry) 0)
+                        (setf (text entry) (nth (history-pos entry) (history entry)))
+                        (setf (text entry) "")))
+                  (progn
+                    (setf (text entry) "")))))
+      (bind entry #$<KeyPress-Tab>$
+            (lambda (event)
+              (declare (ignore event))
+              (flet ((format-candidates (candidates)
+                       (format nil "~{ ~a ~}"
+                               (mapcar (lambda (a)
+                                         (format nil
+                                                 "~a~a~a"
+                                                 (left-parens-ornament)
+                                                 a
+                                                 (right-parens-ornament)))
+                                       candidates))))
+                (when history
+                  (when-let* ((sorted-history (sort (copy-list history)
+                                                    (lambda (a b) (> (length a) (length b)))))
+                              (candidates     (remove-if-not (lambda (a)
+                                                               (scan (strcat "^" text-entry)
+                                                                     a))
+                                                             sorted-history))
+                              (prefix         (apply #'common-prefix candidates))
+                              (new-text       (if (> (length candidates) 1)
+                                                  (strcat prefix
+                                                          (format-candidates candidates))
+                                                  prefix)))
+                    (setf saved-text-entry text-entry)
+                    (setf text-entry new-text)
+                    (set-cursor-index entry (length prefix))
+                    (set-selection    entry (length prefix) :end)))))
+            :exclusive t)
+      (bind-quick-choices entry
+                          history
+                          saved-text-entry
+                          (#$"<F1>"$  . 0)
+                          (#$"<F2>"$  . 1)
+                          (#$"<F3>"$  . 2)
+                          (#$"<F4>"$  . 3)
+                          (#$"<F5>"$  . 4)
+                          (#$"<F6>"$  . 5)
+                          (#$"<F7>"$  . 6)
+                          (#$"<F8>"$  . 7)
+                          (#$"<F9>"$  . 8)
+                          (#$"<F10>"$ . 9))
+      (when command
+        (setf (command entry) command)))))
 
 (defmethod (setf command) (val (entry history-entry))
   (nodgui::add-callback (nodgui::name entry) val))
