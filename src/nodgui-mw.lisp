@@ -174,14 +174,19 @@ Widgets offered are:
             (lambda (event)
               (declare (ignore event))
               (flet ((format-candidates (candidates)
-                       (format nil "~{ ~a ~}"
-                               (mapcar (lambda (a)
-                                         (format nil
-                                                 "~a~a~a"
-                                                 (left-parens-ornament)
-                                                 a
-                                                 (right-parens-ornament)))
-                                       candidates))))
+                       (let ((res ""))
+                         (loop
+                            for i from 1
+                            for candidate in candidates do
+                              (setf res
+                                    (strcat res
+                                            (format nil
+                                                    "~a ~a: ~a ~a"
+                                                    (left-parens-ornament)
+                                                    i
+                                                    candidate
+                                                    (right-parens-ornament)))))
+                         res)))
                 (when history
                   (when-let* ((sorted-history (sort (copy-list history)
                                                     (lambda (a b) (> (length a) (length b)))))
