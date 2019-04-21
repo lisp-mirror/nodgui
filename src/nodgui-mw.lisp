@@ -181,9 +181,9 @@ Widgets offered are:
                               (setf res
                                     (strcat res
                                             (format nil
-                                                    "~a ~a: ~a ~a"
-                                                    (left-parens-ornament)
+                                                    "~a:~a ~a ~a"
                                                     i
+                                                    (left-parens-ornament)
                                                     candidate
                                                     (right-parens-ornament)))))
                          res)))
@@ -196,7 +196,7 @@ Widgets offered are:
                                                              sorted-history))
                               (prefix         (apply #'common-prefix candidates))
                               (new-text       (if (> (length candidates) 1)
-                                                  (strcat prefix
+                                                  (strcat prefix " "
                                                           (format-candidates candidates))
                                                   prefix)))
                     (setf saved-text-entry text-entry)
