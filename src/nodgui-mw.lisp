@@ -807,11 +807,14 @@ Widgets offered are:
   character is inserted into the entry."))
 
 (defun %autocomplete (listbox)
-  (with-accessors ((autocomplete-function-hook autocomplete-function-hook)) listbox
+  (with-accessors ((autocomplete-function-hook autocomplete-function-hook)
+                   (entry                      entry)
+                   (master                     master)) listbox
     (listbox-delete listbox)
     (when autocomplete-function-hook
-      (listbox-append listbox (funcall autocomplete-function-hook
-                                       (search-text listbox))))))
+      (with-hourglass (master listbox entry)
+        (listbox-append listbox (funcall autocomplete-function-hook
+                                         (search-text listbox)))))))
 
 (defmethod initialize-instance :after ((object autocomplete-listbox)
                                        &key (select-mode :browse) &allow-other-keys)
