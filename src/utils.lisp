@@ -79,6 +79,12 @@
 (defun trim (s &optional (bag '(#\Space #\tab #\Newline)))
   (string-trim bag s))
 
+(defun camel-case->snail-case (s &key (make-downcase t))
+  (let ((res (cl-ppcre:regex-replace-all "(.)([A-Z])" s "\\1-\\2")))
+    (if make-downcase
+        (string-downcase res)
+        res)))
+
 (defun make-adjustable-string (&optional (string ""))
   (make-array (length string)
               :element-type     'character

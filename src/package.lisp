@@ -45,6 +45,7 @@
            :join-with-strings
            :join-with-strings*
            :trim
+           :camel-case->snail-case
            :make-adjustable-string
            :encode-base-52
            :split-sequence

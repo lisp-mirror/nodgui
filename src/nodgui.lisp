@@ -598,12 +598,6 @@ set y [winfo y ~a]
 
 ;;(defun font-actual ...)
 
-(defun camel-case->snail-case (s &key (make-downcase t))
-  (let ((res (cl-ppcre:regex-replace-all "(.)([A-Z])" s "\\1-\\2")))
-    (if make-downcase
-        (string-downcase res)
-        res)))
-
 (defmacro make-font-constant (name &key (documentation ""))
   (let ((constant-name (string-upcase (wrap-with (camel-case->snail-case name
                                                                          :make-downcase nil)
