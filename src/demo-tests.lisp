@@ -120,6 +120,10 @@
                                                :text    "(mw) message dialog with timeout"
                                                :command #'(lambda ()
                                                             (demo-message-timeout *tk*))))
+           (demo-fitted-text    (make-instance 'button
+                                               :text    "text widget that accomodates words"
+                                               :command #'(lambda ()
+                                                            (demo-fitted-text))))
            (b-quit             (make-instance  'button
                                                :text    "quit lisp :)"
                                                :command #'(lambda () (uiop:quit)))))
@@ -149,6 +153,7 @@
       (grid demo-password       7 2 :sticky :nswe)
       (grid demo-star-progress  8 0 :sticky :nswe)
       (grid demo-timeout-dialog 8 1 :sticky :nswe)
+      (grid demo-fitted-text    8 2 :sticky :nswe)
       (grid b-quit              9 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
@@ -838,3 +843,19 @@
 
 (defun demo-message-timeout (parent)
   (nodgui.mw:message-with-timeout parent "This window will be closed after 10 seconds" 10 "OK"))
+
+(defun demo-fitted-text ()
+  (with-nodgui ()
+    (let ((text (make-instance 'scrolled-text :use-horizontal-scrolling-p nil)))
+      (configure (inner-text text) :font  "TkFixedFont")
+      (grid text 0 0 :sticky :news)
+      (setf (text (inner-text text))
+            "type random text, it will try fit it to the width of this widget")
+      (bind (inner-text text)
+            "<KeyPress>"
+            (lambda (event)
+              (when (not (cl-ppcre:scan "\\s" (string (code-char (event-char-code event)))))
+                (with-inner-text (text-widget text)
+                  (setf (text text-widget)
+                        (fit-words-to-text-widget text (text text-widget) "TkFixedFont")))))
+            :append t))))

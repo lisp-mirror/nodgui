@@ -48,6 +48,7 @@
            :make-adjustable-string
            :encode-base-52
            :split-sequence
+           :split-words
            :make-fresh-list
            :delete@
            :safe-delete@
@@ -96,6 +97,7 @@
 
 (defpackage :nodgui.ubvec4
   (:use :cl
+        :alexandria
         :nodgui.constants
         :nodgui.utils)
   (:export
@@ -1187,6 +1189,7 @@
         :nodgui.event-parser
         :nodgui.sanitize
         :nodgui.tcl-emitter)
+  (:import-from :alexandria :define-constant)
   (:export :syntax
            :+type-desktop+
            :+type-dock+
@@ -1304,6 +1307,8 @@
            :font-create
            :font-delete
            :font-metrics
+           :font-measure
+           :font-families
            :force-focus
            :forget-pane
            :format-wish
@@ -1441,6 +1446,9 @@
            :scrolled-frame
            :scrolled-listbox
            :scrolled-text
+           :inner-text
+           :with-inner-text
+           :fit-words-to-text-widget
            :scrollregion
            :search-all-text
            :search-next-text
@@ -1459,6 +1467,8 @@
            :tag-bind
            :tag-configure
            :text
+           :scrolled-text
+           :make-scrolled-text
            :textbox
            :tkobject
            :title
@@ -1550,7 +1560,6 @@
            :handle
            :column-values
            :listbox-insert
-           :font-families
            :theme-names
            :use-theme
            :items

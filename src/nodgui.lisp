@@ -16,6 +16,8 @@
 
 (in-package :nodgui)
 
+(cl-syntax:use-syntax 'nodgui-force-escape-syntax)
+
 ;;; tcl -> lisp: puts "$x" mit \ und " escaped
 ;;;  puts [regsub {"} [regsub {\\} $x {\\\\}] {\"}]
 
@@ -250,60 +252,6 @@ can be passed to AFTER-CANCEL"
 
 (defmethod sash-place ((pw paned-window) index pos)
   (format-wish "~a sashpos {~a} {~a}" (widget-path pw) index pos))
-
-;;; scrolled-text
-
-(defclass scrolled-text (frame)
-  ((textbox :accessor textbox)
-   (hscroll :accessor hscroll)
-   (vscroll :accessor vscroll)
-   ))
-
-(defmethod initialize-instance :after ((st scrolled-text) &key)
-  (setf (hscroll st) (make-scrollbar st :orientation "horizontal"))
-  (setf (vscroll st) (make-scrollbar st))
-  (setf (textbox st) (make-instance 'text :master st :xscroll (hscroll st) :yscroll (vscroll st)))
-  (grid (textbox st) 0 0 :sticky "news")
-  (grid (hscroll st) 1 0 :sticky "we")
-  (grid (vscroll st) 0 1 :sticky "ns")
-  (grid-columnconfigure st 0 :weight 1)
-  (grid-columnconfigure st 1 :weight 0)
-  (grid-rowconfigure st 0 :weight 1)
-  (grid-rowconfigure st 1 :weight 0)
-
-  (configure (hscroll st) "command" (concatenate 'string (widget-path (textbox st)) " xview"))
-  (configure (vscroll st) "command" (concatenate 'string (widget-path (textbox st)) " yview"))
-  (configure (textbox st) "xscrollcommand" (concatenate 'string (widget-path (hscroll st)) " set"))
-  (configure (textbox st) "yscrollcommand" (concatenate 'string (widget-path (vscroll st)) " set"))
-  )
-
-(defgeneric append-text (txt text &rest tags))
-
-(defmethod append-text ((txt scrolled-text) text &rest tags )
-  (format-wish "~a insert end \"~a\" {~{ ~(~a~)~}}" (widget-path (textbox txt))
-               text tags)
-  txt)
-
-(defmethod text ((self scrolled-text))
-  (text (textbox self)))
-
-(defmethod (setf text) (new-text (self scrolled-text))
-  (setf (text (textbox self)) new-text))
-
-(defgeneric insert-object (txt object))
-
-(defmethod insert-object ((txt scrolled-text) obj)
-  (format-wish "~a window create end -window ~a"
-               (widget-path (textbox txt))
-               (widget-path obj))
-  txt)
-
-(defgeneric see (txt pos)
-  (:documentation "Makes sure the widget is visible"))
-
-(defmethod see ((txt scrolled-text) pos)
-  (format-wish "~a see {~(~a~)}" (widget-path (textbox txt)) pos)
-  txt)
 
 (defclass scrolled-frame (frame)
   ((frame-class
@@ -599,6 +547,10 @@ set y [winfo y ~a]
                (mapcar #'down (list* option value others)))
   item)
 
+(defgeneric tag-bind (object tag event fun &key exclusive))
+
+(defgeneric tag-configure (txt tag option value &rest others))
+
 (defmethod tag-configure ((c canvas) tag option value &rest others)
   (format-wish "~a itemconfigure {~a}~{ {-~(~a~)} {~a}~}" (widget-path c)
                (if (stringp tag)
@@ -658,17 +610,31 @@ set y [winfo y ~a]
 (defun font-delete (&rest names)
   (format-wish "font delete~{ {~a}~}" (down names)))
 
-;;(defun font-families ...)
-;;(defun font-measure ...)
+(defun font-measure (font-spec text &key (display-of nil))
+  (let ((*suppress-newline-for-tcl-statements* t))
+    (format-wish (tclize `(senddata [ font measure
+                                    ,(empty-string-if-nil font-spec
+                                         `({+ ,#[font-spec ]} " "))
+                                    ,(empty-string-if-nil display-of
+                                         `(-displayof  {+ ,#[(widget-path display-of) ]}
+                                           " "))
+                                    ,(empty-string-if-nil text
+                                         `({+ ,#[text ]+ }))
+                                    ])))
+    (read-data)))
 
- (defun font-metrics (font)
-   (format-wish "sendpropertylist [font metrics {~a}]" (down font))
-   (read-data))
+(defun font-metrics (font)
+  (format-wish "sendpropertylist [font metrics {~a}]" (down font))
+  (read-data))
 
 ;;(defun font-names ...)
 
-(defun font-families ()
-  (send-wish "senddatastrings [font families]")
+(defun font-families (&optional (display-of nil))
+  (format-wish (tclize `(senddatastrings [ font families " "
+                                         ,(empty-string-if-nil display-of
+                                              `(-displayof  {+ ,#[(widget-path display-of) ]}
+                                                " "))
+                                         ])))
   (read-data))
 
 ;;; misc functions

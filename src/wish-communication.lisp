@@ -16,7 +16,7 @@
 
 (in-package :nodgui)
 
-(alexandria:define-constant +arg-toplevel-name+ "-name" :test #'string=)
+(define-constant +arg-toplevel-name+ "-name" :test #'string=)
 
 (defun do-execute (program args &optional (waitp nil))
   "execute program with args a list containing the arguments passed to the program

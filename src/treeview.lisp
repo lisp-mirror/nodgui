@@ -18,11 +18,11 @@
 
 (cl-syntax:use-syntax 'nodgui-force-escape-syntax)
 
-(alexandria:define-constant +treeview-root+             "{}" :test #'string=)
+(define-constant +treeview-root+             "{}" :test #'string=)
 
-(alexandria:define-constant +treeview-last-index+      "end" :test #'string=)
+(define-constant +treeview-last-index+      "end" :test #'string=)
 
-(alexandria:define-constant +treeview-first-column-id+  "#0"
+(define-constant +treeview-first-column-id+  "#0"
   :test #'string=
   :documentation "The conventional id of the primary value of each item of a treeview")
 

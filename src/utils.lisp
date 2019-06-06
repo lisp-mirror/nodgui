@@ -110,6 +110,9 @@
       (push string erg))
     (nreverse erg)))
 
+(defun split-words (text)
+  (split "\\p{White_Space}+" text))
+
 (defgeneric delete@ (sequence position))
 
 (defgeneric safe-delete@ (sequence position)

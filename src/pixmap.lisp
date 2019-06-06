@@ -16,17 +16,17 @@
 
 (in-package :nodgui.pixmap)
 
-(alexandria:define-constant +red-channel+   0 :test #'=)
+(define-constant +red-channel+   0 :test #'=)
 
-(alexandria:define-constant +green-channel+ 1 :test #'=)
+(define-constant +green-channel+ 1 :test #'=)
 
-(alexandria:define-constant +blue-channel+  2 :test #'=)
+(define-constant +blue-channel+  2 :test #'=)
 
-(alexandria:define-constant +alpha-channel+ 3 :test #'=)
+(define-constant +alpha-channel+ 3 :test #'=)
 
-(alexandria:define-constant +targa-stream-element-type+ '(unsigned-byte 8) :test 'equalp)
+(define-constant +targa-stream-element-type+ '(unsigned-byte 8) :test 'equalp)
 
-(alexandria:define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
+(define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
 
 (defun make-bits-array (size)
   (make-fresh-array size 0 '(unsigned-byte 8) nil))
@@ -538,17 +538,17 @@ from file: 'file'"
 (defgeneric pixmap-load (object file)
   (:documentation "load a fixmap form file 'file'"))
 
-(alexandria:define-constant +targa-img-rgba-rle+                  10 :test 'equalp)
+(define-constant +targa-img-rgba-rle+                  10 :test 'equalp)
 
-(alexandria:define-constant +targa-img-rgba+                       2 :test 'equalp)
+(define-constant +targa-img-rgba+                       2 :test 'equalp)
 
-(alexandria:define-constant +targa-img-header-size+               18 :test 'equalp)
+(define-constant +targa-img-header-size+               18 :test 'equalp)
 
-(alexandria:define-constant +targa-img-scanline-topleft+           2 :test 'equalp)
+(define-constant +targa-img-scanline-topleft+           2 :test 'equalp)
 
-(alexandria:define-constant +targa-img-scanline-bottomleft+        0 :test 'equalp)
+(define-constant +targa-img-scanline-bottomleft+        0 :test 'equalp)
 
-(alexandria:define-constant +targa-img-signature+ "TRUEVISION-XFILE" :test 'equalp)
+(define-constant +targa-img-signature+ "TRUEVISION-XFILE" :test 'equalp)
 
 (define-offset-size nodgui.pixmap
     targa-img (id-len 0 1) (type 2 1) (spec 8 10)
