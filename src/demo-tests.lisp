@@ -847,7 +847,7 @@
 (defun demo-fitted-text ()
   (with-nodgui ()
     (let ((text (make-instance 'scrolled-text :use-horizontal-scrolling-p nil)))
-      (configure (inner-text text) :font  "TkFixedFont")
+      (configure (inner-text text) :font +tk-fixed-font+)
       (grid text 0 0 :sticky :news)
       (setf (text (inner-text text))
             "type random text, it will try fit it to the width of this widget")

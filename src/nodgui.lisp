@@ -598,6 +598,42 @@ set y [winfo y ~a]
 
 ;;(defun font-actual ...)
 
+(defun camel-case->snail-case (s &key (make-downcase t))
+  (let ((res (cl-ppcre:regex-replace-all "(.)([A-Z])" s "\\1-\\2")))
+    (if make-downcase
+        (string-downcase res)
+        res)))
+
+(defmacro make-font-constant (name &key (documentation ""))
+  (let ((constant-name (string-upcase (wrap-with (camel-case->snail-case name
+                                                                         :make-downcase nil)
+                                                 "+"))))
+    `(define-constant   ,(alexandria:format-symbol t constant-name)
+         ,name
+         :test          #'string=
+         :documentation ,documentation)))
+
+(make-font-constant "TkDefaultFont"
+                    :documentation "The default font")
+
+(make-font-constant "TkTextFont"
+                    :documentation "Text of widgets")
+
+(make-font-constant "TkFixedFont"
+                    :documentation "Monospaced font")
+
+(make-font-constant "TkMenuFont")
+
+(make-font-constant "TkHeadingFont")
+
+(make-font-constant "TkCaptionFont")
+
+(make-font-constant "TkSmallCaptionFont")
+
+(make-font-constant "TkIconFont")
+
+(make-font-constant "TkTooltipFont")
+
 (defun font-configure (name &key family size weight slant underline overstrike)
   (format-wish "font configure {~a}~@[ -family {~a}~]~@[ -size {~a}~]~@[ -weight {~(~a~)}~]~@[ -slant {~(~a~)}~]~@[ -underline {~a}~]~@[ -overstrike {~a}~]"
                (down name) family size weight slant underline overstrike))

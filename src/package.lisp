@@ -1303,6 +1303,15 @@
            :event-width
            :event-height
            :focus
+           :+tk-default-font+
+           :+tk-text-font+
+           :+tk-fixed-font+
+           :+tk-menu-font+
+           :+tk-heading-font+
+           :+tk-caption-font+
+           :+tk-small-caption-font+
+           :+tk-icon-font+
+           :+tk-tooltip-font+
            :font-configure
            :font-create
            :font-delete
