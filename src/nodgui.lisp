@@ -607,26 +607,20 @@ set y [winfo y ~a]
          :test          #'string=
          :documentation ,documentation)))
 
-(make-font-constant "TkDefaultFont"
-                    :documentation "The default font")
+(defmacro make-font-constants (names-docs)
+  `(progn
+     ,@(loop for (name . doc) in names-docs collect
+            `(make-font-constant ,name :documentation ,doc))))
 
-(make-font-constant "TkTextFont"
-                    :documentation "Text of widgets")
-
-(make-font-constant "TkFixedFont"
-                    :documentation "Monospaced font")
-
-(make-font-constant "TkMenuFont")
-
-(make-font-constant "TkHeadingFont")
-
-(make-font-constant "TkCaptionFont")
-
-(make-font-constant "TkSmallCaptionFont")
-
-(make-font-constant "TkIconFont")
-
-(make-font-constant "TkTooltipFont")
+(make-font-constants (("TkDefaultFont"      . "The default font")
+                      ("TkTextFont"         . "Text of widgets")
+                      ("TkFixedFont"        . "Monospaced font")
+                      ("TkMenuFont"         . "")
+                      ("TkHeadingFont"      . "")
+                      ("TkCaptionFont"      . "")
+                      ("TkSmallCaptionFont" . "")
+                      ("TkIconFont"         . "")
+                      ("TkTooltipFont"      . "")))
 
 (defun font-configure (name &key family size weight slant underline overstrike)
   (format-wish "font configure {~a}~@[ -family {~a}~]~@[ -size {~a}~]~@[ -weight {~(~a~)}~]~@[ -slant {~(~a~)}~]~@[ -underline {~a}~]~@[ -overstrike {~a}~]"
