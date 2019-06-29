@@ -994,12 +994,14 @@ tk input to terminate"
 
 (defmacro with-hourglass (widgets &rest body)
   `(unwind-protect
-    (progn
-      ,@(mapcar (lambda (w)
-                  `(configure ,w :cursor :watch))
-                widgets)
-      (flush-wish)
-      ,@body)
-    ,@(mapcar (lambda (w)
-                  `(configure ,w :cursor ""))
-                widgets)))
+        (progn
+          ,@(mapcar (lambda (w)
+                      `(when ,w
+                         (configure ,w :cursor :watch)))
+                    widgets)
+          (flush-wish)
+          ,@body)
+     ,@(mapcar (lambda (w)
+                 `(when ,w
+                    (configure ,w :cursor "")))
+               widgets)))
