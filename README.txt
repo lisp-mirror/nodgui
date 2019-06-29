@@ -535,15 +535,15 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
 5.1 Compatibility
 ─────────────────
 
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   OS / compiler  SBCL 1.4.14  ECL  CCL 1.11.5
-  ─────────────────────────────────────────────
-   GNU/Linux      x            ?    x[1]
-  ─────────────────────────────────────────────
-   MacOS          ?            ?    ?
-  ─────────────────────────────────────────────
-   Win            ?            ?    ?
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   OS / compiler  SBCL 1.4.14  ECL   CCL 1.11.5
+  ──────────────────────────────────────────────
+   GNU/Linux      x            x[1]  x[2]
+  ──────────────────────────────────────────────
+   MacOS          ?            ?     ?
+  ──────────────────────────────────────────────
+   Win            ?            ?     ?
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
 6 Notes
@@ -581,8 +581,8 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
   This software is Copyright (c) 2003-2010 Peter Herth
   <herth@peter-herth.de> Portions Copyright (c) 2005-2010 Thomas
   F. Burdick Portions Copyright (c) 2006-2010 Cadence Design Systems
-  Portions Copyright (c) 2010 Daniel Herring Portions Copyright (c) 2018
-  cage
+  Portions Copyright (c) 2010 Daniel Herring Portions Copyright (c)
+  2018,2019 cage
 
   The authors grant you the rights to distribute and use this software
   as governed by the terms of the Lisp Lesser GNU Public License
@@ -598,4 +598,6 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
 Footnotes
 ─────────
 
-[1] It requires ASDF update
+[1] Using version from git repository
+
+[2] It requires ASDF update
