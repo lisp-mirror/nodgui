@@ -16,7 +16,7 @@
 
 (in-package :nodgui)
 
-(cl-syntax:use-syntax 'nodgui-force-escape-syntax)
+(named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
 (defclass photo-image (tkobject)
   ((data

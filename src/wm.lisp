@@ -16,7 +16,7 @@
 
 (in-package :nodgui)
 
-(cl-syntax:use-syntax 'nodgui-force-escape-syntax)
+(named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
 (defmacro gen-wm-constant (name name-prefix)
   `(alexandria:define-constant ,(format-fn-symbol t "+~a-~a+" name-prefix name)

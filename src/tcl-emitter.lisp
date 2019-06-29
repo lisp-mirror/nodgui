@@ -187,11 +187,9 @@
           `(%to-safe-format-string ,(first raw))
           `(%to-safe-format-string ,raw))))
 
-  (cl-syntax:defsyntax nodgui-force-escape-syntax
-    (:fuze :standard)
+  (named-readtables:defreadtable nodgui-force-escape-syntax
+    (:fuse :standard)
     (:dispatch-macro-char #\# #\[ #' force-string-read-macro))
-
-  ;(cl-syntax:use-syntax nodgui-force-escape-syntax)
 
   (defmacro tclize (statement &key (sanitize t))
     `(let ((*sanitize* ,sanitize))

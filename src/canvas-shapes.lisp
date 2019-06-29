@@ -17,9 +17,7 @@
 
 (in-package :nodgui.shapes)
 
-(cl-syntax:use-syntax 'nodgui-force-escape-syntax)
-
-(cl-syntax:use-syntax 'nodgui-color-syntax)
+(named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
 (defclass canvas-handler-holder ()
   ((handle

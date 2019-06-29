@@ -33,7 +33,7 @@
                :parse-number
                :clunit2
                :cl-colors2
-               :cl-syntax
+               :named-readtables
                :cl-jpeg
                :bordeaux-threads
                #-asdf3 :uiop)
@@ -51,6 +51,7 @@
                (:file "tcl-emitter")
                (:file "tcl-glue-code")
                (:file "event-parser")
+               (:file "syntax")
                (:file "wish-communication")
                (:file "widget-helpers")
                (:file "widget")

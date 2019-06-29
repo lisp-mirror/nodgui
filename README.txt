@@ -48,8 +48,8 @@ Table of Contents
   • cl-lex;
   • cl-yacc;
   • clunit2;
-  • cl-syntax;
-  • cl-colors2.
+  • cl-colors2;
+  • named-readtables.
 
   All of the above libraries are available on quicklisp.
 
@@ -238,7 +238,7 @@ https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
            trivial errors in the event definition syntax at compile
            time.
            ┌────
-           │ (cl-syntax:use-syntax 'nodgui-event-syntax) ; do not forget that!
+           │ (named-readtables:in-readtable nodgui.syntax:nodgui-syntax) ; do not forget that!
            │
            │ [...]
            │
@@ -253,7 +253,7 @@ https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
            bitmap:
 
            ┌────
-           │ (cl-syntax:use-syntax 'nodgui-force-escape-syntax)
+           │ (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
            │
            │ [...]
            │
@@ -556,7 +556,7 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
 
   • with a reader macro (`#%...%') at read time:
     ┌────
-    │ (cl-syntax:use-syntax 'nodgui-color-syntax) ; do not forget that!
+    │ (named-readtables:in-readtable nodgui.syntax:nodgui-syntax) ; do not forget that!
     │
     │ [...]
     │

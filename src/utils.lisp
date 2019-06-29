@@ -254,11 +254,9 @@
                  (push r res))))
       (rgb-struct->tk-color (symbol-value (format-fn-symbol :cl-colors "+~a+" raw)))))
 
-  (cl-syntax:defsyntax nodgui-color-syntax
-    (:fuze :standard)
+  (named-readtables:defreadtable nodgui-color-syntax
+    (:fuse :standard)
     (:dispatch-macro-char #\# #\% #'read-color-macro)))
-
-;  (cl-syntax:use-syntax nodgui-color-syntax))
 
 (defun safe-parse-number (number &key (fix-fn #'(lambda (e) (declare (ignore e)) nil)))
   (handler-bind ((parse-error

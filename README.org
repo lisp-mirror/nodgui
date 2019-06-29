@@ -23,8 +23,8 @@
  - cl-lex;
  - cl-yacc;
  - clunit2;
- - cl-syntax;
- - cl-colors2.
+ - cl-colors2;
+ - named-readtables.
 
 All of the above libraries are available on quicklisp.
 
@@ -187,7 +187,7 @@ All of the above libraries are available on quicklisp.
        ~"<Alt-q>"~  (a string),  the macro  will parse  and check  for
        trivial errors in the event definition syntax at compile time.
        #+BEGIN_SRC lisp
-        (cl-syntax:use-syntax 'nodgui-event-syntax) ; do not forget that!
+        (named-readtables:in-readtable nodgui.syntax:nodgui-syntax) ; do not forget that!
 
         [...]
 
@@ -202,7 +202,7 @@ All of the above libraries are available on quicklisp.
        bitmap:
 
        #+BEGIN_SRC lisp
-       (cl-syntax:use-syntax 'nodgui-force-escape-syntax)
+       (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
        [...]
 
@@ -470,14 +470,14 @@ Color name from library cl-color can be used as follows:
 
 - with a reader macro (~#%...%~) at read time:
   #+BEGIN_SRC lisp
-  (cl-syntax:use-syntax 'nodgui-color-syntax) ; do not forget that!
+  (named-readtables:in-readtable nodgui.syntax:nodgui-syntax) ; do not forget that!
 
   [...]
 
   #%red%
   #+END_SRC
 
- at runtime using:
+  at runtime using:
 
   #+BEGIN_SRC lisp
   (rgb->tk cl-colors:+red+)

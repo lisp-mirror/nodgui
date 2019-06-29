@@ -17,9 +17,7 @@
 
 (in-package :nodgui.demo)
 
-(cl-syntax:use-syntax 'nodgui-event-syntax)
-
-(cl-syntax:use-syntax 'nodgui-color-syntax)
+(named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
 (defun demo ()
   (with-nodgui (:debug-tcl nil)

@@ -1177,6 +1177,14 @@
    :parse-event
    :nodgui-event-syntax))
 
+(defpackage :nodgui.syntax
+  (:use :cl
+        :alexandria
+        :cl-ppcre
+        :named-readtables)
+  (:export
+   :nodgui-syntax))
+
 (defpackage :nodgui
   (:use :cl
         #+(or :cmu :scl) :ext
