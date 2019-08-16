@@ -13,7 +13,7 @@
 ** Programs
 
  - TCL/TK interpreter (version >= 8.6)
-    https://www.tcl.tk
+   https://www.tcl.tk
 
 
 ** Lisp libraries
@@ -262,8 +262,6 @@ All of the above libraries are available on quicklisp.
 
   | command                | supported | comment                                           |
   |------------------------+-----------+---------------------------------------------------|
-  |                        |           |                                                   |
-  |------------------------+-----------+---------------------------------------------------|
   | ~bell~                 | x         |                                                   |
   |------------------------+-----------+---------------------------------------------------|
   | ~bind~                 | x         |                                                   |
@@ -454,13 +452,13 @@ All of the above libraries are available on quicklisp.
 
 ** Compatibility
 
-  | OS / compiler | SBCL 1.4.14 | ECL               | CCL 1.11.5     |
-  |---------------+-------------+-------------------+----------------|
-  | GNU/Linux     | x           | x[fn:ecl-version] | x[fn:ccl-asdf] |
-  |---------------+-------------+-------------------+----------------|
-  | MacOS         | ?           | ?                 | ?              |
-  |---------------+-------------+-------------------+----------------|
-  | Win           | ?           | ?                 | ?              |
+  | OS / compiler | SBCL 1.4.14 | ECL               | CCL 1.11.6       |
+  |---------------+-------------+-------------------+------------------|
+  | GNU/Linux     | x           | x[fn:ecl-version] | x                |
+  |---------------+-------------+-------------------+------------------|
+  | MacOS         | ?           | ?                 | x[fn:update-tcl] |
+  |---------------+-------------+-------------------+------------------|
+  | Win           | ?           | ?                 | ?                |
 
 * Notes
 
@@ -505,5 +503,6 @@ Color name from library cl-color can be used as follows:
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
-[fn:ccl-asdf]    It requires ASDF update
+[fn:update-tcl]  It requires TCL/TK update see:
+                 [[https://notabug.org/cage/nodgui/issues/7][issue #7]]
 [fn:ecl-version] Using version from git repository

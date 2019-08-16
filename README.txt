@@ -6,18 +6,18 @@
 Table of Contents
 ─────────────────
 
-1 NODGUI
-2 Dependency
-.. 2.1 Programs
-.. 2.2 Lisp libraries
-3 Widget pack
-.. 3.1 Megawidget list
-4 FAQ
-5 Status
-.. 5.1 Compatibility
-6 Notes
-.. 6.1 Colors Name
-7 License
+1. NODGUI
+2. Dependency
+.. 1. Programs
+.. 2. Lisp libraries
+3. Widget pack
+.. 1. Megawidget list
+4. FAQ
+5. Status
+.. 1. Compatibility
+6. Notes
+.. 1. Colors Name
+7. License
 
 
 
@@ -37,7 +37,7 @@ Table of Contents
 2.1 Programs
 ────────────
 
-  • TCL/TK interpreter (version >= 8.6) [https://www.tcl.tk]
+  • TCL/TK interpreter (version >= 8.6) <https://www.tcl.tk>
 
 
 2.2 Lisp libraries
@@ -68,41 +68,41 @@ Table of Contents
 
 
 [the excellent quickdocs]
-http://quickdocs.org/nodgui/api#package-NODGUI.MW
+<http://quickdocs.org/nodgui/api#package-NODGUI.MW>
 
 3.1 Megawidget list
 ───────────────────
 
   history-entry
-            An entry widget keeping the history of previous input (which
-        can be browsed through with cursor up and down), the input can
-        be also autocompleted pressing the TAB key.
+        An entry widget keeping the history of previous input (which can
+        be browsed through with cursor up and down), the input can be
+        also autocompleted pressing the TAB key.
 
 
   treelist
-            Display a tree-like structure by a set of listboxes.
+        Display a tree-like structure by a set of listboxes.
 
         [screenshot]
 
   tooltip
-            Display a little informative box for the widget under the
-            mouse pointer position.
+        Display a little informative box for the widget under the mouse
+        pointer position.
 
         [screenshot]
 
         [License for the image].
 
   gtree
-            Render a tree.
+        Render a tree.
 
         [screenshot]
 
   searchable-listbox
-             A [listbox] with an entry to filter its contents
+        A [listbox] with an entry to filter its contents
 
   autocomplete-listbox
-             Acts like 'searchable-listbox' but the items added comes
-        from the results from apply 'autocomplete-function-hook' to the
+        Acts like 'searchable-listbox' but the items added comes from
+        the results from apply 'autocomplete-function-hook' to the
         content of the text entry.  This function is triggered after a
         character is inserted into the entry.
 
@@ -122,23 +122,24 @@ http://quickdocs.org/nodgui/api#package-NODGUI.MW
 
 
 [screenshot]
-https://www.autistici.org/interzona/img/nodgui/tree-list.png
+<https://www.autistici.org/interzona/img/nodgui/tree-list.png>
 
-[screenshot] https://www.autistici.org/interzona/img/nodgui/tooltip.png
+[screenshot]
+<https://www.autistici.org/interzona/img/nodgui/tooltip.png>
 
 [License for the image]
-https://notabug.org/cage/fulci/src/master/LICENSES.org
+<https://notabug.org/cage/fulci/src/master/LICENSES.org>
 
 [screenshot]
-https://www.autistici.org/interzona/img/nodgui/graphical-tree.png
+<https://www.autistici.org/interzona/img/nodgui/graphical-tree.png>
 
-[listbox] https://www.tcl.tk/man/tcl8.6/TkCmd/listbox.htm#M12
-
-[screenshot]
-https://www.autistici.org/interzona/img/nodgui/date-picker.png
+[listbox] <https://www.tcl.tk/man/tcl8.6/TkCmd/listbox.htm#M12>
 
 [screenshot]
-https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
+<https://www.autistici.org/interzona/img/nodgui/date-picker.png>
+
+[screenshot]
+<https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png>
 
 
 4 FAQ
@@ -146,8 +147,8 @@ https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
 
 
   Where is the documentation?
-               nodgui is just the results of a code refactoring of LTK
-        with some syntax sugar on top.  This means that the [original
+        nodgui is just the results of a code refactoring of LTK with
+        some syntax sugar on top.  This means that the [original
         documentation] can be *almost* used as a good reference also for
         this library; the chapters that are still valid are listed
         below:
@@ -168,8 +169,8 @@ https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
         If you wants to help please [open a pull request].
 
   Where can i found documentation about a widget?
-               It is actually very simple: let's suppose you want to use
-        a spinbox widget in your program and you have no idea how to do,
+        It is actually very simple: let's suppose you want to use a
+        spinbox widget in your program and you have no idea how to do,
         the idea to solve this problem is like:
 
         1. open the file `src/spinbox.lisp' an look at the top of this
@@ -207,19 +208,19 @@ https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
 
            In our example point to:
 
-           [https://www.tcl.tk/man/tcl8.6/TkCmd/ttk_spinbox.htm]
+           <https://www.tcl.tk/man/tcl8.6/TkCmd/ttk_spinbox.htm>
 
            and *not*
 
-           [https://www.tcl.tk/man/tcl8.6/TkCmd/spinbox.htm]
+           <https://www.tcl.tk/man/tcl8.6/TkCmd/spinbox.htm>
 
            You can easly understand what all the options above are for.
 
   How can I access the root window?
-               The root window is bound to the special variable `*tk*'.
+        The root window is bound to the special variable `*tk*'.
 
   I have  a bunch of widgets  placed in a  grid and I want  those to scale themselves when the window is resized, there is a way to accomplish this?
-               Sure! Use `grid-(column|row)-configure'.
+        Sure! Use `grid-(column|row)-configure'.
 
         ┌────
         │ (grid-columnconfigure *tk* :all :weight 1)
@@ -230,7 +231,7 @@ https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
         this behaviour only to a subset of the columns or rows.
 
   What are the differences between nodgui and LTK?
-               The two libraries begin to diverge a bit now, the API is
+        The two libraries begin to diverge a bit now, the API is
         compatible with ltk no more.
 
         1. A reader macro for events i.e.  `#$<Alt-q>$' instead of
@@ -291,44 +292,44 @@ https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png
         8. Some bugs fixed (and more added of course :-) )
 
   Where can i find more code examples?
-               check the file `src/demo-tests.lisp'
+        check the file `src/demo-tests.lisp'
 
   Can I contribute to this project?
-               Yes, of course! Please open an issue or a pull request on
-        the [web repository], if you do not feel comfortable with coding
+        Yes, of course! Please open an issue or a pull request on the
+        [web repository], if you do not feel comfortable with coding
         documentation improvements are very welcome too! :)
 
         Also i would appreciate [testing] if the library works on
         different environment than mine (debian GNU/Linux with SBCL).
 
 
-[original documentation] http://www.peter-herth.de/ltk/ltkdoc/
+[original documentation] <http://www.peter-herth.de/ltk/ltkdoc/>
 
-[Introduction] http://www.peter-herth.de/ltk/ltkdoc/node2.html
+[Introduction] <http://www.peter-herth.de/ltk/ltkdoc/node2.html>
 
-[Tutorial] http://www.peter-herth.de/ltk/ltkdoc/node4.html
+[Tutorial] <http://www.peter-herth.de/ltk/ltkdoc/node4.html>
 
-[Event handling] http://www.peter-herth.de/ltk/ltkdoc/node14.html
+[Event handling] <http://www.peter-herth.de/ltk/ltkdoc/node14.html>
 
-[Screen functions] http://www.peter-herth.de/ltk/ltkdoc/node41.html
+[Screen functions] <http://www.peter-herth.de/ltk/ltkdoc/node41.html>
 
 [Window manager functions]
-http://www.peter-herth.de/ltk/ltkdoc/node42.html
+<http://www.peter-herth.de/ltk/ltkdoc/node42.html>
 
-[Under the hood] http://www.peter-herth.de/ltk/ltkdoc/node43.html
+[Under the hood] <http://www.peter-herth.de/ltk/ltkdoc/node43.html>
 
-[the widgets] http://www.peter-herth.de/ltk/ltkdoc/node17.html
+[the widgets] <http://www.peter-herth.de/ltk/ltkdoc/node17.html>
 
-[open a pull request] https://notabug.org/cage/nodgui/issues
+[open a pull request] <https://notabug.org/cage/nodgui/issues>
 
 [see the general documentation] See figure (4)
 
 [original TK documentation]
-https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
+<https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm>
 
-[`postscript'] https://www.tcl.tk/man/tcl8.6/TkCmd/canvas.htm#M61
+[`postscript'] <https://www.tcl.tk/man/tcl8.6/TkCmd/canvas.htm#M61>
 
-[web repository] https://notabug.org/cage/nodgui
+[web repository] <https://notabug.org/cage/nodgui>
 
 [testing] See section 5.1
 
@@ -342,7 +343,6 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    command                 supported  comment
-  ──────────────────────────────────────────────────────────────────────────────────────
   ──────────────────────────────────────────────────────────────────────────────────────
    `bell'                  x
   ──────────────────────────────────────────────────────────────────────────────────────
@@ -536,11 +536,11 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
 ─────────────────
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   OS / compiler  SBCL 1.4.14  ECL   CCL 1.11.5
+   OS / compiler  SBCL 1.4.14  ECL   CCL 1.11.6
   ──────────────────────────────────────────────
-   GNU/Linux      x            x[1]  x[2]
+   GNU/Linux      x            x[1]  x
   ──────────────────────────────────────────────
-   MacOS          ?            ?     ?
+   MacOS          ?            ?     x[2]
   ──────────────────────────────────────────────
    Win            ?            ?     ?
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -572,7 +572,8 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
     the list of supported colors name can be found in: [this file].
 
 
-[this file] https://notabug.org/cage/cl-colors2/src/master/package.lisp
+[this file]
+<https://notabug.org/cage/cl-colors2/src/master/package.lisp>
 
 
 7 License
@@ -586,7 +587,7 @@ https://www.tcl.tk/man/tcl8.6/TkCmd/contents.htm
 
   The authors grant you the rights to distribute and use this software
   as governed by the terms of the Lisp Lesser GNU Public License
-  ([http://opensource.franz.com/preamble.html]), known as the LLGPL.
+  (<http://opensource.franz.com/preamble.html>), known as the LLGPL.
 
   This program is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -600,4 +601,5 @@ Footnotes
 
 [1] Using version from git repository
 
-[2] It requires ASDF update
+[2] It requires TCL/TK update see: [issue #7]
+(<https://notabug.org/cage/nodgui/issues/7>)
