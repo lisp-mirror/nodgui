@@ -93,6 +93,10 @@
               :adjustable       t
               :fill-pointer     t))
 
+(defun to-stderr (control &rest things)
+   (apply #'format (append (list *error-output* (strcat "[DEBUG] " control "~%"))
+                           things)))
+
 (defun encode-base-52 (value)
   (let ((result ""))
     (loop

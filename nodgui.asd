@@ -92,6 +92,9 @@
                (:file "winfo")
                (:file "trivial-debugger")
                (:file "nodgui-mw")
+               (:module tklib
+                        :components ((:file "package")
+                                     (:file "calendar")))
                (:file "demo-tests")
                (:module tests
                         :components ((:file "package")

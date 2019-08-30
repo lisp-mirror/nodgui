@@ -33,7 +33,8 @@
   (:use :cl
         :alexandria
         :cl-ppcre)
-  (:export :format-fn-symbol
+  (:export :to-stderr
+           :format-fn-symbol
            :format-keyword
            :to-s
            :strcat
@@ -1210,7 +1211,7 @@
            :+type-dropdown_menu+
            :+type-popup_menu+
            :+type-tooltip+
-           :+type-notificati
+           :+type-notification+
            :+type-combo+
            :+type-dnd+
            :+type-normal+
@@ -1292,7 +1293,10 @@
            :create-window
            :break-mainloop
            :*debug-settings-table*
+           :*initargs*
+           :*class-args*
            :defargs
+           :defwrapper
            :deiconify
            :destroy
            :do-execute
@@ -1473,6 +1477,7 @@
            :see
            :send-lazy
            :with-lazy
+           :require-tcl-package
            :set-coords
            :set-coords*
            :set-focus-next
@@ -1535,6 +1540,7 @@
            :phase
            :separator
            :sizegrip
+           :tktextvariable
            :+treeview-root+
            :+treeview-first-column-id+
            :+treeview-last-index+

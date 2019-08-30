@@ -122,6 +122,10 @@
                                                :text    "text widget that accomodates words"
                                                :command #'(lambda ()
                                                             (demo-fitted-text))))
+           (demo-tklib-calendar (make-instance 'button
+                                               :text    "(tklib) calendar"
+                                               :command #'(lambda ()
+                                                            (demo-tklib-calendar))))
            (b-quit             (make-instance  'button
                                                :text    "quit lisp :)"
                                                :command #'(lambda () (uiop:quit)))))
@@ -152,7 +156,8 @@
       (grid demo-star-progress  8 0 :sticky :nswe)
       (grid demo-timeout-dialog 8 1 :sticky :nswe)
       (grid demo-fitted-text    8 2 :sticky :nswe)
-      (grid b-quit              9 0 :sticky :nswe :columnspan 3)
+      (grid demo-tklib-calendar 9 0 :sticky :nswe)
+      (grid b-quit             10 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
 
@@ -857,3 +862,20 @@
                   (setf (text text-widget)
                         (fit-words-to-text-widget text (text text-widget) "TkFixedFont")))))
             :append t))))
+
+;; tklib
+
+(defun demo-tklib-calendar ()
+  (with-nodgui ()
+    (let ((cal (nodgui.tklib.calendar:make-calendar)))
+      (nodgui.tklib.calendar:set-date* cal "10/10/2010")
+      (setf (command cal)
+            (lambda (a)
+              (let ((date-selected (multiple-value-list
+                                    (nodgui.tklib.calendar:parse-selected-date cal a))))
+                (message-box (format nil "chosen ~s~%" date-selected)
+                             "info"
+                             :ok
+                             "info"
+                             :parent *tk*))))
+      (grid cal 0 0))))

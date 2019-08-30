@@ -16,6 +16,8 @@
 
 (in-package :nodgui)
 
+(named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
+
 (define-constant +arg-toplevel-name+ "-name" :test #'string=)
 
 (defun do-execute (program args &optional (waitp nil))
@@ -126,6 +128,14 @@
 (defmacro with-lazy (&rest code)
   `(let ((*buffer-for-atomic-output* t))
      ,@code))
+
+(defun require-tcl-package (name)
+  (format-wish (tcl-str (:if ([catch {package require ~a} err ])
+                             ("tk_messageBox" \++
+                                              -icon    error
+                                              -type    ok
+                                              -message $err%)))
+               #[name ]))
 
 ;;; setup of wish
 ;;; put any tcl function definitions needed for running nodgui here

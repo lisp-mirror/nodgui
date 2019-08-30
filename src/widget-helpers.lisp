@@ -398,7 +398,7 @@
         (let ((entry (assoc arg *initargs*)))
           (cond
             (entry
-             (setf cmdstring (concatenate 'string cmdstring (third entry)))
+             (setf cmdstring (concatenate 'string cmdstring (iarg-format entry)))
              (when (iarg-key entry)
                (setf keylist (append keylist (list (iarg-key entry)))))
              (setf codelist (append codelist (list (iarg-code entry)))))
@@ -406,8 +406,7 @@
              (setf cmdstring (strcat cmdstring
                                      (format nil "~~@[ {-~(~a~)} {~~(~~a~~)}~~]" arg)))
              (setf keylist (append keylist (list arg)))
-             (setf codelist (append codelist (list arg)))
-          ))))
+             (setf codelist (append codelist (list arg)))))))
       (push `(widget-class-name :accessor widget-class-name
                                 :initform ,cmd
                                 :allocation :class)
@@ -416,8 +415,8 @@
          (defclass ,class (,@parents)
            ,slots)
          (defmethod initialize-instance :after ((widget ,class) &key ,@keylist)
-           (setf (init-command widget)
-                 (format nil ,cmdstring (widget-class-name widget)
-                         ,@(mapcar (lambda (a) `(sanitize ,a)) codelist)))
-           ,@code)
+                    (setf (init-command widget)
+                          (format nil ,cmdstring (widget-class-name widget)
+                                  ,@(mapcar (lambda (a) `(sanitize ,a)) codelist)))
+                    ,@code)
          ,@accessors))))
