@@ -130,6 +130,10 @@
                                                :text    "(tklib) notify window"
                                                :command #'(lambda ()
                                                             (demo-tklib-notify))))
+           (demo-tklib-dot-plot (make-instance 'button
+                                               :text    "(tklib) scatter plot"
+                                               :command #'(lambda ()
+                                                            (demo-tklib-dot-plot))))
            (b-quit             (make-instance  'button
                                                :text    "quit lisp :)"
                                                :command #'(lambda () (uiop:quit)))))
@@ -162,6 +166,7 @@
       (grid demo-fitted-text    8 2 :sticky :nswe)
       (grid demo-tklib-calendar 9 0 :sticky :nswe)
       (grid demo-tklib-notify   9 1 :sticky :nswe)
+      (grid demo-tklib-dot-plot 9 2 :sticky :nswe)
       (grid b-quit             10 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
@@ -889,3 +894,19 @@
   (with-nodgui ()
     (let ((message (text-input-dialog *tk* "info" "Insert the text you want shown as notify")))
       (nodgui.tklib.notify:notify-window message))))
+
+
+(defun demo-tklib-dot-plot ()
+  (with-nodgui ()
+    (let ((canvas (make-canvas nil :width  800 :height 600))
+          (plot   (make-instance 'nodgui.tklib.plot:dot-plot
+                                 :all-series
+                                 (list (nodgui.tklib.plot:make-dot-series :xs '(10 20 30)
+                                                                          :ys '(20 40 60)
+                                                                          :legend "first"
+                                                                          :color  "#ff00ff")
+                                       (nodgui.tklib.plot:make-dot-series :xs '(10 20 30)
+                                                                          :ys '(60 40 20)
+                                                                          :legend "second")))))
+      (grid canvas 0 0 :sticky :news)
+      (nodgui.tklib.plot:draw-on-canvas plot canvas))))

@@ -95,7 +95,8 @@
                (:module tklib
                         :components ((:file "package")
                                      (:file "calendar")
-                                     (:file "notify-window")))
+                                     (:file "notify-window")
+                                     (:file "plot")))
                (:file "demo-tests")
                (:module tests
                         :components ((:file "package")

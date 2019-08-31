@@ -53,3 +53,42 @@ system for this wrapper to works"))
 
 Tklib (https://core.tcl-lang.org/tklib/home) *must*  be installed on a
 system for this wrapper to works"))
+
+(defpackage :nodgui.tklib.plot
+  (:use :cl
+        :alexandria
+        :cl-ppcre
+        :nodgui.event-parser
+        :nodgui.sanitize
+        :nodgui.tcl-emitter
+        :nodgui.utils
+        :nodgui)
+  (:shadow :alexandria :rotate)
+  (:export
+   :make-series
+   :series-handle
+   :series-xs
+   :series-ys
+   :series-legend
+   :series-color
+   :make-dot-series
+   :dot-series-size
+   :plot
+   :handle
+   :x-text
+   :y-text
+   :title
+   :subtitle
+   :all-series
+   :make-axis-conf
+   :axis-conf-min
+   :axis-conf-max
+   :axis-conf-step
+   :draw-on-canvas
+   :xy-plot
+   :dot-plot)
+  (:documentation "Wrapper for a subset of plotchart in tklib
+ (https://core.tcl-lang.org/tklib/doc/trunk/embedded/www/tklib/files/modules/plotchart/plotchart.html#section14).
+
+Tklib (https://core.tcl-lang.org/tklib/home) *must*  be installed on a
+system for this wrapper to works"))
