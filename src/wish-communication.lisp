@@ -393,8 +393,15 @@
 (defun normalize-error (errors-list)
   (join-with-strings (rest errors-list) " "))
 
+(defparameter *accept-garbage-as-event-p* nil
+  "Sometimes tcl  lib print on  standard error for  debugging purpose,
+  ignore the data got in this case setting this variable to non nil")
+
 (defun verify-event (event)
   (cond
+    ((and *accept-garbage-as-event-p*
+          (not (listp event)))
+     nil)
     ((not (listp event))
      (error "When reading from tcl, expected a list but instead got ~S" event))
     ((eq (first event) :error)

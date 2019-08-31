@@ -30,5 +30,26 @@
    :set-date
    :set-date*
    :parse-selected-date)
-  (:documentation "Wrapper for Calendar in tklib (https://core.tcl-lang.org/tklib/home).
-Tklib *must* be installed on a system for this wrapper to works" ))
+  (:documentation "Wrapper for Calendar in tklib
+https://core.tcl-lang.org/tklib/doc/trunk/embedded/www/tklib/files/modules/widget/widget_calendar.html.
+
+Tklib (https://core.tcl-lang.org/tklib/home) *must*  be installed on a
+system for this wrapper to works"))
+
+(defpackage :nodgui.tklib.notify
+  (:use :cl
+        :alexandria
+        :cl-ppcre
+        :nodgui.event-parser
+        :nodgui.sanitize
+        :nodgui.tcl-emitter
+        :nodgui.utils
+        :nodgui)
+  (:shadow :alexandria :rotate)
+  (:export
+   :notify-window)
+  (:documentation "Wrapper for notify-window in tklib
+ (https://core.tcl-lang.org/tklib/doc/trunk/embedded/www/tklib/files/modules/notifywindow/notifywindow.html).
+
+Tklib (https://core.tcl-lang.org/tklib/home) *must*  be installed on a
+system for this wrapper to works"))

@@ -126,6 +126,10 @@
                                                :text    "(tklib) calendar"
                                                :command #'(lambda ()
                                                             (demo-tklib-calendar))))
+           (demo-tklib-notify   (make-instance 'button
+                                               :text    "(tklib) notify window"
+                                               :command #'(lambda ()
+                                                            (demo-tklib-notify))))
            (b-quit             (make-instance  'button
                                                :text    "quit lisp :)"
                                                :command #'(lambda () (uiop:quit)))))
@@ -157,6 +161,7 @@
       (grid demo-timeout-dialog 8 1 :sticky :nswe)
       (grid demo-fitted-text    8 2 :sticky :nswe)
       (grid demo-tklib-calendar 9 0 :sticky :nswe)
+      (grid demo-tklib-notify   9 1 :sticky :nswe)
       (grid b-quit             10 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
@@ -879,3 +884,8 @@
                              "info"
                              :parent *tk*))))
       (grid cal 0 0))))
+
+(defun demo-tklib-notify ()
+  (with-nodgui ()
+    (let ((message (text-input-dialog *tk* "info" "Insert the text you want shown as notify")))
+      (nodgui.tklib.notify:notify-window message))))

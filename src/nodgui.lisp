@@ -755,13 +755,13 @@ set y [winfo y ~a]
       (handle-output
        (first event) (rest event))))))
 
-(defun process-events ()
+(defun process-events (&optional (blockingp nil))
   "A function to temporarliy yield control to wish so that pending
 events can be processed, useful in long loops or loops that depend on
 tk input to terminate"
   (let (event)
     (loop
-     while (setf event (read-event :blocking nil))
+     while (setf event (read-event :blocking blockingp))
      do (with-atomic (process-one-event event)))))
 
 (defparameter *inside-mainloop* ())

@@ -1335,6 +1335,7 @@
            :forget-pane
            :format-wish
            :flush-wish
+           :*accept-garbage-as-event-p*
            :read-data
            :frame
            :geometry

@@ -94,7 +94,8 @@
                (:file "nodgui-mw")
                (:module tklib
                         :components ((:file "package")
-                                     (:file "calendar")))
+                                     (:file "calendar")
+                                     (:file "notify-window")))
                (:file "demo-tests")
                (:module tests
                         :components ((:file "package")

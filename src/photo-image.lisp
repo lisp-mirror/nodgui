@@ -86,6 +86,12 @@
                 ])
               :sanitize nil))))
 
+(defmethod make-image ((object string) &optional (w nil) (h nil) (channels 3))
+  "The string must be base64 encoded image in PNG or GIF format"
+  (declare (ignore w h channels))
+  (make-instance 'photo-image
+                 :data object))
+
 (defmethod make-image ((object vector) &optional (w nil) (h nil) (channels 3))
   (cond
     ((or (pngp object)

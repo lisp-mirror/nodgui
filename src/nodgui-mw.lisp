@@ -937,7 +937,7 @@ Widgets offered are:
                        &key
                          (select-mode       :browse)
                          (key               #'identity)
-                         (button-message "OK")
+                         (button-message    "OK")
                          (padding-x         2)
                          (padding-y         2))
   "A trivial dialog with a listbox that waits for user to select input"
