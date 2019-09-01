@@ -16,17 +16,22 @@
 
 (in-package :nodgui.tklib.plot)
 
-(named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
+(named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
+;(named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
 (define-constant +plotchart-library-name+ "Plotchart" :test #'string=)
 
 (defstruct series
-  handle xs ys legend
-  (color "#ff0000"))
+  handle
+  (xs     '())
+  (ys     '())
+  (legend "")
+  (color  #%red%))
 
 (defstruct (dot-series
              (:include series))
-  (size  3.0))
+  (size   3.0)
+  (errors '()))
 
 (defclass plot ()
   ((handle
@@ -68,7 +73,7 @@
 (defmethod initialize-instance :after ((object plot) &key &allow-other-keys)
   (require-tcl-package +plotchart-library-name+))
 
-(defgeneric draw-on-canvas (object destination))
+(defgeneric draw-on-canvas (object destination &key &allow-other-keys))
 
 (defclass xy-plot (plot)
   ((x-axis-conf
@@ -80,7 +85,7 @@
     :initarg  :y-axis-conf
     :accessor y-axis-conf)))
 
-(defmethod draw-on-canvas ((object xy-plot) (destination canvas))
+(defmethod draw-on-canvas ((object xy-plot) (destination canvas) &key &allow-other-keys)
   (with-accessors ((handle handle)
                    (x-axis-conf x-axis-conf)
                    (y-axis-conf y-axis-conf)
@@ -119,18 +124,49 @@
 
 (defclass dot-plot (xy-plot) ())
 
-(defmethod draw-on-canvas :after ((object dot-plot) (destination canvas))
+(defun draw-error-bar (plot-handle series-handle x y error-value stopper-width color)
+  "The low level drawing procedure for error bar"
+  (let ((start-bar     (- y error-value))
+        (end-bar       (+ y error-value))
+        (start-stopper (- x stopper-width))
+        (stop-stopper  (+ x stopper-width)))
+    (flet ((draw-line (x-start y-start x-end y-end)
+             (format-wish (tclize `(senddata [,plot-handle
+                                             object
+                                             line " " ,series-handle " "
+                                             ,x-start " " ,y-start   " "
+                                             ,x-end   " " , y-end    " "
+                                             ,(empty-string-if-nil color
+                                                  `(-fill  {+ ,#[color ]}))
+                                             ])))))
+      (draw-line x start-bar x end-bar)
+      (draw-line start-stopper start-bar stop-stopper start-bar)
+      (draw-line start-stopper end-bar stop-stopper end-bar))))
+
+(defun parse-number-or-0 (n)
+  (if (numberp n)
+      n
+      (safe-parse-number n
+                         :fix-fn (lambda (a)
+                                   (declare (ignore a))
+                                   0.0))))
+
+(defmethod draw-on-canvas :after ((object dot-plot) (destination canvas)
+                                  &key (error-bar-color nil))
   (with-accessors ((handle     handle)
                    (all-series all-series)) object
     (format-wish (tclize `(senddata [ ,handle legendconfig -legendtype rectangle])))
     (loop for series in all-series do
          (setf (series-handle series) (strcat "series_" (nodgui::create-name)))
-         (let ((size          (dot-series-size series))
-               (series-handle (series-handle   series))
-               (xs            (series-xs       series))
-               (ys            (series-ys       series))
-               (color         (series-color    series))
-               (legend        (series-legend   series)))
+         (let* ((size-as-num   (dot-series-size series))
+                (size          (nodgui::process-coords size-as-num))
+                (series-handle (series-handle   series))
+                (xs            (series-xs       series))
+                (ys            (series-ys       series))
+                (errors        (or (dot-series-errors series)
+                                   (make-fresh-list (length xs) 0.0)))
+                (color         (series-color    series))
+                (legend        (series-legend   series)))
            (format-wish (tclize `(senddata [ ,handle
                                            dotconfig
                                            ,series-handle " " -colour ,#[color ] " "
@@ -140,9 +176,19 @@
                                            ,series-handle " " -colour ,#[color ] " "
                                            ])))
            (loop
-              for x in (split " " (nodgui::process-coords xs))
-              for y in (split " " (nodgui::process-coords ys)) do
-                (let ((*suppress-newline-for-tcl-statements* t))
+              for x   in (split " " (nodgui::process-coords xs))
+              for y   in (split " " (nodgui::process-coords ys))
+              for err in (split " " (nodgui::process-coords errors)) do
+                (let ((*suppress-newline-for-tcl-statements* t)
+                      (x-as-num   (parse-number-or-0 x))
+                      (y-as-num   (parse-number-or-0 y))
+                      (err-as-num (parse-number-or-0 err)))
+                  ;; errors
+                  (when (not (epsilon= err-as-num 0.0))
+                    (draw-error-bar handle series-handle
+                                    x-as-num y-as-num err-as-num
+                                    (/ size-as-num 2)
+                                    error-bar-color))
                   (format-wish (tclize `(senddata [ ,handle " " dot " "  ,series-handle " "
                                                   {+ ,x } {+ ,y }
                                                   ,size ])))))

@@ -901,12 +901,13 @@
     (let ((canvas (make-canvas nil :width  800 :height 600))
           (plot   (make-instance 'nodgui.tklib.plot:dot-plot
                                  :all-series
-                                 (list (nodgui.tklib.plot:make-dot-series :xs '(10 20 30)
-                                                                          :ys '(20 40 60)
+                                 (list (nodgui.tklib.plot:make-dot-series :xs     '(10 20 30)
+                                                                          :ys     '(20 40 60)
+                                                                          :errors '(1.5 0.5 2.5)
                                                                           :legend "first"
                                                                           :color  "#ff00ff")
-                                       (nodgui.tklib.plot:make-dot-series :xs '(10 20 30)
-                                                                          :ys '(60 40 20)
+                                       (nodgui.tklib.plot:make-dot-series :xs     '(10 20 30)
+                                                                          :ys     '(60 40 20)
                                                                           :legend "second")))))
       (grid canvas 0 0 :sticky :news)
       (nodgui.tklib.plot:draw-on-canvas plot canvas))))
