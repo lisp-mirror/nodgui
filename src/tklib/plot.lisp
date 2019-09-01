@@ -17,11 +17,17 @@
 (in-package :nodgui.tklib.plot)
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
-;(named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
 (define-constant +plotchart-library-name+ "Plotchart" :test #'string=)
 
 (defstruct series
+  "keeps a set of data
+- handle  the internal identifier of this series (do not touch it!);
+- xs:     a list of x for each point of this series;
+- ys:     a list of x for each point of this series;
+- legend: a descriptive label (shown on the plot) for this series;
+- color:  plotted color of each datum.
+"
   handle
   (xs     '())
   (ys     '())
@@ -30,43 +36,53 @@
 
 (defstruct (dot-series
              (:include series))
+"represent a point for a scatter plot (see: 'series')
+- size:  radius of the point;
+- error: a list error for each point of the series.
+"
   (size   3.0)
   (errors '()))
 
 (defclass plot ()
   ((handle
     :initform nil
-    :accessor handle)
+    :accessor handle
+    :documentation "The internal identifier of this series (do not touch it!)")
    (x-text
     :initform "x title"
     :initarg  :x-text
-    :accessor x-text)
-   (y-text
+    :accessor x-text
+    :documentation "The descriptive text of the x axis")
+   (y-text              ; This is vtext on the tcl side
     :initform "y title"
     :initarg  :y-text
     :accessor y-text
-    :documentation "(broken) This is vtext on the tcl side!")
+    :documentation "The descriptive text of the y axis")
    (x-subtext
     :initform ""
     :initarg  :x-subtext
-    :accessor x-subtext)
+    :accessor x-subtext
+    :documentation "(broken do not use)")
    (y-subtext
     :initform ""
     :initarg  :y-subtext
     :accessor y-subtext
-    :documentation "(broken) This is ysubtext on the tcl side!")
+    :documentation "(broken do not use)")
    (title
     :initform "plot title"
     :initarg  :title
-    :accessor title)
+    :accessor title
+    :documentation "A descriptive text of the plot")
    (subtitle
     :initform "plot subtitle"
     :initarg  :subtitle
-    :accessor subtitle)
+    :accessor subtitle
+    :documentation "More descriptive text of the plot")
    (all-series
     :initform '()
     :initarg  :all-series
-    :accessor all-series)))
+    :accessor all-series
+    :documentation "The data of this plot, must be instance of the struct 'series' or derived")))
 
 (defstruct axis-conf min max step)
 
@@ -83,7 +99,8 @@
    (y-axis-conf
     :initform (make-axis-conf :min 0.0 :max 100.0 :step 10.0)
     :initarg  :y-axis-conf
-    :accessor y-axis-conf)))
+    :accessor y-axis-conf))
+  (:documentation "A plot with the data representing points in the x/y plane."))
 
 (defmethod draw-on-canvas ((object xy-plot) (destination canvas) &key &allow-other-keys)
   (with-accessors ((handle handle)
@@ -122,7 +139,9 @@
       (format-wish (tclize `(senddata [ ,handle ysubtext {+ ,y-subtext } ])))
       object)))
 
-(defclass dot-plot (xy-plot) ())
+(defclass dot-plot (xy-plot)
+  ()
+  (:documentation "A scatter plot, see: https://en.wikipedia.org/wiki/Scatter_plot"))
 
 (defun draw-error-bar (plot-handle series-handle x y error-value stopper-width color)
   "The low level drawing procedure for error bar"
@@ -153,6 +172,26 @@
 
 (defmethod draw-on-canvas :after ((object dot-plot) (destination canvas)
                                   &key (error-bar-color nil))
+"  Draw a scatter plot on a canvas.
+The plot must be initialized with series (see: the 'all-series' slot of 'plot' class)
+
+- object: a 'dot-plot' instance;
+- destination a 'canvas' instance;
+- error-bar-color: a string or named color like:  \"#FF0000\" or #%red%;
+
+example:
+
+  (with-nodgui ()
+    (let ((canvas (make-canvas nil :width 800 :height 600))
+          (plot   (make-instance dot-plot
+                                 :all-series (list (make-dot-series :xs     '(10 20 30)
+                                                                    :ys     '(20 40 60)
+                                                                    :errors '(1.5 0.5 2.5)
+                                                                    :legend \"data\"
+                                                                    :color  #%red%)))))
+      (grid canvas 0 0 :sticky :news)
+      (draw-on-canvas plot canvas)))
+"
   (with-accessors ((handle     handle)
                    (all-series all-series)) object
     (format-wish (tclize `(senddata [ ,handle legendconfig -legendtype rectangle])))
