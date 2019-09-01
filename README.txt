@@ -67,7 +67,7 @@ Table of Contents
 3 Widget pack
 ═════════════
 
-  This library define a few additional widgets more than standard the TK
+  This library define a few additional widgets than the standard TK
   ones.
 
   There should be a decent quantity of documentation as docstrings on
