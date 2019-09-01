@@ -10,8 +10,12 @@ Table of Contents
 2. Dependency
 .. 1. Programs
 .. 2. Lisp libraries
+.. 3. TCL/TK libraries (optional)
 3. Widget pack
-.. 1. Megawidget list
+.. 1. MegaWidget
+.. 2. MegaWidget list
+.. 3. TKlib
+..... 1. TKlib derived widgets
 4. FAQ
 5. Status
 .. 1. Compatibility
@@ -54,23 +58,39 @@ Table of Contents
   All of the above libraries are available on quicklisp.
 
 
+2.3 TCL/TK libraries (optional)
+───────────────────────────────
+
+  • TKlib <https://core.tcl-lang.org/tklib/home>
+
+
 3 Widget pack
 ═════════════
 
-  This library define a few additional widgets (called /"MegaWidget"/).
+  This library define a few additional widgets more than standard the TK
+  ones.
 
-  All these widget are defined in file `src/nogui-mw.lisp', there should
-  be a decent quantity of documentation as docstrings on the sources.
+  There should be a decent quantity of documentation as docstrings on
+  the sources.
 
-  Probably checking [the excellent quickdocs] could be useful too (note
-  that the documentation there does not always reflects the latest
-  version of this library).
+  Probably checking [the excellent quickdocs] or [the excellent as well
+  quickref] could be useful too (note that the documentation there does
+  not always reflects the latest version of this library).
 
 
-[the excellent quickdocs]
-<http://quickdocs.org/nodgui/api#package-NODGUI.MW>
+[the excellent quickdocs] <http://quickdocs.org/nodgui/>
 
-3.1 Megawidget list
+[the excellent as well quickref]
+<https://quickref.common-lisp.net/nodgui.html>
+
+3.1 MegaWidget
+──────────────
+
+  All these widget, written in common lisp, are defined in file
+  `src/nogui-mw.lisp'.
+
+
+3.2 MegaWidget list
 ───────────────────
 
   history-entry
@@ -140,6 +160,40 @@ Table of Contents
 
 [screenshot]
 <https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png>
+
+
+3.3 TKlib
+─────────
+
+  Some more widget in `nodgui' derive from wrapping and, in some case,
+  extending the widget set contained in [TKlib]
+
+  To use these widget in `nodgui' `tklib' must be installed on your
+  system, fortunately this library is widely available at least on
+  `GNU/Linux'.
+
+  On Debian just a couple of commands are needed:
+
+  ┌────
+  │
+  │ $ su -
+  │ (root)# apt-get install tklib
+  │
+  └────
+
+
+[TKlib] <https://core.tcl-lang.org/tklib/home>
+
+3.3.1 TKlib derived widgets
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  calendar
+        A widget to choose a date;
+  notify-window
+        show a fading out notification text to the user; on the top
+        right of the screen;
+  dot-plot
+        draw a scatter plot (with optional error bars) on a canvas.
 
 
 4 FAQ
@@ -214,7 +268,7 @@ Table of Contents
 
            <https://www.tcl.tk/man/tcl8.6/TkCmd/spinbox.htm>
 
-           You can easly understand what all the options above are for.
+           You can easily understand what all the options above are for.
 
   How can I access the root window?
         The root window is bound to the special variable `*tk*'.
@@ -232,7 +286,7 @@ Table of Contents
 
   What are the differences between nodgui and LTK?
         The two libraries begin to diverge a bit now, the API is
-        compatible with ltk no more.
+        compatible with LTK no more.
 
         1. A reader macro for events i.e.  `#$<Alt-q>$' instead of
            `"<Alt-q>"' (a string), the macro will parse and check for
@@ -265,7 +319,7 @@ Table of Contents
            └────
 
            The `tclize' macro will transforms the backquoted forms in
-           tcl code, the unquoted forms will be evaluated before the
+           TCL code, the unquoted forms will be evaluated before the
            translation occurs.
 
            Please always wrap the unquoted form in `#[ ... 'a space' ]'
@@ -273,7 +327,7 @@ Table of Contents
            `'{'' to `\{').
 
            You should put a space before the closing square brackets,
-           this is an annoyng bug that will be solved soon or later.
+           this is an annoying bug that will be solved soon or later.
 
         3. The function [`postscript'] returns a postscript file as
            string instead of write a file on disk;
@@ -300,7 +354,7 @@ Table of Contents
         documentation improvements are very welcome too! :)
 
         Also i would appreciate [testing] if the library works on
-        different environment than mine (debian GNU/Linux with SBCL).
+        different environment than mine (Debian GNU/Linux with SBCL).
 
 
 [original documentation] <http://www.peter-herth.de/ltk/ltkdoc/>

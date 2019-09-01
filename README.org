@@ -15,7 +15,6 @@
  - TCL/TK interpreter (version >= 8.6)
    https://www.tcl.tk
 
-
 ** Lisp libraries
 
  - alexandria;
@@ -28,19 +27,32 @@
 
 All of the above libraries are available on quicklisp.
 
-* Widget pack
-  This library define a few additional widgets (called /"MegaWidget"/).
 
-  All  these widget  are  defined in  file ~src/nogui-mw.lisp~,  there
-  should be  a decent quantity  of documentation as docstrings  on the
+** TCL/TK libraries (optional)
+
+- TKlib
+  https://core.tcl-lang.org/tklib/home
+
+
+* Widget pack
+  This library define a few additional widgets more than standard the TK ones.
+
+  There should be  a decent quantity  of documentation as docstrings  on the
   sources.
 
   Probably checking
-  [[http://quickdocs.org/nodgui/api#package-NODGUI.MW][the excellent quickdocs]]
+  [[http://quickdocs.org/nodgui/][the excellent quickdocs]]
+  or
+  [[https://quickref.common-lisp.net/nodgui.html][the excellent as well quickref]]
   could be useful too (note that the documentation there
   does not always reflects the latest version of this library).
 
-** Megawidget list
+** MegaWidget
+
+  All  these widget,  written  in  common lisp,  are  defined in  file
+  ~src/nogui-mw.lisp~.
+
+** MegaWidget list
 
    - history-entry ::
     An entry widget  keeping the history of previous  input (which can
@@ -86,6 +98,32 @@ All of the above libraries are available on quicklisp.
    - progress-bar-star :: a progress bar that display stars to show progress
 
      [[https://www.autistici.org/interzona/img/nodgui/progress-bar-star.png][screenshot]]
+
+** TKlib
+
+   Some  more widget  in ~nodgui~  derive from  wrapping and,  in some
+   case,     extending     the     widget     set     contained     in
+   [[https://core.tcl-lang.org/tklib/home][TKlib]]
+
+   To use these  widget in ~nodgui~ ~tklib~ must be  installed on your
+   system, fortunately  this library is  widely available at  least on
+   ~GNU/Linux~.
+
+   On Debian just a couple of commands are needed:
+
+   #+BEGIN_SRC shell
+
+   $ su -
+   (root)# apt-get install tklib
+
+   #+END_SRC
+
+*** TKlib derived widgets
+
+    - calendar      :: A widget to choose a date;
+    - notify-window :: show a fading out notification text to the user;
+                       on the top right of the screen;
+    - dot-plot      :: draw a scatter plot (with optional error bars) on a canvas.
 
 * FAQ
 
@@ -159,7 +197,7 @@ All of the above libraries are available on quicklisp.
 
        https://www.tcl.tk/man/tcl8.6/TkCmd/spinbox.htm
 
-       You can easly understand what all the options above are for.
+       You can easily understand what all the options above are for.
 
   - How can I access the root window? ::
 
@@ -180,7 +218,7 @@ All of the above libraries are available on quicklisp.
   - What are the differences between nodgui and LTK? ::
 
        The  two libraries  begin  to diverge  a bit  now,  the API  is
-       compatible with ltk no more.
+       compatible with LTK no more.
 
     1. A  reader  macro  for events
        i.e.  ~#$<Alt-q>$~  instead  of
@@ -212,7 +250,7 @@ All of the above libraries are available on quicklisp.
        ...
        #+END_SRC
 
-       The ~tclize~ macro will transforms  the backquoted forms in tcl
+       The ~tclize~ macro will transforms  the backquoted forms in TCL
        code,  the   unquoted  forms  will  be   evaluated  before  the
        translation occurs.
 
@@ -221,7 +259,7 @@ All of the above libraries are available on quicklisp.
        ~'{'~ to ~\{~).
 
        You should put a space before the closing square brackets, this
-       is an annoyng bug that will be solved soon or later.
+       is an annoying bug that will be solved soon or later.
 
     3. The function [[https://www.tcl.tk/man/tcl8.6/TkCmd/canvas.htm#M61][~postscript~]]
        returns a postscript file as string instead of write a file on disk;
@@ -251,7 +289,7 @@ All of the above libraries are available on quicklisp.
        very welcome too! :)
 
        Also i would appreciate  [[Compatibility][testing]] if the library
-       works on different environment than mine (debian GNU/Linux with
+       works on different environment than mine (Debian GNU/Linux with
        SBCL).
 
 * Status
