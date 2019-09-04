@@ -65,6 +65,7 @@ system for this wrapper to works"))
         :nodgui)
   (:shadow :alexandria :rotate)
   (:export
+   :+plotchart-data-tag+
    :make-series
    :series-handle
    :series-xs
@@ -73,6 +74,9 @@ system for this wrapper to works"))
    :series-color
    :make-dot-series
    :dot-series-size
+   :dot-series-errors
+   :dot-series-bind-event
+   :dot-series-callback
    :plot
    :handle
    :x-text
@@ -86,7 +90,9 @@ system for this wrapper to works"))
    :axis-conf-step
    :draw-on-canvas
    :xy-plot
-   :dot-plot)
+   :dot-plot
+   :bind-last
+   :bind-series)
   (:documentation "Wrapper for a subset of plotchart in tklib
  (https://core.tcl-lang.org/tklib/doc/trunk/embedded/www/tklib/files/modules/plotchart/plotchart.html#section14).
 

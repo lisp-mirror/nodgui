@@ -20,6 +20,8 @@
 
 (define-constant +plotchart-library-name+ "Plotchart" :test #'string=)
 
+(define-constant +plotchart-data-tag+     "data" :test #'string=)
+
 (defstruct series
   "keeps a set of data
 - handle  the internal identifier of this series (do not touch it!);
@@ -37,11 +39,15 @@
 (defstruct (dot-series
              (:include series))
 "represent a point for a scatter plot (see: 'series')
-- size:  radius of the point;
-- error: a list error for each point of the series.
+- size:       radius of the point;
+- error:      a list error for each point of the series;
+- bind-event: the event a point of a series is reactve to;
+- callback:   the function called (with an 'event' struct as parameter) when a bind-event is fired.
 "
-  (size   3.0)
-  (errors '()))
+  (size       3.0)
+  (errors     '())
+  (bind-event #$<ButtonPress-1>$)
+  (callback   nil))
 
 (defclass plot ()
   ((handle
@@ -134,14 +140,14 @@
       ;; get the handle (used below)
       (setf handle (read-data))
       ;; add title
-      (format-wish (tclize `(senddata [ ,handle title {+ ,title } ])))
+      (format-wish (tclize `(,handle title {+ ,title })))
       ;; add subtitle
-      (format-wish (tclize `(senddata [ ,handle subtitle {+ ,subtitle } ])))
+      (format-wish (tclize `(,handle subtitle {+ ,subtitle })))
       ;; axis labels
-      (format-wish (tclize `(senddata [ ,handle xtext    {+ ,x-text } ])))
-      (format-wish (tclize `(senddata [ ,handle vtext    {+ ,y-text } ])))
-      (format-wish (tclize `(senddata [ ,handle xsubtext {+ ,x-subtext } ])))
-      (format-wish (tclize `(senddata [ ,handle ysubtext {+ ,y-subtext } ])))
+      (format-wish (tclize `(,handle xtext    {+ ,x-text })))
+      (format-wish (tclize `(,handle vtext    {+ ,y-text })))
+      (format-wish (tclize `(,handle xsubtext {+ ,x-subtext })))
+      (format-wish (tclize `(,handle ysubtext {+ ,y-subtext })))
       object)))
 
 (defclass dot-plot (xy-plot)
@@ -162,10 +168,11 @@
                                              ,x-end   " " , y-end    " "
                                              ,(empty-string-if-nil color
                                                   `(-fill  {+ ,#[color ]}))
-                                             ])))))
-      (draw-line x start-bar x end-bar)
-      (draw-line start-stopper start-bar stop-stopper start-bar)
-      (draw-line start-stopper end-bar stop-stopper end-bar))))
+                                             ])))
+             (read-data)))
+      (list (draw-line x start-bar x end-bar)
+            (draw-line start-stopper start-bar stop-stopper start-bar)
+            (draw-line start-stopper end-bar stop-stopper end-bar)))))
 
 (defun parse-number-or-0 (n)
   (if (numberp n)
@@ -176,8 +183,9 @@
                                    0.0))))
 
 (defmethod draw-on-canvas :after ((object dot-plot) (destination canvas)
-                                  &key (error-bar-color nil))
-"  Draw a scatter plot on a canvas.
+                                  &key
+                                    (error-bar-color nil))
+  "  Draw a scatter plot on a canvas.
 The plot must be initialized with series (see: the 'all-series' slot of 'plot' class)
 
 - object: a 'dot-plot' instance;
@@ -199,51 +207,64 @@ example:
 "
   (with-accessors ((handle     handle)
                    (all-series all-series)) object
-    (format-wish (tclize `(senddata [ ,handle legendconfig -legendtype rectangle])))
-    (loop for series in all-series do
-         (setf (series-handle series) (strcat "series_" (nodgui::create-name)))
-         (let* ((size-as-num   (dot-series-size series))
-                (size          (nodgui::process-coords size-as-num))
-                (series-handle (series-handle   series))
-                (xs            (series-xs       series))
-                (ys            (series-ys       series))
-                (errors        (or (dot-series-errors series)
-                                   (make-fresh-list (length xs) 0.0)))
-                (color         (series-color    series))
-                (legend        (series-legend   series)))
-           (format-wish (tclize `(senddata [ ,handle
-                                           dotconfig
-                                           ,series-handle " " -colour ,#[color ] " "
-                                           -outline on])))
-           (format-wish (tclize `(senddata [ ,handle
-                                           dataconfig
-                                           ,series-handle " " -colour ,#[color ] " "
-                                           ])))
-           (loop
-              for x   in (split " " (nodgui::process-coords xs))
-              for y   in (split " " (nodgui::process-coords ys))
-              for err in (split " " (nodgui::process-coords errors)) do
-                (let ((*suppress-newline-for-tcl-statements* t)
-                      (x-as-num   (parse-number-or-0 x))
-                      (y-as-num   (parse-number-or-0 y))
-                      (err-as-num (parse-number-or-0 err)))
-                  ;; errors
-                  (when (not (epsilon= err-as-num 0.0))
-                    (draw-error-bar handle series-handle
-                                    x-as-num y-as-num err-as-num
-                                    (/ size-as-num 2)
-                                    error-bar-color))
-                  (format-wish (tclize `(senddata [ ,handle " " dot " "  ,series-handle " "
-                                                  {+ ,x } {+ ,y }
-                                                  ,size ])))))
-           (format-wish (tclize `(senddata [ ,handle
-                                           legend
-                                           ,series-handle " " ,#[legend ]]))))))
+    (let ((all-error-handlers '()))
+      (format-wish (tclize `(,handle legendconfig -legendtype rectangle)))
+      (loop for series in all-series do
+           (setf (series-handle series) (strcat "series_" (nodgui::create-name)))
+           (let* ((size-as-num        (dot-series-size series))
+                  (size               (nodgui::process-coords size-as-num))
+                  (series-handle      (series-handle   series))
+                  (xs                 (series-xs       series))
+                  (ys                 (series-ys       series))
+                  (errors             (or (dot-series-errors series)
+                                          (make-fresh-list (length xs) 0.0)))
+                  (color              (series-color    series))
+                  (legend             (series-legend   series)))
+             (format-wish (tclize `(,handle
+                                    dotconfig
+                                    ,series-handle " " -colour ,#[color ] " "
+                                    -outline on)))
+             (format-wish (tclize `(,handle
+                                    dataconfig
+                                    ,series-handle " " -colour ,#[color ])))
+             (loop
+                for x   in (split " " (nodgui::process-coords xs))
+                for y   in (split " " (nodgui::process-coords ys))
+                for err in (split " " (nodgui::process-coords errors)) do
+                  (let ((*suppress-newline-for-tcl-statements* t)
+                        (x-as-num           (parse-number-or-0 x))
+                        (y-as-num           (parse-number-or-0 y))
+                        (err-as-num         (parse-number-or-0 err)))
+                    ;; errors
+                    (when (not (epsilon= err-as-num 0.0))
+                      (let ((error-handlers (draw-error-bar handle series-handle
+                                                            x-as-num y-as-num err-as-num
+                                                            (/ size-as-num 2)
+                                                            error-bar-color)))
+                        (setf all-error-handlers
+                              (append all-error-handlers error-handlers))))
+                    (format-wish (tclize `(,handle " " dot " "  ,series-handle " "
+                                                   {+ ,x } {+ ,y }
+                                                   ,size)))
+                    (when (dot-series-callback series)
+                      (bind-last object
+                                 series
+                                 (dot-series-bind-event series)
+                                 (dot-series-callback series)))))
+             (format-wish (tclize `(,handle
+                                    legend
+                                    ,series-handle " " ,#[legend ])))))
+      ;; lower all errors bars
+      (loop for error-handle in all-error-handlers do
+           (nodgui::item-lower destination error-handle +plotchart-data-tag+))))
   object)
 
 (defgeneric bind-last (object series event fn))
 
+(defgeneric bind-series (object series event fn))
+
 (defmethod bind-last ((object dot-plot) (series series) event fn)
+  "Set the callback bound to the last added point"
   (let ((name (nodgui::create-name))
         (*suppress-newline-for-tcl-statements* t))
     (with-accessors ((handle handle)) object
@@ -254,8 +275,15 @@ example:
                                       {sendeventplot ,name   " "
                                       ,(series-handle series) }))))))
 
+(defmethod bind-series ((canvas canvas) (series series) event fn)
+  "Set the callback bound to the last added point"
+  (tagbind canvas
+           (strcat +plotchart-data-tag+ "_" (series-handle series))
+           event
+           fn))
+
 (defmethod bind ((object dot-plot) event fun &key append exclusive)
-  "bind fun to event of the widget w"
+  "Bind fun to event of the plot (to bind the data see 'bind-data')"
   (declare (ignore append exclusive))
   (let ((name (nodgui::create-name))
         (*suppress-newline-for-tcl-statements* t))

@@ -897,20 +897,31 @@
 
 (defun demo-tklib-dot-plot ()
   (with-nodgui ()
-    (let ((canvas (make-canvas nil :width  800 :height 600))
-          (plot   (make-instance 'nodgui.tklib.plot:dot-plot
-                                 :all-series
-                                 (list (nodgui.tklib.plot:make-dot-series :xs     '(10 20 30)
-                                                                          :ys     '(20 40 60)
-                                                                          :errors '(1.5 0.5 2.5)
-                                                                          :legend "first"
-                                                                          :color  "#ff00ff")
-                                       (nodgui.tklib.plot:make-dot-series :xs     '(10 20 30)
-                                                                          :ys     '(60 40 20)
-                                                                          :legend "second")))))
+    (let* ((canvas     (make-canvas nil :width  800 :height 600))
+           (series-callback (lambda (a)
+                              (lambda (event)
+                                (format t
+                                        "click on a ~a point @ x: ~a y: ~a~%"
+                                        a
+                                        (event-x event)
+                                        (event-y event)))))
+           (all-series (list (nodgui.tklib.plot:make-dot-series :xs     '(10 20 30)
+                                                                :ys     '(20 40 60)
+                                                                :errors '(1.5 0.5 2.5)
+                                                                :legend "first"
+                                                                :color  "#ff00ff"
+                                                                :callback (funcall series-callback
+                                                                                   :pink))
+                             (nodgui.tklib.plot:make-dot-series :xs     '(10 20 30)
+                                                                :ys     '(60 40 20)
+                                                                :legend "second"
+                                                                :callback (funcall series-callback
+                                                                                   :red))))
+           (plot       (make-instance 'nodgui.tklib.plot:dot-plot
+                                      :all-series all-series)))
       (grid canvas 0 0 :sticky :news)
       (nodgui.tklib.plot:draw-on-canvas plot canvas)
       (bind plot #$<ButtonPress-1>$ (lambda (event)
-                                      (format t "x: ~a y: ~a"
+                                      (format t "click on plot x: ~a y: ~a~%"
                                               (event-x event)
                                               (event-y event)))))))
