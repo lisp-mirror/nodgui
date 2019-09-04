@@ -165,14 +165,6 @@
   (defmacro with-flush-server (body)
     (append body '((flush $server))))
 
-  (defmacro defproc (name args &body body)
-    `(symbol-macrolet ((exp (format nil
-                                    "~%proc ~a{~{~a~}} {~%~{    ~a~}}~%"
-                                    ,(funcall (->tcl name))
-                                    ',(mapcar #'funcall (->tcl args))
-                                    (tcl ,@body))))
-       exp))
-
   (defmacro for-list (var l &body body)
     `(loop for ,var in ,l collect
           (progn ,@body)))
@@ -198,4 +190,13 @@
   (defmacro empty-string-if-nil (value statement)
     `(if ,value
          ,statement
-         "")))
+         ""))
+
+  (defmacro defproc (name args &body body)
+    `(symbol-macrolet ((exp (format nil
+                                    "~%proc ~a { ~a } {~%~{    ~a~}}~%"
+                                    ,(funcall (->tcl name))
+                                    ,(let ((*suppress-newline-for-tcl-statements* t))
+                                       (tclize args))
+                                    (tcl ,@body))))
+       exp)))

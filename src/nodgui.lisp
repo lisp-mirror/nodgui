@@ -178,21 +178,26 @@ can be passed to AFTER-CANCEL"
   height
   root-x
   root-y
-  mouse-button)
+  mouse-button
+  others)
 
 (defun construct-tk-event (properties)
   "create an event structure from a list of values as read from tk"
   (make-event
-   :x            (first properties)
-   :y            (second properties)
-   :char-code    (third properties)
-   :keycode      (fourth properties)
-   :char         (fifth properties)
-   :width        (sixth properties)
-   :height       (seventh properties)
-   :root-x       (eighth properties)
-   :root-y       (ninth properties)
-   :mouse-button (tenth properties)))
+   :x            (first properties)  ; 0
+   :y            (second properties) ; 1
+   :char-code    (third properties)  ; 2
+   :keycode      (fourth properties) ; 3
+   :char         (fifth properties)  ; 4
+   :width        (sixth properties)  ; 5
+   :height       (seventh properties); 6
+   :root-x       (eighth properties) ; 7
+   :root-y       (ninth properties)  ; 8
+   :mouse-button (tenth properties)  ; 9
+   :others       (if (string= (elt properties 10)
+                              "")
+                     nil
+                     (elt properties 10))))
 
 (defgeneric bind (w event fun &key append exclusive))
 
@@ -213,8 +218,7 @@ can be passed to AFTER-CANCEL"
 
 ;;; window menu bar
 
-(defclass menubar(widget)
-  ())
+(defclass menubar (widget) ())
 
 (defun make-menubar(&optional (master nil))
  (make-instance 'menubar :master master :name "menubar"))

@@ -87,7 +87,12 @@
 (defstruct axis-conf min max step)
 
 (defmethod initialize-instance :after ((object plot) &key &allow-other-keys)
-  (require-tcl-package +plotchart-library-name+))
+  (require-tcl-package +plotchart-library-name+)
+  (nodgui::send-wish
+   (defproc sendeventplot (x y fun ({+ other {+ }+ }))
+     (sendevent $fun
+                $x " " $y
+                {?} {?} {?} {?} {?} {?} {?} {?}))))
 
 (defgeneric draw-on-canvas (object destination &key &allow-other-keys))
 
@@ -235,3 +240,29 @@ example:
                                            legend
                                            ,series-handle " " ,#[legend ]]))))))
   object)
+
+(defgeneric bind-last (object series event fn))
+
+(defmethod bind-last ((object dot-plot) (series series) event fn)
+  (let ((name (nodgui::create-name))
+        (*suppress-newline-for-tcl-statements* t))
+    (with-accessors ((handle handle)) object
+      (nodgui::add-callback name fn)
+      (format-wish (tclize `(,handle  " "
+                                      bindlast ,(series-handle series) " "
+                                      ,event        " "
+                                      {sendeventplot ,name   " "
+                                      ,(series-handle series) }))))))
+
+(defmethod bind ((object dot-plot) event fun &key append exclusive)
+  "bind fun to event of the widget w"
+  (declare (ignore append exclusive))
+  (let ((name (nodgui::create-name))
+        (*suppress-newline-for-tcl-statements* t))
+    (with-accessors ((handle     handle)
+                     (all-series all-series)) object
+      (nodgui::add-callback name fun)
+      (format-wish (tclize `(,handle                " "
+                             bindplot ,event        " "
+                             {sendeventplot ,name   " " ,handle })))
+    object)))

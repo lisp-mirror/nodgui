@@ -803,7 +803,7 @@
         (shape-move-to  bicolor-star (/ size 2) (/ size 2))
         (shape-move-to  star 30 30)
         (create-text    canvas 0 0  "Slices of the pie are clickable")
-        (item-configure canvas arc1 "fill"  #%red%)    ;; using x11-colors via cl-colors2
+        (item-configure canvas arc1 "fill"  #%red%) ;; using x11-colors via cl-colors2
         (item-configure canvas arc2 "fill"  "#00ff00") ;; strings are accepted, though
         (item-configure canvas arc1 "tag"   "red")
         (item-configure canvas arc2 "tag"   "green")
@@ -895,7 +895,6 @@
     (let ((message (text-input-dialog *tk* "info" "Insert the text you want shown as notify")))
       (nodgui.tklib.notify:notify-window message))))
 
-
 (defun demo-tklib-dot-plot ()
   (with-nodgui ()
     (let ((canvas (make-canvas nil :width  800 :height 600))
@@ -910,4 +909,8 @@
                                                                           :ys     '(60 40 20)
                                                                           :legend "second")))))
       (grid canvas 0 0 :sticky :news)
-      (nodgui.tklib.plot:draw-on-canvas plot canvas))))
+      (nodgui.tklib.plot:draw-on-canvas plot canvas)
+      (bind plot #$<ButtonPress-1>$ (lambda (event)
+                                      (format t "x: ~a y: ~a"
+                                              (event-x event)
+                                              (event-y event)))))))
