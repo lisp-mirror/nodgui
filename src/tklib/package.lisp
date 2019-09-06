@@ -66,6 +66,16 @@ system for this wrapper to works"))
   (:shadow :alexandria :rotate)
   (:export
    :+plotchart-data-tag+
+   :+comp-xyplot-title+
+   :+comp-xyplot-subtitle+
+   :+comp-xyplot-margin+
+   :+comp-xyplot-text+
+   :+comp-xyplot-legend+
+   :+comp-xyplot-leftaxis+
+   :+comp-xyplot-rightaxis+
+   :+comp-xyplot-bottomaxis+
+   :+comp-xyplot-background+
+   :+comp-xyplot-mask+
    :make-series
    :series-handle
    :series-xs
@@ -77,6 +87,7 @@ system for this wrapper to works"))
    :dot-series-errors
    :dot-series-bind-event
    :dot-series-callback
+   :configure-plot-style
    :plot
    :handle
    :x-text
@@ -88,6 +99,8 @@ system for this wrapper to works"))
    :axis-conf-min
    :axis-conf-max
    :axis-conf-step
+   :axis-conf-tick-length
+   :erase-plot
    :draw-on-canvas
    :xy-plot
    :dot-plot

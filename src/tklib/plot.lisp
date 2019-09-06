@@ -22,6 +22,19 @@
 
 (define-constant +plotchart-data-tag+     "data" :test #'string=)
 
+(defmacro gen-plot-component (type &rest values)
+  `(progn
+     ,@(loop for value in values collect
+            `(define-constant ,(format-fn-symbol t "+comp-~a-~a+" type value)
+                 ,(format nil " ~a " (string-downcase value))
+              :test #'string=))))
+
+(gen-plot-component xyplot
+                    title subtitle margin
+                    text legend
+                    leftaxis rightaxis bottomaxis
+                    background mask)
+
 (defstruct series
   "keeps a set of data
 - handle  the internal identifier of this series (do not touch it!);
@@ -90,7 +103,16 @@
     :accessor all-series
     :documentation "The data of this plot, must be instance of the struct 'series' or derived")))
 
-(defstruct axis-conf min max step)
+(defstruct axis-conf
+  "represents an axis:
+- min:         minimum value for the axis;
+- max:         maximum value for the axis;
+- tick-length: length of the axis tick.
+"
+  (min)
+  (max)
+  (step)
+  (tick-length nil))
 
 (defmethod initialize-instance :after ((object plot) &key &allow-other-keys)
   (require-tcl-package +plotchart-library-name+)
@@ -101,6 +123,12 @@
                 {?} {?} {?} {?} {?} {?} {?} {?}))))
 
 (defgeneric draw-on-canvas (object destination &key &allow-other-keys))
+
+(defgeneric erase-plot (object))
+
+(defmethod erase-plot ((object plot))
+  (with-accessors ((handle handle)) object
+    (format-wish (tclize `("::Plotchart::eraseplot " ,handle)))))
 
 (defclass xy-plot (plot)
   ((x-axis-conf
@@ -113,6 +141,36 @@
     :accessor y-axis-conf))
   (:documentation "A plot with the data representing points in the x/y plane."))
 
+(defun configure-plot-style (type component key value)
+  "Configure various parts of the plot.
+
+This values must be configured before the plot is drawn.
+
+example: (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength 10)
+
+- type:      'xyplot
+- component: one of:
+   - +comp-xyplot-title+
+   - +comp-xyplot-subtitle+
+   - +comp-xyplot-margin+
+   - +comp-xyplot-text+
+   - +comp-xyplot-legend+
+   - +comp-xyplot-leftaxis+
+   - +comp-xyplot-rightaxis+
+   - +comp-xyplot-bottomaxis+
+   - +comp-xyplot-background+
+   - +comp-xyplot-mask+
+
+- key: 'ticklength, 'color ... please see the original documentation of tklib:
+  https://core.tcl-lang.org/tklib/doc/trunk/embedded/www/tklib/files/modules/plotchart/plotchart.html#146
+
+- value: dependent from value stored in 'key'
+
+"
+  (format-wish (tclize `("::Plotchart::plotstyle "
+                         configure default
+                         ,type ,component ,key ,value))))
+
 (defmethod draw-on-canvas ((object xy-plot) (destination canvas) &key &allow-other-keys)
   (with-accessors ((handle handle)
                    (x-axis-conf x-axis-conf)
@@ -123,15 +181,21 @@
                    (y-subtext   y-subtext)
                    (title       title)
                    (subtitle    subtitle)) object
-    (let* ((x-min   (axis-conf-min  x-axis-conf))
-           (x-max   (axis-conf-max  x-axis-conf))
-           (x-step  (axis-conf-step x-axis-conf))
-           (y-min   (axis-conf-min  y-axis-conf))
-           (y-max   (axis-conf-max  y-axis-conf))
-           (y-step  (axis-conf-step y-axis-conf))
+    (let* ((x-min         (axis-conf-min  x-axis-conf))
+           (x-max         (axis-conf-max  x-axis-conf))
+           (x-step        (axis-conf-step x-axis-conf))
+           (x-tick-length (axis-conf-tick-length x-axis-conf))
+           (y-min         (axis-conf-min  y-axis-conf))
+           (y-max         (axis-conf-max  y-axis-conf))
+           (y-step        (axis-conf-step y-axis-conf))
+           (y-tick-length (axis-conf-tick-length y-axis-conf))
            (*suppress-newline-for-tcl-statements*             t)
            (*add-space-after-emitted-unspecialized-element*   nil))
       ;; create
+      (when x-tick-length
+        (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength x-tick-length))
+      (when y-tick-length
+        (configure-plot-style 'xyplot +comp-xyplot-leftaxis+   'ticklength y-tick-length))
       (format-wish (tclize `(senddata
                              ["::Plotchart::createXYPlot"      " "
                              {+,#[(widget-path destination) ]}  " "
