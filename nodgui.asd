@@ -97,7 +97,8 @@
                                      (:file "calendar")
                                      (:file "notify-window")
                                      (:file "plot")
-                                     (:file "swaplist")))
+                                     (:file "swaplist")
+                                     (:file "misc-widget")))
                (:file "demo-tests")
                (:module tests
                         :components ((:file "package")
