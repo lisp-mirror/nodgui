@@ -96,7 +96,8 @@
                         :components ((:file "package")
                                      (:file "calendar")
                                      (:file "notify-window")
-                                     (:file "plot")))
+                                     (:file "plot")
+                                     (:file "swaplist")))
                (:file "demo-tests")
                (:module tests
                         :components ((:file "package")

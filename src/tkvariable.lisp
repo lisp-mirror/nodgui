@@ -17,22 +17,28 @@
 (in-package :nodgui)
 
 (defclass tkvariable ()
-  ())
+  ((data-returned-are-list
+    :initform nil
+    :initarg  :data-returned-are-list-p
+    :reader   data-returned-are-list-p
+    :writer   (setf data-returned-are-list))))
 
 (defmethod initialize-instance :around ((v tkvariable)
                                         &key
-                                        (initial-value nil)
+                                          (initial-value nil)
+                                          (use-configure-subcommand-p t)
                                           &allow-other-keys)
   (call-next-method)
-  (format-wish "~a configure -variable ~a ; global ~a ; set ~a {}"
-               (widget-path v) (name v) (name v) (name v))
+  (if use-configure-subcommand-p
+      (format-wish "~a configure -variable ~a ; global ~a ; set ~a {}"
+                   (widget-path v) (name v) (name v) (name v))
+      (format-wish "global ~a ; set ~a {}"
+                   (name v) (name v)))
   (when initial-value
     (setf (value v) initial-value)))
 
 (defmethod value ((v tkvariable))
   (format-wish "global ~a; senddata $~a" (name v) (name v))
-  (read-data))
-
-(defmethod (setf value) (val (v tkvariable))
-  (format-wish "global ~a; set ~a {~a}" (name v) (name v) val)
-  val)
+  (if (data-returned-are-list-p v)
+      (read-data :expected-list-as-data t)
+      (read-data)))

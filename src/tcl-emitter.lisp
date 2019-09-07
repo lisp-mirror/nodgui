@@ -39,6 +39,10 @@
 
   (defstruct (tcl/> (:include tcl/code)))
 
+  (defmacro with-no-emitted-newline (&body body)
+    `(let ((*suppress-newline-for-tcl-statements* t))
+       ,@body))
+
   (defun tag (element)
     (cond
       ((eq '< element)

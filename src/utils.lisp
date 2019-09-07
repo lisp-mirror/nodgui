@@ -399,3 +399,35 @@
                      (day        . 6)
                      (daylight-p . 7)
                      (zone       . 8))
+
+(defmacro try-unicode (char-name fallback)
+  #+(or :sb-unicode :unicode :utf-8)
+  (or (cl-unicode:character-named char-name :try-lisp-names-p t)
+      fallback)
+  #-(or :sb-unicode :unicode :utf-8) fallback)
+
+;; some useful unicode symbols
+
+(defun right-arrow ()
+  (string (try-unicode "RIGHTWARDS_BLACK_ARROW" ">")))
+
+(defun left-arrow ()
+  (string (try-unicode "LEFTWARDS_BLACK_ARROW" "<")))
+
+(defun double-right-arrow ()
+  (string (try-unicode "U2BEE" ">>")))
+
+(defun double-left-arrow ()
+  (string (try-unicode "U2BEC" "<<")))
+
+(defun up-arrow ()
+  (string (try-unicode "UPWARDS_ARROW" "Up")))
+
+(defun down-arrow ()
+  (string (try-unicode "DOWNWARDS_ARROW" "Down")))
+
+(defun big-dot ()
+  (string (try-unicode "BLACK_LARGE_CIRCLE" ".")))
+
+(defun bullet ()
+  (string (try-unicode "BULLET" "*")))

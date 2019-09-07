@@ -87,7 +87,16 @@
            :time-year-of
            :time-day-of
            :time-daylight-p-of
-           :time-zone-of))
+           :time-zone-of
+           :try-unicode
+           :right-arrow
+           :left-arrow
+           :double-right-arrow
+           :double-left-arrow
+           :up-arrow
+           :down-arrow
+           :big-dot
+           :bullet))
 
 (defpackage :nodgui.base64
   (:use :cl
@@ -1138,6 +1147,7 @@
   (:export :*suppress-newline-for-tcl-statements*
            :*add-space-after-emitted-string*
            :*add-space-after-emitted-unspecialized-element*
+           :with-no-emitted-newline
            :tcl
            :tcl-str
            :nodgui-force-escape-syntax
@@ -1501,6 +1511,7 @@
            :options
            :vscroll
            :widget
+           :name
            :widget-path
            :window-height
            :window-id
@@ -1541,6 +1552,7 @@
            :phase
            :separator
            :sizegrip
+           :tkvariable
            :tktextvariable
            :+treeview-root+
            :+treeview-first-column-id+

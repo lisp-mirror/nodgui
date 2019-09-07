@@ -103,12 +103,6 @@ Widgets offered are:
   (setf (history entry) nil)
   (setf (history-pos entry) -1))
 
-(defmacro try-unicode (char-name fallback)
-  #+(or :sb-unicode :unicode :utf-8)
-  (or (cl-unicode:character-named char-name :try-lisp-names-p t)
-      fallback)
-  #-(or :sb-unicode :unicode :utf-8) fallback)
-
 (defun left-parens-ornament ()
   (try-unicode "MEDIUM_LEFT_PARENTHESIS_ORNAMENT" #\( ))
 
@@ -1182,24 +1176,6 @@ Widgets offered are:
   (lambda ()
     (setf (universal-timestamp date-object) (get-universal-time))
     (date-refresh date-object)))
-
-(defun right-arrow ()
-  (string (try-unicode "RIGHTWARDS_BLACK_ARROW" ">")))
-
-(defun left-arrow ()
-  (string (try-unicode "LEFTWARDS_BLACK_ARROW" "<")))
-
-(defun double-right-arrow ()
-  (string (try-unicode "U2BEE" ">>")))
-
-(defun double-left-arrow ()
-  (string (try-unicode "U2BEC" "<<")))
-
-(defun big-dot ()
-  (string (try-unicode "BLACK_LARGE_CIRCLE" ".")))
-
-(defun bullet ()
-  (string (try-unicode "BULLET" "*")))
 
 (defun password-char-placeholder ()
   (bullet))

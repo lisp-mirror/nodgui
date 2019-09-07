@@ -111,3 +111,20 @@ system for this wrapper to works"))
 
 Tklib (https://core.tcl-lang.org/tklib/home) *must*  be installed on a
 system for this wrapper to works"))
+
+(defpackage :nodgui.tklib.swaplist
+  (:use :cl
+        :alexandria
+        :cl-ppcre
+        :nodgui.event-parser
+        :nodgui.sanitize
+        :nodgui.tcl-emitter
+        :nodgui.utils
+        :nodgui)
+  (:shadow :alexandria :rotate)
+  (:export
+   :make-swaplist)
+  (:documentation "Wrapper for swaplib in tklib
+(https://core.tcl-lang.org/tklib/doc/trunk/embedded/www/tklib/files/modules/swaplist/swaplist.html)
+Tklib (https://core.tcl-lang.org/tklib/home) *must*  be installed on a
+system for this wrapper to works"))
