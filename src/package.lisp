@@ -192,6 +192,7 @@
         :nodgui.constants
         :nodgui.utils)
   (:export
+   :escape-~
    :tkescape
    :tkescape2
    :make-protect-escape

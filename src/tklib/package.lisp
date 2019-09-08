@@ -76,17 +76,19 @@ system for this wrapper to works"))
    :+comp-xyplot-bottomaxis+
    :+comp-xyplot-background+
    :+comp-xyplot-mask+
-   :make-series
-   :series-handle
-   :series-xs
-   :series-ys
-   :series-legend
-   :series-color
-   :make-dot-series
-   :dot-series-size
-   :dot-series-errors
-   :dot-series-bind-event
-   :dot-series-callback
+   :series
+   :handle
+   :xs
+   :ys
+   :legend
+   :color
+   :dot-series
+   :size
+   :errors
+   :bind-event
+   :callback
+   :bar-series
+   :width
    :configure-plot-style
    :plot
    :handle
@@ -104,6 +106,9 @@ system for this wrapper to works"))
    :draw-on-canvas
    :xy-plot
    :dot-plot
+   :bar-chart
+   :x-labels
+   :x-label-angle
    :bind-last
    :bind-series)
   (:documentation "Wrapper for a subset of plotchart in tklib

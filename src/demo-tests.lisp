@@ -134,6 +134,10 @@
                                                :text    "(tklib) scatter plot"
                                                :command #'(lambda ()
                                                             (demo-tklib-dot-plot))))
+           (demo-tklib-bar-plot (make-instance 'button
+                                               :text    "(tklib) histogram plot"
+                                               :command #'(lambda ()
+                                                            (demo-tklib-bar-plot))))
            (demo-tklib-swaplist (make-instance 'button
                                                :text    "(tklib) swaplist"
                                                :command #'(lambda ()
@@ -176,8 +180,9 @@
       (grid demo-tklib-calendar      9 0  :sticky :nswe)
       (grid demo-tklib-notify        9 1  :sticky :nswe)
       (grid demo-tklib-dot-plot      9 2  :sticky :nswe)
-      (grid demo-tklib-swaplist      10 0 :sticky :nswe)
-      (grid demo-tklib-equalizer-bar 10 1 :sticky :nswe)
+      (grid demo-tklib-bar-plot      10 0 :sticky :nswe)
+      (grid demo-tklib-swaplist      10 1 :sticky :nswe)
+      (grid demo-tklib-equalizer-bar 10 2 :sticky :nswe)
       (grid b-quit                   11 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
@@ -593,7 +598,7 @@
   (with-nodgui ()
     (let ((b (make-instance 'button :text " a button [a] :)")))
       (pack b)
-      (setf (text b) " )} [eee] ")
+      (setf (text b) " )} ~[eee]~ ")
       (flush-wish))))
 
 ;;; treeview tests
@@ -916,18 +921,20 @@
                                         a
                                         (event-x event)
                                         (event-y event)))))
-           (all-series (list (nodgui.tklib.plot:make-dot-series :xs     '(10 20 30)
-                                                                :ys     '(20 40 60)
-                                                                :errors '(1.5 0.5 2.5)
-                                                                :legend "first"
-                                                                :color  "#ff00ff"
-                                                                :callback (funcall series-callback
-                                                                                   :pink))
-                             (nodgui.tklib.plot:make-dot-series :xs     '(10 20 30)
-                                                                :ys     '(60 40 20)
-                                                                :legend "second"
-                                                                :callback (funcall series-callback
-                                                                                   :red))))
+           (all-series (list (make-instance 'nodgui.tklib.plot:dot-series
+                                            :xs     '(10 20 30)
+                                            :ys     '(20 40 60)
+                                            :errors '(1.5 0.5 2.5)
+                                            :legend "first"
+                                            :color  "#ff00ff"
+                                            :callback (funcall series-callback
+                                                               :pink))
+                             (make-instance 'nodgui.tklib.plot:dot-series
+                                            :xs     '(10 20 30)
+                                            :ys     '(60 40 20)
+                                            :legend "second"
+                                            :callback (funcall series-callback
+                                                               :red))))
            (plot       (make-instance 'nodgui.tklib.plot:dot-plot
                                       :all-series all-series)))
       (grid canvas 0 0 :sticky :news)
@@ -970,3 +977,23 @@
                                                         (* 10.0 i)))))))
                           (animate)))))
         (animate)))))
+
+(defun demo-tklib-bar-plot ()
+  (with-nodgui ()
+    (let* ((canvas          (make-canvas nil :width  800 :height 600))
+           (all-series (list (make-instance 'nodgui.tklib.plot:bar-series
+                                            :ys  '(20 40 60)
+                                            :legend "first"
+                                            :color  "#ff00ff")
+                             (make-instance 'nodgui.tklib.plot:bar-series
+                                            :ys     '(60 40)
+                                            :legend "second")))
+           (plot       (make-instance 'nodgui.tklib.plot:bar-chart
+                                      :x-labels '("~A label~" "B" "C")
+                                      :all-series all-series)))
+      (grid canvas 0 0 :sticky :news)
+      (nodgui.tklib.plot:draw-on-canvas plot canvas)
+      (bind plot #$<ButtonPress-1>$ (lambda (event)
+                                      (format t "click on plot x: ~a y: ~a~%"
+                                              (event-x event)
+                                              (event-y event)))))))

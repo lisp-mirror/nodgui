@@ -35,39 +35,92 @@
                     leftaxis rightaxis bottomaxis
                     background mask)
 
-(defstruct series
-  "keeps a set of data
-- handle  the internal identifier of this series (do not touch it!);
-- xs:     a list of x for each point of this series;
-- ys:     a list of x for each point of this series;
-- legend: a descriptive label (shown on the plot) for this series;
-- color:  plotted color of each datum.
-"
-  handle
-  (xs     '())
-  (ys     '())
-  (legend "")
-  (color  #%red%))
+(defclass series ()
+  ((handle
+    :initform nil
+    :initarg  :handle
+    :accessor handle
+    :documentation  "the internal  identifier of  this series  (do not
+    touch it!)")
+  (xs
+   :initform '()
+   :initarg  :xs
+   :accessor xs
+   :documentation "a list of x for each point of this series")
+  (ys
+   :initform '()
+   :initarg  :ys
+   :accessor ys
+   :documentation "a list of y for each point of this series")
+  (legend
+   :initform ""
+   :initarg  :legend
+   :accessor legend
+   :documentation "a  descriptive label (shown  on the plot)  for this
+   series")
+  (color
+   :initform #%red%
+   :initarg  :color
+   :accessor color
+   :documentation "plotted color of each datum"))
+  (:documentation "keeps a set of data"))
 
-(defstruct (dot-series
-             (:include series))
-"represent a point for a scatter plot (see: 'series')
-- size:       radius of the point;
-- error:      a list error for each point of the series;
-- bind-event: the event a point of a series is reactve to;
-- callback:   the function called (with an 'event' struct as parameter) when a bind-event is fired.
-"
-  (size       3.0)
-  (errors     '())
-  (bind-event #$<ButtonPress-1>$)
-  (callback   nil))
+(defclass event-responsive-series ()
+  ((bind-event
+    :initform #$<ButtonPress-1>$
+    :initarg  :bind-event
+    :accessor bind-event
+    :documentation "the event a point of a series is reactve to")
+   (callback
+    :initform nil
+    :initarg  :callback
+    :accessor callback
+    :documentation  "the function  called (with  an 'event'  struct as
+    parameter) when a bind-event is fired."))
+  (:documentation "A series  that respond to user  events (e.g. ckick
+   with a mouse button)"))
 
-(defclass plot ()
+(defclass dot-series (series event-responsive-series)
+  ((size
+    :initform 3.0
+    :initarg  :size
+    :accessor size
+    :documentation "radius of the point")
+   (errors
+    :initform '()
+    :initarg  :errors
+    :accessor errors
+    :documentation "a list of statistical  error for each point of the
+    series"))
+  (:documentation  "represents  a  series  of  point  for  a  scatter
+   plot (see: 'series')"))
+
+(defclass bar-series (series) ()
+  (:documentation "A series of data displayed in bar form"))
+
+(defclass series-holder ()
+  ((all-series
+    :initform '()
+    :initarg  :all-series
+    :accessor all-series
+    :documentation "The  data of  this plot, must  be instance  of the
+    struct 'series' or derived")))
+
+(defclass title-holder ()
+  ((title
+    :initform "plot title"
+    :initarg  :title
+    :accessor title
+    :documentation "A descriptive text of the plot")))
+
+(defclass handle-holder ()
   ((handle
     :initform nil
     :accessor handle
-    :documentation "The internal identifier of this series (do not touch it!)")
-   (x-text
+    :documentation "The internal identifier of this series (do not touch it!)")))
+
+(defclass plot (series-holder title-holder handle-holder)
+  ((x-text
     :initform "x title"
     :initarg  :x-text
     :accessor x-text
@@ -96,31 +149,41 @@
     :initform "plot subtitle"
     :initarg  :subtitle
     :accessor subtitle
-    :documentation "More descriptive text of the plot")
-   (all-series
-    :initform '()
-    :initarg  :all-series
-    :accessor all-series
-    :documentation "The data of this plot, must be instance of the struct 'series' or derived")))
+    :documentation "More descriptive text of the plot")))
 
-(defstruct axis-conf
-  "represents an axis:
-- min:         minimum value for the axis;
-- max:         maximum value for the axis;
-- tick-length: length of the axis tick.
-"
-  (min)
-  (max)
-  (step)
-  (tick-length nil))
+(defclass axis-conf ()
+  ((minimum
+    :initform      0.0
+    :initarg       :minimum
+    :accessor      minimum
+    :documentation "minimum value for the axis")
+   (maximum
+    :initform 1.0
+    :initarg  :maximum
+    :accessor maximum
+    :documentation "maximum value for the axis")
+   (ticks-step
+    :initform 0.1
+    :initarg  :ticks-step
+    :accessor ticks-step
+    :documentation "Tick's step")
+   (tick-length
+    :initform 5
+    :initarg  :tick-length
+    :accessor tick-length
+    :documentation "length of the axis tick"))
+   (:documentation "represents an axis"))
 
-(defmethod initialize-instance :after ((object plot) &key &allow-other-keys)
+(defun send-wish-preamble-code ()
   (require-tcl-package +plotchart-library-name+)
   (nodgui::send-wish
    (defproc sendeventplot (x y fun ({+ other {+ }+ }))
      (sendevent $fun
                 $x " " $y
                 {?} {?} {?} {?} {?} {?} {?} {?}))))
+
+(defmethod initialize-instance :after ((object plot) &key &allow-other-keys)
+  (send-wish-preamble-code))
 
 (defgeneric draw-on-canvas (object destination &key &allow-other-keys))
 
@@ -132,11 +195,11 @@
 
 (defclass xy-plot (plot)
   ((x-axis-conf
-    :initform (make-axis-conf :min 0.0 :max 100.0 :step 10.0)
+    :initform (make-instance 'axis-conf :minimum 0.0 :maximum 100.0 :ticks-step 10.0)
     :initarg  :x-axis-conf
     :accessor x-axis-conf)
    (y-axis-conf
-    :initform (make-axis-conf :min 0.0 :max 100.0 :step 10.0)
+    :initform (make-instance 'axis-conf :minimum 0.0 :maximum 100.0 :ticks-step 10.0)
     :initarg  :y-axis-conf
     :accessor y-axis-conf))
   (:documentation "A plot with the data representing points in the x/y plane."))
@@ -181,14 +244,14 @@ example: (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength 10)
                    (y-subtext   y-subtext)
                    (title       title)
                    (subtitle    subtitle)) object
-    (let* ((x-min         (axis-conf-min  x-axis-conf))
-           (x-max         (axis-conf-max  x-axis-conf))
-           (x-step        (axis-conf-step x-axis-conf))
-           (x-tick-length (axis-conf-tick-length x-axis-conf))
-           (y-min         (axis-conf-min  y-axis-conf))
-           (y-max         (axis-conf-max  y-axis-conf))
-           (y-step        (axis-conf-step y-axis-conf))
-           (y-tick-length (axis-conf-tick-length y-axis-conf))
+    (let* ((x-min         (minimum     x-axis-conf))
+           (x-max         (maximum     x-axis-conf))
+           (x-step        (ticks-step  x-axis-conf))
+           (x-tick-length (tick-length x-axis-conf))
+           (y-min         (minimum     y-axis-conf))
+           (y-max         (maximum     y-axis-conf))
+           (y-step        (ticks-step  y-axis-conf))
+           (y-tick-length (tick-length y-axis-conf))
            (*suppress-newline-for-tcl-statements*             t)
            (*add-space-after-emitted-unspecialized-element*   nil))
       ;; create
@@ -274,16 +337,16 @@ example:
     (let ((all-error-handlers '()))
       (format-wish (tclize `(,handle legendconfig -legendtype rectangle)))
       (loop for series in all-series do
-           (setf (series-handle series) (strcat "series_" (nodgui::create-name)))
-           (let* ((size-as-num        (dot-series-size series))
+           (setf (handle series) (strcat "series_" (nodgui::create-name)))
+           (let* ((size-as-num        (size series))
                   (size               (nodgui::process-coords size-as-num))
-                  (series-handle      (series-handle   series))
-                  (xs                 (series-xs       series))
-                  (ys                 (series-ys       series))
-                  (errors             (or (dot-series-errors series)
+                  (series-handle      (handle   series))
+                  (xs                 (xs       series))
+                  (ys                 (ys       series))
+                  (errors             (or (errors series)
                                           (make-fresh-list (length xs) 0.0)))
-                  (color              (series-color    series))
-                  (legend             (series-legend   series)))
+                  (color              (color    series))
+                  (legend             (legend   series)))
              (format-wish (tclize `(,handle
                                     dotconfig
                                     ,series-handle " " -colour ,#[color ] " "
@@ -310,11 +373,11 @@ example:
                     (format-wish (tclize `(,handle " " dot " "  ,series-handle " "
                                                    {+ ,x } {+ ,y }
                                                    ,size)))
-                    (when (dot-series-callback series)
+                    (when (callback series)
                       (bind-last object
                                  series
-                                 (dot-series-bind-event series)
-                                 (dot-series-callback series)))))
+                                 (bind-event series)
+                                 (callback series)))))
              (format-wish (tclize `(,handle
                                     legend
                                     ,series-handle " " ,#[legend ])))))
@@ -327,22 +390,22 @@ example:
 
 (defgeneric bind-series (object series event fn))
 
-(defmethod bind-last ((object dot-plot) (series series) event fn)
+(defmethod bind-last (object (series event-responsive-series) event fn)
   "Set the callback bound to the last added point"
   (let ((name (nodgui::create-name))
         (*suppress-newline-for-tcl-statements* t))
     (with-accessors ((handle handle)) object
       (nodgui::add-callback name fn)
       (format-wish (tclize `(,handle  " "
-                                      bindlast ,(series-handle series) " "
+                                      bindlast ,(handle series) " "
                                       ,event        " "
                                       {sendeventplot ,name   " "
-                                      ,(series-handle series) }))))))
+                                      ,(handle series) }))))))
 
-(defmethod bind-series ((canvas canvas) (series series) event fn)
+(defmethod bind-series ((canvas canvas) (series event-responsive-series) event fn)
   "Set the callback bound to the last added point"
   (tagbind canvas
-           (strcat +plotchart-data-tag+ "_" (series-handle series))
+           (strcat +plotchart-data-tag+ "_" (handle series))
            event
            fn))
 
@@ -358,3 +421,89 @@ example:
                              bindplot ,event        " "
                              {sendeventplot ,name   " " ,handle })))
     object)))
+
+(defclass bar-chart (series-holder title-holder handle-holder)
+  ((x-labels
+    :initform '()
+    :initarg  :x-labels
+    :accessor x-labels)
+   (y-axis-conf
+    :initform (make-instance 'axis-conf :minimum 0.0 :maximum 100.0 :ticks-step 10.0)
+    :initarg  :y-axis-conf
+    :accessor y-axis-conf)
+   (x-label-angle
+    :initform 0
+    :initarg  :x-label-angle
+    :accessor x-label-angle)))
+
+(defmethod initialize-instance :after ((object bar-chart) &key &allow-other-keys)
+  (send-wish-preamble-code))
+
+(define-condition plot-error (simple-error) ())
+
+(defun check-barchart-data (plot)
+  (with-accessors ((handle handle)
+                   (y-axis-conf y-axis-conf)
+                   (x-labels    x-labels)
+                   (title       title)
+                   (all-series  all-series)) plot
+    (let ((max-num-data (apply #'max
+                               (mapcar (lambda (a) (length (ys a)))
+                                       all-series))))
+      (when (< (length x-labels)
+               max-num-data)
+        (error 'plot-error
+               :format-control (strcat "Barchart error: you are providing a number "
+                                       "of x labels that is less of the maxmum number of "
+                                       "data in all the series. "
+                                       "If you are providing two labes at least a single series "
+                                       "must provide two values in its 'ys' slot"))))))
+
+(defmethod draw-on-canvas ((object bar-chart) (destination canvas) &key &allow-other-keys)
+  (with-accessors ((handle handle)
+                   (y-axis-conf   y-axis-conf)
+                   (x-labels      x-labels)
+                   (x-label-angle x-label-angle)
+                   (title         title)
+                   (all-series    all-series)) object
+    (check-barchart-data object)
+    (let* ((y-min           (minimum    y-axis-conf))
+           (y-max           (maximum    y-axis-conf))
+           (y-step          (ticks-step y-axis-conf))
+           (actual-x-labels (mapcar (lambda (a) (strcat a " ")) x-labels))
+           (*suppress-newline-for-tcl-statements*             t)
+           (*add-space-after-emitted-unspecialized-element*   nil))
+      (format-wish (tclize `(senddata ["::Plotchart::createBarchart"     " "
+                                      {+,#[(widget-path destination) ]}  " "
+                                      {+ ,@(loop for label in actual-x-labels collect
+                                                `(\"+ ,#[label ] \"))
+                                      }
+                                      { ,#[y-min ] " " ,#[y-max ] " " ,#[y-step ] }
+                                      {+ ,(length all-series) }
+                                      -xlabelangle ,(process-coords x-label-angle)
+                                      ])))
+      ;; get the handle (used below)
+      (setf handle (read-data))
+      ;; add title
+      (format-wish (tclize `(,handle title {+ ,title })))
+      (loop for series in all-series do
+           (setf (handle series) (strcat "series_" (nodgui::create-name)))
+           (let ((*suppress-newline-for-tcl-statements* t)
+                 (ys (process-coords (ys series))))
+             (format-wish (tclize `(,handle " "
+                                            plot " "  ,(handle series) " "
+                                            {+ ,ys }
+                                            ,(color series))))
+             ;; even  if  the  doc  says  that  bindlast  is  a  valid
+             ;; subcommand it does not seems  to work here, where am i
+             ;; wrong?
+             ;; (when (callback series)
+             ;;   (bind-last object
+             ;;              series
+             ;;              (bind-event series)
+             ;;              (callback series)))
+             (format-wish (tclize `(,handle
+                                    legend
+                                    ,(handle series) " "
+                                    ,#[(legend series) ])))))
+      object)))

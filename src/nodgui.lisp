@@ -93,7 +93,7 @@ can be passed to AFTER-CANCEL"
   (format nil "w~A" (get-counter)))
 
 (defun create-name ()
-  "create unique widget name, append unique number to 'w'"
+  "create unique widget name, append unique number to 'n'"
   (format nil "n~a" (encode-base-52 (get-counter))))
 
 (defun create-path (master name)
