@@ -642,12 +642,12 @@ set y [winfo y ~a]
   (let ((*suppress-newline-for-tcl-statements* t))
     (format-wish (tclize `(senddata [ font measure
                                     ,(empty-string-if-nil font-spec
-                                         `({+ ,#[font-spec ]} " "))
+                                         `({+ ,font-spec } " "))
                                     ,(empty-string-if-nil display-of
-                                         `(-displayof  {+ ,#[(widget-path display-of) ]}
+                                         `(-displayof  {+ ,(widget-path display-of) }
                                            " "))
                                     ,(empty-string-if-nil text
-                                         `({+ ,#[text ]+ }))
+                                         `({+ ,text }))
                                     ])))
     (read-data)))
 
@@ -660,7 +660,7 @@ set y [winfo y ~a]
 (defun font-families (&optional (display-of nil))
   (format-wish (tclize `(senddatastrings [ font families " "
                                          ,(empty-string-if-nil display-of
-                                              `(-displayof  {+ ,#[(widget-path display-of) ]}
+                                              `(-displayof  {+ ,(widget-path display-of) }
                                                 " "))
                                          ])))
   (read-data))

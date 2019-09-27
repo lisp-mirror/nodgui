@@ -135,7 +135,7 @@
                                               -icon    error
                                               -type    ok
                                               -message $err%)))
-               #[name ]))
+               name))
 
 ;;; setup of wish
 ;;; put any tcl function definitions needed for running nodgui here

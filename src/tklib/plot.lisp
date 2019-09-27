@@ -261,9 +261,9 @@ example: (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength 10)
         (configure-plot-style 'xyplot +comp-xyplot-leftaxis+   'ticklength y-tick-length))
       (format-wish (tclize `(senddata
                              ["::Plotchart::createXYPlot"      " "
-                             {+,#[(widget-path destination) ]}  " "
-                             [list ,#[x-min ] " " ,#[x-max ] " " ,#[x-step ]]
-                             [list ,#[y-min ] " " ,#[y-max ] " " ,#[y-step ]]])))
+                             {+ ,(widget-path destination)}  " "
+                             [list ,x-min " " ,x-max " " ,x-step ]
+                             [list ,y-min " " ,y-max " " ,y-step ]])))
       ;; get the handle (used below)
       (setf handle (read-data))
       ;; add title
@@ -294,7 +294,7 @@ example: (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength 10)
                                              ,x-start " " ,y-start   " "
                                              ,x-end   " " , y-end    " "
                                              ,(empty-string-if-nil color
-                                                  `(-fill  {+ ,#[color ]}))
+                                                  `(-fill  {+ ,color }))
                                              ])))
              (read-data)))
       (list (draw-line x start-bar x end-bar)
@@ -349,11 +349,11 @@ example:
                   (legend             (legend   series)))
              (format-wish (tclize `(,handle
                                     dotconfig
-                                    ,series-handle " " -colour ,#[color ] " "
+                                    ,series-handle " " -colour ,color " "
                                     -outline on)))
              (format-wish (tclize `(,handle
                                     dataconfig
-                                    ,series-handle " " -colour ,#[color ])))
+                                    ,series-handle " " -colour ,color)))
              (loop
                 for x   in (split " " (nodgui::process-coords xs))
                 for y   in (split " " (nodgui::process-coords ys))
@@ -380,7 +380,7 @@ example:
                                  (callback series)))))
              (format-wish (tclize `(,handle
                                     legend
-                                    ,series-handle " " ,#[legend ])))))
+                                    ,series-handle " " ,legend)))))
       ;; lower all errors bars
       (loop for error-handle in all-error-handlers do
            (nodgui::item-lower destination error-handle +plotchart-data-tag+))))
@@ -474,11 +474,11 @@ example:
            (*suppress-newline-for-tcl-statements*             t)
            (*add-space-after-emitted-unspecialized-element*   nil))
       (format-wish (tclize `(senddata ["::Plotchart::createBarchart"     " "
-                                      {+,#[(widget-path destination) ]}  " "
+                                      {+,(widget-path destination) }     " "
                                       {+ ,@(loop for label in actual-x-labels collect
                                                 `(\"+ ,label \"))
                                       }
-                                      { ,#[y-min ] " " ,#[y-max ] " " ,#[y-step ] }
+                                      { ,y-min " " ,y-max " " ,y-step }
                                       {+ ,(length all-series) }
                                       -xlabelangle ,(process-coords x-label-angle)
                                       ])))
@@ -505,5 +505,5 @@ example:
              (format-wish (tclize `(,handle
                                     legend
                                     ,(handle series) " "
-                                    ,#[(legend series) ])))))
+                                    ,(legend series))))))
       object)))

@@ -56,14 +56,14 @@
   (read-data))
 
 (defmethod set-selection ((object entry) from to)
-  (format-wish (tclize `(,#[widget-path object ]
-                                        " selection range "
-                                        ,#[down from ] " "
-                                        ,#[down to ])))
+  (format-wish (tclize `(,(widget-path object)
+                          " selection range "
+                          ,(down from)  " "
+                          ,(down to))))
   object)
 
 (defmethod set-cursor-index ((object entry) index)
-  (format-wish (tclize  `(,#[widget-path object ]
-                                         " icursor "
-                                         ,#[down index ])))
+  (format-wish (tclize  `(,(widget-path object)
+                           " icursor "
+                           ,(down index))))
   object)

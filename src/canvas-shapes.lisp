@@ -95,11 +95,11 @@ outline-width: the width in pixel of the outline of this polygon"
                                     create polygon
                                     ,(process-coords coords) " "
                                     ,(empty-string-if-nil fill-color
-                                         `(-fill  {+ ,#[fill-color ] }))
+                                         `(-fill  {+ ,fill-color }))
                                     ,(empty-string-if-nil outline-color
-                                         `(-outline  {+ ,#[outline-color ] }))
+                                         `(-outline  {+ ,outline-color }))
                                     ,(empty-string-if-nil outline-width
-                                         `(-width  {+ ,#[outline-width ] }))
+                                         `(-width  {+ ,outline-width  }))
                                     ])))
     (read-data)))
 

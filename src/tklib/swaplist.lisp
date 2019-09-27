@@ -44,12 +44,12 @@
                              {+ ,right-list }
                              -embed
                              -reorder     true
-                             -llabel      {+ ,#[left-list-label       ] }
-                             -rlabel      {+ ,#[right-list-label      ] }
-                             -lbuttontext {+ ,#[to-left-button-label  ] }
-                             -rbuttontext {+ ,#[to-right-button-label ] }
-                             -dbuttontext {+ ,#[to-down-button-label  ] }
-                             -ubuttontext {+ ,#[to-up-button-label    ] })))))
+                             -llabel      {+ ,left-list-label       }
+                             -rlabel      {+ ,right-list-label      }
+                             -lbuttontext {+ ,to-left-button-label  }
+                             -rbuttontext {+ ,to-right-button-label }
+                             -dbuttontext {+ ,to-down-button-label  }
+                             -ubuttontext {+ ,to-up-button-label    })))))
   object)
 
 (defun make-swaplist (left-list right-list

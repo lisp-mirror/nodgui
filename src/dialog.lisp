@@ -70,14 +70,14 @@
         (*suppress-newline-for-tcl-statements* t))
     (format-wish (tclize `(senddatastring ["tk_getSaveFile "
                                           -filetypes  ,(rem-trouble-chars-and-then-wrap files) " "
-                                          -title      \"+ ,#[title ] \"
-                                          -parent     ,#[if parent
-                                                            (widget-path parent)
-                                                            (widget-path *tk*) ] " "
+                                          -title      \"+ ,title  \"
+                                          -parent     ,(if parent
+                                                           (widget-path parent)
+                                                           (widget-path *tk*)) " "
                                           ,(empty-string-if-nil initial-file
-                                               `(-initialfile  \"+ ,#[initial-file ] \" " "))
+                                               `(-initialfile  \"+ ,initial-file \" " "))
                                           ,(empty-string-if-nil initial-dir
-                                               `(-initialdir \"+ ,#[initial-dir ] \"))
+                                               `(-initialdir \"+ ,initial-dir \"))
                                           ])))
     (read-data)))
 

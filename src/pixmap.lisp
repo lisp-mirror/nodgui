@@ -293,14 +293,14 @@ range (0-1.0]), scaling use nearest-neighbor."
       res))
 
 (defun repeat-periodic-coord (val max)
-  (if (< val 0)
-      (+ max
-         (* max
-            (- (/ val max)
-               (truncate (/ val max)))))
-      (+ (mod (floor val) max)
-         (- val
-            (truncate val)))))
+  (let ((fract  (- (abs val)
+                   (truncate (abs val)))))
+    (if (< val 0)
+        (+ (1- max)
+           (- (rem (floor (abs val)) max))
+           (- fract))
+        (+ (rem (floor val) max)
+           fract))))
 
 (defun bilinear-interpolation (matrix x y
                                &key (interpolate-fn #'interpolate)

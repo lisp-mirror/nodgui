@@ -51,7 +51,7 @@ fine too. :)"
     ;; *accept-garbage-as-event-p* to non nil to discard this event
     (format-wish (tclize `(senddata
                            ["::notifywindow::notifywindow" " "
-                           { ,#[message ] }     " "
+                           { ,message }     " "
                            ,(empty-string-if-nil image
-                                `([ image create photo -data ,#[(nodgui::data image) ]]])))))
+                                `([ image create photo -data ,(nodgui::data image)]])))))
     (process-events t)))

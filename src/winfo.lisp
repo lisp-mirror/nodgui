@@ -55,5 +55,5 @@
     (values (first vals) (second vals))))
 
 (defun toplevel-pathname (widget)
-  (format-wish (tclize `(senddatastring [winfo toplevel ,#[widget-path widget ] ])))
+  (format-wish (tclize `(senddatastring [winfo toplevel ,(widget-path widget) ])))
   (read-data))

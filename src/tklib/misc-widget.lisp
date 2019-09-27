@@ -28,21 +28,21 @@
   (with-accessors ((widget-path widget-path)
                    (name        name)) object
     (with-no-emitted-newline
-      (format-wish (tclize `(global ,#[name ] " ; set " ,#[name ] " " {+ })))))
+      (format-wish (tclize `(global ,name " ; set " ,name " " {+ })))))
   object)
 
 (defmethod value ((object control-widget))
   (with-accessors ((widget-path widget-path)
                    (name        name)) object
     (with-no-emitted-newline
-      (format-wish (tclize `(senddata ,#[widget-path ] " " get)))
+      (format-wish (tclize `(senddata ,widget-path " " get)))
       (read-data))))
 
 (defmethod (setf value) (new-value (object control-widget))
   (with-accessors ((widget-path widget-path)
                    (name        name)) object
     (with-no-emitted-newline
-      (format-wish (tclize `(,#[widget-path ] " set " { ,(process-coords new-value) }))))))
+      (format-wish (tclize `(,widget-path " set " { ,(process-coords new-value) }))))))
 
 (defclass equalizer-bar (control-widget) ())
 
@@ -64,19 +64,19 @@
                    (name        name)) object
     (with-no-emitted-newline
       (format-wish (tclize `("::controlwidget::equalizerBar "
-                             ,#[widget-path ]  " "
+                             ,widget-path  " "
                              -variable
-                             ,#[name ]         " "
+                             ,name         " "
                              -number        ,(process-coords number)           " "
                              -from          ,(process-coords from)             " "
                              -to            ,(process-coords to)               " "
-                             -background    {+ ,#[background    ] }            " "
+                             -background    {+ ,background        }            " "
                              -height        ,(process-coords height)           " "
                              -width         ,(process-coords width)            " "
                              -barwidth      ,(process-coords bar-width)        " "
                              -segments      ,(process-coords segments)         " "
-                             -safecolor     {+ ,#[safe-color    ] }
-                             -warningcolor  {+ ,#[warning-color ] }
+                             -safecolor     {+ ,safe-color     }
+                             -warningcolor  {+ ,warning-color  }
                              -warninglevel  ,(process-coords warning-level)    " ")))))
   object)
 

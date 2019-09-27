@@ -77,4 +77,4 @@
 (defgeneric notebook-enable-traversal (nb))
 
 (defmethod notebook-enable-traversal ((nb notebook))
-  (format-wish (tclize `("ttk::notebook::enableTraversal " ,#[widget-path nb ]))))
+  (format-wish (tclize `("ttk::notebook::enableTraversal " ,(widget-path nb)))))

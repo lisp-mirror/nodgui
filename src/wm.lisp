@@ -144,11 +144,11 @@
 
 (defmethod transient ((toplevel widget) (master widget))
   (format-wish (tclize `(wm transient
-                            ,#[widget-path toplevel ] " "
-                            ,#[widget-path master ]))))
+                            ,(widget-path toplevel) " "
+                            ,(widget-path master)))))
 
 (defmethod transient ((toplevel widget) (master (eql nil)))
-  (format-wish (tclize `(wm transient ,#[widget-path toplevel ] " "  \"+ \"))))
+  (format-wish (tclize `(wm transient ,(widget-path toplevel) " "  \"+ \"))))
 
 (defmethod normalize ((tl widget))
   (format-wish "wm state ~a normal" (widget-path tl))
@@ -234,8 +234,8 @@
   tl)
 
 (defmethod icon-photo ((object widget) (photo photo-image))
-  (format-wish (tclize `(wm iconphoto ,#[widget-path object ] " "
-                            -default  ,#[widget-path photo ])))
+  (format-wish (tclize `(wm iconphoto ,(widget-path object) " "
+                            -default  ,(widget-path photo))))
   object)
 
 (defmethod set-wm-attrib ((toplevel toplevel) (attributes wm-attrib))
@@ -245,8 +245,8 @@
   (let ((*add-space-after-emitted-string* t))
     (format-wish (tclize `(wm attributes
                               ,toplevel
-                              -alpha      {+ ,#[down (wm-attrib-alpha      attributes) ] }
-                              -fullscreen {+ ,#[down (wm-attrib-fullscreen attributes) ] }
-                              -topmost    {+ ,#[down (wm-attrib-topmost    attributes) ] }
-                              -type       {+ ,#[down (wm-attrib-type       attributes) ] }
-                              -zoomed     {+ ,#[down (wm-attrib-zoomed     attributes) ] })))))
+                              -alpha      {+ ,(down (wm-attrib-alpha      attributes)) }
+                              -fullscreen {+ ,(down (wm-attrib-fullscreen attributes)) }
+                              -topmost    {+ ,(down (wm-attrib-topmost    attributes)) }
+                              -type       {+ ,(down (wm-attrib-type       attributes)) }
+                              -zoomed     {+ ,(down (wm-attrib-zoomed     attributes)) })))))

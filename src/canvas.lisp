@@ -337,7 +337,7 @@
           (tk-y (tk-number y)))
       (let ((*add-space-after-emitted-string* t))
         (format-wish (tclize `(,path moveto
-                                     ,#[down item-handle ] " "
+                                     ,(down item-handle) " "
                                      ,tk-x ,tk-y)))))))
 
 (defmethod itemdelete ((canvas canvas) (item integer))
@@ -514,11 +514,11 @@
                                ,(tk-number x)                  " "
                                ,(tk-number y)                  " "
                                ,(empty-string-if-nil font
-                                    `(-font    {+ ,#[font ] }  " "))
+                                    `(-font    {+ ,font }  " "))
                                -angle   ,(tk-number angle)     " "
-                               -justify {+ ,#[down justify ] } " "
-                               -anchor  {+ ,#[down anchor  ] } " "
-                               -text    {+ ,#[text ] } ])))
+                               -justify {+ ,(down justify) } " "
+                               -anchor  {+ ,(down anchor ) } " "
+                               -text    {+ ,text } ])))
       (read-data))))
 
 (defclass canvas-text (canvas-item) ())
@@ -565,10 +565,10 @@
                              ,(tk-number y0) " "
                              ,(tk-number x1) " "
                              ,(tk-number y1) " "
-                             -start  {+ ,#[down start  ] }
-                             -extent {+ ,#[down extent ] }
-                             -style  {+ ,#[down style  ] }
-                             -fill   {+ ,#[down fill   ] } ])))
+                             -start  {+ ,(down start  ) }
+                             -extent {+ ,(down extent ) }
+                             -style  {+ ,(down style  ) }
+                             -fill   {+ ,(down fill   ) } ])))
     (read-data)))
 
 (defclass canvas-arc (canvas-item)

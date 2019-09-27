@@ -58,7 +58,7 @@
 
 (defun %make-font (name size)
   (let* ((*suppress-newline-for-tcl-statements* t)
-         (actual-name                           (tclize `(,#[name ]))))
+         (actual-name                           (tclize `(,name))))
     (font-create actual-name :size size)))
 
 (defun make-calendar (&key
@@ -98,11 +98,11 @@ Parameters are:
   (with-no-emitted-newline
     (with-stringify-keyword
         (make-instance 'calendar
-                       :language       (tclize `(,#[language ]))
-                       :dateformat     (tclize `(,#[date-format ]))
-                       :firstday       (tclize `(,#[first-day ]))
-                       :highlightcolor (tclize `(,#[(rgb->tk highlight-color) ]))
-                       :shadecolor     (tclize `(,#[(rgb->tk shade-color) ]))
+                       :language       (tclize `(,language))
+                       :dateformat     (tclize `(,date-format))
+                       :firstday       (tclize `(,first-day))
+                       :highlightcolor (tclize `(,(rgb->tk highlight-color)))
+                       :shadecolor     (tclize `(,(rgb->tk shade-color)))
                        :font           font))))
 
 (defmethod (setf command) (val (object calendar))
