@@ -1148,7 +1148,9 @@
   (:export :*suppress-newline-for-tcl-statements*
            :*add-space-after-emitted-string*
            :*add-space-after-emitted-unspecialized-element*
+           :*stringify-keyword*
            :with-no-emitted-newline
+           :with-stringify-keyword
            :tcl
            :tcl-str
            :nodgui-force-escape-syntax

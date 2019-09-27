@@ -17,24 +17,7 @@
 (in-package :nodgui.sanitize)
 
 (defun escape-~ (text)
-  (when text
-    (let ((res  (make-adjustable-string))
-          (skip nil))
-      (if (and (= (length text) 1)
-               (char= (first-elt text) #\~))
-          (setf res "~~")
-          (loop
-             for pos from 0 by 1
-             for current-char across text  do
-               (vector-push-extend current-char res)
-               (if skip
-                   (setf skip nil)
-                   (when (char= #\~ current-char)
-                     (if (or (= pos (1- (length text)))
-                             (not (char= #\~ (elt text (1+ pos)))))
-                         (vector-push-extend #\~ res)
-                         (setf skip t))))))
-      res)))
+  (cl-ppcre:regex-replace-all "~" text "~~"))
 
 (defun %tkescape (text escapable-chars)
   (unless (stringp text)

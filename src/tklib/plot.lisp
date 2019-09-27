@@ -476,7 +476,7 @@ example:
       (format-wish (tclize `(senddata ["::Plotchart::createBarchart"     " "
                                       {+,#[(widget-path destination) ]}  " "
                                       {+ ,@(loop for label in actual-x-labels collect
-                                                `(\"+ ,#[label ] \"))
+                                                `(\"+ ,label \"))
                                       }
                                       { ,#[y-min ] " " ,#[y-max ] " " ,#[y-step ] }
                                       {+ ,(length all-series) }

@@ -15,11 +15,13 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
-  (defparameter *suppress-newline-for-tcl-statements* nil)
+  (defparameter *suppress-newline-for-tcl-statements*            nil)
 
-  (defparameter *add-space-after-emitted-string*      nil)
+  (defparameter *add-space-after-emitted-string*                 nil)
 
   (defparameter *add-space-after-emitted-unspecialized-element*  t)
+
+  (defparameter *stringify-keyword*                              nil)
 
   (defparameter *sanitize*                                       nil)
 
@@ -33,7 +35,10 @@
 
   (defstruct (tcl/list (:include tcl/code)))
 
-  (defstruct (tcl/keyword (:include tcl/code)))
+  (defstruct (tcl/keyword (:include tcl/code))
+    (raw-keyword  :none)
+    (spaces-after "")
+    (as-string-p  nil))
 
   (defstruct (tcl/< (:include tcl/code)))
 
@@ -41,6 +46,10 @@
 
   (defmacro with-no-emitted-newline (&body body)
     `(let ((*suppress-newline-for-tcl-statements* t))
+       ,@body))
+
+  (defmacro with-stringify-keyword (&body body)
+    `(let ((*stringify-keyword* t))
        ,@body))
 
   (defun tag (element)
@@ -102,13 +111,26 @@
              (if as-string-p
                  (format nil "\"~a\"" (regex-replace "%$" (subseq key 1) ""))
                  (format nil "~a"     (subseq key 1))))
+            (keywordp
+             (->tcl (make-tcl/keyword :data         res-raw
+                                      :raw-keyword  code
+                                      :spaces-after spaces-after
+                                      :as-string-p  as-string-p)))
             (t
-             (if (or keywordp
-                     as-string-p)
-                 (if as-string-p
-                     (format nil "\"~a\"~a" (regex-replace "%$" res-raw "") spaces-after)
-                     (format nil "\"~a\"~a" res-raw spaces-after))
+             (if as-string-p
+                 (format nil "\"~a\"~a" (regex-replace "%$" res-raw "") spaces-after)
                  (format nil "~a~a" res-raw spaces-after))))))))
+
+  (defmethod ->tcl ((code tcl/keyword))
+    (if *stringify-keyword*
+        (to-s (tcl/keyword-raw-keyword code))
+        (let ((no-colon (subseq (tcl/keyword-data code) 1))
+              (spaces   (tcl/keyword-spaces-after code)))
+          (if (tcl/keyword-as-string-p code)
+              (format nil "\"~a\"~a"
+                      (regex-replace "%$" no-colon "")
+                      spaces)
+              (format nil "~a~a" (tcl/keyword-data code) spaces)))))
 
   (defmacro %evl (body)
     (with-gensyms (res)
@@ -174,10 +196,14 @@
           (progn ,@body)))
 
   (defun %to-safe-format-string (a)
-    (cl-ppcre:regex-replace-all "~" (to-s a) "~~"))
+    a)
 
   (defun force-string-read-macro (stream char ign)
     (declare (ignore char ign))
+    (format *error-output*
+            (strcat "[NOTICE] The #[ ... ] reader macro is useless "
+                    "and will be removed in a future releases of "
+                    "the library.~%"))
     (let ((raw (read-delimited-list #\] stream)))
       (if (= (length raw) 1)
           `(%to-safe-format-string ,(first raw))
@@ -189,7 +215,7 @@
 
   (defmacro tclize (statement &key (sanitize t))
     `(let ((*sanitize* ,sanitize))
-       (stringify-all (flatten (->tcl ,statement)))))
+       (escape-~ (stringify-all (flatten (->tcl ,statement))))))
 
   (defmacro empty-string-if-nil (value statement)
     `(if ,value

@@ -95,14 +95,15 @@ Parameters are:
   (assert (or (eq first-day :monday)
               (eq first-day :sunday)))
   (require-tcl-package +calendar-library-name+)
-  (let ((*suppress-newline-for-tcl-statements* t))
-    (make-instance 'calendar
-                   :language       (tclize `(,#[language ]))
-                   :dateformat     (tclize `(,#[date-format ]))
-                   :firstday       (tclize `(,#[first-day ]))
-                   :highlightcolor (tclize `(,#[(rgb->tk highlight-color) ]))
-                   :shadecolor     (tclize `(,#[(rgb->tk shade-color) ]))
-                   :font           font)))
+  (with-no-emitted-newline
+    (with-stringify-keyword
+        (make-instance 'calendar
+                       :language       (tclize `(,#[language ]))
+                       :dateformat     (tclize `(,#[date-format ]))
+                       :firstday       (tclize `(,#[first-day ]))
+                       :highlightcolor (tclize `(,#[(rgb->tk highlight-color) ]))
+                       :shadecolor     (tclize `(,#[(rgb->tk shade-color) ]))
+                       :font           font))))
 
 (defmethod (setf command) (val (object calendar))
   "Set the function to be called when a day is selected (by clicking),
