@@ -1150,7 +1150,9 @@
            :*add-space-after-emitted-unspecialized-element*
            :*stringify-keyword*
            :with-no-emitted-newline
+           :with-no-emitted-spaces
            :with-stringify-keyword
+           :with-no-escape-tilde
            :tcl
            :tcl-str
            :nodgui-force-escape-syntax

@@ -619,7 +619,7 @@
     ;; a tree-item's instance represent a row, with or without parent,
     ;; of this treeview
     (let* ((parent    (make-instance 'tree-item
-                                     :text    "hallo" ; text of the first column
+                                     :text    "~hallo~" ; text of the first column
                                      :id      "[a]"
                                      ;; the parent of this item is the root of the treeview
                                      :parent  +treeview-root+
@@ -630,7 +630,7 @@
                                       ;; the parent of this item is the first item defined
                                       :parent        (id parent)
                                       ;; text of the second and third column
-                                      :column-values '("} [hello]" "[world]")
+                                      :column-values '("} [~hello]" "[world]")
                                       :index          +treeview-last-index+))
            (second-row nil)) ; used later...
        ;; setup headers

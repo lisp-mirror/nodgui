@@ -25,6 +25,8 @@
 
   (defparameter *sanitize*                                       nil)
 
+  (defparameter *do-escape-tilde*                                t)
+
   (define-constant +to-lisp-mode+   :lisp  :test #'eq)
 
   (define-constant +to-tcl-if-mode+ :if    :test #'eq)
@@ -48,8 +50,17 @@
     `(let ((*suppress-newline-for-tcl-statements* t))
        ,@body))
 
+  (defmacro with-no-emitted-spaces (&body body)
+    `(let ((nodgui.tcl-emitter:*add-space-after-emitted-string* nil)
+           (nodgui.tcl-emitter:*add-space-after-emitted-unspecialized-element* nil))
+       ,@body))
+
   (defmacro with-stringify-keyword (&body body)
     `(let ((*stringify-keyword* t))
+       ,@body))
+
+  (defmacro with-no-escape-tilde (&body body)
+    `(let ((*do-escape-tilde* nil))
        ,@body))
 
   (defun tag (element)
@@ -214,8 +225,12 @@
     (:dispatch-macro-char #\# #\[ #' force-string-read-macro))
 
   (defmacro tclize (statement &key (sanitize t))
-    `(let ((*sanitize* ,sanitize))
-       (escape-~ (stringify-all (flatten (->tcl ,statement))))))
+    (with-gensyms (unescaped)
+    `(let* ((*sanitize* ,sanitize)
+            (,unescaped  (stringify-all (flatten (->tcl ,statement)))))
+       (if *do-escape-tilde*
+           (escape-~ ,unescaped)
+           ,unescaped))))
 
   (defmacro empty-string-if-nil (value statement)
     `(if ,value
