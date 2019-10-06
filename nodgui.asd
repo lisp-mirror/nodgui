@@ -16,7 +16,7 @@
 
 (defsystem nodgui
   :name             "Nodgui"
-  :version          "0.0.3"
+  :version          "0.0.4"
   :author           "Peter Herth"
   :encoding         :utf-8
   :maintainer       "cage"
