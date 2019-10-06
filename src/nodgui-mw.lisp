@@ -13,34 +13,6 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 
-
-
-#|
-
-This is the Nodgui megawidgets package. It consists of widgets usable
-for Nodgui, written in Lisp/tcl. So wherever the Nodgui package runs, this
-extensing package should run as well.
-
-
-Widgets offered are:
-
-- history-entry
-    An entry widget  keeping the history of previous  input (which can
-    be browsed through with cursor up and down), the input can be also
-    autocompleted pressing the TAB key.
-
-- treelist
-    A widget to display a tree-like structure by a set of listboxes.
-
-- tooltip
-    Shows tooltips for registered widgets.
-
-- searchable list
-
-- graphical tree display
-
-|#
-
 (in-package :nodgui.mw)
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)

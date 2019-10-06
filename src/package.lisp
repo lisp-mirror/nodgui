@@ -1705,6 +1705,7 @@
   (:use :cl
         :alexandria
         :cl-ppcre
+        :nodgui.event-symbols
         :nodgui.event-parser
         :nodgui.utils
         :nodgui

@@ -23,133 +23,125 @@
   (with-nodgui (:debug-tcl nil)
     (let* ((widget          (make-instance 'button
                                            :text    "widget"
-                                           :command #'(lambda () (demo-widget))))
+                                           :command (lambda () (demo-widget))))
            (eyes            (make-instance 'button
                                            :text    "eyes"
-                                           :command #'(lambda () (demo-eyes))))
+                                           :command (lambda () (demo-eyes))))
            (modal           (make-instance 'button
                                            :text    "modal"
-                                           :command #'(lambda () (demo-modal))))
+                                           :command (lambda () (demo-modal))))
            (combo           (make-instance 'button
                                            :text    "combo"
-                                           :command #'(lambda () (demo-combo))))
+                                           :command (lambda () (demo-combo))))
            (packtest1       (make-instance 'button
                                            :text    "packtest 1"
-                                           :command #'(lambda () (demo-packtest1))))
+                                           :command (lambda () (demo-packtest1))))
            (packtest2       (make-instance 'button
                                            :text    "packtest 2"
-                                           :command #'(lambda () (demo-packtest2))))
+                                           :command (lambda () (demo-packtest2))))
            (scrolled-frame  (make-instance 'button
                                            :text    "scrolled frame"
-                                           :command #'(lambda () (demo-sct))))
+                                           :command (lambda () (demo-sct))))
            (button-text     (make-instance 'button
                                            :text    "button text escaped"
-                                           :command #'(lambda () (demo-escape-text))))
+                                           :command (lambda () (demo-escape-text))))
            (treeview       (make-instance  'button
                                            :text    "treeview"
-                                           :command #'(lambda () (demo-treeview))))
+                                           :command (lambda () (demo-treeview))))
            (w/widget       (make-instance  'button
                                            :text    "with widget macro"
-                                           :command #'(lambda () (demo-with-widgets))))
+                                           :command (lambda () (demo-with-widgets))))
            (notebook-1     (make-instance  'button
                                            :text    "notebook 1"
-                                           :command #'(lambda () (demo-notebook))))
+                                           :command (lambda () (demo-notebook))))
            (notebook-2     (make-instance  'button
                                            :text    "notebook 2"
-                                           :command #'(lambda () (demo-notebook-2))))
+                                           :command (lambda () (demo-notebook-2))))
            (defwidget      (make-instance  'button
                                            :text    "defwidget"
-                                           :command #'(lambda () (demo-defwidget))))
+                                           :command (lambda () (demo-defwidget))))
            (demo-canvas    (make-instance  'button
                                            :text    "canvas"
-                                           :command #'(lambda () (demo-canvas))))
+                                           :command (lambda () (demo-canvas))))
            (demo-image     (make-instance  'button
                                            :text    "images"
-                                           :command #'(lambda () (demo-image))))
+                                           :command (lambda () (demo-image))))
            (demo-treelist  (make-instance  'button
                                            :text    "(mw) treelist"
-                                           :command #'(lambda () (nodgui.mw::treelist-test))))
+                                           :command (lambda () (nodgui.mw::treelist-test))))
            (demo-tooltip   (make-instance  'button
                                            :text    "(mw) tooltip"
-                                           :command #'(lambda () (nodgui.mw::tooltip-test))))
+                                           :command (lambda () (nodgui.mw::tooltip-test))))
            (demo-gtree     (make-instance  'button
                                            :text    "(mw) graphical tree"
-                                           :command #'(lambda () (nodgui.mw::gtree-demo))))
+                                           :command (lambda () (nodgui.mw::gtree-demo))))
            (demo-auto-listbox (make-instance 'button
                                              :text    "(mw) autocomplete listbox"
-                                             :command #'(lambda ()
-                                                          (nodgui.mw::autocomplete-listbox-demo))))
+                                             :command (lambda ()
+                                                        (nodgui.mw::autocomplete-listbox-demo))))
            (demo-search-listbox (make-instance 'button
-                                             :text    "(mw) searchable listbox"
-                                             :command #'(lambda ()
+                                               :text    "(mw) searchable listbox"
+                                               :command (lambda ()
                                                           (nodgui.mw::searchable-listbox-demo))))
            (demo-list-select    (make-instance 'button
                                                :text    "(mw) list select demo"
-                                               :command #'(lambda ()
-                                                            (nodgui.mw::list-select-demo))))
+                                               :command (lambda ()
+                                                          (nodgui.mw::list-select-demo))))
            (demo-listbox-dialog (make-instance 'button
                                                :text    "(mw) listbox dialog"
-                                               :command #'(lambda ()
-                                                            (let ((chosen (nodgui.mw:listbox-dialog
-                                                                           *tk*
-                                                                           "listbox dialog"
-                                                                           "Choose an entry"
-                                                                           '("hello" "world"))))
-                                                              (message-box (format nil
-                                                                                   "chosen ~s~%"
-                                                                                   chosen)
-                                                                           "info"
-                                                                           :ok
-                                                                           "info"
-                                                                           :parent *tk*)))))
+                                               :command (lambda ()
+                                                          (let ((chosen (nodgui.mw:listbox-dialog
+                                                                         *tk*
+                                                                         "listbox dialog"
+                                                                         "Choose an entry"
+                                                                         '("hello" "world"))))
+                                                            (message-box (format nil
+                                                                                 "chosen ~s~%"
+                                                                                 chosen)
+                                                                         "info"
+                                                                         :ok
+                                                                         "info"
+                                                                         :parent *tk*)))))
            (demo-date-picker   (make-instance 'button
                                               :text    "(mw) date picker"
-                                              :command #'(lambda ()
-                                                           (nodgui.mw::date-picker-demo))))
+                                              :command (lambda ()
+                                                         (nodgui.mw::date-picker-demo))))
            (demo-password      (make-instance 'button
                                               :text    "(mw) password entry"
-                                              :command #'(lambda ()
-                                                           (nodgui.mw::password-entry-demo))))
+                                              :command (lambda ()
+                                                         (nodgui.mw::password-entry-demo))))
            (demo-star-progress (make-instance 'button
-                                            :text    "(mw) star progress bar"
-                                            :command #'(lambda ()
+                                              :text    "(mw) star progress bar"
+                                              :command (lambda ()
                                                          (nodgui.mw::star-progress-demo))))
            (demo-timeout-dialog (make-instance 'button
                                                :text    "(mw) message dialog with timeout"
-                                               :command #'(lambda ()
-                                                            (demo-message-timeout *tk*))))
+                                               :command (lambda () (demo-message-timeout *tk*))))
            (demo-fitted-text    (make-instance 'button
                                                :text    "text widget that accomodates words"
-                                               :command #'(lambda ()
-                                                            (demo-fitted-text))))
+                                               :command (lambda () (demo-fitted-text))))
            (demo-tklib-calendar (make-instance 'button
                                                :text    "(tklib) calendar"
-                                               :command #'(lambda ()
-                                                            (demo-tklib-calendar))))
+                                               :command (lambda () (demo-tklib-calendar))))
            (demo-tklib-notify   (make-instance 'button
                                                :text    "(tklib) notify window"
-                                               :command #'(lambda ()
-                                                            (demo-tklib-notify))))
+                                               :command (lambda () (demo-tklib-notify))))
            (demo-tklib-dot-plot (make-instance 'button
                                                :text    "(tklib) scatter plot"
-                                               :command #'(lambda ()
-                                                            (demo-tklib-dot-plot))))
+                                               :command (lambda () (demo-tklib-dot-plot))))
            (demo-tklib-bar-plot (make-instance 'button
                                                :text    "(tklib) histogram plot"
-                                               :command #'(lambda ()
-                                                            (demo-tklib-bar-plot))))
+                                               :command (lambda () (demo-tklib-bar-plot))))
            (demo-tklib-swaplist (make-instance 'button
                                                :text    "(tklib) swaplist"
-                                               :command #'(lambda ()
-                                                            (demo-tklib-swaplist))))
+                                               :command (lambda () (demo-tklib-swaplist))))
            (demo-tklib-equalizer-bar (make-instance 'button
                                                     :text    "(tklib) equalizer bar"
-                                                    :command #'(lambda ()
-                                                                 (demo-tklib-equalizer-bar))))
-
+                                                    :command (lambda ()
+                                                               (demo-tklib-equalizer-bar))))
            (b-quit              (make-instance  'button
                                                 :text    "quit lisp :)"
-                                                :command #'(lambda () (uiop:quit)))))
+                                                :command (lambda () (uiop:quit)))))
       (grid widget                   0 0  :sticky :nswe)
       (grid eyes                     0 1  :sticky :nswe)
       (grid modal                    0 2  :sticky :nswe)
@@ -881,9 +873,10 @@
       (setf (text (inner-text text))
             "type random text, it will try fit it to the width of this widget")
       (bind (inner-text text)
-            "<KeyPress>"
+            #$<KeyPress>$
             (lambda (event)
-              (when (not (cl-ppcre:scan "\\s" (string (code-char (event-char-code event)))))
+              (when (not (or (cl-ppcre:scan "\\s" (string (code-char (event-char-code event))))
+                             (string= (event-char event) +backspace+)))
                 (with-inner-text (text-widget text)
                   (setf (text text-widget)
                         (fit-words-to-text-widget text (text text-widget) "TkFixedFont")))))
