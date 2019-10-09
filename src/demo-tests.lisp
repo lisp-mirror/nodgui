@@ -876,7 +876,7 @@
             #$<KeyPress>$
             (lambda (event)
               (when (not (or (cl-ppcre:scan "\\s" (string (code-char (event-char-code event))))
-                             (string= (event-char event) +backspace+)))
+                             (not (keysym-printable-p (event-char-code event)))))
                 (with-inner-text (text-widget text)
                   (setf (text text-widget)
                         (fit-words-to-text-widget text (text text-widget) "TkFixedFont")))))

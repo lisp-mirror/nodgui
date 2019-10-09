@@ -22,7 +22,8 @@
 (defparameter *all-event-details* '())
 
 (defun keysym-printable-p (num-code)
-  "Is the keysymbol, identified by its numerical code, printable?"
+  "Is  the   keysymbol  (see.  event-char-code),  identified   by  its
+numerical code, printable?"
   (< num-code +first-non-printable-keysym+))
 
 (defmacro gen-key-symbol (sym bag)
