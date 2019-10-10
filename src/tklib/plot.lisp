@@ -281,22 +281,33 @@ example: (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength 10)
   ()
   (:documentation "A scatter plot, see: https://en.wikipedia.org/wiki/Scatter_plot"))
 
-(defun draw-error-bar (plot-handle series-handle x y error-value stopper-width color)
+(defgeneric place-line (object series x1 y1 x2 y2 color &key width))
+
+(defmethod place-line ((plot dot-plot) (series series) x1 y1 x2 y2 color &key (width 1))
+  "Draw a  line from (x1, y1)  to (x2 y2) with  specified color. Units
+are in plot space"
+  (with-accessors ((plot-handle handle)) plot
+    (let ((series-handle (handle series)))
+      (with-no-emitted-newline
+        (format-wish (tclize `(senddata [,plot-handle
+                                        object
+                                        line " " ,series-handle " "
+                                        ,x1 " " ,y1   " "
+                                        ,x2 " " ,y2   " "
+                                        ,(empty-string-if-nil color
+                                             `(-fill  {+ ,color })) " "
+                                             -width ,width
+                                             ]))))
+      (read-data))))
+
+(defun draw-error-bar (plot series x y error-value stopper-width color)
   "The low level drawing procedure for error bar"
   (let ((start-bar     (- y error-value))
         (end-bar       (+ y error-value))
         (start-stopper (- x stopper-width))
         (stop-stopper  (+ x stopper-width)))
     (flet ((draw-line (x-start y-start x-end y-end)
-             (format-wish (tclize `(senddata [,plot-handle
-                                             object
-                                             line " " ,series-handle " "
-                                             ,x-start " " ,y-start   " "
-                                             ,x-end   " " , y-end    " "
-                                             ,(empty-string-if-nil color
-                                                  `(-fill  {+ ,color }))
-                                             ])))
-             (read-data)))
+             (place-line plot series x-start y-start x-end y-end color)))
       (list (draw-line x start-bar x end-bar)
             (draw-line start-stopper start-bar stop-stopper start-bar)
             (draw-line start-stopper end-bar stop-stopper end-bar)))))
@@ -364,7 +375,7 @@ example:
                         (err-as-num         (parse-number-or-0 err)))
                     ;; errors
                     (when (not (epsilon= err-as-num 0.0))
-                      (let ((error-handlers (draw-error-bar handle series-handle
+                      (let ((error-handlers (draw-error-bar object series
                                                             x-as-num y-as-num err-as-num
                                                             (/ size-as-num 2)
                                                             error-bar-color)))

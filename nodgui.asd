@@ -44,6 +44,7 @@
                (:file "base64")
                (:file "ubvec4")
                (:file "vec2")
+               (:file "fit-line")
                (:file "pixmap")
                (:file "sanitize")
                (:file "event-symbols")

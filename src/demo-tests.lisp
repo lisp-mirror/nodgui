@@ -901,7 +901,9 @@
 
 (defun demo-tklib-notify ()
   (with-nodgui ()
-    (let ((message (text-input-dialog *tk* "info" "Insert the text you want shown as notify")))
+    (let ((message (text-input-dialog *tk*
+                                      "info"
+                                      "Insert the text you want shown as notify")))
       (nodgui.tklib.notify:notify-window message))))
 
 (defun demo-tklib-dot-plot ()
@@ -915,21 +917,39 @@
                                         (event-x event)
                                         (event-y event)))))
            (all-series (list (make-instance 'nodgui.tklib.plot:dot-series
-                                            :xs     '(10 20 30)
-                                            :ys     '(20 40 60)
-                                            :errors '(1.5 0.5 2.5)
+                                            :xs     '(10   20   30)
+                                            :ys     '(20.1 29.9 60.5)
+                                            :errors '(1.1   5.5 1.2)
                                             :legend "first"
-                                            :color  "#ff00ff"
-                                            :callback (funcall series-callback
-                                                               :pink))
+                                            :color  "#ff00ff")
                              (make-instance 'nodgui.tklib.plot:dot-series
-                                            :xs     '(10 20 30)
-                                            :ys     '(60 40 20)
+                                            :xs     '(10 25 30)
+                                            :ys     '(60 30 20)
                                             :legend "second"
                                             :callback (funcall series-callback
                                                                :red))))
            (plot       (make-instance 'nodgui.tklib.plot:dot-plot
                                       :all-series all-series)))
+      ;; as an example, fit a line on the first data series
+      (setf (nodgui.tklib.plot:callback (first all-series))
+            (lambda (event)
+              (declare (ignore event))
+              (let* ((series      (first all-series))
+                     (data        (map 'vector
+                                       #'identity
+                                       (mapcar #'nodgui.vec2:vec2
+                                               (nodgui.tklib.plot:xs series)
+                                               (nodgui.tklib.plot:ys series))))
+                     (errors      (map 'vector #'identity (nodgui.tklib.plot:errors series))))
+                (multiple-value-bind (m q)
+                    (nodgui.fit-line:fit-line data errors)
+                  (flet ((line (x)
+                           (+ (* m x) q)))
+                    (let* ((x1 0)
+                           (x2 40)
+                           (y1 (line x1))
+                           (y2 (line x2)))
+                      (nodgui.tklib.plot:place-line plot series x1 y1 x2 y2 #%blue% :width 2)))))))
       (grid canvas 0 0 :sticky :news)
       (nodgui.tklib.plot:draw-on-canvas plot canvas)
       (bind plot #$<ButtonPress-1>$ (lambda (event)

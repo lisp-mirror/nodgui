@@ -157,6 +157,13 @@
    :vec2-perp-dot-product
    :vec2-rotate))
 
+(defpackage :nodgui.fit-line
+  (:use :cl
+        :alexandria
+        :cl-ppcre
+        :nodgui.vec2)
+  (:export :fit-line))
+
 (defpackage :nodgui.pixmap
   (:use :cl
         :alexandria

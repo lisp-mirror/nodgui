@@ -106,6 +106,7 @@ system for this wrapper to works"))
    :draw-on-canvas
    :xy-plot
    :dot-plot
+   :place-line
    :bar-chart
    :x-labels
    :x-label-angle

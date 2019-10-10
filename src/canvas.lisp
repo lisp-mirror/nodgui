@@ -443,32 +443,25 @@
         ((eq itemtype :rectangle)
          (format stream "~a create rectangle ~a ~a ~a ~a " cpath (number) (number) (number) (number))
          (args))
-
         ((eq itemtype :polygon)
          (format stream "~a create polygon ~a" cpath (process-coords (pop item)))
          (args))
-
         ((eq itemtype :arc)
          (format stream "~a create arc ~a ~a ~a ~a " cpath (number) (number) (number) (number))
          (args))
-
         ((eq itemtype :oval)
          (format stream "~a create oval ~a ~a ~a ~a " cpath (number) (number) (number) (number))
          (args))
-
         ((eq itemtype :line)
          (format stream "~a create line ~a ~a ~a ~a " cpath (number) (number) (number) (number))
          (args))
-
         ((eq itemtype :image)
          (format stream "~a create image ~a ~a " cpath (number) (number))
          (args))
-
         ((eq itemtype :text)
          (format stream "~a create text ~a ~a -anchor nw -text {~a} "
                  cpath (number) (number) (tkescape (arg)))
          (args))
-
         ((eq itemtype :ctext)
          (format stream "~a create text ~a ~a -anchor n -text {~a} "
                  cpath (number) (number) (tkescape (arg)))
