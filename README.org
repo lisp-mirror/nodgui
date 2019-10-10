@@ -76,7 +76,3 @@ All of the above libraries are available on quicklisp.
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
-
-[fn:update-tcl]  It requires TCL/TK update see:
-                 [[https://notabug.org/cage/nodgui/issues/7][issue #7]]
-[fn:ecl-version] Using version from git repository
