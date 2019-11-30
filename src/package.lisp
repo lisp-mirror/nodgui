@@ -1412,6 +1412,7 @@
            :item-delete
            :item-move-to
            :item-raise
+           :move-to
            :process-coords
            :label
            :labelframe
@@ -1447,6 +1448,7 @@
            :make-toplevel
            :make-line
            :make-oval
+           :make-circle
            :make-polygon
            :make-rectangle
            :master

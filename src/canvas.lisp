@@ -392,7 +392,7 @@
   (itemmove (canvas item) (handle item) (tk-number dx) (tk-number dy)))
 
 (defmethod move-to ((object canvas-item) x y)
-  (item-move-to (canvas object) x y))
+  (item-move-to (canvas object) (handle object) x y))
 
 (defmethod clear ((canvas canvas))
   "delete all items within a canvas"
@@ -431,6 +431,18 @@
 
 (defun make-oval (canvas x0 y0 x1 y1)
   (make-instance 'canvas-oval :canvas canvas :x0 x0 :y0 y0 :x1 x1 :y1 y1))
+
+(defun make-circle (canvas x-center y-center radius)
+  (let ((x0 (- x-center radius))
+        (x1 (+ x-center radius))
+        (y0 (- y-center radius))
+        (y1 (+ y-center radius)))
+    (make-instance 'canvas-oval
+                   :canvas canvas
+                   :x0 x0
+                   :y0 y0
+                   :x1 x1
+                   :y1 y1)))
 
 (defun create-rectangle (canvas x0 y0 x1 y1)
   (format-wish "senddata [~a create rectangle ~a ~a ~a ~a]" (widget-path canvas)

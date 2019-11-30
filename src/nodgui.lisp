@@ -598,7 +598,6 @@ set y [winfo y ~a]
 (defmethod raise ((item canvas-item) &optional above)
   (itemraise (canvas item) (handle item) (and above (handle above))))
 
-
 ;;; font functions
 ;; use {~/nodgui::pprint-down/} on the font name to match itemconfigure
 
