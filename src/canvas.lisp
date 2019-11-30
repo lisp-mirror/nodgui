@@ -463,16 +463,16 @@
                     &key
                       (fill    #%black%)
                       (outline #%black%))
-  (let* ((x0     (- x-center radius))
-         (x1     (+ x-center radius))
-         (y0     (- y-center radius))
-         (y1     (+ y-center radius))
-         (shape  (make-instance 'canvas-oval
-                                :canvas canvas
-                                :x0     x0
-                                :y0     y0
-                                :x1     x1
-                                :y1     y1)))
+  (let* ((x0    (- x-center radius))
+         (x1    (+ x-center radius))
+         (y0    (- y-center radius))
+         (y1    (+ y-center radius))
+         (shape (make-instance 'canvas-oval
+                               :canvas canvas
+                               :x0     x0
+                               :y0     y0
+                               :x1     x1
+                               :y1     y1)))
     (colorize shape fill outline)))
 
 (defun create-rectangle (canvas x0 y0 x1 y1)
