@@ -19,7 +19,7 @@
 
 (defparameter *all-event-type*     '())
 
-(defparameter *all-event-details* '())
+(defparameter *all-event-details*  '())
 
 (defun keysym-printable-p (num-code)
   "Is  the   keysymbol  (see.  event-char-code),  identified   by  its

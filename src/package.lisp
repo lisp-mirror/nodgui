@@ -1268,6 +1268,7 @@
            :bind
            :button
            :calc-scroll-region
+           :+tag-all-items+
            :canvas
            :width
            :height
@@ -1287,9 +1288,15 @@
            :bbox-max-x
            :bbox-min-y
            :bbox-max-y
+           :bbox-h
+           :bbox-w
            :canvas-window
            :canvasx
            :canvasy
+           :canvas-x
+           :canvas-y
+           :canvas-w
+           :canvas-h
            :cget
            :check-button
            :choose-color
@@ -1337,6 +1344,7 @@
            :event-root-y
            :event-width
            :event-height
+           :event-unicode-char
            :focus
            :+tk-default-font+
            :+tk-text-font+

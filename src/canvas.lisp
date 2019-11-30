@@ -19,6 +19,8 @@
 
 (named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
+(define-constant +tag-all-items+ "all" :test #'string=)
+
 (defargs canvas ()
   background
   borderwidth
@@ -114,6 +116,14 @@
 
 (defgeneric canvasy (canvas screeny))
 
+(defgeneric canvas-x (canvas screenx))
+
+(defgeneric canvas-y (canvas screeny))
+
+(defgeneric canvas-w (canvas))
+
+(defgeneric canvas-h (canvas))
+
 (defgeneric itembind (canvas w event fun))
 
 (defgeneric itemmove (canvas item dx dy))
@@ -191,6 +201,14 @@
 
 (defun bbox-max-y (aabb)
   (elt aabb 3))
+
+(defun bbox-w (aabb)
+  (- (bbox-max-x aabb)
+     (bbox-min-x aabb)))
+
+(defun bbox-h (aabb)
+  (- (bbox-max-y aabb)
+     (bbox-min-y aabb)))
 
 (defun canvas-item-bbox (canvas handle)
   (format-wish "senddata \"([~a bbox {~a}])\"" (widget-path canvas) handle)
@@ -308,6 +326,18 @@
   (format-wish "senddata [~a canvasy ~a]" (widget-path canvas) (tk-number screeny))
   (read-data))
 
+(defmethod canvas-x ((canvas canvas) screenx)
+  (canvasx canvas screenx))
+
+(defmethod canvas-y ((canvas canvas) screeny)
+  (canvasy canvas screeny))
+
+(defmethod canvas-w ((canvas canvas))
+  (parse-integer (cget canvas :width)))
+
+(defmethod canvas-h ((canvas canvas))
+  (parse-integer (cget canvas :height)))
+
 (defmethod itemmove ((canvas canvas) (item integer) dx dy)
   (item-move canvas item dx dy))
 
@@ -344,6 +374,10 @@
   (item-delete canvas item))
 
 (defmethod item-delete ((canvas canvas) (item integer))
+  (format-wish "~a delete ~a" (widget-path canvas) item)
+  canvas)
+
+(defmethod item-delete ((canvas canvas) (item string))
   (format-wish "~a delete ~a" (widget-path canvas) item)
   canvas)
 

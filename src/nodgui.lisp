@@ -179,6 +179,7 @@ can be passed to AFTER-CANCEL"
   root-x
   root-y
   mouse-button
+  unicode-char
   others)
 
 (defun construct-tk-event (properties)
@@ -194,10 +195,11 @@ can be passed to AFTER-CANCEL"
    :root-x       (eighth properties) ; 7
    :root-y       (ninth properties)  ; 8
    :mouse-button (tenth properties)  ; 9
-   :others       (if (string= (elt properties 10)
+   :unicode-char (elt   properties 10)
+   :others       (if (string= (elt properties 11)
                               "")
                      nil
-                     (elt properties 10))))
+                     (elt properties 11))))
 
 (defgeneric bind (w event fun &key append exclusive))
 
@@ -205,7 +207,7 @@ can be passed to AFTER-CANCEL"
   "bind fun to event of the widget w"
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "bind  ~a {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b ~:[~;;break~]}"
+    (format-wish "bind  ~a {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A ~:[~;;break~]}"
                  (widget-path w) event append name exclusive)
     w))
 
@@ -213,7 +215,7 @@ can be passed to AFTER-CANCEL"
   "bind fun to event within context indicated by string ie. 'all' or 'Button'"
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b ~:[~;;break~]}"
+    (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A ~:[~;;break~]}"
                  s event append name exclusive)))
 
 ;;; window menu bar
