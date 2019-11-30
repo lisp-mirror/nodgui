@@ -819,6 +819,11 @@
         (tag-bind       canvas      "green" #$<ButtonPress-1>$ (bind-green canvas ball))
         (item-move-to   canvas ball (* size 9/10) (* size 9/10))
         (item-raise     canvas ball arc1)
+        (make-rectangle canvas
+                         0  (* 3/4 size)
+                         50 (+ (/ size 2) 50)
+                         :fill    #%red%
+                         :outline #%blue%)
         (make-items canvas `((:rectangle 0  ,(/ size 2) 50 ,(+ (/ size 2) 50))
                              (:arc       0  ,(+ (/ size 2) 10)
                                          50 ,(+ (/ size 2) 60)

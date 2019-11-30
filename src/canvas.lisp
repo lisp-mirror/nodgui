@@ -429,8 +429,35 @@
 (defmethod initialize-instance :after ((c canvas-oval) &key canvas x0 y0 x1 y1)
   (setf (handle c) (create-oval canvas x0 y0 x1 y1)))
 
-(defun make-oval (canvas x0 y0 x1 y1)
-  (make-instance 'canvas-oval :canvas canvas :x0 x0 :y0 y0 :x1 x1 :y1 y1))
+(defun make-oval (canvas x0 y0 x1 y1
+                  &key
+                    (fill    #%black%)
+                    (outline #%black%))
+  (let* ((shape (make-instance 'canvas-oval
+                               :canvas canvas
+                               :x0     x0
+                               :y0     y0
+                               :x1     x1
+                               :y1     y1)))
+    (colorize shape fill outline)))
+
+(defgeneric colorize (object fill outline))
+
+(defun item-colorize (canvas canvas-item fill outline)
+  (item-configure canvas canvas-item :fill    fill)
+  (item-configure canvas canvas-item :outline outline)
+  canvas-item)
+
+(defmacro gen-colorize (class-symbol)
+  `(defmethod colorize ((object ,class-symbol) fill outline)
+     (with-accessors ((canvas canvas)
+                      (handle handle)) object
+       (item-colorize canvas handle fill outline)
+       object)))
+
+(gen-colorize canvas-oval)
+
+(gen-colorize canvas-rectangle)
 
 (defun make-circle (canvas x-center y-center radius
                     &key
@@ -445,11 +472,8 @@
                                 :x0     x0
                                 :y0     y0
                                 :x1     x1
-                                :y1     y1))
-         (handle (handle shape)))
-    (item-configure canvas handle :fill    fill)
-    (item-configure canvas handle :outline outline)
-    shape))
+                                :y1     y1)))
+    (colorize shape fill outline)))
 
 (defun create-rectangle (canvas x0 y0 x1 y1)
   (format-wish "senddata [~a create rectangle ~a ~a ~a ~a]" (widget-path canvas)
@@ -462,8 +486,17 @@
 (defmethod initialize-instance :after ((c canvas-rectangle) &key canvas x0 y0 x1 y1)
   (setf (handle c) (create-rectangle canvas x0 y0 x1 y1)))
 
-(defun make-rectangle (canvas x0 y0 x1 y1)
-  (make-instance 'canvas-rectangle :canvas canvas :x0 x0 :y0 y0 :x1 x1 :y1 y1))
+(defun make-rectangle (canvas x0 y0 x1 y1
+                       &key
+                         (fill    #%black%)
+                         (outline #%black%))
+  (let* ((shape (make-instance 'canvas-rectangle
+                              :canvas canvas
+                              :x0     x0
+                              :y0     y0
+                              :x1     x1
+                              :y1     y1)))
+    (colorize shape fill outline)))
 
 (defun create-item-command (canvas item stream)
   "Create the tk command string for creating a canvas item according to the item spec.
