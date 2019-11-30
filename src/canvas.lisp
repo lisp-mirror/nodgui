@@ -17,7 +17,7 @@
 
 (in-package :nodgui)
 
-(named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
+(named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
 (define-constant +tag-all-items+ "all" :test #'string=)
 
@@ -432,17 +432,24 @@
 (defun make-oval (canvas x0 y0 x1 y1)
   (make-instance 'canvas-oval :canvas canvas :x0 x0 :y0 y0 :x1 x1 :y1 y1))
 
-(defun make-circle (canvas x-center y-center radius)
-  (let ((x0 (- x-center radius))
-        (x1 (+ x-center radius))
-        (y0 (- y-center radius))
-        (y1 (+ y-center radius)))
-    (make-instance 'canvas-oval
-                   :canvas canvas
-                   :x0 x0
-                   :y0 y0
-                   :x1 x1
-                   :y1 y1)))
+(defun make-circle (canvas x-center y-center radius
+                    &key
+                      (fill    #%black%)
+                      (outline #%black%))
+  (let* ((x0     (- x-center radius))
+         (x1     (+ x-center radius))
+         (y0     (- y-center radius))
+         (y1     (+ y-center radius))
+         (shape  (make-instance 'canvas-oval
+                                :canvas canvas
+                                :x0     x0
+                                :y0     y0
+                                :x1     x1
+                                :y1     y1))
+         (handle (handle shape)))
+    (item-configure canvas handle :fill    fill)
+    (item-configure canvas handle :outline outline)
+    shape))
 
 (defun create-rectangle (canvas x0 y0 x1 y1)
   (format-wish "senddata [~a create rectangle ~a ~a ~a ~a]" (widget-path canvas)
