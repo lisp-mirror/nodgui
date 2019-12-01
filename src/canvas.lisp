@@ -414,11 +414,13 @@
 (defmethod initialize-instance :after ((c canvas-line) &key canvas coords)
   (setf (handle c) (create-line canvas coords)))
 
-(defun make-line (canvas coords &key (fill #%black%))
-  (let ((shape (make-instance 'canvas-line
-                              :canvas canvas
-                              :coords coords)))
-    (item-configure canvas (handle shape) :fill fill)
+(defun make-line (canvas coords &key (fill #%black%) (width 1))
+  (let* ((shape  (make-instance 'canvas-line
+                                :canvas canvas
+                                :coords coords))
+         (handle (handle shape)))
+    (item-configure canvas handle :fill  fill)
+    (item-configure canvas handle :width width)
     shape))
 
 (defgeneric colorize (object fill outline))
