@@ -396,7 +396,7 @@
 
 (defmethod clear ((canvas canvas))
   "delete all items within a canvas"
-  (format-wish "~a delete all" (widget-path canvas))
+  (format-wish "~a delete ~a" (widget-path canvas) +tag-all-items+)
   canvas)
 
 ;; canvas item functions
@@ -414,8 +414,26 @@
 (defmethod initialize-instance :after ((c canvas-line) &key canvas coords)
   (setf (handle c) (create-line canvas coords)))
 
-(defun make-line (canvas coords)
-  (make-instance 'canvas-line :canvas canvas :coords coords))
+(defun make-line (canvas coords &key (fill #%black%))
+  (let ((shape (make-instance 'canvas-line
+                              :canvas canvas
+                              :coords coords)))
+    (item-configure canvas (handle shape) :fill fill)
+    shape))
+
+(defgeneric colorize (object fill outline))
+
+(defun item-colorize (canvas canvas-item fill outline)
+  (item-configure canvas canvas-item :fill    fill)
+  (item-configure canvas canvas-item :outline outline)
+  canvas-item)
+
+(defmacro gen-colorize (class-symbol)
+  `(defmethod colorize ((object ,class-symbol) fill outline)
+     (with-accessors ((canvas canvas)
+                      (handle handle)) object
+       (item-colorize canvas handle fill outline)
+       object)))
 
 (defun create-oval (canvas x0 y0 x1 y1)
   (format-wish "senddata [~a create oval ~a ~a ~a ~a]" (widget-path canvas)
@@ -441,23 +459,7 @@
                                :y1     y1)))
     (colorize shape fill outline)))
 
-(defgeneric colorize (object fill outline))
-
-(defun item-colorize (canvas canvas-item fill outline)
-  (item-configure canvas canvas-item :fill    fill)
-  (item-configure canvas canvas-item :outline outline)
-  canvas-item)
-
-(defmacro gen-colorize (class-symbol)
-  `(defmethod colorize ((object ,class-symbol) fill outline)
-     (with-accessors ((canvas canvas)
-                      (handle handle)) object
-       (item-colorize canvas handle fill outline)
-       object)))
-
 (gen-colorize canvas-oval)
-
-(gen-colorize canvas-rectangle)
 
 (defun make-circle (canvas x-center y-center radius
                     &key
@@ -485,6 +487,8 @@
 
 (defmethod initialize-instance :after ((c canvas-rectangle) &key canvas x0 y0 x1 y1)
   (setf (handle c) (create-rectangle canvas x0 y0 x1 y1)))
+
+(gen-colorize canvas-rectangle)
 
 (defun make-rectangle (canvas x0 y0 x1 y1
                        &key
