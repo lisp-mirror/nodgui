@@ -16,7 +16,7 @@
 
 (defsystem nodgui
   :name             "Nodgui"
-  :version          "0.0.4"
+  :version          "0.0.5"
   :author           "Peter Herth"
   :encoding         :utf-8
   :maintainer       "cage"
@@ -24,7 +24,7 @@
   :licence          "LLGPL"
   :description      "Lisp bindings for the Tk toolkit"
   :pathname         "src"
-  :serial      t
+  :serial           t
   :depends-on (:alexandria
                :cl-unicode
                :cl-ppcre-unicode
