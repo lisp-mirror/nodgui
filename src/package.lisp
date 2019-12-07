@@ -1162,12 +1162,13 @@
            :with-no-escape-tilde
            :tcl
            :tcl-str
+           :with-flush-server
+           :for-list
            :nodgui-force-escape-syntax
            :tclize
            :empty-string-if-nil
            :defproc
-           :with-flush-server
-           :for-list))
+           :keyword->tcl))
 
 (defpackage :nodgui.tcl-glue-code
   (:use :cl

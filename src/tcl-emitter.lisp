@@ -244,4 +244,12 @@
                                     ,(let ((*suppress-newline-for-tcl-statements* t))
                                        (tclize args))
                                     (tcl ,@body))))
-       exp)))
+       exp))
+
+  (defun keyword->tcl (keyword &key (downcase nil))
+    (with-no-emitted-newline
+      (with-stringify-keyword
+        (let ((res (tclize `(,keyword))))
+          (if downcase
+              (string-downcase res)
+              res))))))

@@ -18,9 +18,11 @@
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
-(define-constant +plotchart-library-name+ "Plotchart" :test #'string=)
+(define-constant +plotchart-library-name+    "Plotchart" :test #'string=)
 
-(define-constant +plotchart-data-tag+     "data" :test #'string=)
+(define-constant +plotchart-data-tag+        "data"      :test #'string=)
+
+(define-constant +pseudo-series-item-suffix+ "-series"   :test #'string=)
 
 (defmacro gen-plot-component (type &rest values)
   `(progn
@@ -86,6 +88,13 @@
     :initarg  :size
     :accessor size
     :documentation "radius of the point")
+   (value-symbol
+    :initform :dot
+    :initarg  :value-symbol
+    :accessor value-symbol
+    :documentation "The symbol drawn for each point of this series, allowed values are:
+                   :plus,  :cross, :circle,  :up :down  :dot :upfilled
+                   :downfilled. Default is :dot")
    (errors
     :initform '()
     :initarg  :errors
@@ -287,11 +296,12 @@ example: (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength 10)
   "Draw a  line from (x1, y1)  to (x2 y2) with  specified color. Units
 are in plot space"
   (with-accessors ((plot-handle handle)) plot
-    (let ((series-handle (handle series)))
+    (let* ((series-handle      (handle series))
+           (pseudo-series-item (strcat series-handle +pseudo-series-item-suffix+)))
       (with-no-emitted-newline
         (format-wish (tclize `(senddata [,plot-handle
                                         object
-                                        line " " ,series-handle " "
+                                        line " " ,pseudo-series-item " "
                                         ,x1 " " ,y1   " "
                                         ,x2 " " ,y2   " "
                                         ,(empty-string-if-nil color
@@ -322,7 +332,7 @@ are in plot space"
 
 (defmethod draw-on-canvas :after ((object dot-plot) (destination canvas)
                                   &key
-                                    (error-bar-color nil))
+                                    (error-bar-color #%black%))
   "  Draw a scatter plot on a canvas.
 The plot must be initialized with series (see: the 'all-series' slot of 'plot' class)
 
@@ -348,23 +358,33 @@ example:
     (let ((all-error-handlers '()))
       (format-wish (tclize `(,handle legendconfig -legendtype rectangle)))
       (loop for series in all-series do
+           (assert (member (value-symbol series)
+                           '(:plus  :cross :circle
+                             :up    :down  :dot
+                             :upfilled :downfilled)))
            (setf (handle series) (strcat "series_" (nodgui::create-name)))
            (let* ((size-as-num        (size series))
                   (size               (nodgui::process-coords size-as-num))
-                  (series-handle      (handle   series))
-                  (xs                 (xs       series))
-                  (ys                 (ys       series))
+                  (displayed-symbol   (keyword->tcl (value-symbol series)
+                                                    :downcase t))
+                  (series-handle      (handle       series))
+                  (xs                 (xs           series))
+                  (ys                 (ys           series))
                   (errors             (or (errors series)
                                           (make-fresh-list (length xs) 0.0)))
                   (color              (color    series))
                   (legend             (legend   series)))
-             (format-wish (tclize `(,handle
-                                    dotconfig
-                                    ,series-handle " " -colour ,color " "
-                                    -outline on)))
-             (format-wish (tclize `(,handle
-                                    dataconfig
-                                    ,series-handle " " -colour ,color)))
+             (let ((*suppress-newline-for-tcl-statements* t))
+               ;; note:  for  some  reasons seems  that  the  `radius'
+               ;; option is  passed to canvas  item and, if  radius is
+               ;; not a valid option for that item, a crash occurs
+               (format-wish (tclize `(,handle
+                                      dataconfig
+                                      ,series-handle             " "
+                                      -colour ,color             " "
+                                      -type   symbol             " "
+                                      -symbol ,displayed-symbol  " "
+                                      -radius ,size))))
              (loop
                 for x   in (split " " (nodgui::process-coords xs))
                 for y   in (split " " (nodgui::process-coords ys))
@@ -381,9 +401,9 @@ example:
                                                             error-bar-color)))
                         (setf all-error-handlers
                               (append all-error-handlers error-handlers))))
-                    (format-wish (tclize `(,handle " " dot " "  ,series-handle " "
-                                                   {+ ,x } {+ ,y }
-                                                   ,size)))
+                    (format-wish (tclize `(,handle " " plot " "  ,series-handle " "
+                                                   {+ ,x } {+ ,y })))
+
                     (when (callback series)
                       (bind-last object
                                  series

@@ -928,11 +928,12 @@
                                             :legend "first"
                                             :color  "#ff00ff")
                              (make-instance 'nodgui.tklib.plot:dot-series
-                                            :xs     '(10 25 30)
-                                            :ys     '(60 30 20)
-                                            :legend "second"
-                                            :callback (funcall series-callback
-                                                               :red))))
+                                            :xs            '(10 25 30)
+                                            :ys            '(60 30 20)
+                                            :legend        "second"
+                                            :value-symbol  :upfilled
+                                            :callback      (funcall series-callback
+                                                                    :red))))
            (plot       (make-instance 'nodgui.tklib.plot:dot-plot
                                       :all-series all-series)))
       ;; as an example, fit a line on the first data series

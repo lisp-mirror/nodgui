@@ -423,11 +423,16 @@
     (item-configure canvas handle :width width)
     shape))
 
-(defgeneric colorize (object fill outline))
+(defgeneric colorize (object fill outline)
+  (:documentation "Paint the  object with fill and  outline (should be
+  valid tcl  color (a string  \"#rrggbb\", see: `rgb->tk') or  nil for
+  transparent."))
 
 (defun item-colorize (canvas canvas-item fill outline)
-  (item-configure canvas canvas-item :fill    fill)
-  (item-configure canvas canvas-item :outline outline)
+  (when fill
+    (item-configure canvas canvas-item :fill    fill))
+  (when outline
+    (item-configure canvas canvas-item :outline outline))
   canvas-item)
 
 (defmacro gen-colorize (class-symbol)
@@ -495,13 +500,16 @@
 (defun make-rectangle (canvas x0 y0 x1 y1
                        &key
                          (fill    #%black%)
-                         (outline #%black%))
-  (let* ((shape (make-instance 'canvas-rectangle
-                              :canvas canvas
-                              :x0     x0
-                              :y0     y0
-                              :x1     x1
-                              :y1     y1)))
+                         (outline #%black%)
+                         (width   1))
+  (let* ((shape  (make-instance 'canvas-rectangle
+                                :canvas canvas
+                                :x0     x0
+                                :y0     y0
+                                :x1     x1
+                                :y1     y1))
+         (handle (handle shape)))
+    (item-configure canvas handle :width width)
     (colorize shape fill outline)))
 
 (defun create-item-command (canvas item stream)
