@@ -57,6 +57,7 @@
            :make-array-frame
            :make-fresh-array
            :read-into-array
+           :namestring->pathname
            :pngp
            :gifp
            :jpgp
@@ -1717,7 +1718,8 @@
    :show-password
    :progress-bar-star
    :value
-   :message-with-timeout))
+   :message-with-timeout
+   :message-with-timeout-callback))
 
 (defpackage :nodgui.demo
   (:use :cl

@@ -87,10 +87,14 @@
               :sanitize nil))))
 
 (defmethod make-image ((object string) &optional (w nil) (h nil) (channels 3))
-  "The string must be base64 encoded image in PNG or GIF format"
+  "If object contains  a `.` is threated as a  pathname, otherwise the
+string must  be base64 encoded image.  Note in both cases  only PNG or
+GIF format!"
   (declare (ignore w h channels))
-  (make-instance 'photo-image
-                 :data object))
+  (if (find #\. object :test #'char=)
+      (make-image (namestring->pathname object))
+      (make-instance 'photo-image
+                     :data object)))
 
 (defmethod make-image ((object vector) &optional (w nil) (h nil) (channels 3))
   (cond
@@ -129,6 +133,12 @@
                                                 ])
                                :sanitize nil)))
       res)))
+
+(defmethod make-image ((object pathname) &optional (w nil) (h nil) (channels nil))
+  (declare (ignore w h channels))
+    (with-open-file (stream object :element-type '(unsigned-byte 8))
+      (let ((data (nodgui.utils:read-into-array stream (file-length stream))))
+        (make-image data))))
 
 (defgeneric image-load (p filename))
 

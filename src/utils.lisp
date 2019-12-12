@@ -197,6 +197,9 @@
     (read-sequence bytes stream)
     bytes))
 
+(defun namestring->pathname (path-as-string)
+  (uiop:parse-native-namestring path-as-string))
+
 (defun safe-subseq (sequence start &optional (end nil))
   "return the whole sequence if end is beyond the length of the sequence"
   (subseq sequence

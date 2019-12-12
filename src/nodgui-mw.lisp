@@ -1421,12 +1421,17 @@
       (grid widget 0 0 :sticky :news)
       (grid scale  1 0 :sticky :news))))
 
-(defun message-with-timeout (parent message timeout close-button-label &rest label-options)
+(defun message-with-timeout-callback (parent message timeout close-button-label
+                                      expired-callback
+                                      &rest label-options)
   "Create a window with a message that automatically close after a timeout
    - parent:             the new window will be placed on top of parent
    - message:            the label to display
+   - timeout:            the timeout after the window is destroyed (in seconds)
    - close-button-label: the label of the button to close this window
-   - label-options:      the optional options for the message label (e.g. '(:font \"bold\"))"
+   - expired-callback:   function with no parameters called after the timeout has expired
+   - label-options:      the optional options for the message label (e.g. '(:font \"bold\"))
+   Note: do not use the callback to modify widget in the same process that created this window."
   (let* ((lock             (bt:make-lock))
          (button-clicked-p nil)
          (toplevel         (make-instance 'toplevel))
@@ -1448,6 +1453,7 @@
          (wish-subprocess  *wish*)
          (exit-mainloop    *exit-mainloop*)
          (break-main-loop  *break-mainloop*))
+    (transient toplevel parent)
     (grid label            0 0 :sticky :news)
     (grid progress-timeout 1 0 :sticky :news)
     (grid ok-button        2 0 :sticky :ns)
@@ -1472,7 +1478,23 @@
                              (bt:with-lock-held (lock)
                                (when (not button-clicked-p)
                                  (setf (value progress-timeout)
-                                       (* 100 (coerce (/ i timeout) 'single-float))))))
+                                       (* 100 (coerce (/ i timeout)
+                                                      'single-float))))))
                         (bt:with-lock-held (lock)
                           (when (not button-clicked-p)
+                            (funcall expired-callback)
                             (withdraw toplevel))))))))
+
+(defun message-with-timeout (parent message timeout close-button-label &rest label-options)
+  "Create a window with a message that automatically close after a timeout
+   - parent:             the new window will be placed on top of parent
+   - message:            the label to display
+   - timeout:            the timeout after the window is destroyed (in seconds)
+   - close-button-label: the label of the button to close this window
+   - label-options:      the optional options for the message label (e.g. '(:font \"bold\"))"
+  (apply #'message-with-timeout-callback
+         parent message
+         timeout
+         close-button-label
+         (constantly t)
+         label-options))

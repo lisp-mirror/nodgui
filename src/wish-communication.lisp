@@ -157,8 +157,8 @@
                     (let ((ch (read-char error-stream)))
                       (unread-char ch error-stream)
                       (error (make-condition 'tk-communication-error
-                                             :message (read-line error-stream)))))))
-
+                                             :message (read-line error-stream)))))
+                  :name "nodgui collecting thread"))
 ;;; start wish and set (wish-stream *wish*)
 (defun start-wish (&rest keys &key debugger-class remotep stream debug-tcl)
   ;; open subprocess

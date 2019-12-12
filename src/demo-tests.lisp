@@ -840,28 +840,28 @@
                                                          ("JPG"     "*.jpg")
                                                          ("TGA"     "*.tga")
                                                          ("RGB raw" "*.data")))))
-                  (with-open-file (stream file :element-type '(unsigned-byte 8))
-                    (let* ((data (read-into-array stream (file-length stream))))
-                      (cond
-                        ((cl-ppcre:scan "png$" file)
-                         (setf (image b) (make-image data)))
-                        ((cl-ppcre:scan "tga$" file)
-                         (let ((bitmap (nodgui.pixmap:rotate-pixmap
-                                        (nodgui.pixmap:scale-bilinear
-                                         (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:tga file)
-                                         2.0 2.1)
-                                        30.0
-                                        :repeat t)))
-                           (setf (image b) (make-image bitmap))))
-                        ((cl-ppcre:scan "jpg$" file)
-                         (let ((bitmap (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:jpeg file)))
-                           (setf (image b) (make-image bitmap))))
-                        (t
-                         (let ((w (input-box "Pixel width?"
-                                             :title "Image size"))
-                               (h (input-box "Pixel Height?"
-                                              :title "Image size")))
-                           (when (and w h)
+                  (cond
+                    ((cl-ppcre:scan "png$" file)
+                     (setf (image b) (make-image file)))
+                    ((cl-ppcre:scan "tga$" file)
+                     (let ((bitmap (nodgui.pixmap:rotate-pixmap
+                                    (nodgui.pixmap:scale-bilinear
+                                     (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:tga file)
+                                     2.0 2.1)
+                                    30.0
+                                    :repeat t)))
+                       (setf (image b) (make-image bitmap))))
+                    ((cl-ppcre:scan "jpg$" file)
+                     (let ((bitmap (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:jpeg file)))
+                       (setf (image b) (make-image bitmap))))
+                    (t
+                     (let ((w (input-box "Pixel width?"
+                                         :title "Image size"))
+                           (h (input-box "Pixel Height?"
+                                         :title "Image size")))
+                       (when (and w h)
+                         (with-open-file (stream file :element-type '(unsigned-byte 8))
+                           (let* ((data (read-into-array stream (file-length stream))))
                              (setf (image b) (make-image data
                                                         (parse-integer w)
                                                         (parse-integer h))))))))))))
