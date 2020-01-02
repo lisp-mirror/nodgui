@@ -244,9 +244,9 @@
     (flet ((->byte (a)
              (round (* 255 a))))
       (format nil "#~2,'0X~2,'0X~2,'0X"
-              (->byte (cl-colors:rgb-red   rgb-struct))
-              (->byte (cl-colors:rgb-green rgb-struct))
-              (->byte (cl-colors:rgb-blue  rgb-struct)))))
+              (->byte (cl-colors2:rgb-red   rgb-struct))
+              (->byte (cl-colors2:rgb-green rgb-struct))
+              (->byte (cl-colors2:rgb-blue  rgb-struct)))))
 
   (declaim (inline rgb->tk))
 
@@ -259,7 +259,7 @@
                      (res '()))
                     ((char= r #\%) (coerce (reverse res) 'string))
                  (push r res))))
-      (rgb-struct->tk-color (symbol-value (format-fn-symbol :cl-colors "+~a+" raw)))))
+      (rgb-struct->tk-color (symbol-value (format-fn-symbol :cl-colors2 "+~a+" raw)))))
 
   (named-readtables:defreadtable nodgui-color-syntax
     (:fuse :standard)

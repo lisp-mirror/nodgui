@@ -65,8 +65,8 @@
                         (language        :en)
                         (date-format     +calendar-date-format-d/m/y+)
                         (first-day       :monday)
-                        (highlight-color (cl-colors:as-rgb "FFCC00"))
-                        (shade-color     (cl-colors:as-rgb "888888"))
+                        (highlight-color (cl-colors2:as-rgb "FFCC00"))
+                        (shade-color     (cl-colors2:as-rgb "888888"))
                         (font            +tk-default-font+))
   "Make a calendar widget.
 Parameters are:
