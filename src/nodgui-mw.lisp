@@ -612,7 +612,7 @@
     :accessor remove-non-matching-p
     :initform t
     :initarg :remove-non-matching-p
-    :documentation  "If true  (generilazed boolean)  non-matching item
+    :documentation  "If true  (generalized boolean)  non-matching item
     are removed from the listbox, if nil just unselected")
    (matching-fn
     :initform #'cl-ppcre:scan

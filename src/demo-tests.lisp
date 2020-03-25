@@ -139,6 +139,10 @@
                                                     :text    "(tklib) equalizer bar"
                                                     :command (lambda ()
                                                                (demo-tklib-equalizer-bar))))
+           (demo-validate-command    (make-instance 'button
+                                                    :text    "entry with validate command"
+                                                    :command (lambda ()
+                                                               (demo-validate-command))))
            (b-quit              (make-instance  'button
                                                 :text    "quit lisp :)"
                                                 :command (lambda () (uiop:quit)))))
@@ -175,7 +179,8 @@
       (grid demo-tklib-bar-plot      10 0 :sticky :nswe)
       (grid demo-tklib-swaplist      10 1 :sticky :nswe)
       (grid demo-tklib-equalizer-bar 10 2 :sticky :nswe)
-      (grid b-quit                   11 0 :sticky :nswe :columnspan 3)
+      (grid demo-validate-command    11 0 :sticky :nswe)
+      (grid b-quit                   12 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
 
@@ -1016,3 +1021,25 @@
                                       (format t "click on plot x: ~a y: ~a~%"
                                               (event-x event)
                                               (event-y event)))))))
+
+(defun demo-validate-command ()
+  (with-nodgui ()
+    (let ((label  (make-instance 'label
+                                 :master nil
+                                 :text  (strcat "This entry uses \"validatecommand\" "
+                                                "to prevent user to insert "
+                                                "values that are not digits (base 10).")))
+          (entry  (make-instance
+                   'entry
+                   :validate        :key
+                   :validatecommand (lambda (action current-string new-string)
+                                      (format *trace-output*
+                                              "action ~a current string ~a new ~a~%"
+                                              action current-string new-string)
+                                      (let ((true  (lisp-bool->tcl t))
+                                            (false (lisp-bool->tcl nil)))
+                                        (if (cl-ppcre:scan "[0-9]" new-string)
+                                            (send-wish-line true)
+                                            (send-wish-line false)))))))
+      (pack label)
+      (pack entry))))

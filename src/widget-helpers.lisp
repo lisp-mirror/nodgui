@@ -318,8 +318,9 @@
       (undo undo "~@[ -undo {~(~a~)}~]" undo "")
       (use use "~@[ -use {~(~a~)}~]" use "")
       (validate validate "~@[ -validate {~(~a~)}~]" validate "")
-      ;(validatecommand validatecommand "~@[ -validatecommand ~(~a~)~]" validatecommand "")
-      (validatecommand validatecommand "~@[ -validatecommand {callback ~a;1}~]"
+      (validatecommand
+       validatecommand
+       "~@[ -validatecommand {callback_validatecommand ~a %d %s %S}~]"
        (and validatecommand
         (progn
           (add-callback (name widget) validatecommand)

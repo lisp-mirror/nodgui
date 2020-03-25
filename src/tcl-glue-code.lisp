@@ -146,6 +146,20 @@
     (puts $server [strcat <  #.+wish-to-lisp-callback-reply+
                    \\+ \"+ $s+ \\+ \" \\+ \"+ [escape $val]+ \\+ \" > ]))
 
+  (defproc callback_validatecommand (s action current new)
+    (global server)
+    (puts $server
+          [strcat <  #.+wish-to-lisp-callback-reply+
+          \\+ \"+ $s+ \\+ \"
+          \\+ \"+ [escape $action]+ \\+ \"
+          \\+ \"+ [escape $current]+ \\+ \"
+          \\+ \"+ [escape $new]+ \\+ \"
+          > ])
+    (flush $server)
+    (set res [gets stdin])
+    (regexp {[0-9]} $res res)
+    (return $res))
+
   (defproc keepalive ()
     (:lisp
      (with-flush-server

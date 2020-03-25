@@ -109,9 +109,6 @@
 (defparameter *buffer-for-atomic-output* nil)
 
 (defun dbg (fmt &rest args)
-;  (with-open-file (w "rl.log" :direction :output :if-exists :append :if-does-not-exist :create)
-;      (apply #'format w fmt args)
-;      (finish-output w))
   (when *debug-tk*
     (apply #'format *trace-output* fmt args)
     (finish-output *trace-output*)))
@@ -230,6 +227,20 @@
   (push text (wish-output-buffer *wish*))
   (unless *buffer-for-atomic-output*
     (flush-wish)))
+
+(defun send-wish-line (data)
+  "Send data  to wish  shell. data  are not processed  so thy  must be
+coupled with a 'gets' from the TCL side, for example.
+
+Note also that this function  blocks the communication until wish read
+the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
+  (let ((*print-pretty* nil)
+        (stream         (wish-stream *wish*))
+        (line           (format nil "~a~%" data)))
+    (when *debug-tk*
+      (dbg "sending line: ~s~%" data))
+    (format stream line)
+    (finish-output stream)))
 
 (defun check-for-errors ()
   (let ((wstream (wish-stream *wish*)))

@@ -1366,6 +1366,7 @@
            :force-focus
            :forget-pane
            :format-wish
+           :send-wish-line
            :flush-wish
            :*accept-garbage-as-event-p*
            :read-data
