@@ -1024,22 +1024,31 @@
 
 (defun demo-validate-command ()
   (with-nodgui ()
-    (let ((label  (make-instance 'label
-                                 :master nil
-                                 :text  (strcat "This entry uses \"validatecommand\" "
-                                                "to prevent user to insert "
-                                                "values that are not digits (base 10).")))
-          (entry  (make-instance
-                   'entry
-                   :validate        :key
-                   :validatecommand (lambda (action current-string new-string)
-                                      (format *trace-output*
-                                              "action ~a current string ~a new ~a~%"
-                                              action current-string new-string)
-                                      (let ((true  (lisp-bool->tcl t))
-                                            (false (lisp-bool->tcl nil)))
-                                        (if (cl-ppcre:scan "[0-9]" new-string)
-                                            (send-wish-line true)
-                                            (send-wish-line false)))))))
-      (pack label)
-      (pack entry))))
+    (flet ((validate-function (action
+                               current-string
+                               new-string
+                               index
+                               validation-action)
+             (format *trace-output*
+                     "action ~a current string ~a new ~a index ~a validation action ~a~%"
+                     action
+                     current-string
+                     new-string
+                     index
+                     validation-action)
+             (let ((true  (lisp-bool->tcl t))
+                   (false (lisp-bool->tcl nil)))
+               (if (cl-ppcre:scan "[0-9]" new-string)
+                   (send-wish-line true)
+                   (send-wish-line false)))))
+      (let ((label  (make-instance 'label
+                                   :master nil
+                                   :text  (strcat "This entry uses \"validatecommand\" "
+                                                  "to prevent user to insert "
+                                                  "values that are not digits (base 10).")))
+            (entry  (make-instance
+                     'entry
+                     :validate        :key
+                     :validatecommand #'validate-function)))
+        (pack label)
+        (pack entry)))))

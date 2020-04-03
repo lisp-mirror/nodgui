@@ -320,7 +320,7 @@
       (validate validate "~@[ -validate {~(~a~)}~]" validate "")
       (validatecommand
        validatecommand
-       "~@[ -validatecommand {callback_validatecommand ~a %d %s %S}~]"
+       "~@[ -validatecommand {callback_validatecommand ~a %d %s %S %i %V}~]"
        (and validatecommand
         (progn
           (add-callback (name widget) validatecommand)

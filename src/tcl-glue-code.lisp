@@ -146,7 +146,7 @@
     (puts $server [strcat <  #.+wish-to-lisp-callback-reply+
                    \\+ \"+ $s+ \\+ \" \\+ \"+ [escape $val]+ \\+ \" > ]))
 
-  (defproc callback_validatecommand (s action current new)
+  (defproc callback_validatecommand (s action current new index validationaction)
     (global server)
     (puts $server
           [strcat <  #.+wish-to-lisp-callback-reply+
@@ -154,6 +154,8 @@
           \\+ \"+ [escape $action]+ \\+ \"
           \\+ \"+ [escape $current]+ \\+ \"
           \\+ \"+ [escape $new]+ \\+ \"
+          \\+ \"+ [escape $index]+ \\+ \"
+          \\+ \"+ [escape $validationaction]+ \\+ \"
           > ])
     (flush $server)
     (set res [gets stdin])
