@@ -669,7 +669,7 @@ set y [winfo y ~a]
 ;;; misc functions
 
 (defun eval-tcl-file (file-path)
-  "This function will feed the TCL interpreter with the contents of the file `path'.
+  "This function will feed the TCL interpreter with the contents of the file `file-path'.
    Please, as this function will load  and execute a script, ensure to
    load files only from trusted sources otherwise severe security problem may arise."
   (assert (stringp file-path))
