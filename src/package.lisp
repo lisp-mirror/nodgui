@@ -1622,8 +1622,9 @@
            :handle
            :column-values
            :listbox-insert
-           :theme-names
+           :eval-tcl-file
            :use-theme
+           :theme-names
            :items
            :image))
 
