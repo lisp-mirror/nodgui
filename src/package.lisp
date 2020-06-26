@@ -1499,6 +1499,8 @@
            :screen-width
            :screen-width-mm
            :toplevel-pathname
+           :parent-pathname
+           :children-pathname
            :scrollbar
            :scrolled-canvas
            :scrolled-frame

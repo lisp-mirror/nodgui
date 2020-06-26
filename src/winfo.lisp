@@ -57,3 +57,14 @@
 (defun toplevel-pathname (widget)
   (format-wish (tclize `(senddatastring [winfo toplevel ,(widget-path widget) ])))
   (read-data))
+
+(defun children-pathname (widget)
+  (format-wish (tclize `(senddatastring [winfo children ,(widget-path widget) ])))
+  (split-words (read-data)))
+
+(defun parent-pathname (widget)
+  (format-wish (tclize `(senddatastring [winfo parent ,(widget-path widget) ])))
+  (let ((parent (read-data)))
+    (if (string= parent "")
+        nil
+        parent)))
