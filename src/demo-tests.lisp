@@ -145,7 +145,9 @@
                                                                (demo-validate-command))))
            (b-quit              (make-instance  'button
                                                 :text    "quit lisp :)"
-                                                :command (lambda () (uiop:quit)))))
+                                                :command (lambda ()
+                                                           (exit-wish)
+                                                           (uiop:quit)))))
       (grid widget                   0 0  :sticky :nswe)
       (grid eyes                     0 1  :sticky :nswe)
       (grid modal                    0 2  :sticky :nswe)
