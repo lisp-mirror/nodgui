@@ -223,10 +223,17 @@
     (throw 'exit-with-remote-nodgui nil))
   (throw *wish* nil))
 
+(defparameter *wish-lock*       (bt:make-recursive-lock))
+
+(defparameter *wish-flush-lock* (bt:make-recursive-lock))
+
+(defparameter *wish-read-lock* (bt:make-recursive-lock))
+
 (defun send-wish (text)
-  (push text (wish-output-buffer *wish*))
-  (unless *buffer-for-atomic-output*
-    (flush-wish)))
+  (bt:with-recursive-lock-held (*wish-lock*)
+    (push text (wish-output-buffer *wish*))
+    (unless *buffer-for-atomic-output*
+      (flush-wish))))
 
 (defun send-wish-line (data)
   "Send data  to wish  shell. data  are not processed  so thy  must be
@@ -234,13 +241,14 @@ coupled with a 'gets' from the TCL side, for example.
 
 Note also that this function  blocks the communication until wish read
 the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
-  (let ((*print-pretty* nil)
-        (stream         (wish-stream *wish*))
-        (line           (format nil "~a~%" data)))
-    (when *debug-tk*
-      (dbg "sending line: ~s~%" data))
-    (format stream line)
-    (finish-output stream)))
+  (bt:with-recursive-lock-held (*wish-lock*)
+    (let ((*print-pretty* nil)
+          (stream         (wish-stream *wish*))
+          (line           (format nil "~a~%" data)))
+      (when *debug-tk*
+        (dbg "sending line: ~s~%" data))
+      (format stream line)
+      (finish-output stream))))
 
 (defun check-for-errors ()
   (let ((wstream (wish-stream *wish*)))
@@ -254,61 +262,62 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
 (defparameter *max-line-length* 1000)
 
 (defun flush-wish ()
-  (let ((buffer (nreverse (wish-output-buffer *wish*))))
-    (when buffer
-      (let ((len (loop for s in buffer summing (length s)))
-            (*print-pretty* nil)
-            (stream (wish-stream *wish*)))
-        (declare (stream stream))
-        (incf len (length buffer))
-        (setf (wish-output-buffer *wish*) nil)
-        (handler-bind ((stream-error (lambda (e) (handle-dead-stream e stream)))
-                       #+lispworks
-                       (comm:socket-error (lambda (e) (handle-dead-stream e stream))))
-          (cond
-            ((wish-remotep *wish*)
-             (let ((content (format nil "~{~a~%~}" buffer)))
-               (format stream "~d ~a~%"(length content) content)
-               (dbg "~d ~a~%" (length content) content)))
-            (*max-line-length*
-             (when (or *debug-buffers*
-                       *debug-tk*)
-               (format t "buffer size ~a~%" len) (finish-output))
-             (dolist (string buffer)
-               (loop while (> (length string) *max-line-length*)
-                     do
-                  (let ((sub (subseq string 0 *max-line-length*)))
-                    (setf string (subseq string *max-line-length*))
-                    (format stream "bt \"~A\"~%" (tkescape2 sub))
-                    (dbg "bt \"~A\"~%" (tkescape2 sub))))
-               (format stream "bt \"~A~%\"~%" (tkescape2 string))
-               (dbg "bt \"~A\"~%" (tkescape2 string)))
-             (format stream "process_buffer~%")
-             (dbg "process_buffer~%"))
-            (t
-             ;; (format stream "bt {~D }~%" len)
-             ;; (dbg "bt {~D }~%" len)
-             (dolist (string buffer)
-               (format stream "bt \"~A~%\"~%" (tkescape2 string))
-               (dbg "bt \"~A\"~%" (tkescape2 string)))
-             (format stream "process_buffer~%")
-             (dbg "process_buffer~%")))
-          (finish-output stream)
-          #+nil(loop for string in buffer
-                     do (loop with end = (length string)
-                              with start = 0
-                              for amount = (min 1024 (- end start))
-                              while (< start end)
-                              do (let ((string (subseq string start (+ start amount))))
-                                   (format stream "buffer_text {~A}~%" string)
-                                   (dbg "buffer_text {~A}~%" string)
-                                   (incf start amount)))
-                        (format stream "buffer_text \"\\n\"~%")
-                        (dbg "buffer_text \"\\n\"~%")
-                     finally (progn (format stream "process_buffer~%")
-                                    (dbg "process_buffer~%")
-                                    (finish-output stream)))
-          (setf (wish-output-buffer *wish*) nil))))))
+  (bt:with-recursive-lock-held (*wish-flush-lock*)
+    (let ((buffer (nreverse (wish-output-buffer *wish*))))
+      (when buffer
+        (let ((len (loop for s in buffer summing (length s)))
+              (*print-pretty* nil)
+              (stream (wish-stream *wish*)))
+          (declare (stream stream))
+          (incf len (length buffer))
+          (setf (wish-output-buffer *wish*) nil)
+          (handler-bind ((stream-error (lambda (e) (handle-dead-stream e stream)))
+                         #+lispworks
+                         (comm:socket-error (lambda (e) (handle-dead-stream e stream))))
+            (cond
+              ((wish-remotep *wish*)
+               (let ((content (format nil "~{~a~%~}" buffer)))
+                 (format stream "~d ~a~%"(length content) content)
+                 (dbg "~d ~a~%" (length content) content)))
+              (*max-line-length*
+               (when (or *debug-buffers*
+                         *debug-tk*)
+                 (format t "buffer size ~a~%" len) (finish-output))
+               (dolist (string buffer)
+                 (loop while (> (length string) *max-line-length*)
+                    do
+                      (let ((sub (subseq string 0 *max-line-length*)))
+                        (setf string (subseq string *max-line-length*))
+                        (format stream "bt \"~A\"~%" (tkescape2 sub))
+                        (dbg "bt \"~A\"~%" (tkescape2 sub))))
+                 (format stream "bt \"~A~%\"~%" (tkescape2 string))
+                 (dbg "bt \"~A\"~%" (tkescape2 string)))
+               (format stream "process_buffer~%")
+               (dbg "process_buffer~%"))
+              (t
+               ;; (format stream "bt {~D }~%" len)
+               ;; (dbg "bt {~D }~%" len)
+               (dolist (string buffer)
+                 (format stream "bt \"~A~%\"~%" (tkescape2 string))
+                 (dbg "bt \"~A\"~%" (tkescape2 string)))
+               (format stream "process_buffer~%")
+               (dbg "process_buffer~%")))
+            (finish-output stream)
+            #+nil(loop for string in buffer
+                    do (loop with end = (length string)
+                          with start = 0
+                          for amount = (min 1024 (- end start))
+                          while (< start end)
+                          do (let ((string (subseq string start (+ start amount))))
+                               (format stream "buffer_text {~A}~%" string)
+                               (dbg "buffer_text {~A}~%" string)
+                               (incf start amount)))
+                      (format stream "buffer_text \"\\n\"~%")
+                      (dbg "buffer_text \"\\n\"~%")
+                    finally (progn (format stream "process_buffer~%")
+                                   (dbg "process_buffer~%")
+                                   (finish-output stream)))
+            (setf (wish-output-buffer *wish*) nil)))))))
 
 (defun handle-dead-stream (err stream)
   (when *debug-tk*
@@ -380,12 +389,13 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
   "Reads from wish. If the next thing in the stream is looks like a lisp-list
   read it as such, otherwise read one line as a string."
   (flush-wish)
-  (let ((*read-eval* nil)
-        (*package* (find-package :nodgui))
-        (stream (wish-stream *wish*)))
-    (if (eql #\( (peek-char t stream nil))
-        (read stream nil)
-        (read-line stream nil))))
+  (bt:with-recursive-lock-held (*wish-read-lock*)
+    (let ((*read-eval* nil)
+          (*package* (find-package :nodgui))
+          (stream (wish-stream *wish*)))
+      (if (eql #\( (peek-char t stream nil))
+          (read stream nil)
+          (read-line stream nil)))))
 
 (defun can-read (stream)
   "return t, if there is something to READ on the stream"
@@ -462,6 +472,7 @@ event to read and blocking is set to nil"
 (defun read-data (&key (expected-list-as-data nil))
   "Read data from wish. Non-data events are postponed, bogus messages (eg.
 +error-strings) are ignored."
+  (bt:with-recursive-lock-held (*wish-read-lock*)
   (loop
      for data = (read-wish)
      when (listp data) do
@@ -488,7 +499,7 @@ event to read and blocking is set to nil"
          (t
           (format t "read-data problem: ~a~%" data) (finish-output)))
      else do
-       (dbg "read-data error: ~a~%" data)))
+       (dbg "read-data error: ~a~%" data))))
 
 (defun read-keyword ()
   (let ((string (read-data)))

@@ -186,7 +186,7 @@
     :accessor vscroll)))
 
 (defun make-scrolled-text (master)
-  (make-instance 'scrolled-text :master master ))
+  (make-instance 'scrolled-text :master master))
 
 (defmethod initialize-instance :after ((object scrolled-text)
                                        &key (use-horizontal-scrolling-p t)

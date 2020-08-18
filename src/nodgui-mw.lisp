@@ -1432,8 +1432,7 @@
    - expired-callback:   function with no parameters called after the timeout has expired
    - label-options:      the optional options for the message label (e.g. '(:font \"bold\"))
    Note: do not use the callback to modify widget in the same process that created this window."
-  (let* ((lock             (bt:make-lock))
-         (button-clicked-p nil)
+  (let* ((button-clicked-p nil)
          (toplevel         (make-instance 'toplevel))
          (label            (apply #'make-instance
                                   'label
@@ -1447,9 +1446,8 @@
                                           :text    close-button-label
                                           :master  toplevel
                                           :command (lambda ()
-                                                     (bt:with-lock-held (lock)
-                                                       (setf button-clicked-p t)
-                                                       (withdraw toplevel)))))
+                                                     (setf button-clicked-p t)
+                                                     (withdraw toplevel))))
          (wish-subprocess  *wish*)
          (exit-mainloop    *exit-mainloop*)
          (break-main-loop  *break-mainloop*))
@@ -1475,15 +1473,13 @@
                             (*exit-mainloop*  exit-mainloop))
                         (loop for i from 0 below timeout do
                              (sleep 1)
-                             (bt:with-lock-held (lock)
-                               (when (not button-clicked-p)
-                                 (setf (value progress-timeout)
-                                       (* 100 (coerce (/ i timeout)
-                                                      'single-float))))))
-                        (bt:with-lock-held (lock)
-                          (when (not button-clicked-p)
-                            (funcall expired-callback)
-                            (withdraw toplevel))))))))
+                             (when (not button-clicked-p)
+                               (setf (value progress-timeout)
+                                     (* 100 (coerce (/ i timeout)
+                                                    'single-float)))))
+                        (when (not button-clicked-p)
+                          (funcall expired-callback)
+                          (withdraw toplevel)))))))
 
 (defun message-with-timeout (parent message timeout close-button-label &rest label-options)
   "Create a window with a message that automatically close after a timeout
