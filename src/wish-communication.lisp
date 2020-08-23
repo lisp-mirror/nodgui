@@ -40,12 +40,15 @@
 ;;; global var for holding the communication stream
 (defstruct (nodgui-connection (:constructor make-nodgui-connection (&key remotep))
                            (:conc-name #:wish-))
-  (stream nil)
-  (callbacks (make-hash-table :test #'equal))
-  (after-ids (make-hash-table :test #'equal))
-  (counter 1)
+  (stream        nil)
+  (callbacks     (make-hash-table :test #'equal))
+  (after-ids     (make-hash-table :test #'equal))
+  (counter       1)
   (after-counter 1)
-  (event-queue nil)
+  (event-queue   nil)
+  (lock          (bt:make-recursive-lock))
+  (flush-lock    (bt:make-recursive-lock))
+  (read-lock     (bt:make-recursive-lock))
   ;; This is should be a function that takes a thunk, and calls it in
   ;; an environment with some condition handling in place.  It is what
   ;; allows the user to specify error-handling in START-WISH, and have
@@ -223,14 +226,8 @@
     (throw 'exit-with-remote-nodgui nil))
   (throw *wish* nil))
 
-(defparameter *wish-lock*       (bt:make-recursive-lock))
-
-(defparameter *wish-flush-lock* (bt:make-recursive-lock))
-
-(defparameter *wish-read-lock* (bt:make-recursive-lock))
-
 (defun send-wish (text)
-  (bt:with-recursive-lock-held (*wish-lock*)
+  (bt:with-recursive-lock-held ((wish-lock *wish*))
     (push text (wish-output-buffer *wish*))
     (unless *buffer-for-atomic-output*
       (flush-wish))))
@@ -241,7 +238,7 @@ coupled with a 'gets' from the TCL side, for example.
 
 Note also that this function  blocks the communication until wish read
 the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
-  (bt:with-recursive-lock-held (*wish-lock*)
+  (bt:with-recursive-lock-held ((wish-lock *wish*))
     (let ((*print-pretty* nil)
           (stream         (wish-stream *wish*))
           (line           (format nil "~a~%" data)))
@@ -262,7 +259,7 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
 (defparameter *max-line-length* 1000)
 
 (defun flush-wish ()
-  (bt:with-recursive-lock-held (*wish-flush-lock*)
+  (bt:with-recursive-lock-held ((wish-flush-lock *wish*))
     (let ((buffer (nreverse (wish-output-buffer *wish*))))
       (when buffer
         (let ((len (loop for s in buffer summing (length s)))
@@ -389,7 +386,7 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
   "Reads from wish. If the next thing in the stream is looks like a lisp-list
   read it as such, otherwise read one line as a string."
   (flush-wish)
-  (bt:with-recursive-lock-held (*wish-read-lock*)
+  (bt:with-recursive-lock-held ((wish-read-lock *wish*))
     (let ((*read-eval* nil)
           (*package* (find-package :nodgui))
           (stream (wish-stream *wish*)))
@@ -472,7 +469,7 @@ event to read and blocking is set to nil"
 (defun read-data (&key (expected-list-as-data nil))
   "Read data from wish. Non-data events are postponed, bogus messages (eg.
 +error-strings) are ignored."
-  (bt:with-recursive-lock-held (*wish-read-lock*)
+  (bt:with-recursive-lock-held ((wish-read-lock *wish*))
   (loop
      for data = (read-wish)
      when (listp data) do
