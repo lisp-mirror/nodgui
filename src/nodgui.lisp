@@ -741,7 +741,7 @@ set y [winfo y ~a]
 (defun process-one-event (event)
   (when event
     (when *debug-tk*
-      (format *trace-output* "l:~s<=~%" event)
+      (format *trace-output* "event:~s<=~%" event)
       (finish-output *trace-output*))
     (cond
      ((and (not (listp event))
@@ -767,25 +767,25 @@ set y [winfo y ~a]
       (handle-output
        (first event) (rest event))))))
 
-(defun process-events (&optional (blockingp nil))
+(defun process-events ()
   "A function to temporarliy yield control to wish so that pending
 events can be processed, useful in long loops or loops that depend on
 tk input to terminate"
   (let (event)
     (loop
-     while (setf event (read-event :blocking blockingp))
+     while (setf event (read-event))
      do (with-atomic (process-one-event event)))))
 
 (defparameter *inside-mainloop* ())
 
-(defun main-iteration (&key (blocking t) (reentrant? nil))
+(defun main-iteration (&key (reentrant? nil))
   "The heart of the main loop.  Returns true as long as the main loop should continue."
   (let ((no-event (cons nil nil)))
     (labels ((proc-event ()
-               (let ((event (read-event :blocking blocking
-                                        :no-event-value no-event)))
+               (let ((event (read-event :no-event-value no-event)))
                  (cond
-                   ((null event)
+                   ((or (null event)
+                        (event-got-error-p event))
                     (ignore-errors (close (wish-stream *wish*)))
                     (exit-wish)
                     nil)
@@ -872,7 +872,7 @@ tk input to terminate"
                                    (lambda (e)
                                      (when (eql (stream-error-stream e) fd-stream)
                                        (return-from call-main nil)))))
-                     (catch wish (main-iteration :blocking nil)))))
+                     (catch wish (main-iteration)))))
                (nodgui-input-handler (fd)
                  (declare (ignore fd))
                  (let ((*wish* wish)) ; use the wish we were given as an argument
@@ -935,7 +935,9 @@ tk input to terminate"
                   (append (filter-keys '(:stream :debugger-class :debug-tcl)
                                        keys)
                           (list :debugger-class (debug-setting-condition-handler debug)))))
-         (mainloop () (apply #'mainloop (filter-keys '(:serve-event) keys))))
+         (mainloop ()
+           (let ((*mainloop-started* t))
+             (apply #'mainloop (filter-keys '(:serve-event) keys)))))
     (let* ((*default-toplevel-title* (getf keys :title "notitle"))
            (*wish-args*              (append-wish-args (list +arg-toplevel-name+
                                                              *default-toplevel-title*)))
@@ -948,7 +950,7 @@ tk input to terminate"
                    (with-nodgui-handlers ()
                      (with-atomic (funcall thunk)))
                  (mainloop)))
-          (unless serve-event
+          (when (not serve-event)
             (exit-wish)))))))
 
 (defmacro with-modal-toplevel ((var &rest toplevel-initargs) &body body)

@@ -1075,14 +1075,23 @@
            (text-area        (make-instance 'scrolled-text))
            (wish-subprocess  *wish*))
       (setf *multithread-text-area* text-area)
-      (flet ((start-thread (name)
+      (flet ((start-write-thread (name)
                (bt:make-thread (lambda ()
                                  (let ((*wish* wish-subprocess))
                                    (loop repeat 20 do
                                         (sleep (random 2))
                                         (append-text *multithread-text-area*
-                                                     name)))))))
+                                                     name))))))
+             (start-read-thread ()
+               (bt:make-thread (lambda ()
+                                 (let ((*wish* wish-subprocess))
+                                   (loop repeat 20 do
+                                        (sleep (random 2))
+                                        (format t
+                                                "text ~a~%"
+                                                (text *multithread-text-area*))))))))
         (grid description 0 0 :sticky :nswe)
         (grid text-area   1 0 :sticky :nswe)
+        (start-read-thread)
         (loop for i from 0 below 20 do
-             (start-thread (format nil "thread-~a " i)))))))
+             (start-write-thread (format nil "thread-~a " i)))))))
