@@ -789,9 +789,12 @@ tk input to terminate"
                     (ignore-errors (close (wish-stream *wish*)))
                     (exit-wish)
                     nil)
+                   ((eq (first event) :data)
+                    (push-enqueued-data event))
                    ((eql event no-event)
                     t)
-                   (t (with-atomic (process-one-event event))
+                   (t (with-atomic
+                          (process-one-event event))
                       (cond
                         (*break-mainloop* nil)
                         (*exit-mainloop*

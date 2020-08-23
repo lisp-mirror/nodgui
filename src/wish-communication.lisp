@@ -48,11 +48,11 @@
   (after-ids                (make-hash-table :test #'equal))
   (counter                  1)
   (after-counter            1)
-  (event-queue              ())
   (data-queue               ())
   (lock                     (bt:make-recursive-lock))
   (flush-lock               (bt:make-recursive-lock))
   (read-lock                (bt:make-recursive-lock))
+  (read-data-lock           (bt:make-recursive-lock))
   ;; This is should be a function that takes a thunk, and calls it in
   ;; an environment with some condition handling in place.  It is what
   ;; allows the user to specify error-handling in START-WISH, and have
@@ -404,14 +404,11 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
   (declare #-:lispworks (inline read-char-no-hang unread-char))
   (handler-case
       (let ((c (read-char-no-hang stream)))
-        (loop
-           while (and c
-                      (member c '(#\Newline #\Return #\Space)))
-           do
-             (setf c (read-char-no-hang stream)))
-        (when c
-          (unread-char c stream)
-          t))
+        (if c
+            (progn
+              (unread-char c stream)
+              t)
+            nil))
     (error (e)
       (list :read-stream-error e))))
 
@@ -461,36 +458,57 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
   (format t "tcl debug: ~a~%" something)
   (finish-output))
 
-(defun read-event (&key (no-event-value nil))
+(defun read-event (&key (blocking t) (no-event-value nil))
   "read the next event from wish, return the event or nil, if there is no
 event to read and blocking is set to nil"
   (handler-case
-  (let ((wstream (wish-stream *wish*)))
-    (flush-wish)
-    (bt:with-recursive-lock-held ((wish-read-lock *wish*))
-      (let ((event (and (stream-readable-p wstream)
-                        (read-preserving-whitespace wstream
-                                                    t
-                                                    nil))))
-        (if event
-            (verify-event
-             (let ((*in-read-event* (cons *wish* *in-read-event*)))
+      (let ((wstream (wish-stream *wish*)))
+        (flush-wish)
+        (bt:with-recursive-lock-held ((wish-read-lock *wish*))
+          (let ((event (and (or blocking (stream-readable-p wstream))
+                            (read-preserving-whitespace wstream
+                                                        t
+                                                        nil))))
+            (if event
+                (verify-event
+                 (let ((*in-read-event* (cons *wish* *in-read-event*)))
                    event))
-            no-event-value))))
+                no-event-value))))
     (error (e)
       (list :read-stream-error e))))
 
 (defun event-got-error-p (event)
   (eq (first event) :read-stream-error))
 
+(defparameter *wish-get-data-lock* (bt:make-recursive-lock))
+
+(defun check-enqueued-data ()
+  (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
+    (wish-data-queue *wish*)))
+
+(defun pop-enqueued-data ()
+  (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
+    (pop (wish-data-queue *wish*))))
+
+(defun push-enqueued-data (data)
+  (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
+    (let ((new-queue (append (wish-data-queue *wish*) (list data))))
+      (sleep 0.0000000000000001)
+      (setf (wish-data-queue *wish*)
+            new-queue))))
+
 (defun read-data (&key (expected-list-as-data nil))
   "Read data from wish. Non-data events are postponed, bogus messages (eg.
 +error-strings) are ignored."
   (bt:with-recursive-lock-held ((wish-read-lock *wish*))
     (flet ((get-data ()
-             (if (not *mainloop-started*)
-                 (read-wish)
-                 (read-event :no-event-value :no-event))))
+               (cond
+                 ((check-enqueued-data)
+                  (pop-enqueued-data))
+                 ((not *mainloop-started*)
+                  (read-event :blocking t :no-event-value :no-event))
+                 (t
+                  (read-event :blocking nil :no-event-value :no-event)))))
       (loop for data = (get-data) do
            (if (listp data)
                (cond
@@ -509,10 +527,6 @@ event to read and blocking is set to nil"
                   (if expected-list-as-data
                       (tcldebug (rest data))
                       (tcldebug (second data))))
-                 ((find (first data) #(:event :callback :keepalive))
-                  (dbg "postponing event: ~s~%" data)
-                  (setf (wish-event-queue *wish*)
-                        (append (wish-event-queue *wish*) (list data))))
                  ((eq (first data) :error)
                   (error 'tk-error :message (normalize-error data)))
                  (t
