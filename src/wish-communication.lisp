@@ -53,6 +53,7 @@
   (flush-lock               (bt:make-recursive-lock))
   (read-lock                (bt:make-recursive-lock))
   (read-data-lock           (bt:make-recursive-lock))
+  (main-iteration-lock      (bt:make-recursive-lock))
   ;; This is should be a function that takes a thunk, and calls it in
   ;; an environment with some condition handling in place.  It is what
   ;; allows the user to specify error-handling in START-WISH, and have
@@ -493,46 +494,46 @@ event to read and blocking is set to nil"
 (defun push-enqueued-data (data)
   (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
     (let ((new-queue (append (wish-data-queue *wish*) (list data))))
-      (sleep 0.0000000000000001)
       (setf (wish-data-queue *wish*)
             new-queue))))
 
 (defun read-data (&key (expected-list-as-data nil))
   "Read data from wish. Non-data events are postponed, bogus messages (eg.
 +error-strings) are ignored."
-  (bt:with-recursive-lock-held ((wish-read-lock *wish*))
-    (flet ((get-data ()
+  (bt:with-recursive-lock-held ((wish-main-iteration-lock *wish*))
+    (labels ((get-data ()
                (cond
                  ((check-enqueued-data)
                   (pop-enqueued-data))
-                 ((not *mainloop-started*)
-                  (read-event :blocking t :no-event-value :no-event))
+                 ;; ((not *mainloop-started*)
+                 ;;  (read-event :blocking t :no-event-value :no-event))
                  (t
-                  (read-event :blocking nil :no-event-value :no-event)))))
-      (loop for data = (get-data) do
-           (if (listp data)
-               (cond
-                 ((event-got-error-p data)
-                  (exit-wish)
-                  (return nil))
-                 ((null data)
-                   (exit-wish)
-                  (return nil))
-                 ((eq (first data) :data)
-                  (dbg "read-data: ~s~%" data)
-                  (if expected-list-as-data
-                      (return (rest data))
-                      (return (second data))))
-                 ((eq (first data) :debug)
-                  (if expected-list-as-data
-                      (tcldebug (rest data))
-                      (tcldebug (second data))))
-                 ((eq (first data) :error)
-                  (error 'tk-error :message (normalize-error data)))
-                 (t
-                  (finish-output)
-                  data))
-               data)))))
+                  (main-iteration :reentrant? t)
+                  (get-data)))))
+      (let ((data (get-data)))
+        (if (listp data)
+            (cond
+              ((event-got-error-p data)
+               (exit-wish)
+               (return-from read-data nil))
+              ((null data)
+               (exit-wish)
+               (return-from read-data nil))
+              ((eq (first data) :data)
+               (dbg "read-data: ~s~%" data)
+               (if expected-list-as-data
+                   (return-from read-data (rest data))
+                   (return-from read-data (second data))))
+              ((eq (first data) :debug)
+               (if expected-list-as-data
+                   (tcldebug (rest data))
+                   (tcldebug (second data))))
+              ((eq (first data) :error)
+               (error 'tk-error :message (normalize-error data)))
+              (t
+               (finish-output)
+               data))
+            data)))))
 
 (defun read-keyword ()
   (let ((string (read-data)))

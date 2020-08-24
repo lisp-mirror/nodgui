@@ -780,38 +780,40 @@ tk input to terminate"
 
 (defun main-iteration (&key (reentrant? nil))
   "The heart of the main loop.  Returns true as long as the main loop should continue."
-  (let ((no-event (cons nil nil)))
-    (labels ((proc-event ()
-               (let ((event (read-event :no-event-value no-event)))
-                 (cond
-                   ((or (null event)
-                        (event-got-error-p event))
-                    (ignore-errors (close (wish-stream *wish*)))
-                    (exit-wish)
-                    nil)
-                   ((eq (first event) :data)
-                    (push-enqueued-data event))
-                   ((eql event no-event)
+  (bt:with-recursive-lock-held ((wish-main-iteration-lock *wish*))
+    (or (check-enqueued-data)
+        (let ((no-event (cons nil nil)))
+          (labels ((proc-event ()
+                     (let ((event (read-event :no-event-value no-event)))
+                       (cond
+                         ((or (null event)
+                              (event-got-error-p event))
+                          (ignore-errors (close (wish-stream *wish*)))
+                          (exit-wish)
+                          nil)
+                         ((eq (first event) :data)
+                          (push-enqueued-data event))
+                         ((eql event no-event)
+                          t)
+                         (t (with-atomic
+                                (process-one-event event))
+                            (cond
+                              (*break-mainloop* nil)
+                              (*exit-mainloop*
+                               (exit-wish)
+                               nil)
+                              (t t)))))))
+            ;; For recursive calls to mainloop, we don't want to setup our
+            ;; ABORT and EXIT restarts.  They make things too complex.
+            (if reentrant?
+                (proc-event)
+                (restart-case (proc-event)
+                  (abort ()
+                    :report "Abort handling Tk event"
                     t)
-                   (t (with-atomic
-                          (process-one-event event))
-                      (cond
-                        (*break-mainloop* nil)
-                        (*exit-mainloop*
-                         (exit-wish)
-                         nil)
-                        (t t)))))))
-      ;; For recursive calls to mainloop, we don't want to setup our ABORT and EXIT restarts.
-      ;; They make things too complex.
-      (if reentrant?
-          (proc-event)
-          (restart-case (proc-event)
-            (abort ()
-              :report "Abort handling Tk event"
-              t)
-            (exit ()
-              :report "Exit Nodgui main loop"
-              nil))))))
+                  (exit ()
+                    :report "Exit Nodgui main loop"
+                    nil))))))))
 
 (defun mainloop (&key serve-event)
   (let ((reentrant? (member *wish* *inside-mainloop*))
