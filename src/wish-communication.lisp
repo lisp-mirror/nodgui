@@ -37,8 +37,6 @@
                           (uiop:process-info-input  proc))
      proc)))
 
-(defvar *mainloop-started* nil)
-
 ;;; global var for holding the communication stream
 (defstruct (nodgui-connection
              (:constructor make-nodgui-connection (&key remotep))
@@ -481,8 +479,6 @@ event to read and blocking is set to nil"
 (defun event-got-error-p (event)
   (eq (first event) :read-stream-error))
 
-(defparameter *wish-get-data-lock* (bt:make-recursive-lock))
-
 (defun check-enqueued-data ()
   (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
     (wish-data-queue *wish*)))
@@ -505,8 +501,6 @@ event to read and blocking is set to nil"
                (cond
                  ((check-enqueued-data)
                   (pop-enqueued-data))
-                 ;; ((not *mainloop-started*)
-                 ;;  (read-event :blocking t :no-event-value :no-event))
                  (t
                   (main-iteration :reentrant? t)
                   (get-data)))))

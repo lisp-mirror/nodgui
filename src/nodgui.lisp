@@ -941,8 +941,7 @@ tk input to terminate"
                                        keys)
                           (list :debugger-class (debug-setting-condition-handler debug)))))
          (mainloop ()
-           (let ((*mainloop-started* t))
-             (apply #'mainloop (filter-keys '(:serve-event) keys)))))
+           (apply #'mainloop (filter-keys '(:serve-event) keys))))
     (let* ((*default-toplevel-title* (getf keys :title "notitle"))
            (*wish-args*              (append-wish-args (list +arg-toplevel-name+
                                                              *default-toplevel-title*)))
