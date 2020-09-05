@@ -784,7 +784,10 @@ tk input to terminate"
     (or (check-enqueued-data)
         (let ((no-event (cons nil nil)))
           (labels ((proc-event ()
-                     (let ((event (read-event :no-event-value no-event)))
+                     (let ((event (if (wish-waiting-data-p *wish*)
+                                      (read-event :no-event-value no-event
+                                                  :force-read-from-stream t)
+                                      (read-event :no-event-value no-event))))
                        (cond
                          ((or (null event)
                               (event-got-error-p event))
@@ -795,14 +798,18 @@ tk input to terminate"
                           (push-enqueued-data event))
                          ((eql event no-event)
                           t)
-                         (t (with-atomic
-                                (process-one-event event))
-                            (cond
-                              (*break-mainloop* nil)
-                              (*exit-mainloop*
-                               (exit-wish)
-                               nil)
-                              (t t)))))))
+                         (t
+                          (if (wish-waiting-data-p *wish*)
+                              (push-enqueued-event event)
+                              (progn
+                                (with-atomic
+                                    (process-one-event event))
+                                (cond
+                                  (*break-mainloop* nil)
+                                  (*exit-mainloop*
+                                   (exit-wish)
+                                   nil)
+                                  (t t)))))))))
             ;; For recursive calls to mainloop, we don't want to setup our
             ;; ABORT and EXIT restarts.  They make things too complex.
             (if reentrant?
