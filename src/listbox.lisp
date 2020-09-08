@@ -140,10 +140,11 @@ alternatively a list of numbers may be given"
                              `({+ ,(down end) })))))
   l)
 
+
 (defmethod listbox-insert ((l listbox) index values)
   (if (listp values)
-      (format-wish "~a insert {~a} ~{ \"~a\"~}" (widget-path l) index values)
-      (format-wish "~a insert {~a} \"~a\"" (widget-path l) index values))
+      (format-wish "~a insert {~a} ~{ \"~a\"~}" (widget-path l) (down index) values)
+      (format-wish "~a insert {~a} \"~a\"" (widget-path l) (down index) values))
   l)
 
 (defmethod listbox-configure ((l listbox) index &rest options)
