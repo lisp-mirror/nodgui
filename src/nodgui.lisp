@@ -169,34 +169,34 @@ can be passed to AFTER-CANCEL"
      (error "~s is not a one of integer, float or rational." number))))
 
 (defstruct event
-  x
-  y
-  char-code
-  keycode
-  char
-  width
-  height
-  root-x
-  root-y
-  mouse-button
-  unicode-char
-  others)
+  x              ; 0
+  y              ; 1
+  char-code      ; 2
+  keycode        ; 3
+  char           ; 4
+  width          ; 5
+  height         ; 6
+  root-x         ; 7
+  root-y         ; 8
+  mouse-button   ; 9
+  unicode-char   ; 10
+  others)        ; 11
 
 (defun construct-tk-event (properties)
   "create an event structure from a list of values as read from tk"
   (make-event
-   :x            (first properties)  ; 0
-   :y            (second properties) ; 1
-   :char-code    (third properties)  ; 2
-   :keycode      (fourth properties) ; 3
-   :char         (fifth properties)  ; 4
-   :width        (sixth properties)  ; 5
-   :height       (seventh properties); 6
-   :root-x       (eighth properties) ; 7
-   :root-y       (ninth properties)  ; 8
-   :mouse-button (tenth properties)  ; 9
-   :unicode-char (elt   properties 10)
-   :others       (if (string= (elt properties 11)
+   :x            (first properties)               ; 0
+   :y            (second properties)              ; 1
+   :char-code    (third properties)               ; 2
+   :keycode      (fourth properties)              ; 3
+   :char         (fifth properties)               ; 4
+   :width        (sixth properties)               ; 5
+   :height       (seventh properties)             ; 6
+   :root-x       (eighth properties)              ; 7
+   :root-y       (ninth properties)               ; 8
+   :mouse-button (tenth properties)               ; 9
+   :unicode-char (elt   properties 10)            ; 10
+   :others       (if (string= (elt properties 11) ; 11
                               "")
                      nil
                      (elt properties 11))))
