@@ -154,13 +154,27 @@
   (format-wish "wm state ~a normal" (widget-path tl))
   tl)
 
+(defun %iconify (widget-path)
+  (format-wish "wm iconify ~a" widget-path))
+
+(defun %deiconify (widget-path)
+  (format-wish "wm deiconify ~a" widget-path))
+
 (defmethod iconify ((tl toplevel))
-  (format-wish "wm iconify ~a" (widget-path tl))
+  (%iconify (widget-path tl))
   tl)
 
+(defmethod iconify ((object (eql *tk*)))
+  (%iconify (widget-path *tk*))
+  *tk*)
+
 (defmethod deiconify ((tl toplevel))
-  (format-wish "wm deiconify ~a" (widget-path tl))
+  (%deiconify (widget-path tl))
   tl)
+
+(defmethod deiconify ((object (eql *tk*)))
+  (%deiconify (widget-path *tk*))
+  *tk*)
 
 ;; TODO use regex?
 (defmethod geometry ((tl widget))

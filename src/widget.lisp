@@ -79,7 +79,7 @@ giving the path of tkobjects."
     (apply #'grid w grid)))
 
 (defvar *tk* (make-instance 'widget :name "." :path ".")
-  "dummy widget to access the tk root object")
+  "Dummy widget to access the tk root object")
 
 ;;; busy functions
 
