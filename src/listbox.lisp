@@ -294,7 +294,7 @@ alternatively a list of numbers may be given"
                                     (background #%white%)
                                     (foreground #%black%))
   (with-accessors ((listbox listbox)) object
-    (listbox-colorize-item listbox :background background :foreground foreground)
+    (listbox-colorize-item listbox index :background background :foreground foreground)
     object))
 
 (defmethod listbox-size ((object scrolled-listbox))
