@@ -2,8 +2,6 @@
 #+AUTHOR:
 #+TITLE: NODGUI
 
-* Important note: This branch of NODGUI is highly experimental, API could change and even more bugs can appears.
-
 * NODGUI
 
   /"No Drama GUI"/

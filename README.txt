@@ -6,25 +6,20 @@
 Table of Contents
 ─────────────────
 
-1. Important note: This branch of NODGUI is highly experimental, API could change and even more bugs can appears.
-2. NODGUI
-3. Dependency
+1. NODGUI
+2. Dependency
 .. 1. Programs
 .. 2. Lisp libraries
 .. 3. TCL/TK libraries (optional)
-4. Installing
-5. Documentation
-6. License
+3. Installing
+4. Documentation
+5. License
 
 
 
 
 
-1 Important note: This branch of NODGUI is highly experimental, API could change and even more bugs can appears.
-════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
-
-2 NODGUI
+1 NODGUI
 ════════
 
   /"No Drama GUI"/
@@ -32,16 +27,16 @@ Table of Contents
   Common Lisp bindings for the Tk GUI toolkit.
 
 
-3 Dependency
+2 Dependency
 ════════════
 
-3.1 Programs
+2.1 Programs
 ────────────
 
   • TCL/TK interpreter (version >= 8.6) <https://www.tcl.tk>
 
 
-3.2 Lisp libraries
+2.2 Lisp libraries
 ──────────────────
 
   • alexandria;
@@ -55,13 +50,13 @@ Table of Contents
   All of the above libraries are available on quicklisp.
 
 
-3.3 TCL/TK libraries (optional)
+2.3 TCL/TK libraries (optional)
 ───────────────────────────────
 
   • TKlib <https://core.tcl-lang.org/tklib/home>
 
 
-4 Installing
+3 Installing
 ════════════
 
   1. install the tk interpreter (example on a Debian system follows)
@@ -85,7 +80,7 @@ Table of Contents
   └────
 
 
-5 Documentation
+4 Documentation
 ═══════════════
 
   please follow [this link for documentation and news].
@@ -95,7 +90,7 @@ Table of Contents
 <https://www.autistici.org/interzona/nodgui.html>
 
 
-6 License
+5 License
 ═════════
 
   This software is Copyright (c) 2003-2010 Peter Herth
