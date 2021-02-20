@@ -116,6 +116,7 @@
                         width height
                         root_x root_y
                         mouse_button
+                        unicode_char
                         ({+ other {+ }+ }))
      (:lisp
      (with-flush-server
@@ -126,6 +127,7 @@
                                    \ % $keycode \ % \\+ \"+ $char+ \\+ \" \ %
                                    $width \ % $height \ %
                                    $root_x \ % $root_y \ % $mouse_button \ %
+                                   \\+ \" $unicode_char+ \\+ \" \ %
                                    \\+ \" $other+ \\+ \" \ %
                                  > ])))))
 

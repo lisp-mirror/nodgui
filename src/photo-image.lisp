@@ -47,7 +47,8 @@
                                                 ;; problematic
                                                 ;; characters
                                                 ,(nodgui.base64:encode data)
-                                                ])))))))
+                                                ]))))
+      (read-data))))
 
 (defgeneric make-image (data &optional w h channels))
 
@@ -115,6 +116,7 @@ GIF format!"
                                                                   :column-offset channels)
                                                 ])
                                :sanitize nil)))
+      (read-data)
       res))))
 
 (defmethod make-image ((object pixmap) &optional (w nil) (h nil) (channels 4))
@@ -132,6 +134,7 @@ GIF format!"
                                                                   :column-offset 4)
                                                 ])
                                :sanitize nil)))
+      (read-data)
       res)))
 
 (defmethod make-image ((object pathname) &optional (w nil) (h nil) (channels nil))

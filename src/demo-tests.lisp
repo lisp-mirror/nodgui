@@ -143,6 +143,10 @@
                                                     :text    "entry with validate command"
                                                     :command (lambda ()
                                                                (demo-validate-command))))
+           (demo-multithread         (make-instance 'button
+                                                    :text    "Multithreading"
+                                                    :command (lambda ()
+                                                               (demo-multithread))))
            (b-quit              (make-instance  'button
                                                 :text    "quit lisp :)"
                                                 :command (lambda ()
@@ -182,6 +186,7 @@
       (grid demo-tklib-swaplist      10 1 :sticky :nswe)
       (grid demo-tklib-equalizer-bar 10 2 :sticky :nswe)
       (grid demo-validate-command    11 0 :sticky :nswe)
+      (grid demo-multithread         11 1 :sticky :nswe)
       (grid b-quit                   12 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
@@ -728,7 +733,7 @@
   ((bu button :text "A button"
        :pack (:side :top :anchor :w)
        :command (lambda ()
-                  (format t "the content of enry is:~a~%" (text entry)) (finish-output)
+                  (format t "the content of entry is:~a~%" (text entry)) (finish-output)
                   (setf (text entry) "")))
    (f1 frame :pack (:side :top :fill :both :expand t)
        (lb label :text "A label" :pack (:side :left))
@@ -875,7 +880,10 @@
       (place b 0 0))))
 
 (defun demo-message-timeout (parent)
-  (nodgui.mw:message-with-timeout parent "This window will be closed after 10 seconds" 10 "OK"))
+  (nodgui.mw:message-with-timeout parent
+                                  "This window will be closed after 10 seconds"
+                                  10
+                                  "OK"))
 
 (defun demo-fitted-text ()
   (with-nodgui ()
@@ -1054,3 +1062,36 @@
                      :validatecommand #'validate-function)))
         (pack label)
         (pack entry)))))
+
+(defparameter *multithread-text-area* nil)
+
+(defun demo-multithread ()
+  (with-nodgui ()
+    (let* ((description-text (strcat "In this demo 20 threads simultaneously "
+                                     "compete to write to the same text widget"))
+           (description      (make-instance 'label
+                                            :font "12"
+                                            :text description-text))
+           (text-area        (make-instance 'scrolled-text))
+           (wish-subprocess  *wish*))
+      (setf *multithread-text-area* text-area)
+      (flet ((start-write-thread (name)
+               (bt:make-thread (lambda ()
+                                 (let ((*wish* wish-subprocess))
+                                   (loop repeat 20 do
+                                        (sleep (random 2))
+                                        (append-text *multithread-text-area*
+                                                     name))))))
+             (start-read-thread ()
+               (bt:make-thread (lambda ()
+                                 (let ((*wish* wish-subprocess))
+                                   (loop repeat 20 do
+                                        (sleep (random 2))
+                                        (format t
+                                                "text ~a~%"
+                                                (text *multithread-text-area*))))))))
+        (grid description 0 0 :sticky :nswe)
+        (grid text-area   1 0 :sticky :nswe)
+        (start-read-thread)
+        (loop for i from 0 below 20 do
+             (start-write-thread (format nil "thread-~a " i)))))))

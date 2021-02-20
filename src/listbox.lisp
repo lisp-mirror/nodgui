@@ -19,6 +19,8 @@
 
 (named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
+(named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
+
 (alexandria:define-constant +legal-select-mode-values+ '(:single :browse :multiple :extended)
   :test #'equalp)
 
@@ -73,6 +75,8 @@
 
 (defgeneric listbox-select-mode (object mode))
 
+(defgeneric listbox-size (object))
+
 (defgeneric listbox-clear (l &optional start end))
 
 (defgeneric listbox-delete (l &optional start end))
@@ -88,6 +92,8 @@
 (defgeneric listbox-values-in-range (object &key from to))
 
 (defgeneric listbox-all-values (object))
+
+(defgeneric listbox-colorize-item (object index &key background foreground))
 
 (defmethod listbox-append ((l listbox) values)
   "append values (which may be a list) to the list box"
@@ -140,10 +146,11 @@ alternatively a list of numbers may be given"
                              `({+ ,(down end) })))))
   l)
 
+
 (defmethod listbox-insert ((l listbox) index values)
   (if (listp values)
-      (format-wish "~a insert {~a} ~{ \"~a\"~}" (widget-path l) index values)
-      (format-wish "~a insert {~a} \"~a\"" (widget-path l) index values))
+      (format-wish "~a insert {~a} ~{ \"~a\"~}" (widget-path l) (down index) values)
+      (format-wish "~a insert {~a} \"~a\"" (widget-path l) (down index) values))
   l)
 
 (defmethod listbox-configure ((l listbox) index &rest options)
@@ -169,6 +176,10 @@ alternatively a list of numbers may be given"
   (format-wish (tclize `(,(widget-path object) " "
                           configure -selectmode {+ ,(down mode) }))))
 
+(defmethod listbox-size ((object listbox))
+  (format-wish (tclize `(senddata [,(widget-path object) " " size ])))
+  (read-data))
+
 (defmethod listbox-export-selection ((object listbox) value)
   (format-wish (tclize `(,(widget-path object) " "
                           configure -exportselection ,(lisp-bool->tcl value)))))
@@ -186,6 +197,19 @@ alternatively a list of numbers may be given"
 (defmethod listbox-all-values ((object listbox))
   "Get all values of a listbox"
   (listbox-values-in-range object :from 0 :to :end))
+
+(defmethod listbox-colorize-item ((object listbox) (index number)
+                                  &key
+                                    (background #%white%)
+                                    (foreground #%black%))
+  (assert (stringp background))
+  (assert (stringp foreground))
+  (assert (<= 0 index (1- (listbox-size object))))
+  (listbox-configure object
+                     index
+                     :background background
+                     :foreground foreground)
+  object)
 
 (defclass scrolled-listbox (frame)
   ((listbox
@@ -264,3 +288,15 @@ alternatively a list of numbers may be given"
 (defmethod listbox-all-values ((object scrolled-listbox))
   (with-accessors ((listbox listbox)) object
     (listbox-all-values listbox)))
+
+(defmethod listbox-colorize-item ((object scrolled-listbox) (index number)
+                                  &key
+                                    (background #%white%)
+                                    (foreground #%black%))
+  (with-accessors ((listbox listbox)) object
+    (listbox-colorize-item listbox index :background background :foreground foreground)
+    object))
+
+(defmethod listbox-size ((object scrolled-listbox))
+  (with-accessors ((listbox listbox)) object
+    (listbox-size object)))

@@ -1242,29 +1242,29 @@
   (with-accessors ((secret-string   secret-string)
                    (text            text)
                    (show-password-p show-password-p))
-  (bind object #$<KeyPress>$
-        (lambda (a) (declare (ignore a)))
-        :exclusive t
-        :append nil)
-  (bind object #$<KeyRelease>$
-        (lambda (a)
-          (cond
-            ((string= (event-char a) nodgui.event-symbols:+backspace+)
-             (when (> (length secret-string) 0)
-               (setf secret-string (subseq secret-string 0 (1- (length secret-string))))
-               (setf text          (subseq text          0 (1- (length text))))))
-            ((nodgui.event-symbols:keysym-printable-p (event-char-code a))
-             (setf secret-string (strcat secret-string (event-char a)))
-             (setf text          (strcat text          (password-char-placeholder))))))
-        :exclusive t
-        :append nil)
-  (when show-password-p
-    (bind object #$<Double-1>$
+      (bind object #$<KeyPress>$
+            (lambda (a) (declare (ignore a)))
+            :exclusive t
+            :append nil)
+    (bind object #$<KeyRelease>$
           (lambda (a)
-            (declare (ignore a))
-            (setf text secret-string))
+            (cond
+              ((string= (event-char a) nodgui.event-symbols:+backspace+)
+               (when (> (length secret-string) 0)
+                 (setf secret-string (subseq secret-string 0 (1- (length secret-string))))
+                 (setf text          (subseq text          0 (1- (length text))))))
+              ((nodgui.event-symbols:keysym-printable-p (event-char-code a))
+               (setf secret-string (strcat secret-string (event-char a)))
+               (setf text          (strcat text          (password-char-placeholder))))))
           :exclusive t
-          :append nil))))
+          :append nil)
+    (when show-password-p
+      (bind object #$<Double-1>$
+            (lambda (a)
+              (declare (ignore a))
+              (setf text secret-string))
+            :exclusive t
+            :append nil))))
 
 (defun password-entry-demo ()
   (let ((res nil))
@@ -1432,8 +1432,7 @@
    - expired-callback:   function with no parameters called after the timeout has expired
    - label-options:      the optional options for the message label (e.g. '(:font \"bold\"))
    Note: do not use the callback to modify widget in the same process that created this window."
-  (let* ((lock             (bt:make-lock))
-         (button-clicked-p nil)
+  (let* ((button-clicked-p nil)
          (toplevel         (make-instance 'toplevel))
          (label            (apply #'make-instance
                                   'label
@@ -1447,9 +1446,8 @@
                                           :text    close-button-label
                                           :master  toplevel
                                           :command (lambda ()
-                                                     (bt:with-lock-held (lock)
-                                                       (setf button-clicked-p t)
-                                                       (withdraw toplevel)))))
+                                                     (setf button-clicked-p t)
+                                                     (withdraw toplevel))))
          (wish-subprocess  *wish*)
          (exit-mainloop    *exit-mainloop*)
          (break-main-loop  *break-mainloop*))
@@ -1475,15 +1473,13 @@
                             (*exit-mainloop*  exit-mainloop))
                         (loop for i from 0 below timeout do
                              (sleep 1)
-                             (bt:with-lock-held (lock)
-                               (when (not button-clicked-p)
-                                 (setf (value progress-timeout)
-                                       (* 100 (coerce (/ i timeout)
-                                                      'single-float))))))
-                        (bt:with-lock-held (lock)
-                          (when (not button-clicked-p)
-                            (funcall expired-callback)
-                            (withdraw toplevel))))))))
+                             (when (not button-clicked-p)
+                               (setf (value progress-timeout)
+                                     (* 100 (coerce (/ i timeout)
+                                                    'single-float)))))
+                        (when (not button-clicked-p)
+                          (funcall expired-callback)
+                          (withdraw toplevel)))))))
 
 (defun message-with-timeout (parent message timeout close-button-label &rest label-options)
   "Create a window with a message that automatically close after a timeout

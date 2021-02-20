@@ -169,34 +169,34 @@ can be passed to AFTER-CANCEL"
      (error "~s is not a one of integer, float or rational." number))))
 
 (defstruct event
-  x
-  y
-  char-code
-  keycode
-  char
-  width
-  height
-  root-x
-  root-y
-  mouse-button
-  unicode-char
-  others)
+  x              ; 0
+  y              ; 1
+  char-code      ; 2
+  keycode        ; 3
+  char           ; 4
+  width          ; 5
+  height         ; 6
+  root-x         ; 7
+  root-y         ; 8
+  mouse-button   ; 9
+  unicode-char   ; 10
+  others)        ; 11
 
 (defun construct-tk-event (properties)
   "create an event structure from a list of values as read from tk"
   (make-event
-   :x            (first properties)  ; 0
-   :y            (second properties) ; 1
-   :char-code    (third properties)  ; 2
-   :keycode      (fourth properties) ; 3
-   :char         (fifth properties)  ; 4
-   :width        (sixth properties)  ; 5
-   :height       (seventh properties); 6
-   :root-x       (eighth properties) ; 7
-   :root-y       (ninth properties)  ; 8
-   :mouse-button (tenth properties)  ; 9
-   :unicode-char (elt   properties 10)
-   :others       (if (string= (elt properties 11)
+   :x            (first properties)               ; 0
+   :y            (second properties)              ; 1
+   :char-code    (third properties)               ; 2
+   :keycode      (fourth properties)              ; 3
+   :char         (fifth properties)               ; 4
+   :width        (sixth properties)               ; 5
+   :height       (seventh properties)             ; 6
+   :root-x       (eighth properties)              ; 7
+   :root-y       (ninth properties)               ; 8
+   :mouse-button (tenth properties)               ; 9
+   :unicode-char (elt   properties 10)            ; 10
+   :others       (if (string= (elt properties 11) ; 11
                               "")
                      nil
                      (elt properties 11))))
@@ -741,7 +741,7 @@ set y [winfo y ~a]
 (defun process-one-event (event)
   (when event
     (when *debug-tk*
-      (format *trace-output* "l:~s<=~%" event)
+      (format *trace-output* "event:~s<=~%" event)
       (finish-output *trace-output*))
     (cond
      ((and (not (listp event))
@@ -767,48 +767,60 @@ set y [winfo y ~a]
       (handle-output
        (first event) (rest event))))))
 
-(defun process-events (&optional (blockingp nil))
+(defun process-events ()
   "A function to temporarliy yield control to wish so that pending
 events can be processed, useful in long loops or loops that depend on
 tk input to terminate"
   (let (event)
     (loop
-     while (setf event (read-event :blocking blockingp))
+     while (setf event (read-event))
      do (with-atomic (process-one-event event)))))
 
 (defparameter *inside-mainloop* ())
 
-(defun main-iteration (&key (blocking t) (reentrant? nil))
+(defun main-iteration (&key (reentrant? nil))
   "The heart of the main loop.  Returns true as long as the main loop should continue."
-  (let ((no-event (cons nil nil)))
-    (labels ((proc-event ()
-               (let ((event (read-event :blocking blocking
-                                        :no-event-value no-event)))
-                 (cond
-                   ((null event)
-                    (ignore-errors (close (wish-stream *wish*)))
-                    (exit-wish)
-                    nil)
-                   ((eql event no-event)
+  (bt:with-recursive-lock-held ((wish-main-iteration-lock *wish*))
+    (or (check-enqueued-data)
+        (let ((no-event (cons nil nil)))
+          (labels ((proc-event ()
+                     (let ((event (if (wish-waiting-data-p *wish*)
+                                      (read-event :no-event-value no-event
+                                                  :force-read-from-stream t)
+                                      (read-event :no-event-value no-event))))
+                       (cond
+                         ((or (null event)
+                              (event-got-error-p event))
+                          (ignore-errors (close (wish-stream *wish*)))
+                          (exit-wish)
+                          nil)
+                         ((eq (first event) :data)
+                          (push-enqueued-data event))
+                         ((eql event no-event)
+                          t)
+                         (t
+                          (if (wish-waiting-data-p *wish*)
+                              (push-enqueued-event event)
+                              (progn
+                                (with-atomic
+                                    (process-one-event event))
+                                (cond
+                                  (*break-mainloop* nil)
+                                  (*exit-mainloop*
+                                   (exit-wish)
+                                   nil)
+                                  (t t)))))))))
+            ;; For recursive calls to mainloop, we don't want to setup our
+            ;; ABORT and EXIT restarts.  They make things too complex.
+            (if reentrant?
+                (proc-event)
+                (restart-case (proc-event)
+                  (abort ()
+                    :report "Abort handling Tk event"
                     t)
-                   (t (with-atomic (process-one-event event))
-                      (cond
-                        (*break-mainloop* nil)
-                        (*exit-mainloop*
-                         (exit-wish)
-                         nil)
-                        (t t)))))))
-      ;; For recursive calls to mainloop, we don't want to setup our ABORT and EXIT restarts.
-      ;; They make things too complex.
-      (if reentrant?
-          (proc-event)
-          (restart-case (proc-event)
-            (abort ()
-              :report "Abort handling Tk event"
-              t)
-            (exit ()
-              :report "Exit Nodgui main loop"
-              nil))))))
+                  (exit ()
+                    :report "Exit Nodgui main loop"
+                    nil))))))))
 
 (defun mainloop (&key serve-event)
   (let ((reentrant? (member *wish* *inside-mainloop*))
@@ -872,7 +884,7 @@ tk input to terminate"
                                    (lambda (e)
                                      (when (eql (stream-error-stream e) fd-stream)
                                        (return-from call-main nil)))))
-                     (catch wish (main-iteration :blocking nil)))))
+                     (catch wish (main-iteration)))))
                (nodgui-input-handler (fd)
                  (declare (ignore fd))
                  (let ((*wish* wish)) ; use the wish we were given as an argument
@@ -935,7 +947,8 @@ tk input to terminate"
                   (append (filter-keys '(:stream :debugger-class :debug-tcl)
                                        keys)
                           (list :debugger-class (debug-setting-condition-handler debug)))))
-         (mainloop () (apply #'mainloop (filter-keys '(:serve-event) keys))))
+         (mainloop ()
+           (apply #'mainloop (filter-keys '(:serve-event) keys))))
     (let* ((*default-toplevel-title* (getf keys :title "notitle"))
            (*wish-args*              (append-wish-args (list +arg-toplevel-name+
                                                              *default-toplevel-title*)))
@@ -948,7 +961,7 @@ tk input to terminate"
                    (with-nodgui-handlers ()
                      (with-atomic (funcall thunk)))
                  (mainloop)))
-          (unless serve-event
+          (when (not serve-event)
             (exit-wish)))))))
 
 (defmacro with-modal-toplevel ((var &rest toplevel-initargs) &body body)

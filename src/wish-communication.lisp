@@ -38,14 +38,23 @@
      proc)))
 
 ;;; global var for holding the communication stream
-(defstruct (nodgui-connection (:constructor make-nodgui-connection (&key remotep))
-                           (:conc-name #:wish-))
-  (stream nil)
-  (callbacks (make-hash-table :test #'equal))
-  (after-ids (make-hash-table :test #'equal))
-  (counter 1)
-  (after-counter 1)
-  (event-queue nil)
+(defstruct (nodgui-connection
+             (:constructor make-nodgui-connection (&key remotep))
+             (:conc-name #:wish-))
+  (stream                   nil)
+  (callbacks                (make-hash-table :test #'equal))
+  (after-ids                (make-hash-table :test #'equal))
+  (counter                  1)
+  (after-counter            1)
+  (data-queue               ())
+  (event-queue              ())
+  (waiting-data-p           nil)
+  (lock                     (bt:make-recursive-lock))
+  (flush-lock               (bt:make-recursive-lock))
+  (read-lock                (bt:make-recursive-lock))
+  (read-data-lock           (bt:make-recursive-lock))
+  (read-event-lock          (bt:make-recursive-lock))
+  (main-iteration-lock      (bt:make-recursive-lock))
   ;; This is should be a function that takes a thunk, and calls it in
   ;; an environment with some condition handling in place.  It is what
   ;; allows the user to specify error-handling in START-WISH, and have
@@ -151,10 +160,11 @@
 
 (defun make-error-collecting-thread (error-stream)
   (bt:make-thread (lambda ()
-                    (let ((ch (read-char error-stream)))
-                      (unread-char ch error-stream)
-                      (error (make-condition 'tk-communication-error
-                                             :message (read-line error-stream)))))
+                    (ignore-errors
+                      (let ((ch (read-char error-stream)))
+                        (unread-char ch error-stream)
+                        (error (make-condition 'tk-communication-error
+                                               :message (read-line error-stream))))))
                   :name "nodgui collecting thread"))
 ;;; start wish and set (wish-stream *wish*)
 (defun start-wish (&rest keys &key debugger-class remotep stream debug-tcl)
@@ -212,9 +222,9 @@
         (when (open-stream-p stream)
           (ignore-errors
             (send-wish "exit")
-            (flush-wish)))
-        (bt:destroy-thread (wish-error-collecting-thread *wish*))
-        (close-process-stream stream))
+            (flush-wish)
+            (bt:destroy-thread (wish-error-collecting-thread *wish*))
+            (close-process-stream stream))))
       (setf (wish-stream *wish*) nil)
       #+:allegro (system:reap-os-subprocess)
       (setf *wish-connections* (remove *wish* *wish-connections*))))
@@ -224,9 +234,10 @@
   (throw *wish* nil))
 
 (defun send-wish (text)
-  (push text (wish-output-buffer *wish*))
-  (unless *buffer-for-atomic-output*
-    (flush-wish)))
+  (bt:with-recursive-lock-held ((wish-lock *wish*))
+    (push text (wish-output-buffer *wish*))
+    (unless *buffer-for-atomic-output*
+      (flush-wish))))
 
 (defun send-wish-line (data)
   "Send data  to wish  shell. data  are not processed  so thy  must be
@@ -234,81 +245,83 @@ coupled with a 'gets' from the TCL side, for example.
 
 Note also that this function  blocks the communication until wish read
 the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
-  (let ((*print-pretty* nil)
-        (stream         (wish-stream *wish*))
-        (line           (format nil "~a~%" data)))
-    (when *debug-tk*
-      (dbg "sending line: ~s~%" data))
-    (format stream line)
-    (finish-output stream)))
+  (bt:with-recursive-lock-held ((wish-lock *wish*))
+    (let ((*print-pretty* nil)
+          (stream         (wish-stream *wish*))
+          (line           (format nil "~a~%" data)))
+      (when *debug-tk*
+        (dbg "sending line: ~s~%" data))
+      (format stream line)
+      (finish-output stream))))
 
-(defun check-for-errors ()
-  (let ((wstream (wish-stream *wish*)))
-    (when (can-read wstream)
-      (let ((event (verify-event (read-preserving-whitespace wstream nil nil))))
-        (setf (wish-event-queue *wish*)
-              (append (wish-event-queue *wish*) (list event))))))
-  nil)
+;; (defun check-for-errors ()
+;;   (let ((wstream (wish-stream *wish*)))
+;;     (when (can-read wstream)
+;;       (let ((event (verify-event (read-preserving-whitespace wstream nil nil))))
+;;         (setf (wish-event-queue *wish*)
+;;               (append (wish-event-queue *wish*) (list event))))))
+;;   nil)
 
 ;; maximum line length sent over to non-remote Tk
 (defparameter *max-line-length* 1000)
 
 (defun flush-wish ()
-  (let ((buffer (nreverse (wish-output-buffer *wish*))))
-    (when buffer
-      (let ((len (loop for s in buffer summing (length s)))
-            (*print-pretty* nil)
-            (stream (wish-stream *wish*)))
-        (declare (stream stream))
-        (incf len (length buffer))
-        (setf (wish-output-buffer *wish*) nil)
-        (handler-bind ((stream-error (lambda (e) (handle-dead-stream e stream)))
-                       #+lispworks
-                       (comm:socket-error (lambda (e) (handle-dead-stream e stream))))
-          (cond
-            ((wish-remotep *wish*)
-             (let ((content (format nil "~{~a~%~}" buffer)))
-               (format stream "~d ~a~%"(length content) content)
-               (dbg "~d ~a~%" (length content) content)))
-            (*max-line-length*
-             (when (or *debug-buffers*
-                       *debug-tk*)
-               (format t "buffer size ~a~%" len) (finish-output))
-             (dolist (string buffer)
-               (loop while (> (length string) *max-line-length*)
-                     do
-                  (let ((sub (subseq string 0 *max-line-length*)))
-                    (setf string (subseq string *max-line-length*))
-                    (format stream "bt \"~A\"~%" (tkescape2 sub))
-                    (dbg "bt \"~A\"~%" (tkescape2 sub))))
-               (format stream "bt \"~A~%\"~%" (tkescape2 string))
-               (dbg "bt \"~A\"~%" (tkescape2 string)))
-             (format stream "process_buffer~%")
-             (dbg "process_buffer~%"))
-            (t
-             ;; (format stream "bt {~D }~%" len)
-             ;; (dbg "bt {~D }~%" len)
-             (dolist (string buffer)
-               (format stream "bt \"~A~%\"~%" (tkescape2 string))
-               (dbg "bt \"~A\"~%" (tkescape2 string)))
-             (format stream "process_buffer~%")
-             (dbg "process_buffer~%")))
-          (finish-output stream)
-          #+nil(loop for string in buffer
-                     do (loop with end = (length string)
-                              with start = 0
-                              for amount = (min 1024 (- end start))
-                              while (< start end)
-                              do (let ((string (subseq string start (+ start amount))))
-                                   (format stream "buffer_text {~A}~%" string)
-                                   (dbg "buffer_text {~A}~%" string)
-                                   (incf start amount)))
-                        (format stream "buffer_text \"\\n\"~%")
-                        (dbg "buffer_text \"\\n\"~%")
-                     finally (progn (format stream "process_buffer~%")
-                                    (dbg "process_buffer~%")
-                                    (finish-output stream)))
-          (setf (wish-output-buffer *wish*) nil))))))
+  (bt:with-recursive-lock-held ((wish-flush-lock *wish*))
+    (let ((buffer (nreverse (wish-output-buffer *wish*))))
+      (when buffer
+        (let ((len (loop for s in buffer summing (length s)))
+              (*print-pretty* nil)
+              (stream (wish-stream *wish*)))
+          (declare (stream stream))
+          (incf len (length buffer))
+          (setf (wish-output-buffer *wish*) nil)
+          (handler-bind ((stream-error (lambda (e) (handle-dead-stream e stream)))
+                         #+lispworks
+                         (comm:socket-error (lambda (e) (handle-dead-stream e stream))))
+            (cond
+              ((wish-remotep *wish*)
+               (let ((content (format nil "~{~a~%~}" buffer)))
+                 (format stream "~d ~a~%"(length content) content)
+                 (dbg "~d ~a~%" (length content) content)))
+              (*max-line-length*
+               (when (or *debug-buffers*
+                         *debug-tk*)
+                 (format t "buffer size ~a~%" len) (finish-output))
+               (dolist (string buffer)
+                 (loop while (> (length string) *max-line-length*)
+                    do
+                      (let ((sub (subseq string 0 *max-line-length*)))
+                        (setf string (subseq string *max-line-length*))
+                        (format stream "bt \"~A\"~%" (tkescape2 sub))
+                        (dbg "bt \"~A\"~%" (tkescape2 sub))))
+                 (format stream "bt \"~A~%\"~%" (tkescape2 string))
+                 (dbg "bt \"~A\"~%" (tkescape2 string)))
+               (format stream "process_buffer~%")
+               (dbg "process_buffer~%"))
+              (t
+               ;; (format stream "bt {~D }~%" len)
+               ;; (dbg "bt {~D }~%" len)
+               (dolist (string buffer)
+                 (format stream "bt \"~A~%\"~%" (tkescape2 string))
+                 (dbg "bt \"~A\"~%" (tkescape2 string)))
+               (format stream "process_buffer~%")
+               (dbg "process_buffer~%")))
+            (finish-output stream)
+            #+nil(loop for string in buffer
+                    do (loop with end = (length string)
+                          with start = 0
+                          for amount = (min 1024 (- end start))
+                          while (< start end)
+                          do (let ((string (subseq string start (+ start amount))))
+                               (format stream "buffer_text {~A}~%" string)
+                               (dbg "buffer_text {~A}~%" string)
+                               (incf start amount)))
+                      (format stream "buffer_text \"\\n\"~%")
+                      (dbg "buffer_text \"\\n\"~%")
+                    finally (progn (format stream "process_buffer~%")
+                                   (dbg "process_buffer~%")
+                                   (finish-output stream)))
+            (setf (wish-output-buffer *wish*) nil)))))))
 
 (defun handle-dead-stream (err stream)
   (when *debug-tk*
@@ -380,26 +393,26 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
   "Reads from wish. If the next thing in the stream is looks like a lisp-list
   read it as such, otherwise read one line as a string."
   (flush-wish)
-  (let ((*read-eval* nil)
-        (*package* (find-package :nodgui))
-        (stream (wish-stream *wish*)))
-    (if (eql #\( (peek-char t stream nil))
-        (read stream nil)
-        (read-line stream nil))))
+  (bt:with-recursive-lock-held ((wish-read-lock *wish*))
+    (let ((*read-eval* nil)
+          (*package* (find-package :nodgui))
+          (stream (wish-stream *wish*)))
+      (if (eql #\( (peek-char t stream nil))
+          (read stream nil)
+          (read-line stream nil)))))
 
-(defun can-read (stream)
+(defun stream-readable-p (stream)
   "return t, if there is something to READ on the stream"
-  (declare (stream stream)
-           #-:lispworks (inline read-char-no-hang unread-char))
-  (let ((c (read-char-no-hang stream)))
-    (loop
-       while (and c
-                  (member c '(#\Newline #\Return #\Space)))
-       do
-         (setf c (read-char-no-hang stream)))
-    (when c
-      (unread-char c stream)
-      t)))
+  (declare #-:lispworks (inline read-char-no-hang unread-char))
+  (handler-case
+      (let ((c (read-char-no-hang stream)))
+        (if c
+            (progn
+              (unread-char c stream)
+              t)
+            nil))
+    (error (e)
+      (list :read-stream-error e))))
 
 (defun normalize-error (errors-list)
   (join-with-strings (rest errors-list) " "))
@@ -447,48 +460,97 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
   (format t "tcl debug: ~a~%" something)
   (finish-output))
 
-(defun read-event (&key (blocking t) (no-event-value nil))
+(defun read-event (&key (blocking t) (no-event-value nil) (force-read-from-stream nil))
   "read the next event from wish, return the event or nil, if there is no
 event to read and blocking is set to nil"
-  (or (pop (wish-event-queue *wish*))
+  (handler-case
       (let ((wstream (wish-stream *wish*)))
         (flush-wish)
-        (if (or blocking (can-read wstream))
-            (verify-event
-             (let ((*in-read-event* (cons *wish* *in-read-event*)))
-               (read-preserving-whitespace wstream nil nil)))
-            no-event-value))))
+        (bt:with-recursive-lock-held ((wish-read-lock *wish*))
+          (let ((event (if (and (not force-read-from-stream)
+                                (check-enqueued-event))
+                           (pop-enqueued-event)
+                           (and (or blocking (stream-readable-p wstream))
+                                (read-preserving-whitespace wstream
+                                                            t
+                                                            nil)))))
+            (if event
+                (verify-event
+                 (let ((*in-read-event* (cons *wish* *in-read-event*)))
+                   event))
+                no-event-value))))
+    (error (e)
+      (list :read-stream-error e))))
+
+(defun event-got-error-p (event)
+  (eq (first event) :read-stream-error))
+
+(defun check-enqueued-data ()
+  (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
+    (wish-data-queue *wish*)))
+
+(defun pop-enqueued-data ()
+  (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
+    (pop (wish-data-queue *wish*))))
+
+(defun push-enqueued-data (data)
+  (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
+    (let ((new-queue (append (wish-data-queue *wish*) (list data))))
+      (setf (wish-data-queue *wish*)
+            new-queue))))
+
+(defun check-enqueued-event ()
+  (bt:with-recursive-lock-held ((wish-read-event-lock *wish*))
+    (wish-event-queue *wish*)))
+
+(defun pop-enqueued-event ()
+  (bt:with-recursive-lock-held ((wish-read-event-lock *wish*))
+    (pop (wish-event-queue *wish*))))
+
+(defun push-enqueued-event (event)
+  (bt:with-recursive-lock-held ((wish-read-event-lock *wish*))
+    (let ((new-queue (append (wish-event-queue *wish*) (list event))))
+      (setf (wish-event-queue *wish*)
+            new-queue))))
 
 (defun read-data (&key (expected-list-as-data nil))
   "Read data from wish. Non-data events are postponed, bogus messages (eg.
 +error-strings) are ignored."
-  (loop
-     for data = (read-wish)
-     when (listp data) do
-       (cond
-         ((null data)
-          ;; exit wish
-          (exit-wish)
-          (return nil))
-         ((eq (first data) :data)
-          (dbg "read-data: ~s~%" data)
-          (if expected-list-as-data
-              (return (rest data))
-              (return (second data))))
-         ((eq (first data) :debug)
-          (if expected-list-as-data
-              (tcldebug (rest data))
-              (tcldebug (second data))))
-         ((find (first data) #(:event :callback :keepalive))
-          (dbg "postponing event: ~s~%" data)
-          (setf (wish-event-queue *wish*)
-                (append (wish-event-queue *wish*) (list data))))
-         ((eq (first data) :error)
-          (error 'tk-error :message (normalize-error data)))
-         (t
-          (format t "read-data problem: ~a~%" data) (finish-output)))
-     else do
-       (dbg "read-data error: ~a~%" data)))
+  (bt:with-recursive-lock-held ((wish-main-iteration-lock *wish*))
+    (setf (wish-waiting-data-p *wish*) t)
+    (labels ((get-data ()
+               (declare (optimize (debug 0) (speed 3)))
+               (cond
+                 ((check-enqueued-data)
+                  (pop-enqueued-data))
+                 (t
+                  (main-iteration :reentrant? t)
+                  (get-data)))))
+      (let ((data (get-data)))
+        (setf (wish-waiting-data-p *wish*) nil)
+        (if (listp data)
+            (cond
+              ((event-got-error-p data)
+               (exit-wish)
+               (return-from read-data nil))
+              ((null data)
+               (exit-wish)
+               (return-from read-data nil))
+              ((eq (first data) :data)
+               (dbg "read-data: ~s~%" data)
+               (if expected-list-as-data
+                   (return-from read-data (rest data))
+                   (return-from read-data (second data))))
+              ((eq (first data) :debug)
+               (if expected-list-as-data
+                   (tcldebug (rest data))
+                   (tcldebug (second data))))
+              ((eq (first data) :error)
+               (error 'tk-error :message (normalize-error data)))
+              (t
+               (finish-output)
+               data))
+            data)))))
 
 (defun read-keyword ()
   (let ((string (read-data)))

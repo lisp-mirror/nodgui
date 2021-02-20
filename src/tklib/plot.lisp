@@ -188,8 +188,17 @@
   (nodgui::send-wish
    (defproc sendeventplot (x y fun ({+ other {+ }+ }))
      (sendevent $fun
-                $x " " $y
-                {?} {?} {?} {?} {?} {?} {?} {?}))))
+                $x " "
+                $y
+                {?}
+                {?}
+                {?}
+                {?}
+                {?}
+                {?}
+                {?}
+                {?}
+                {?}))))
 
 (defmethod initialize-instance :after ((object plot) &key &allow-other-keys)
   (send-wish-preamble-code))

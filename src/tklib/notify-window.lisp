@@ -54,4 +54,4 @@ fine too. :)"
                            { ,message }     " "
                            ,(empty-string-if-nil image
                                 `([ image create photo -data ,(nodgui::data image)]])))))
-    (process-events t)))
+    (read-data)))

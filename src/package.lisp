@@ -1429,9 +1429,11 @@
            :listbox-get-selection-value
            :listbox-values-in-range
            :listbox-all-values
+           :listbox-colorize-item
            :listbox-nearest
            :listbox-select
            :listbox-select-mode
+           :listbox-size
            :listbox-export-selection
            :load-text
            :lower

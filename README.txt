@@ -97,7 +97,7 @@ Table of Contents
   <herth@peter-herth.de> Portions Copyright (c) 2005-2010 Thomas
   F. Burdick Portions Copyright (c) 2006-2010 Cadence Design Systems
   Portions Copyright (c) 2010 Daniel Herring Portions Copyright (c)
-  2018,2019 cage
+  2018,2019,2020 cage
 
   The authors grant you the rights to distribute and use this software
   as governed by the terms of the Lisp Lesser GNU Public License
