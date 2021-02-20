@@ -1242,29 +1242,29 @@
   (with-accessors ((secret-string   secret-string)
                    (text            text)
                    (show-password-p show-password-p))
-  (bind object #$<KeyPress>$
-        (lambda (a) (declare (ignore a)))
-        :exclusive t
-        :append nil)
-  (bind object #$<KeyRelease>$
-        (lambda (a)
-          (cond
-            ((string= (event-char a) nodgui.event-symbols:+backspace+)
-             (when (> (length secret-string) 0)
-               (setf secret-string (subseq secret-string 0 (1- (length secret-string))))
-               (setf text          (subseq text          0 (1- (length text))))))
-            ((nodgui.event-symbols:keysym-printable-p (event-char-code a))
-             (setf secret-string (strcat secret-string (event-char a)))
-             (setf text          (strcat text          (password-char-placeholder))))))
-        :exclusive t
-        :append nil)
-  (when show-password-p
-    (bind object #$<Double-1>$
+      (bind object #$<KeyPress>$
+            (lambda (a) (declare (ignore a)))
+            :exclusive t
+            :append nil)
+    (bind object #$<KeyRelease>$
           (lambda (a)
-            (declare (ignore a))
-            (setf text secret-string))
+            (cond
+              ((string= (event-char a) nodgui.event-symbols:+backspace+)
+               (when (> (length secret-string) 0)
+                 (setf secret-string (subseq secret-string 0 (1- (length secret-string))))
+                 (setf text          (subseq text          0 (1- (length text))))))
+              ((nodgui.event-symbols:keysym-printable-p (event-char-code a))
+               (setf secret-string (strcat secret-string (event-char a)))
+               (setf text          (strcat text          (password-char-placeholder))))))
           :exclusive t
-          :append nil))))
+          :append nil)
+    (when show-password-p
+      (bind object #$<Double-1>$
+            (lambda (a)
+              (declare (ignore a))
+              (setf text secret-string))
+            :exclusive t
+            :append nil))))
 
 (defun password-entry-demo ()
   (let ((res nil))
