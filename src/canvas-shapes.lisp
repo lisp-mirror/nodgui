@@ -216,13 +216,11 @@ outline-width: the width in pixel of the outline of this polygon"
    (left-side
     :initform nil
     :initarg  :left-side
-    :accessor left-side
-    :type     star)
+    :accessor left-side)
    (right-side
     :initform nil
     :initarg  :right-side
-    :accessor right-side
-    :type     star))
+    :accessor right-side))
   (:documentation "A  star-shaped polygon  with two  differents colors
   for left and right side"))
 

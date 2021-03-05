@@ -2,7 +2,7 @@
 ;; Portions Copyright (c) 2005-2010 Thomas F. Burdick
 ;; Portions Copyright (c) 2006-2010 Cadence Design Systems
 ;; Portions Copyright (c) 2010 Daniel Herring
-;; Portions Copyright (c) 2018 cage
+;; Portions Copyright (c) 2021 cage
 
 ;; The  authors  grant you  the  rights  to  distribute and  use  this
 ;; software as  governed by the  terms of  the Lisp Lesser  GNU Public
@@ -110,6 +110,10 @@ points to the same memory location (i.e. bg)."
                  :width  (width object)
                  :height (height object)
                  :data   (copy-array (data object))))
+
+(defgeneric pixel@ (object x y))
+
+(defgeneric (setf pixel@) (colorlist object x y))
 
 (defgeneric bits-pixel@ (object x y))
 
@@ -771,3 +775,157 @@ from file: 'file'"
             height image-h)
       (sync-data-to-bits object)
       object))))
+
+(alexandria:define-constant +file-matrix-buff-size+    2048               :test '=)
+
+(alexandria:define-constant +file-matrix-element-type+ '(unsigned-byte 8) :test 'equalp)
+
+(defclass file-matrix (pixmap)
+  ((file-path
+    :initform ""
+    :initarg  :file-path
+    :accessor file-path)
+   (stream-handle
+    :initform nil
+    :initarg  :stream-handle
+    :accessor stream-handle)
+   (block-size
+    :initform 4
+    :initarg  :block-size
+    :accessor block-size
+    :type     integer)))
+
+(defmethod print-object ((object file-matrix) stream)
+  (with-accessors ((file-path     file-path)
+                   (block-size    block-size)
+                   (stream-handle stream-handle)
+                   (width         width)
+                   (height        height)) object
+    (print-unreadable-object (object stream :type t :identity nil)
+      (format stream "~aX~a bs: ~a stream: ~a" width height block-size stream-handle))))
+
+(defun calc-file-matrix-size (fm)
+  (with-accessors ((block-size    block-size)
+                   (stream-handle stream-handle)
+                   (width         width)
+                   (height        height)) fm
+    (let ((size  (* width height block-size)))
+      (multiple-value-bind (block-num remainder)
+          (floor (/ size +file-matrix-buff-size+))
+        (values block-num ;; number of +file-matrix-buff-size+
+                (* remainder +file-matrix-buff-size+)))))) ; number of bytes!
+
+(defun fm-vector-type-fn (fm)
+  (with-accessors ((block-size block-size)) fm
+    (cond
+      ((= block-size 1)
+       #'(lambda () (vector 0)))
+      ((= block-size 2)
+        #'(lambda () (vector 0 0)))
+      ((= block-size 4)
+       #'(lambda () (ubvec4 0 0 0 0)))
+      (t
+       (error "Only 1, 2 or 4 blocksize allowed")))))
+
+(defun fill-file-matrix-size (fm)
+  (with-accessors ((block-size    block-size)
+                   (stream-handle stream-handle)
+                   (width         width)
+                   (height        height)) fm
+      (multiple-value-bind (block-counts bytes-left)
+          (calc-file-matrix-size fm)
+        (let ((buff (make-array-frame +file-matrix-buff-size+
+                                      0
+                                      +file-matrix-element-type+
+                                      t)))
+          (loop repeat block-counts do
+               (write-sequence buff stream-handle))
+          (loop repeat bytes-left do
+               (write-byte 0 stream-handle))))
+      (finish-output stream-handle)
+      (file-position stream-handle 0))
+  fm)
+
+(defun make-file-matrix (file width height &key (fill nil) (block-sz 4))
+  (let ((res (make-instance 'file-matrix
+                            :width  width
+                            :height height)))
+    (with-accessors ((file-path     file-path)
+                     (block-size    block-size)
+                     (stream-handle stream-handle)
+                     (width         width)
+                     (height        height)) res
+      (if (file-exists-p file) ; file exists
+          (let ((new-stream (open file
+                                  :direction         :io
+                                  :if-exists         :overwrite
+                                  :if-does-not-exist :create
+                                  :element-type      +file-matrix-element-type+)))
+            (setf stream-handle new-stream)
+            (setf file-path     file)
+            (setf block-size    block-sz)
+            (when fill                           ; fill the file with 0's
+              (fill-file-matrix-size res))
+            (file-position stream-handle 0)
+            res)
+          (progn                                 ; create and fill a new file
+            (create-file file)
+            (make-file-matrix file
+                              width
+                              height
+                              :fill     t
+                              :block-sz block-sz))))))
+
+(defun close-file-matrix (fm)
+  (with-accessors ((stream-handle stream-handle)) fm
+    (when stream-handle
+      (finish-output stream-handle)
+      (setf stream-handle nil)))
+  fm)
+
+(defun calc-offset (block-size width x y)
+  (* block-size (+ (* width y) x)))
+
+(defmethod pixel@ ((object file-matrix) x y)
+  (with-accessors ((block-size    block-size)
+                   (stream-handle stream-handle)
+                   (width         width)
+                   (height        height)) object
+    (let ((res    (funcall (fm-vector-type-fn object)))
+          (offset (calc-offset block-size width x y)))
+      (loop for i from 0 below block-size do
+           (file-position stream-handle (+ offset i))
+           (setf (elt res i)
+                 (read-byte stream-handle)))
+      res)))
+
+(defmethod (setf pixel@) (color (object file-matrix) x y)
+  (with-accessors ((block-size    block-size)
+                   (stream-handle stream-handle)
+                   (width         width)
+                   (height        height)) object
+    (let ((offset (calc-offset block-size width x y)))
+      (file-position stream-handle offset)
+      (write-sequence color stream-handle)
+      object)))
+
+(defmethod sync-data-to-bits ((object file-matrix))
+  "Fill 'bits' slot of this pixmap  with the contents of 'data' slots"
+  (multiple-value-bind (x byte-sizes)
+      (calc-file-matrix-size object)
+    (declare (ignore x))
+    (with-accessors ((data          data)
+                     (bits          bits)
+                     (stream-handle stream-handle)) object
+      (setf bits (make-bits-array byte-sizes))
+      (file-position stream-handle 0)
+      (loop for bytes-offset from 0 below byte-sizes do
+        (setf (elt bits bytes-offset)
+              (read-byte stream-handle)))
+      object)))
+
+(defmacro with-file-matrix ((name file w h &key (block-size 4)) &body body)
+  `(let ((,name (make-file-matrix ,file ,w ,h :block-sz ,block-size)))
+     (unwind-protect
+          (progn ,@body)
+       (close-file-matrix ,name))))

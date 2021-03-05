@@ -2,7 +2,7 @@
 ;; Portions Copyright (c) 2005-2010 Thomas F. Burdick
 ;; Portions Copyright (c) 2006-2010 Cadence Design Systems
 ;; Portions Copyright (c) 2010 Daniel Herring
-;; Portions Copyright (c) 2018 cage
+;; Portions Copyright (c) 2021 cage
 
 ;; The  authors  grant you  the  rights  to  distribute and  use  this
 ;; software as  governed by the  terms of  the Lisp Lesser  GNU Public
@@ -19,6 +19,14 @@
 (define-constant +base52-encode-table+
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
   :test #'string=)
+
+(defparameter *directory-sep-regexp*
+  #+windows "\\"
+  #-windows "\\/")
+
+(defparameter *directory-sep*
+  #+windows "\\"
+  #-windows "/")
 
 (defmacro format-fn-symbol (package format &rest format-args)
   `(alexandria:format-symbol ,package ,(concatenate 'string "~:@(" format "~)")
@@ -196,6 +204,42 @@
   (let* ((bytes (make-array-frame size 0 '(unsigned-byte 8) t)))
     (read-sequence bytes stream)
     bytes))
+
+(defun file-exists-p (f)
+  (uiop:file-exists-p f))
+
+(defun split-path-elements (path)
+  (cl-ppcre:split *directory-sep-regexp* path))
+
+(defun directory-exists-p (d)
+  (uiop:directory-exists-p d))
+
+(defun make-directory (path)
+  (if (not (cl-ppcre:scan (concatenate 'string *directory-sep* "$") path))
+      (make-directory (concatenate 'string path *directory-sep*))
+      (ensure-directories-exist path)))
+
+(defun create-file (file)
+  "create file and parent dir, if necessary"
+  (let ((path-splitted (split-path-elements file)))
+    (when (and path-splitted
+               (> (length path-splitted) 1))
+      (do* ((path-rest (subseq path-splitted 0 (1- (length path-splitted))) (rest path-rest))
+            (path-so-far "" (if (and path-rest
+                                     (not (string= "" (first-elt path-rest))))
+                                (concatenate 'string
+                                             path-so-far
+                                             *directory-sep*
+                                             (first-elt path-rest)
+                                             *directory-sep*)
+                                path-so-far)))
+           ((null path-rest))
+        (when (not (directory-exists-p path-so-far))
+          (make-directory path-so-far)))
+      (with-open-file (stream file
+                              :direction :output
+                              :if-exists :supersede
+                              :if-does-not-exist :create)))))
 
 (defun namestring->pathname (path-as-string)
   (uiop:parse-native-namestring path-as-string))

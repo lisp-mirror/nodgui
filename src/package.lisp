@@ -57,6 +57,9 @@
            :make-array-frame
            :make-fresh-array
            :read-into-array
+           :file-exists-p
+           :split-path-elements
+           :create-file
            :namestring->pathname
            :pngp
            :gifp
@@ -180,6 +183,7 @@
    :data
    :bits
    :errors
+   :pixel@
    :sync-bits-to-data
    :sync-data-to-bits
    :tga
@@ -191,7 +195,8 @@
    :v-mirror
    :scale-nearest
    :scale-bilinear
-   :rotate-pixmap))
+   :rotate-pixmap
+   :with-file-matrix))
 
 (defpackage :nodgui.sanitize
   (:use :cl
