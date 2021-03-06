@@ -404,10 +404,18 @@ example:
                         (err-as-num         (parse-number-or-0 err)))
                     ;; errors
                     (when (not (epsilon= err-as-num 0.0))
-                      (let ((error-handlers (draw-error-bar object series
-                                                            x-as-num y-as-num err-as-num
-                                                            (/ size-as-num 2)
-                                                            error-bar-color)))
+                      (let* ((x-axis          (x-axis-conf object))
+                             (x-axis-w        (abs (- (maximum x-axis)
+                                                      (minimum x-axis))))
+                             (error-bar-width (* (/ size-as-num 2)
+                                                 (* 0.01 x-axis-w)))
+                             (error-handlers  (draw-error-bar object
+                                                              series
+                                                              x-as-num
+                                                              y-as-num
+                                                              err-as-num
+                                                              error-bar-width
+                                                              error-bar-color)))
                         (setf all-error-handlers
                               (append all-error-handlers error-handlers))))
                     (format-wish (tclize `(,handle " " plot " "  ,series-handle " "
