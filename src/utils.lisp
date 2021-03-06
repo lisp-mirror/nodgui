@@ -46,6 +46,10 @@
     (loop for i in chunks do
          (write-sequence i stream))))
 
+(defun string-empty-p (s)
+  (or (null s)
+      (string= s "")))
+
 (defun wrap-with (s wrapper)
   (strcat wrapper s wrapper))
 

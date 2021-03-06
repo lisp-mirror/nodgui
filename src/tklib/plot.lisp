@@ -426,9 +426,10 @@ example:
                                  series
                                  (bind-event series)
                                  (callback series)))))
-             (format-wish (tclize `(,handle
-                                    legend
-                                    ,series-handle " " ,legend)))))
+             (when (not (string-empty-p legend))
+               (format-wish (tclize `(,handle
+                                      legend
+                                      ,series-handle " " ,legend))))))
       ;; lower all errors bars
       (loop for error-handle in all-error-handlers do
            (nodgui::item-lower destination error-handle +plotchart-data-tag+))))

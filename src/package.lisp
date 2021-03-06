@@ -39,6 +39,7 @@
            :to-s
            :strcat
            :strcat*
+           :string-empty-p
            :wrap-with
            :common-prefix
            :strip-prefix
