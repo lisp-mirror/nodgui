@@ -20,7 +20,7 @@
 (named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
 (defun choose-color (&key parent title initial-color )
-  (format-wish "senddatastring [tk_chooseColor ~@[ -parent ~A~]~@[ -title {~A}~]~@[ -initialcolor {~A}~]]"
+  (format-wish "senddatastring [tk_chooseColor ~@[ -parent ~A~]~@[ -title \"~A\"~]~@[ -initialcolor {~A}~]]"
                (when parent
                  (widget-path parent))
                title

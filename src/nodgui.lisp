@@ -933,7 +933,8 @@ tk input to terminate"
   If :STREAM is non-NIL, it should be a two-way stream connected to a running
   wish.  This will be used instead of running a new wish.
 
-  With :title you can set the title of this window"
+  With :name (or :title as a synonym) you can set both title and class
+  name of this window"
   (declare (ignore debug serve-event stream title))
   `(call-with-nodgui (lambda () ,@body) ,@keys))
 
@@ -949,7 +950,8 @@ tk input to terminate"
                           (list :debugger-class (debug-setting-condition-handler debug)))))
          (mainloop ()
            (apply #'mainloop (filter-keys '(:serve-event) keys))))
-    (let* ((*default-toplevel-title* (getf keys :title "notitle"))
+    (let* ((*default-toplevel-title* (or (getf keys :name)
+                                         (getf keys :title "notitle")))
            (*wish-args*              (append-wish-args (list +arg-toplevel-name+
                                                              *default-toplevel-title*)))
            (*wish*                   (make-nodgui-connection :remotep remotep)))
