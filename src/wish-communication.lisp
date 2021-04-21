@@ -106,7 +106,7 @@
   #+freebsd "wish8.6"
   #-freebsd "wish")
 
-(defparameter *default-toplevel-title* "NODGUI")
+(defparameter *default-toplevel-name* "NODGUI")
 
 (defvar *wish-args* '())
 

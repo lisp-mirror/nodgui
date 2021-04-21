@@ -950,15 +950,21 @@ tk input to terminate"
                           (list :debugger-class (debug-setting-condition-handler debug)))))
          (mainloop ()
            (apply #'mainloop (filter-keys '(:serve-event) keys))))
-    (let* ((*default-toplevel-title* (or (getf keys :name)
-                                         (getf keys :title "notitle")))
+
+
+    (let* ((class-name  (or (getf keys :class)
+                            (getf keys :name)))
+           (title-value (getf keys :title))
+           (*default-toplevel-name* (or class-name title-value))
            (*wish-args*              (append-wish-args (list +arg-toplevel-name+
-                                                             *default-toplevel-title*)))
+                                                             *default-toplevel-name*)))
            (*wish*                   (make-nodgui-connection :remotep remotep)))
       (catch *wish*
         (unwind-protect
              (progn
                (start-wish)
+               (when title-value
+                 (wm-title *tk* title-value))
                (multiple-value-prog1
                    (with-nodgui-handlers ()
                      (with-atomic (funcall thunk)))
