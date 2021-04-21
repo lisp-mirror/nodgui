@@ -955,7 +955,9 @@ tk input to terminate"
     (let* ((class-name  (or (getf keys :class)
                             (getf keys :name)))
            (title-value (getf keys :title))
-           (*default-toplevel-name* (or class-name title-value))
+           (*default-toplevel-name* (or class-name
+                                        title-value
+                                        *default-toplevel-name*))
            (*wish-args*              (append-wish-args (list +arg-toplevel-name+
                                                              *default-toplevel-name*)))
            (*wish*                   (make-nodgui-connection :remotep remotep)))
