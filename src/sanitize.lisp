@@ -52,6 +52,10 @@
 (defmethod sanitize (object)
   (sanitize (to-s object)))
 
+(defmethod sanitize ((object number))
+  "Return numbers unprocessed"
+  object)
+
 (defmethod sanitize ((object string))
   (if (string= "{}" object)
       object
