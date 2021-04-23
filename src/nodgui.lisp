@@ -412,19 +412,35 @@ set y [winfo y ~a]
          (warn "Using a string for the :SIDE parameter is deprecated."))
         ((stringp fill)
          (warn "Using a string for the :FILL parameter is deprecated.")))
-  ;; TODO: use tclize
-  (format-wish "pack ~A -side {~(~A~)} -fill {~(~A~)} ~@[~* -expand 1~]~@[ -after ~A~]~@[ -before ~A~]~@[ -padx {~a}~]~@[ -pady {~a}~]~@[ -ipadx {~a}~]~@[ -ipady {~a}~]~@[ -anchor {~(~A~)}~]"
-               (widget-path w)
-               side
-               fill
-               expand
-               (and after (widget-path after))
-               (and before (widget-path before))
-               padx
-               pady
-               ipadx
-               ipady
-               anchor)
+  (let ((*suppress-newline-for-tcl-statements* t))
+    (format-wish (tclize `(pack ,(widget-path w) " "
+                                -side ,(keyword->tcl side :downcase t)  " "
+                                ,(empty-string-if-nil fill
+                                   `(-fill ,(keyword->tcl fill
+                                                          :downcase t))) " "
+                                ,(empty-string-if-nil expand
+                                   `(-expand 1 " "))
+                                ,(empty-string-if-nil after
+                                   `(-after ,(widget-path after) " " ))
+                                ,(empty-string-if-nil before
+                                   `(-before ,(widget-path before) " "))
+                                ,(empty-string-if-nil padx
+                                   (let ((pad (if (listp padx)
+                                                  (format nil "~{~a ~}" (sanitize padx))
+                                                  padx)))
+                                     `(-padx { ,pad } " ")))
+                                ,(empty-string-if-nil pady
+                                   (let ((pad (if (listp pady)
+                                                  (format nil "~{~a ~}" (sanitize pady))
+                                                  pady)))
+                                     `(-pady { ,pad } " ")))
+                                ,(empty-string-if-nil ipadx
+                                   `(-ipadx ,ipadx " "))
+                                ,(empty-string-if-nil ipady
+                                   `(-ipady ,ipady " "))
+                                ,(empty-string-if-nil anchor
+                                  `(-anchor ,(keyword->tcl anchor
+                                                           :downcase t)))))))
   w)
 
 (defmethod pack ((list list) &rest rest)
