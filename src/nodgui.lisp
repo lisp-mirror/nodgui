@@ -407,6 +407,14 @@ set y [winfo y ~a]
 
 (defgeneric pack (w &key side fill expand after before padx pady ipadx ipady anchor))
 
+(defun tclize-pad (padding-command padding-value)
+  (let ((pad (if (listp padding-value)
+                 (progn
+                   (assert (= (length padding-value) 2))
+                   (format nil "~{~a ~}" (sanitize padding-value)))
+                  padding-value)))
+     `(,padding-command { ,pad } " ")))
+
 (defmethod pack ((w widget) &key (side :top) (fill :none) expand after before padx pady ipadx ipady anchor)
   (cond ((stringp side)
          (warn "Using a string for the :SIDE parameter is deprecated."))
@@ -425,15 +433,9 @@ set y [winfo y ~a]
                                 ,(empty-string-if-nil before
                                    `(-before ,(widget-path before) " "))
                                 ,(empty-string-if-nil padx
-                                   (let ((pad (if (listp padx)
-                                                  (format nil "~{~a ~}" (sanitize padx))
-                                                  padx)))
-                                     `(-padx { ,pad } " ")))
+                                   (tclize-pad '-padx padx))
                                 ,(empty-string-if-nil pady
-                                   (let ((pad (if (listp pady)
-                                                  (format nil "~{~a ~}" (sanitize pady))
-                                                  pady)))
-                                     `(-pady { ,pad } " ")))
+                                   (tclize-pad '-pady pady))
                                 ,(empty-string-if-nil ipadx
                                    `(-ipadx ,ipadx " "))
                                 ,(empty-string-if-nil ipady
@@ -497,23 +499,30 @@ set y [winfo y ~a]
 
 ;;; grid manager
 
-(defgeneric grid (widget r c &key columnspan ipadx ipady padx pady rowspan sticky))
+(defgeneric grid (widget row column
+                  &key columnspan ipadx ipady padx pady rowspan sticky))
 
-(defmethod grid ((w widget) row column &key columnspan ipadx ipady padx pady rowspan sticky)
-  ;; TODO use tclize
-  (format-wish "grid {~a} -row {~a} -column {~a} ~@[ -columnspan {~a}~]~@[ -ipadx {~a}~]~
-             ~@[ -ipady {~a}~]~@[ -padx {~a}~]~@[ -pady {~a}~]~@[ -rowspan {~a}~]~
-             ~@[ -sticky {~(~a~)}~]"
-               (widget-path w)
-               row
-               column
-               columnspan
-               ipadx
-               ipady
-               padx
-               pady
-               rowspan
-               sticky)
+(defmethod grid ((w widget) row column
+                 &key columnspan ipadx ipady padx pady rowspan sticky)
+  (let ((*suppress-newline-for-tcl-statements* t))
+      (format-wish (tclize `(grid ,(widget-path w) " "
+                                  -row        ,(tk-number row) " "
+                                  -column     ,(tk-number column) " "
+                                  ,(empty-string-if-nil columnspan
+                                    `(-columnspan ,(tk-number columnspan) " "))
+                                  ,(empty-string-if-nil rowspan
+                                     `(-rowspan ,(tk-number rowspan) " "))
+                                  ,(empty-string-if-nil sticky
+                                     `(-sticky ,(keyword->tcl sticky :downcase t)
+                                               " "))
+                                  ,(empty-string-if-nil padx
+                                     (tclize-pad '-padx padx))
+                                  ,(empty-string-if-nil pady
+                                     (tclize-pad '-pady pady))
+                                  ,(empty-string-if-nil ipadx
+                                     `(-ipadx ,ipadx " "))
+                                  ,(empty-string-if-nil ipady
+                                     `(-ipady ,ipady " "))))))
   w)
 
 (defgeneric grid-columnconfigure (widget c o v))
