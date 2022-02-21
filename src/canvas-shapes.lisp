@@ -265,8 +265,8 @@ outline-width: the width in pixel of the outline of this polygon"
 (defmethod shape-move ((object two-color-star) dx dy)
   (with-accessors ((left-side  left-side)
                    (right-side right-side)) object
-    (shape-move object left-side  dx dy)
-    (shape-move object right-side dx dy)))
+    (shape-move left-side  dx dy)
+    (shape-move right-side dx dy)))
 
 (defmethod shape-move-to ((object two-color-star) x y)
   (with-accessors ((left-side  left-side)

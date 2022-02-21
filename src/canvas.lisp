@@ -352,7 +352,7 @@
   (item-move (canvas item) (handle item) (tk-number dx) (tk-number dy)))
 
 (defmethod itemmove ((canvas canvas) item dx dy)
-  (item-move item dx dy))
+  (item-move canvas item dx dy))
 
 (defmethod item-move ((canvas canvas) item dx dy)
   (format-wish "~a move {~a} ~a ~a"
