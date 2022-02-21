@@ -35,12 +35,12 @@
     :documentation  "The  coordinates  of  the  vertices  (or  control
     points) belonging to this shape")
    (fill-color
-    :initform #%white%
+    :initform "#ffffff"
     :initarg  :fill-color
     :accessor fill-color
     :documentation  "The  inner color of this shape")
    (outline-color
-    :initform #%black%
+    :initform "#FFFFFF"
     :initarg  :outline-color
     :accessor outline-color
     :documentation  "The  outline color of this shape")
@@ -81,7 +81,7 @@
 
 (defun create-polygon (canvas coords
                        &key
-                         (fill-color #%blue%) (outline-color #%red%)
+                         (fill-color "#0000ff") (outline-color "#ff0000")
                          (outline-width 1))
   "Create a polygon.
 This is the low level procedure that deal with TK.
@@ -122,7 +122,7 @@ outline-width: the width in pixel of the outline of this polygon"
 
 (defun make-polygon (canvas coords
                      &key
-                       (fill-color #%white%) (outline-color #%gray%)
+                       (fill-color "#ffffff") (outline-color "#BEBEBE")
                        (outline-width 1))
     "Make a polygon.
 canvas:        the canvas where draw the polygon

@@ -61,7 +61,7 @@
    :documentation "a  descriptive label (shown  on the plot)  for this
    series")
   (color
-   :initform #%red%
+   :initform "#ff0000"
    :initarg  :color
    :accessor color
    :documentation "plotted color of each datum"))
@@ -341,7 +341,7 @@ are in plot space"
 
 (defmethod draw-on-canvas :after ((object dot-plot) (destination canvas)
                                   &key
-                                    (error-bar-color #%black%))
+                                    (error-bar-color "#000000"))
   "  Draw a scatter plot on a canvas.
 The plot must be initialized with series (see: the 'all-series' slot of 'plot' class)
 
