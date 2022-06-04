@@ -414,7 +414,7 @@
 (defmethod initialize-instance :after ((c canvas-line) &key canvas coords)
   (setf (handle c) (create-line canvas coords)))
 
-(defun make-line (canvas coords &key (fill #%black%) (width 1))
+(defun make-line (canvas coords &key (fill "#000000") (width 1))
   (let* ((shape  (make-instance 'canvas-line
                                 :canvas canvas
                                 :coords coords))
@@ -456,8 +456,8 @@
 
 (defun make-oval (canvas x0 y0 x1 y1
                   &key
-                    (fill    #%black%)
-                    (outline #%black%))
+                    (fill    "#000000")
+                    (outline "#000000"))
   (let* ((shape (make-instance 'canvas-oval
                                :canvas canvas
                                :x0     x0
@@ -470,8 +470,8 @@
 
 (defun make-circle (canvas x-center y-center radius
                     &key
-                      (fill    #%black%)
-                      (outline #%black%))
+                      (fill    "#000000")
+                      (outline "#000000"))
   (let* ((x0    (- x-center radius))
          (x1    (+ x-center radius))
          (y0    (- y-center radius))
@@ -499,8 +499,8 @@
 
 (defun make-rectangle (canvas x0 y0 x1 y1
                        &key
-                         (fill    #%black%)
-                         (outline #%black%)
+                         (fill    "#000000")
+                         (outline "#000000")
                          (width   1))
   (let* ((shape  (make-instance 'canvas-rectangle
                                 :canvas canvas

@@ -808,10 +808,10 @@
                                        :extent 359
                                        :style :pieslice
                                        :fill  "#0000ff"))
-             (star         (make-star canvas 80 0.5 #%red% #%black% 5))
+             (star         (make-star canvas 80 0.5 "#ff0000" "#000000" 5))
              (bicolor-star (make-two-color-star canvas 80 0.5
-                                                #%yellow% #%yellow%
-                                                #%gray%   #%yellow%
+                                                "#FFFF00" "#FFFF00"
+                                                "#BEBEBE"   "#FFFF00"
                                                 10
                                                 :outline-width 10))
              (rotated-text (create-text canvas 0 20
@@ -823,7 +823,7 @@
         (shape-move-to  bicolor-star (/ size 2) (/ size 2))
         (shape-move-to  star 30 30)
         (create-text    canvas 0 0  "Slices of the pie are clickable")
-        (item-configure canvas arc1 "fill"  #%red%) ;; using x11-colors via cl-colors2
+        (item-configure canvas arc1 "fill"  "#ff0000") ;; using x11-colors via cl-colors2
         (item-configure canvas arc2 "fill"  "#00ff00") ;; strings are accepted, though
         (item-configure canvas arc1 "tag"   "red")
         (item-configure canvas arc2 "tag"   "green")
@@ -834,12 +834,12 @@
         (make-rectangle canvas
                          0  (* 3/4 size)
                          50 (+ (/ size 2) 50)
-                         :fill    #%red%
-                         :outline #%blue%)
+                         :fill    "#ff0000"
+                         :outline "#0000ff")
         (make-items canvas `((:rectangle 0  ,(/ size 2) 50 ,(+ (/ size 2) 50))
                              (:arc       0  ,(+ (/ size 2) 10)
                                          50 ,(+ (/ size 2) 60)
-                                         :start 0 :extent 180 :fill #%purple%)
+                                         :start 0 :extent 180 :fill "#A020F0")
                              (:line      0 ,size ,size ,(- size 10) :width 5)))
         (pack canvas)))))
 
@@ -970,7 +970,7 @@
                            (x2 40)
                            (y1 (line x1))
                            (y2 (line x2)))
-                      (nodgui.tklib.plot:place-line plot series x1 y1 x2 y2 #%blue% :width 2)))))))
+                      (nodgui.tklib.plot:place-line plot series x1 y1 x2 y2 "#0000ff" :width 2)))))))
       (grid canvas 0 0 :sticky :news)
       (nodgui.tklib.plot:draw-on-canvas plot canvas)
       (bind plot #$<ButtonPress-1>$ (lambda (event)

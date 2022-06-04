@@ -200,8 +200,8 @@ alternatively a list of numbers may be given"
 
 (defmethod listbox-colorize-item ((object listbox) (index number)
                                   &key
-                                    (background #%white%)
-                                    (foreground #%black%))
+                                    (background "#ffffff")
+                                    (foreground "#000000"))
   (assert (stringp background))
   (assert (stringp foreground))
   (assert (<= 0 index (1- (listbox-size object))))
@@ -291,8 +291,8 @@ alternatively a list of numbers may be given"
 
 (defmethod listbox-colorize-item ((object scrolled-listbox) (index number)
                                   &key
-                                    (background #%white%)
-                                    (foreground #%black%))
+                                    (background "#ffffff")
+                                    (foreground "#000000"))
   (with-accessors ((listbox listbox)) object
     (listbox-colorize-item listbox index :background background :foreground foreground)
     object))

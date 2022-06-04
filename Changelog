@@ -1,3 +1,1158 @@
+2021-11-07 cage
+
+	* src/ubvec4.lisp:
+
+	- fixed 'ubvec4-normalize', length variable was bound to a float, not
+	an unsigned octect (thanks quicklisp and sbcl\!).
+
+2021-04-24 cage
+
+	* src/nodgui.lisp:
+
+	- made 'grid' accepts 'pad' argument formed by a list,
+	- refactored pad frelated code in a function.
+	Merge branch 'master' into development
+
+2021-04-23 cage
+
+	* src/nodgui.lisp:
+
+	Merge branch 'master' of peterlane/nodgui into master
+	- rewritten 'pack' using tclize.
+
+2021-04-22 Peter Lane
+
+	* src/sanitize.lisp:
+
+	Fixes issue 22 - sanitize mis-formats numbers
+	The sanitize function converts numbers (actually, all non-strings,
+	non-lists) to a string (using to-s) before they get to the format
+	control string, and to-s uses the ~a directive. This means the control
+	string provided to format-wish cannot use numeric directives.
+	This fix adds a method to handle numbers by passing them back
+	unchanged
+	for formatting by the format-wish control string.
+
+2021-04-21 cage
+
+	* nodgui.asd,
+	* src/nodgui.lisp,
+	* src/wish-communication.lisp:
+
+	- added :class and :title args to 'with-nodgui'.
+	- used default title if not specified as argument to 'with-ltk'.
+
+2021-04-19 cage
+
+	* nodgui.asd,
+	* src/dialog.lisp,
+	* src/nodgui.lisp:
+
+	- allowed unescaped '{' and '}' as title for choose color dialog;
+	- added :name as synonym for :title as key argument to `with-nodgui'.
+	- updated version.
+
+2021-03-06 cage
+
+	* src/package.lisp,
+	* src/tklib/plot.lisp,
+	* src/utils.lisp:
+
+	- [tklib] fixed width of error bar in dot plot.
+	- [tklib] prevented crash when a plot with no legend for a data set is
+	drawn on canvas.
+
+2021-03-05 cage
+
+	* nodgui.asd,
+	* src/canvas-shapes.lisp,
+	* src/package.lisp,
+	* src/pixmap.lisp,
+	* src/utils.lisp:
+
+	- removed :type slots for a canvas shape (triggrered a warning).
+	- added a pixmap class file that can be manipulated without loading
+	bitmap into file.
+	- increased version.
+
+2021-02-20 cage
+
+	* README.org,
+	* README.txt,
+	* nodgui.asd,
+	* src/nodgui-mw.lisp:
+
+	- fixed indentation.
+	- removed note from README.
+	Merge branch 'thread-safe'
+	- updated version.
+
+2020-09-28 cage
+
+	* src/listbox.lisp:
+
+	- added missing argument for 'listbox-colorize-item' spacialized on
+	'scrolled-listbox'.
+
+2020-09-26 cage
+
+	* src/listbox.lisp,
+	* src/package.lisp:
+
+	- added 'listbox-colorize-item' amd 'listbox-size'.
+
+2020-09-16 cage
+
+	* src/widget.lisp,
+	* src/wm.lisp:
+
+	- prevented crash when (de)iconifying *tk*.
+
+2020-09-09 cage
+
+	* src/canvas.lisp,
+	* src/nodgui.lisp,
+	* src/tcl-glue-code.lisp,
+	* src/tklib/plot.lisp:
+
+	- fixed out of range index when building an event struct.
+
+2020-09-08 cage
+
+	* src/listbox.lisp:
+
+	- fixed listbox-insert to allow use :end as index.
+
+2020-09-05 cage
+
+	* src/nodgui.lisp,
+	* src/wish-communication.lisp:
+
+	- restored enqueueing event mechanism.
+
+2020-08-24 cage
+
+	* src/nodgui.lisp,
+	* src/photo-image.lisp,
+	* src/tklib/notify-window.lisp,
+	* src/wish-communication.lisp:
+
+	- removed a workaround.
+	- added call to 'read-data' to prevents infinite loop.
+	- added call to 'read-data' to prevents infinite loop (notify window).
+	- removed useless variables and commented code.
+
+2020-08-23 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui.lisp,
+	* src/tklib/notify-window.lisp,
+	* src/wish-communication.lisp:
+
+	- moved locks into connection struct.
+	- added concurrent reading and writing to wish process.
+	- made CPU works less.
+
+2020-08-18 cage
+
+	* README.org,
+	* README.txt,
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/text.lisp,
+	* src/wish-communication.lisp:
+
+	- adding locks in pipe I/O;
+	- added new demo (multithread);
+	Removed lock from timeout message widget.
+	- added function to clean close pipe when quitting demo.
+	- increased version.
+
+2020-06-26 cage
+
+	* src/package.lisp,
+	* src/winfo.lisp:
+
+	- added 'children-pathname' and 'parent-pathname'.
+
+2020-06-11 cage
+
+	* README.org,
+	* nodgui.asd,
+	* src/nodgui.lisp,
+	* src/package.lisp:
+
+	- added function to eval an external TCL script for a file.
+	- fixed docstring.
+
+2020-04-03 cage
+
+	* src/demo-tests.lisp,
+	* src/tcl-glue-code.lisp,
+	* src/widget-helpers.lisp:
+
+	- added  more arguments  passed to  validatecommand function  from TCL
+	side.
+
+2020-03-27 cage
+
+	* NEWS.org:
+
+	- added NEWS.org
+
+2020-03-25 cage
+
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/tcl-glue-code.lisp,
+	* src/widget-helpers.lisp,
+	* src/wish-communication.lisp:
+
+	- fixed "validatecommand" option for TK 'entry';
+	- fixed typo;
+	- updated version.
+
+2020-01-02 cage
+
+	* src/tklib/calendar.lisp,
+	* src/utils.lisp:
+
+	- changed package name: from 'cl-colors' to 'cl-colors2'.
+
+2019-12-12 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/utils.lisp,
+	* src/wish-communication.lisp:
+
+	- made `message-with-timeout` transient;
+	- added a new widget `message-with-timeout-callback';
+	- tried to be more clever in `makeimage' specialized on `string':
+	when the string contains a `.' assume is a path to a file and try to
+	open load it (PNG and GIF format only);
+	- other minor chages.
+
+2019-12-07 cage
+
+	* nodgui.asd,
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/tcl-emitter.lisp,
+	* src/tklib/plot.lisp:
+
+	- added symbols type for dot plot (triangle, circle etc.);
+	- `colorize' can optionally skips colors for canvas items.
+	- increased version.
+
+2019-12-01 cage
+
+	* src/canvas.lisp:
+
+	- made the library compile again;
+	- added color fill color arg to 'make-line'.
+	- added arg 'width' to 'make-line'.
+
+2019-11-30 cage
+
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/event-symbols.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp:
+
+	- added some helper functions for canvas and convas items;
+	- added 'unicode-char' to slots of the 'event' struct.
+	- fixed 'move-to';
+	- added 'make-circle'.
+	- added fill and outline color arguments for 'make-circle'.
+	- added color args to some shapes creating functions.
+	- minor clean.
+
+2019-10-10 cage
+
+	* README.org,
+	* nodgui.asd,
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/fit-line.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/tklib/package.lisp,
+	* src/tklib/plot.lisp:
+
+	- added a function to draw a line on a dot-plot.
+	- removed footnotes in README.org.
+
+2019-10-09 cage
+
+	* src/demo-tests.lisp,
+	* src/event-symbols.lisp:
+
+	- fixed again demo.
+
+2019-10-06 cage
+
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- prevent  disappearing of  space in  'demo-fitted-text' when  text is
+	deleted with a backspace;
+	- minor cleaning.
+	- increased version.
+
+2019-09-29 cage
+
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/tcl-emitter.lisp,
+	* src/treeview.lisp:
+
+	- added chance  to bypass tilde  escaping if  needed when TCL  code is
+	emitted.
+
+2019-09-27 cage
+
+	* README.org,
+	* README.txt,
+	* src/canvas-shapes.lisp,
+	* src/canvas.lisp,
+	* src/dialog.lisp,
+	* src/entry.lisp,
+	* src/listbox.lisp,
+	* src/nodgui.lisp,
+	* src/notebook.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/pixmap.lisp,
+	* src/sanitize.lisp,
+	* src/tcl-emitter.lisp,
+	* src/tklib/calendar.lisp,
+	* src/tklib/misc-widget.lisp,
+	* src/tklib/notify-window.lisp,
+	* src/tklib/plot.lisp,
+	* src/tklib/swaplist.lisp,
+	* src/treeview.lisp,
+	* src/widget.lisp,
+	* src/winfo.lisp,
+	* src/wish-communication.lisp,
+	* src/wm.lisp:
+
+	- marked as deprecated the '#[...]' reader macro;
+	- reduced the README's size (moved documentation to website).
+	- removed #[...] reader macro where was used;
+	- fixed 'repeat-periodic-coord'.
+
+2019-09-08 cage
+
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/sanitize.lisp,
+	* src/tklib/package.lisp,
+	* src/tklib/plot.lisp,
+	* src/tkvariable.lisp:
+
+	- added barchart widget;
+	- refactored from structs to classes.
+	- increased version.
+	- readded a missing function.
+
+2019-09-07 cage
+
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/tcl-emitter.lisp,
+	* src/tklib/misc-widget.lisp,
+	* src/tklib/package.lisp,
+	* src/tklib/swaplist.lisp,
+	* src/tkvariable.lisp,
+	* src/utils.lisp:
+
+	- added 'swaplist' widget;
+	- made 'tkvariable' useful for a more general use;
+	- minor refactoring for unicode symbols.
+	- added equalizer bar widget.
+
+2019-09-06 cage
+
+	* src/tklib/package.lisp,
+	* src/tklib/plot.lisp:
+
+	- added some configuration options for plot.
+
+2019-09-04 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui.lisp,
+	* src/tcl-emitter.lisp,
+	* src/tcl-glue-code.lisp,
+	* src/tklib/package.lisp,
+	* src/tklib/plot.lisp:
+
+	- defproc macro accept optional arguments;
+	- event struct own an optional slot;
+	- added 'bind' and 'bindlast' for 'dot-plot'.
+	- added callback for each point in a 'dot-plot'.
+
+2019-09-01 cage
+
+	* README.org,
+	* README.txt,
+	* nodgui.asd,
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/tklib/plot.lisp:
+
+	- added errors bar for scatter plot's data.
+	- added docstrings for plot widget.
+	- updated version.
+	- updated documentation.
+	- fixed typo.
+
+2019-08-31 cage
+
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/tklib/calendar.lisp,
+	* src/tklib/notify-window.lisp,
+	* src/tklib/package.lisp,
+	* src/tklib/plot.lisp,
+	* src/wish-communication.lisp:
+
+	- added docstrings.
+	- added notify-window.
+	- added scatter plot.
+
+2019-08-30 cage
+
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/tklib/calendar.lisp,
+	* src/tklib/package.lisp,
+	* src/utils.lisp,
+	* src/widget-helpers.lisp,
+	* src/wish-communication.lisp:
+
+	- [tklib] added calendar.
+
+2019-08-16 cage
+
+	* README.org,
+	* README.txt:
+
+	- updated documentation (compatibility matrix).
+
+2019-06-29 cage
+
+	* README.org,
+	* README.txt,
+	* nodgui.asd,
+	* src/canvas-shapes.lisp,
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/dialog.lisp,
+	* src/entry.lisp,
+	* src/event-parser.lisp,
+	* src/listbox.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/notebook.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/syntax.lisp,
+	* src/tcl-emitter.lisp,
+	* src/treeview.lisp,
+	* src/utils.lisp,
+	* src/widget.lisp,
+	* src/winfo.lisp,
+	* src/wm.lisp:
+
+	- moved from cl-syntax to named-readtables.
+	- fixed 'with-hourglass'
+	this macro signalled a condition  when one of the variables supposed
+	to point to a widget was nil instead.
+	- Updated README to point out that works on ECL..
+
+2019-06-21 cage
+
+	* src/nodgui.lisp,
+	* src/utils.lisp:
+
+	- trying to address thre problem  on compilation with newer version of
+	SBCL.
+	- made the fonts definition more compact.
+
+2019-06-06 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/pixmap.lisp,
+	* src/text.lisp,
+	* src/treeview.lisp,
+	* src/utils.lisp,
+	* src/wish-communication.lisp:
+
+	- added 'font-measure' and added parameter to 'font-families';
+	- import symbol define-constant from alexandria;
+	- refactored scrolled text class and method: moved to text.lisp source
+	file;
+	- horizontal scrollbar in scrolled-text-widget is optional;
+	- added a method to fit text in a scrolled-text-widget.
+	- added constants for standards fonts.
+	- moved 'camel-case->snail-case' to package utils.
+
+2019-04-26 cage
+
+	* src/nodgui-mw.lisp:
+
+	- [MW]  added a  visual  hint that  autocomplete  listbox is  actually
+	spending time looking for one or  more entries that match the search
+	criteria the user has typed.
+
+2019-04-21 cage
+
+	* src/nodgui-mw.lisp,
+	* src/utils.lisp:
+
+	- added    shortcut    key     for    autocompletion    text    entry
+	(nodgui.mw:history-entry).
+	- added    a   visual    hint    for    autocompletion   choices    in
+	nodgui-mw:history-entry.
+	- moved numerical position for autocompletions choice.
+
+2019-03-18 cage
+
+	* src/menu.lisp,
+	* src/package.lisp,
+	* src/tcl-emitter.lisp,
+	* src/wish-communication.lisp:
+
+	- escape tilde in unquoted forms of tclize, when the reader macro is
+	used.
+
+2019-03-15 cage
+
+	* src/treeview.lisp:
+
+	- removed "senddatastring" when setting heading of a treeview.
+	Senddatastring must be used when some kind of resuts are expected from
+	the TCL command just executed, this is not the case.
+
+2019-03-13 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp:
+
+	- fixed closing of dialog-with-timeout.
+
+2019-03-11 cage
+
+	* src/treeview.lisp:
+
+	- added missing 'items' methods for 'scrolled-treeview'.
+
+2019-03-09 cage
+
+	* README.org,
+	* README.txt:
+
+	- update documentation: library compiles with latest CCL after ASDF
+	upgrade.
+	- updated README: added quote character when 'use-syntax' appears.
+
+2019-03-02 cage
+
+	* src/canvas-shapes.lisp,
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/dialog.lisp,
+	* src/entry.lisp,
+	* src/event-parser.lisp,
+	* src/listbox.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/notebook.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/tcl-emitter.lisp,
+	* src/treeview.lisp,
+	* src/utils.lisp,
+	* src/widget.lisp,
+	* src/winfo.lisp,
+	* src/wm.lisp:
+
+	-added 'message-with-timeout' widget.
+	- fixed bug that prevented 'use-syntax' to get the options for
+	readtable.
+
+2019-03-01 cage
+
+	* src/checkbutton.lisp:
+
+	- checking for a number.
+
+2019-02-24 cage
+
+	* src/demo-tests.lisp,
+	* src/treeview.lisp:
+
+	- improved 'treewiew-move';
+	- fixed some labels on treeview demo.
+	- fixed return type of data form 'treeview-children'.
+
+2019-02-23 cage
+
+	* src/demo-tests.lisp,
+	* src/event-parser.lisp,
+	* src/package.lisp,
+	* src/tcl-emitter.lisp,
+	* src/treeview.lisp,
+	* src/utils.lisp:
+
+	- added 'treeview-find-item';
+	- added 'print-object' for treeview;
+	- fixed '(setf children)' and 'treeview-delete',
+	now the method sync tcl side with 'items' slot of treeview;
+	- removed some wrong unnecessary escaping.
+	- commented out all 'cl-syntax:use-syntax' where appeared in the same
+	file where
+	'cl-syntax:defsyntax' is.
+
+2019-02-22 cage
+
+	* src/demo-tests.lisp,
+	* src/event-parser.lisp,
+	* src/tcl-emitter.lisp,
+	* src/treeview.lisp,
+	* src/utils.lisp:
+
+	- fixed 'treeview-insert-item' when called with an instance ot
+	'tree-item.
+	- commented and expanded the treview example.
+	- removed a probably useless form in defsyntax.
+
+2019-02-21 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui.lisp:
+
+	- cosmetic fix
+
+2019-02-16 cage
+
+	* README.org,
+	* README.txt,
+	* src/canvas-shapes.lisp,
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/wish-communication.lisp:
+
+	- added a progress displaying stars.
+	- updated README.
+	- cosmetic fix.
+
+2019-02-15 cage
+
+	* nodgui.asd,
+	* src/canvas-shapes.lisp,
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/pixmap.lisp:
+
+	- begin with hi-level shapes for canvas (an, optionally, bicolor
+	star);
+	- prevent a crash  when loading and rotating pixmap (TGA,  JPG and RAW
+	format).
+	- fixed typo.
+	- added 'font' parameter to 'create-text';
+	- added very minor modification to canvas demo.
+	- prevent crash when 'font' parameter is used in 'create-text'.
+	- cosmetic clean.
+
+2019-02-08 cage
+
+	* README.org,
+	* README.txt,
+	* src/nodgui-mw.lisp:
+
+	- added documentation for megawidget;
+	- fixed typo.
+
+2019-02-07 cage
+
+	* nodgui.asd,
+	* src/nodgui-mw.lisp:
+
+	- discard unicode character if not found on system.
+
+2019-01-31 cage
+
+	* src/canvas.lisp,
+	* src/constants.lisp,
+	* src/demo-tests.lisp,
+	* src/package.lisp:
+
+	- added more option to canvas polygon item;
+	- added a function to draw a star shaped polygon on a canvas.
+
+2019-01-30 cage
+
+	* src/pixmap.lisp:
+
+	- fixed pixmap's bilinear interpolation;
+	- converted to correct type pivot vector element in pixmap rotation.
+
+2019-01-28 cage
+
+	* src/nodgui-mw.lisp:
+
+	- sort is destructive, copy list to prevent problems.
+	- fixed indentation.
+
+2019-01-26 cage
+
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/event-parser.lisp,
+	* src/event-symbols.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/tcl-glue-code.lisp,
+	* src/utils.lisp:
+
+	- [MW] added a date picker widget;
+	- removed spurious reader macro char.
+	- added password entry widget;
+	- added return of key symbol as number in event data;
+	- added an helping function to recognize printable key symbols.
+	- [MW] 'date-picker' scales with the widget is wrapped into;
+	- [MW} minor cosmetic fixes to 'date-picker'.
+	- fixed date demo sizes.
+	- [MW] moved tooltips position.
+
+2019-01-25 cage
+
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/dialog.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- added :initial-file to  file dialogs;
+	- [breaks API] used dash in some keyargs for some dialog:
+	filetypes    -> file-types
+	initialdir   -> initial-dir
+	initialcolor -> inital-color
+	- added MW demos to widget tests;
+	- exported some other symbols from nodgui;
+	- unexported 'send-wish' from nodgui.
+
+2019-01-22 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- added keyarg to set the text inside the entry of
+	'text-input-dialog';
+	- added function to  prevent adding already existing  items in history
+	of an 'history-entry'.
+
+2019-01-18 cage
+
+	* src/nodgui-mw.lisp:
+
+	- added a few documentation strings for megawidgets.
+
+2019-01-17 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/widget-helpers.lisp:
+
+	- changed presentation of alternatives in 'history-entry';
+	- fixed bug in 'history-entry' when an user asked for copletion but no
+	alteratives existed.
+	- force sanitize of initarg in defwrapper.
+
+2019-01-16 cage
+
+	* nodgui.asd,
+	* src/listbox.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/tcl-emitter.lisp:
+
+	- reverted 'event char' field to a string;
+	- added bypass-escape  struct to remove  escaping of string  passed to
+	wish (must be used only when  is ok to disable sanitizing of string,
+	e.g. no user input or non interpolated strings);
+	- in 'listbox-append' removed brace escape.
+	- fixed description field.
+
+2019-01-12 cage
+
+	* src/package.lisp:
+
+	- exported two functions related to pixmap.
+
+2019-01-11 cage
+
+	* src/listbox.lisp,
+	* src/package.lisp:
+
+	- exported 'break-mainloop'.
+
+2019-01-10 cage
+
+	* src/entry.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/utils.lisp:
+
+	- added autocomplete for 'history-entry'.
+
+2019-01-09 cage
+
+	* README.org,
+	* README.txt,
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/dialog.lisp,
+	* src/listbox.lisp,
+	* src/nodgui-mw.lisp,
+	* src/notebook.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/pixmap.lisp,
+	* src/tcl-emitter.lisp,
+	* src/treeview.lisp,
+	* src/widget.lisp,
+	* src/winfo.lisp,
+	* src/wm.lisp:
+
+	- force escaping when tclize is used.
+	- made the image routines works again with TGA and JPG.
+	- updated README.
+	- removed space that prevented notebook from working.
+	- return the correct data from 'listbox-values-in-range'.
+	- removed getting focus for 'searchable-listbox'.
+
+2019-01-08 cage
+
+	* nodgui.asd,
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/dialog.lisp,
+	* src/listbox.lisp,
+	* src/message.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/sanitize.lisp,
+	* src/tcl-emitter.lisp,
+	* src/text.lisp,
+	* src/tktextvariable.lisp,
+	* src/treeview.lisp,
+	* src/widget-helpers.lisp,
+	* src/widget.lisp,
+	* src/wish-communication.lisp,
+	* src/wm.lisp:
+
+	- changed name of macro: 'tclize-if-true' -> 'empty-string-if-nil';
+	- removed 'wrap-braces';
+	- changed 'send-wish' to 'format-wish' when needed;
+	- removed some useless escaping.
+
+2019-01-07 cage
+
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/listbox.lisp,
+	* src/nodgui.lisp,
+	* src/panedwindow.lisp,
+	* src/text.lisp,
+	* src/tktextvariable.lisp,
+	* src/treeview.lisp,
+	* src/widget-helpers.lisp,
+	* src/wish-communication.lisp:
+
+	- removed all ~/...~ format directive;
+	- removed tk-princ.
+	- added method to escape any string passed to format-wish;
+	- minor cleaning.
+
+2019-01-06 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui.lisp,
+	* src/notebook.lisp,
+	* src/tcl-glue-code.lisp,
+	* src/text.lisp,
+	* src/treeview.lisp:
+
+	- fixed 'notebook-traversal' (thanks mclements for the suggestion);
+	- removed embedded TCL code in 'load-text' and 'save-text'.
+	- added    parameter    :item     for    'treeview-insert-item'    and
+	'treeview-insert-item-new'; both accepts a 'tree-item' instance now.
+	- fixed 'notebok-add'  and 'notebook-tab',  options was  not correctly
+	managed (missing space and conversion).
+	- fixed char event; must be a char not a symbol.
+
+2019-01-05 cage
+
+	* src/demo-tests.lisp,
+	* src/listbox.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/treeview.lisp:
+
+	- fixed 'listbox-delete' for 'scrolled-listbox'.  A 'scrolled-listbox'
+	has not a slot 'data'.
+	- added 'listbox-values-in-range' and 'listbox-all-value'.
+	- made treeview demo works again.
+
+2019-01-04 cage
+
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/listbox.lisp,
+	* src/nodgui.lisp,
+	* src/tktextvariable.lisp,
+	* src/treeview.lisp,
+	* src/widget-helpers.lisp:
+
+	- escaped *initargs*  and some  few other  statements of  treeview and
+	listbox.
+	- added more escaping;
+	- minor cleaning.
+	- removed wrong space after treeitem's id when adding it to a
+	treeview.
+	- fixed escaping for calllback of treeview's header.
+
+2019-01-03 cage
+
+	* Changelog,
+	* src/canvas.lisp,
+	* src/demo-tests.lisp,
+	* src/dialog.lisp,
+	* src/entry.lisp,
+	* src/listbox.lisp,
+	* src/menu.lisp,
+	* src/menubutton.lisp,
+	* src/menucheckbutton.lisp,
+	* src/menuradiobutton.lisp,
+	* src/message.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/notebook.lisp,
+	* src/package.lisp,
+	* src/panedwindow.lisp,
+	* src/photo-image.lisp,
+	* src/radiobutton.lisp,
+	* src/scale.lisp,
+	* src/tcl-emitter.lisp,
+	* src/text.lisp,
+	* src/treeview.lisp,
+	* src/wm.lisp:
+
+	- added listbox-dialog;
+	- added  a   function  to  trigger  the   autocomplete  mechanism  for
+	autocomplete-listbox.
+	- removed email from changelog.
+	- [BREAKS API] listbox-clear should not remove  elements but clear
+	selection; there
+	is listbox-delete for elements removing.
+	- fixed treelist widget.
+	- added some escaping.
+	- added more escaping.
+
+2019-01-01 cage
+
+	* README.html,
+	* README.org,
+	* README.txt,
+	* src/listbox.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/treeview.lisp:
+
+	- updated README;
+	- added README in HTML format.
+	- removed README in html format;
+	- removed author in README in text format.
+	- added configuration of selection mode  (noth method and intargs) for
+	all listboxes;
+	- minor cleaning.
+	- fixed bug in  returned selected value of a listbox  (there was
+	issues
+	when the value contained a space);
+	- added a trivial autocomplete list-box.
+	- added listbox-export-selection and export-selection to listbox.
+	- removed function call that makes listbox returns wrong selected
+	values.
+	- added treeview-insert-item-new;
+	- add an  item to the  internal tree of a  treeview when the  first is
+	inserted into the second and not when the item instanced.
+
+2018-12-30 cage
+
+	* src/listbox.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/toplevel.lisp,
+	* src/wm.lisp:
+
+	- [MW] user can specify a matching function for a searchable-listbox;
+	- [MW]  added  a  pair  of   useful  listbox  methods  specialized  on
+	searchable-listbox;
+	- [MW] exported add-history;
+	- minor cleaning.
+	- added a simple dialog that waits for a textual imput from user;
+	- added "wm transient";
+	- users can  change the label  near the entry of  a searchable-listbox
+	and retrieve entry text with a single function call too.
+	- added icon-photo;
+	- marked function as "not suggested".
+	- added 'listbox-get-selection-value'  and
+	'listbox-get-selection-index'
+	for  listbox (and  subclasses);  users  can get also the  values of
+	the
+	selected item.
+
+2018-12-29 cage
+
+	* src/treeview.lisp:
+
+	- added widths setting for columns of a treeview.
+
+2018-12-27 cage
+
+	* nodgui.asd,
+	* src/entry.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/tcl-emitter.lisp,
+	* src/treeview.lisp,
+	* src/utils.lisp,
+	* src/wish-communication.lisp:
+
+	- [BREAKS  API]  moved  and,   most  importantly,  rewritten  part  of
+	treeview;
+	- readded missing native loading of image in PNG, GIF and RAW RGB
+	format (the latter non native, like JPG or TGA file format);
+	- added  a  macro   to  deal  with  optional   TCL  command  parameter
+	'tclize-if-true'
+	- added two  functions to converto boolean  type from list to  TCL and
+	viceversa;
+	- added an  optional parameter to 'read-data'  to get the rest  of the
+	list not  only the second element  of the returned (i.e.  from wish)
+	data;
+	- removed warning in 'with-nodgui';
+	- added some more docstring.
+	- prevented 'create-name' to generate the name 'wm'
+	this name conflicts with the homonym TCL command;
+	- added a function to send message to wish with tilde character in it;
+	the  tilde must  be escaped  otherwise 'format' will complains  about
+	unknown directive.
+	- removed empty line.
+
+2018-12-23 cage
+
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/widget.lisp,
+	* src/wish-communication.lisp:
+
+	- added :title to macro  with-nodgui (e.g. (with-nodgui (:title "etc")
+	...));
+	- updated wish version fo freeBSD;
+	- added convenient macro: 'with-busy'.
+
+2018-12-20 cage
+
+	* README.org,
+	* README.txt,
+	* src/checkbutton.lisp,
+	* src/demo-tests.lisp,
+	* src/dialog.lisp,
+	* src/message.lisp,
+	* src/nodgui.lisp,
+	* src/spinbox.lisp,
+	* src/tkvariable.lisp,
+	* src/widget.lisp,
+	* src/wish-communication.lisp:
+
+	- using 'pprint-down' in grid-(column|row)configure'
+	this allows to use keyword :all as index;
+	- scaling buttons in main demo window;
+	- updated README's FAQ.
+	- added missing commands for spinbox.
+	- changed  default initialdir  of "get-open-file"  and "get-save-file"
+	form     '(namestring    *default-pathname-defaults*))'     to    ""
+	(i.e. "whatever the OS choose");
+	- added "-parent" and "-initialdir" options to getSavefile too;
+	- moved *tk* variable.
+	- allow :initial-value key when instancing  a 'tkvariable' so now is
+	possible to do:
+	(make-instance 'check-button
+	:text ...
+	:master ...
+	:initial-value  nil)
+	- changed warning message.
+	- changed initdir for choose-directory (see 4d30f58a69);
+	- some cosmetic changes.
+
+2018-12-16 cage
+
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/pixmap.lisp,
+	* src/tcl-emitter.lisp,
+	* src/utils.lisp:
+
+	- optimized  loading of  pixmap (JPG,  TGA or  RAW format),  still not
+	acceptable but the best I am able to do. :(
+
+2018-12-14 cage
+
+	* README.org,
+	* README.txt,
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/pixmap.lisp,
+	* src/wish-communication.lisp:
+
+	- added JPG pixmap support (via the awesome cl-jpeg ;-) );
+	- removed spurious lines sent to wish when no buffering was used;
+	- optimized a bit pixmap loading;
+	- improved  readme (mentioning  "(use-syntax ...")  for events  parser
+	macro.
+
 2018-12-11  cage
 
 	- updated README

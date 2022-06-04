@@ -1027,8 +1027,8 @@
 
 (defun date-color-by-week (idx)
   (if (date-sundayp idx)
-      #%red%
-      #%black%))
+      "#ff0000"
+      "#000000"))
 
 (defun date-month-name->month-num (date-object name)
   (1+ (position name (months-name date-object) :test #'string=)))
@@ -1298,11 +1298,11 @@
     :documentation "The single star-shaped item in canvas (as instance
     of bicolor-star)")
    (reached-color
-    :initform #%yellow%
+    :initform "#FFFF00"
     :accessor reached-color
     :documentation "The color of star when reached")
    (not-reached-color
-    :initform #%gray%
+    :initform "#BEBEBE"
     :accessor not-reached-color
     :documentation "The color of star when not reached")
    (value
