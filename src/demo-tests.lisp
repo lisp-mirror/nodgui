@@ -150,8 +150,7 @@
            (b-quit              (make-instance  'button
                                                 :text    "quit lisp :)"
                                                 :command (lambda ()
-                                                           (exit-wish)
-                                                           (uiop:quit)))))
+                                                           (break-mainloop)))))
       (grid widget                   0 0  :sticky :nswe)
       (grid eyes                     0 1  :sticky :nswe)
       (grid modal                    0 2  :sticky :nswe)
