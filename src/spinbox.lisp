@@ -39,7 +39,8 @@
   textvariable
   width)
 
-(defwrapper spinbox (tktextvariable widget) () "ttk::spinbox")
+(defwrapper spinbox (tktextvariable widget) () "ttk::spinbox"
+  (ensure-validation-type-correct validate))
 
 (defmethod (setf command) (val (sp spinbox))
   (add-callback (name sp) val)

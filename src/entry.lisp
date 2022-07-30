@@ -17,6 +17,11 @@
 
 (in-package :nodgui)
 
+(defun ensure-validation-type-correct (validation-mode)
+  (assert (not (member validation-mode '(:all :focus)))
+          nil
+          ":all validation in not supported, allowed are: :none :key :focusin :focusout"))
+
 (named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
 (defargs entry ()
@@ -35,7 +40,8 @@
   width
   xscrollcommand)
 
-(defwrapper entry (tktextvariable widget) () "ttk::entry")
+(defwrapper entry (tktextvariable widget) () "ttk::entry"
+  (ensure-validation-type-correct validate))
 
 (defun entry-select (e from to)
   (warn "entry-select is deprecated, use 'set-selection' instead")
