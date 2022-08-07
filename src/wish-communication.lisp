@@ -24,10 +24,25 @@
   "execute program with args a list containing the arguments passed to the program
    if waitp is non-nil, the function will wait for the execution of the program to return.
    returns a two way stream connected to stdin/stdout of the program and the process object"
-  (let ((proc (uiop:launch-program (append (list program) args)
-                                   :input        :stream
-                                   :output       :stream
-                                   :error-output :stream)))
+  (let ((proc #-ccl (uiop:launch-program (append (list program) args)
+                                         :input        :stream
+                                         :output       :stream
+                                         :error-output :stream)
+              ;; To  manage in  a concurrent  way, the  pipe to  wish
+              ;; process on ccl we need  to add a ccl specific keyword
+              ;; parameter: ":sharing :lock".
+
+              ;; uiop:launch-program  allows  a   variable  number  of
+              ;; keyword   parameters   via   &allow-other-keys   and,
+              ;; moreover, other implementations that do not recognize
+              ;; ":sharing parameter"  will simply discard  it. Anyway
+              ;; for sake of clarity we  uses a different form for ccl
+              ;; together with conditional reader macro
+              #+ccl (uiop:launch-program (append (list program) args)
+                                         :input        :stream
+                                         :output       :stream
+                                         :error-output :stream
+                                         :sharing      :lock)))
     (unless proc
       (error "Cannot create process."))
     (when waitp
