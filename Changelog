@@ -1,3 +1,48 @@
+2022-08-07 cage
+
+        * src/wish-communication.lisp:
+
+        - added ":sharing :lock" parameter when creating the pipe to the qish
+        process on CCL.
+
+2022-07-30 cage
+
+        * src/entry.lisp,
+        * src/spinbox.lisp:
+
+        - ensured validation mode that causes trouble are not used
+        There is a problem when using :validate :all or ':validate focus' in a
+        entry or a spinbox.
+        If the next action after the entry loosed focus is a click on a menu,
+        and then on
+        a menu button, the program freezes.
+        This behaviour will not happen if validate is :focusout, though.
+
+2022-07-27 cage
+
+        * src/demo-tests.lisp:
+
+        - removed call to 'uiop:quit', this is not the right way to quit a
+        program that uses nodgui.
+
+2022-06-04 cage
+
+        Merge branch 'removing-colors-with-reader-macro'
+
+2022-02-21 cage
+
+        * Changelog,
+        * src/canvas-shapes.lisp,
+        * src/canvas.lisp,
+        * src/demo-tests.lisp,
+        * src/listbox.lisp,
+        * src/nodgui-mw.lisp,
+        * src/tklib/misc-widget.lisp,
+        * src/tklib/plot.lisp:
+
+        - removed colors defined with the reader macro.
+        - fixed arguments of two, cavas-item related, functions.
+
 2021-11-07 cage
 
 	* src/ubvec4.lisp:
