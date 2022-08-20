@@ -32,11 +32,11 @@
   (defun iarg-comment (arg) (nth 4 arg))
 
   (defparameter *initargs*
-    '((button.background
-       Button.background
-       "~@[ -Button.background {~(~a~)}~]"
-       button.background
-       "")
+    '((button.background                    ; name
+       Button.background                    ; key
+       "~@[ -Button.background {~(~a~)}~]"  ; format control string
+       button.background                    ; code
+       "")                                  ; comment
       (Button.cursor
        Button.cursor
        "~@[ -Button.cursor {~(~a~)}~]"
@@ -109,6 +109,12 @@
        "dermines when the mouse coursor is considered to be inside a shape, the default is 1.0")
       (colormap colormap "~@[ -colormap {~(~a~)}~]" colormap
        "The colormap to use for the widget.")
+      (columns
+       columns
+       "~@[ -columns {~{~a~^ ~}} ~]"
+       columns
+       "")
+
       (command
        command
        "~@[ -command {callback ~a}~]"
@@ -188,6 +194,11 @@
        disabledforeground
        "~@[ -disabledforeground {~(~a~)}~]"
        disabledforeground
+       "")
+      (displaycolumns
+       displaycolumns
+       "~@[ -displaycolumns {~{~a~^ ~}} ~]"
+       displaycolumns
        "")
       (elementborderwidth
        elementborderwidth
