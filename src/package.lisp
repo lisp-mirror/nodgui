@@ -1614,6 +1614,7 @@
            :treeview-move
            :with-inner-treeview
            :scrolled-treeview
+           :setup-display-columns
            :treeview-get-selection
            :treeview-identify
            :treeview-identify-item

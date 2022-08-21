@@ -62,6 +62,8 @@
   (print-unreadable-object (object stream :type t :identity nil)
     (format stream "~%~{ ~a~%~}" (items object))))
 
+(defgeneric setup-display-columns (object column-ids))
+
 (defgeneric setup-columns (object column-ids
                            &key column-labels min-widths widths))
 
@@ -103,7 +105,12 @@
                                  column {+ ,actual-id  } " "
                                  ,(empty-string-if-nil min-width
                                       `(-minwidth  {+ ,min-width } " "))
-                                 -width {+ ,width }))))))
+                                -width {+ ,width }))))))
+
+(defmethod setup-display-columns ((object treeview) (column-ids sequence))
+  (format-wish (tclize `(,(widget-path object) " "
+                         configure
+                         -displayColumns {+ ,(join-with-strings column-ids " " ) }))))
 
 (defclass tree-item ()
   ((id
@@ -467,6 +474,7 @@ not equal to all the others. The test is performed calling :test"
                                          (columns            nil)
                                          (columns-min-width  nil)
                                          (columns-width      nil)
+                                         (displaycolumns     columns)
                                          &allow-other-keys)
   (setf (hscroll object) (make-scrollbar object :orientation "horizontal"))
   (setf (vscroll object) (make-scrollbar object))
@@ -479,7 +487,8 @@ not equal to all the others. The test is performed calling :test"
                    :widths     (or columns-width
                                    (make-fresh-list (1+ (length columns)) 200))
                    :min-widths (or columns-min-width
-                                   (make-fresh-list (1+ (length columns)) 10))))
+                                   (make-fresh-list (1+ (length columns)) 10)))
+    (setup-display-columns object displaycolumns))
   (grid (treeview object) 0 0 :sticky :news)
   (grid (hscroll object) 1 0  :sticky :we)
   (grid (vscroll object) 0 1  :sticky :ns)
@@ -506,6 +515,10 @@ not equal to all the others. The test is performed calling :test"
      ,@body))"
   `(with-accessors ((,treeview-slot treeview)) ,scrolled-treeview
      ,@body))
+
+(defmethod setup-display-columns ((object scrolled-treeview) (column-ids sequence))
+  (with-inner-treeview (treeview object)
+    (setup-display-columns treeview column-ids)))
 
 (defmethod setup-columns ((object scrolled-treeview) (column-ids list)
                           &key
