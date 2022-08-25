@@ -1,3 +1,29 @@
+2022-08-21 cage
+
+        * src/package.lisp,
+        * src/treeview.lisp:
+
+        - made 'scrolled-treeview' respects the keyword argument:
+        ':displaycolumns';
+        - added generic function: "setup-display-columns" (even if used only
+        in treeview so far).
+
+2022-08-20 cage
+
+        * src/widget-helpers.lisp:
+
+        - fixed intargs 'columns' and 'displaycolumns' for treeview
+        These two arguments take  a list on the TCL side but  the lisp did not
+        unsplice the data; passing "(a b c)" instead of: "a b c".
+
+2022-08-15 cage
+
+        * Changelog,
+        * nodgui.asd:
+
+        - increased version number;
+        - updated Changelog.
+
 2022-08-07 cage
 
         * src/wish-communication.lisp:
