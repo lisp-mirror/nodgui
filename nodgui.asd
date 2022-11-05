@@ -30,6 +30,7 @@
                :cl-ppcre-unicode
                :cl-lex
                :yacc
+               :esrap
                :parse-number
                :clunit2
                :cl-colors2
@@ -88,6 +89,7 @@
                (:file "toplevel")
                (:file "dialog")
                (:file "error-handling")
+               (:file "styles")
                (:file "nodgui")
                (:file "wm")
                (:file "winfo")
@@ -105,6 +107,7 @@
                         :components ((:file "package")
                                      (:file "all-tests")
                                      (:file "test-tcl-emitter")
-                                     (:file "test-event-parser")))))
+                                     (:file "test-event-parser")
+                                     (:file "test-styles")))))
 
 (pushnew :nodgui *features*)

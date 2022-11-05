@@ -1230,6 +1230,8 @@
         :nodgui.sanitize
         :nodgui.tcl-emitter)
   (:import-from :alexandria :define-constant)
+  (:local-nicknames (:a :alexandria)
+                    (:p :esrap))
   (:export :syntax
            :+type-desktop+
            :+type-dock+
@@ -1637,7 +1639,16 @@
            :use-theme
            :theme-names
            :items
-           :image))
+           :image
+           :style
+           :apply-style
+           :make-style
+           :style-configure
+           :layout-configure
+           :style-element-create
+           :list->layout
+           :parse-layout
+           :fetch-layout))
 
 (defpackage :nodgui.shapes
   (:use

@@ -147,6 +147,10 @@
                                                     :text    "Multithreading"
                                                     :command (lambda ()
                                                                (demo-multithread))))
+           (demo-style               (make-instance 'button
+                                                    :text "Custom style"
+                                                    :command (lambda ()
+                                                               (demo-custom-style))))
            (b-quit              (make-instance  'button
                                                 :text    "quit lisp :)"
                                                 :command (lambda ()
@@ -186,6 +190,7 @@
       (grid demo-tklib-equalizer-bar 10 2 :sticky :nswe)
       (grid demo-validate-command    11 0 :sticky :nswe)
       (grid demo-multithread         11 1 :sticky :nswe)
+      (grid demo-style               11 2 :sticky :nswe)
       (grid b-quit                   12 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
@@ -536,7 +541,7 @@
                                        (finish-output))))))
      (pack b))))
 
- (defun demo-combo ()
+(defun demo-combo ()
   (with-nodgui ()
     (let* ((c (make-instance 'combobox
                              :text "foo"
@@ -551,13 +556,13 @@
                                          (format t "text: ~a~%" (text c))
                                          (exit-wish)))))
       (bind c #$<KeyRelease>$ (lambda (event)
-                               (declare (ignore event))
-                               (format t "newsel:~a~%" (text c))
-                               (finish-output)))
+                                (declare (ignore event))
+                                (format t "newsel:~a~%" (text c))
+                                (finish-output)))
       (bind c #$<<ComboboxSelected>>$ (lambda (event)
-                                       (declare (ignore event))
-                                       (format t "newsel:~a~%" (text c))
-                                       (finish-output)))
+                                        (declare (ignore event))
+                                        (format t "newsel:~a~%" (text c))
+                                        (finish-output)))
       (pack add :side :right)
       (pack ok :side :right)
       (pack c :side :left))))
@@ -1094,3 +1099,52 @@
         (start-read-thread)
         (loop for i from 0 below 20 do
              (start-write-thread (format nil "thread-~a " i)))))))
+
+(define-constant +red-corner+
+  (strcat "R0lGODlhEAAQAIABAP8AAGdqcSH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAEALAAAAAAQABAA"
+          "AAIqjAOAyWy6VksH0knrU/i8LWWexTneF5knAoorya5aJI9gPUM4utv9jysAADs=")
+  :test #'string=)
+
+(define-constant +blue-corner+
+  (strcat "R0lGODlhEAAQAIABAAAA/2dqcSH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAEALAAAAAAQABAA"
+          "AAIqjAOAyWy6VksH0knrU/i8LWWexTneF5knAoorya5aJI9gPUM4utv9jysAADs=")
+  :test #'string=)
+
+(defun demo-custom-style ()
+  (let ((*debug-tk* t))
+    (with-nodgui ()
+      (let* ((b            (make-instance 'button :text "Click to change style"))
+             (corner-state 0)
+             (corner-style (make-style corner-style (:extend "TButton")
+                                       :foreground #%dim-gray%
+                                       :padding    0
+                                       :font      "times 20"))
+             (red-corner   (make-image +red-corner+))
+
+             (blue-corner  (make-image +blue-corner+))
+             (red-style    (make-style red-style (:action :create)
+                               :image (name red-corner)))
+             (blue-style   (make-style blue-style (:action  :create)
+                               :image (name blue-corner)))
+             (red-layout   (nodgui::insert-layout (fetch-layout :corner-style)
+                                                     '(:red-style
+                                                       :side "right"
+                                                       :sticky "ne")
+                                                     "Button.label"))
+             (blue-layout  (nodgui::insert-layout (fetch-layout :corner-style)
+                                                      '(:blue-style
+                                                        :side "right"
+                                                        :sticky "ne")
+                                                      "Button.label")))
+        (apply-style corner-style)
+        (apply-style red-style)
+        (apply-style blue-style)
+        (layout-configure corner-style blue-layout)
+        (style-configure b corner-style)
+        (setf (command b)
+              (lambda ()
+                (if (= (rem corner-state 2) 0)
+                    (layout-configure corner-style red-layout)
+                    (layout-configure corner-style blue-layout))
+                (incf corner-state)))
+        (pack b)))))

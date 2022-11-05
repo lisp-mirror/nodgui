@@ -41,3 +41,15 @@
         :nodgui.tcl-emitter
         :all-tests)
   (:export :tcl-emitter-suite))
+
+(defpackage :test-tk-styles
+  (:use :cl
+        :alexandria
+        :clunit
+        :nodgui.config
+        :nodgui.constants
+        :nodgui.utils
+        :nodgui.conditions
+        :nodgui
+        :all-tests)
+  (:export :tk-style-suite))
