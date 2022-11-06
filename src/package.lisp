@@ -1648,6 +1648,7 @@
            :style-element-create
            :list->layout
            :parse-layout
+           :insert-layout
            :fetch-layout))
 
 (defpackage :nodgui.shapes

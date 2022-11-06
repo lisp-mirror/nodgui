@@ -1126,12 +1126,12 @@
                                :image (name red-corner)))
              (blue-style   (make-style blue-style (:action  :create)
                                :image (name blue-corner)))
-             (red-layout   (nodgui::insert-layout (fetch-layout :corner-style)
+             (red-layout   (insert-layout (fetch-layout :corner-style)
                                                      '(:red-style
                                                        :side "right"
                                                        :sticky "ne")
                                                      "Button.label"))
-             (blue-layout  (nodgui::insert-layout (fetch-layout :corner-style)
+             (blue-layout  (insert-layout (fetch-layout :corner-style)
                                                       '(:blue-style
                                                         :side "right"
                                                         :sticky "ne")
