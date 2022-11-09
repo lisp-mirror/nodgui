@@ -28,8 +28,6 @@
   :depends-on (:alexandria
                :cl-unicode
                :cl-ppcre-unicode
-               :cl-lex
-               :yacc
                :esrap
                :parse-number
                :clunit2

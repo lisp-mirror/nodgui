@@ -15,78 +15,22 @@
 
 (defsuite event-parser-suite (all-suite))
 
-(defun tokenize-fn (input)
-  (let* ((tokenizer-fn (lexer input)))
-    tokenizer-fn))
-
-(defun token-list-eq (l &rest expected)
-  (every 'eq l expected))
-
-(defmacro with-tokenizer (input &body body)
-  (with-gensyms (tokenizer-fn)
-    `(let ((,tokenizer-fn (lexer ,input)))
-       (flet ((tok ()
-                (funcall ,tokenizer-fn)))
-         ,@body))))
-
-(defun tokenize-all (str)
-  (with-tokenizer str
-    (flet ((tokn ()
-             (second (multiple-value-list (tok)))))
-      (do ((tok (tokn) (tokn))
-           (res '()    (append res (list tok))))
-           ((null tok) res)))))
-
-(deftest test-lexer (event-parser-suite)
-  (assert-true
-      (every #'string=
-             (tokenize-all "<a>")
-             (list +delim-left+
-                   "a"
-                   +delim-right+)))
-  (assert-true
-      (every #'string=
-             (tokenize-all "<a-b> ")
-             (list +delim-left+ "a" +delim-field+ "b" +delim-right+)))
-  (assert-true
-      (every #'string=
-             (tokenize-all "<a-b-c>")
-             (list +delim-left+ "a" +delim-field+ "b" +delim-field+ "c" +delim-right+)))
-  (assert-true
-      (every #'string=
-             (tokenize-all "<aa-bf-cg-dut>")
-             (list +delim-left+ "aa" +delim-field+ "bf" +delim-field+ "cg" +delim-field+
-                   "dut" +delim-right+)))
-  (assert-true
-      (every #'string=
-             (tokenize-all "<aa-bf-cg-du t>")
-             (list +delim-left+ "aa" +delim-field+ "bf" +delim-field+ "cg" +delim-field+
-                   "du t" +delim-right+)))
-  (assert-true
-      (every #'string=
-             (tokenize-all "<a-b-c-d> <e-f>")
-             (list :delim-left  "a"     :delim-field "b" :delim-field "c" :delim-field "d"
-                   :delim-right :filler :delim-left  "e" :delim-field "f" :delim-right)))
-  (assert-true
-      (every #'string=
-             (tokenize-all "<<uiop>>")
-             (list :delim-left :delim-left "uiop" :delim-right :delim-right))))
-
 (defmacro compare-events (event output)
-  `(assert-true
-       (tree-equal (parse-event ,event)
-                  ,output
-                  :test #'string=)))
+  `(assert-equality #'string=
+       ,output
+       (nth-value 0 (parse-event ,event))))
 
 (deftest test-event-1 (event-parser-suite)
   (let ((*check-more-parsing-errors* nil))
     (compare-events "<1>"
-                    '"<1>")))
+                    "<1>")))
 
 (deftest test-event-2 (event-parser-suite)
   (let ((*check-more-parsing-errors* nil))
     (compare-events "<a-b-c-dhhh h>        <e-f> <yn-iiiii>"
-                    "<a-b-c-dhhh h><e-f><yn-iiiii>")))
+                    "<a-b-c-dhhh h><e-f><yn-iiiii>"))
+  (compare-events "<Alt-Control-space>  <2> <3>"
+                 "<Alt-Control-space><2><3>"))
 
 (deftest test-event-field-has-spaces (event-parser-suite)
   (assert-condition nodgui-event-field-has-space

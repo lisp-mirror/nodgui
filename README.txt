@@ -41,8 +41,7 @@ Table of Contents
 
   • alexandria;
   • cl-ppcre-unicode;
-  • cl-lex;
-  • cl-yacc;
+  • esrap
   • clunit2;
   • cl-colors2;
   • named-readtables.

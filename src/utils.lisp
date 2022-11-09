@@ -82,8 +82,14 @@
       (%advance)
       res)))
 
-(defun join-with-strings (strings junction)
+(defgeneric join-with-strings (strings junction))
+
+(defmethod join-with-strings ((strings list) junction)
   (reduce #'(lambda (a b) (strcat a junction b)) strings))
+
+(defmethod join-with-strings ((strings string) junction)
+  (declare (ignore junction))
+  strings)
 
 (defun join-with-strings* (junction &rest strings)
   (reduce #'(lambda (a b) (strcat a junction b)) strings))
