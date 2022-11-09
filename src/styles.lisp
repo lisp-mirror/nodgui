@@ -14,7 +14,7 @@
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
-(defun list->layout (list)
+(defun serialize->layout (list)
   (with-output-to-string (stream)
     (labels ((%atom->layout (atom)
                (cond
@@ -188,10 +188,12 @@
                    (name                     name)
                    (action                   action)
                    (pre-application-function pre-application-function)) object
+    (assert (or (null action)
+                (eq action :element-create)))
     (when (not (appliedp object))
       (let ((actual-name (serialize-style-name object)))
         (funcall pre-application-function)
-        (if (eq action :create)
+        (if (eq action :element-create)
             (format-wish "ttk::style element create ~a ~{~(~a~) ~({~a}~) ~}"
                          actual-name options)
             (format-wish "ttk::style configure ~a ~{-~(~a~) ~({~a}~) ~}"
@@ -203,12 +205,12 @@
 
 (defmacro make-style (name (&key (extend nil) (action nil)) &rest options-pairs)
   `(make-instance 'style
-                 :name    ,(symbol->stylename name)
-                 :parent  ,(if (symbolp extend)
-                               (symbol->stylename extend)
-                               (to-s extend))
-                 :action  ,action
-                 :options (list ,@options-pairs)))
+                  :name    ,(symbol->stylename name)
+                  :parent  ,(if (symbolp extend)
+                                (symbol->stylename extend)
+                                (to-s extend))
+                  :action  ,action
+                  :options (list ,@options-pairs)))
 
 (defgeneric style-configure (object style))
 
@@ -259,4 +261,4 @@
   (send-wish (format nil
                      "ttk::style layout ~a { ~a }"
                      (serialize-style-name (find-style object))
-                     (list->layout layout))))
+                     (serialize->layout layout))))

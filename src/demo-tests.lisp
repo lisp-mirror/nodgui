@@ -1122,9 +1122,9 @@
              (red-corner   (make-image +red-corner+))
 
              (blue-corner  (make-image +blue-corner+))
-             (red-style    (make-style red-style (:action :create)
+             (red-style    (make-style red-style (:action :element-create)
                                :image (name red-corner)))
-             (blue-style   (make-style blue-style (:action  :create)
+             (blue-style   (make-style blue-style (:action :element-create)
                                :image (name blue-corner)))
              (red-layout   (insert-layout (fetch-layout :corner-style)
                                                      '(:red-style

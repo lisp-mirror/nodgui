@@ -1646,7 +1646,7 @@
            #:style-configure
            #:layout-configure
            #:style-element-create
-           #:list->layout
+           #:serialize->layout
            #:parse-layout
            #:insert-layout
            #:fetch-layout))

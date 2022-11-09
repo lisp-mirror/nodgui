@@ -29,7 +29,7 @@
   (let ((serialized "Button.border -sticky nswe -border 1 -children { Button.focus -sticky nswe -children { Button.padding -sticky nswe -children { Button.label -sticky nswe red-corner.TButton -side right -sticky ne }}}"))
     (assert-equality #'string=
         serialized
-       (nodgui::list->layout (nodgui::parse-layout serialized)))))
+       (nodgui::serialize->layout (nodgui::parse-layout serialized)))))
 
 (deftest insert-test ()
   (let ((parsed (nodgui::parse-layout "Button.border -sticky nswe -border 1 -children {Button.focus -sticky nswe -children {Button.padding -sticky nswe -children {Button.label -sticky nswe}}}"))
