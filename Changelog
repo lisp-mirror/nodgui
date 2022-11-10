@@ -1,3 +1,55 @@
+2022-11-10 cage
+
+        * nodgui.asd:
+
+        - increased version number.
+
+2022-11-09 cage
+
+        * README.org,
+        * README.txt,
+        * nodgui.asd,
+        * src/demo-tests.lisp,
+        * src/event-parser.lisp,
+        * src/nodgui-mw.lisp,
+        * src/package.lisp,
+        * src/styles.lisp,
+        * src/tests/test-event-parser.lisp,
+        * src/tests/test-styles.lisp,
+        * src/utils.lisp:
+
+        - removed two dependencies: cl-lex and cl-yacc.
+        - changed function's name;
+        - changed allowed ':action' keyword parameter for 'make-style'.
+
+2022-11-06 cage
+
+        * src/demo-tests.lisp,
+        * src/package.lisp:
+
+        - exported 'insert-layout'.
+
+2022-11-05 cage
+
+        * nodgui.asd,
+        * src/demo-tests.lisp,
+        * src/package.lisp,
+        * src/styles.lisp,
+        * src/tests/package.lisp,
+        * src/tests/test-styles.lisp,
+        * src/tests/test-tcl-emitter.lisp:
+
+        - added API to manipulate ttk styles;
+        - fixed tests.
+
+2022-08-25 cage
+
+        * Changelog,
+        * nodgui.asd:
+
+        - increased version number;
+        updated changelog.
+
 2022-08-21 cage
 
         * src/package.lisp,
