@@ -14,6 +14,7 @@ Table of Contents
 3. Installing
 4. Documentation
 5. License
+6. Acknowledgment
 
 
 
@@ -96,7 +97,7 @@ Table of Contents
   <herth@peter-herth.de> Portions Copyright (c) 2005-2010 Thomas
   F. Burdick Portions Copyright (c) 2006-2010 Cadence Design Systems
   Portions Copyright (c) 2010 Daniel Herring Portions Copyright (c)
-  2018,2019,2020 cage
+  2018,2019,2020,2022 cage
 
   The authors grant you the rights to distribute and use this software
   as governed by the terms of the Lisp Lesser GNU Public License
@@ -106,3 +107,11 @@ Table of Contents
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   General Public License for more details.
+
+
+6 Acknowledgment
+════════════════
+
+  My (cage) deep thanks to Tim Holliefield <tholliefield [at]
+  online.de>, for all the suggestions and help about implementing the
+  widgets styles management.

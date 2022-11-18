@@ -63,7 +63,7 @@ All of the above libraries are available on quicklisp.
  Portions Copyright (c) 2005-2010 Thomas F. Burdick
  Portions Copyright (c) 2006-2010 Cadence Design Systems
  Portions Copyright (c) 2010 Daniel Herring
- Portions Copyright (c) 2018,2019,2020 cage
+ Portions Copyright (c) 2018,2019,2020,2022 cage
 
  The authors grant you the rights to distribute
  and use this software as governed by the terms
@@ -75,3 +75,7 @@ All of the above libraries are available on quicklisp.
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
+
+* Acknowledgment
+
+  My (cage) deep thanks to Tim Holliefield <tholliefield [at] online.de>, for all the suggestions and help about implementing the widgets styles management.

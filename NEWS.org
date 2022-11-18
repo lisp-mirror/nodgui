@@ -1,5 +1,9 @@
 * News
 
+** 2022-11-18 Version 0.1.6
+
+   Implemented an API to modify the styles of the widgets
+
 ** 2020-03-27 version 0.0.6
    Fixed a bug in ~validatecommand~ for widget ~entry~.
 

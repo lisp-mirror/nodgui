@@ -321,10 +321,10 @@
 
 (defun safe-parse-number (number &key (fix-fn #'(lambda (e) (declare (ignore e)) nil)))
   (handler-bind ((parse-error
-                  #'(lambda(e)
+                  #'(lambda (e)
                       (return-from safe-parse-number (funcall fix-fn e))))
                  (parse-number:invalid-number
-                  #'(lambda(e)
+                  #'(lambda (e)
                       (return-from safe-parse-number (funcall fix-fn e)))))
     (if (or (not (stringp number))
             (string= number "-"))
