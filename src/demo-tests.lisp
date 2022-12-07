@@ -867,7 +867,7 @@
                                     30.0
                                     :repeat t)))
                        (setf (image b) (make-image bitmap))))
-                    ((cl-ppcre:scan "jpg$" file)
+                    ((cl-ppcre:scan "jpg$" file) ; bypass tkimg if available
                      (let ((bitmap (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:jpeg file)))
                        (setf (image b) (make-image bitmap))))
                     (t

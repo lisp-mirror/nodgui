@@ -158,6 +158,16 @@
                                               -message $err%)))
                name))
 
+(defun try-to-load-tcl-package (name)
+  "Return non nil if the package has been successfully loaded"
+  (format-wish (tclize `(senddata [ catch { package require ,name } ])))
+  (tcl-error->boolean (read-data)))
+
+(defparameter *tkimg-loaded-p* nil)
+
+(defun init-tkimg ()
+  (setf *tkimg-loaded-p* (try-to-load-tcl-package "Img")))
+
 ;;; setup of wish
 ;;; put any tcl function definitions needed for running nodgui here
 (defun init-wish ()
@@ -165,6 +175,7 @@
    (send-wish "package require Tk")
    (flush-wish)
    (send-wish (wish-init-code))
+   (init-tkimg)
    (dolist (fun *init-wish-hook*) ; run init hook functions
      (funcall fun))))
 

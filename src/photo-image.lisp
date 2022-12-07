@@ -99,7 +99,8 @@ GIF format!"
 
 (defmethod make-image ((object vector) &optional (w nil) (h nil) (channels 3))
   (cond
-    ((or (pngp object)
+    ((or *tkimg-loaded-p*
+         (pngp object)
          (gifp object))
      (make-instance 'photo-image
                     :data (nodgui.base64:encode object)))

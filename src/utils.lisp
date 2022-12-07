@@ -438,6 +438,9 @@
 (defmethod tcl-bool->lisp ((val string))
   (find val +valid-tcl-truth-values+ :test #'string=))
 
+(defun tcl-error->boolean (val)
+  (= val 0))
+
 (defmacro gen-time-access (name pos)
   `(defun ,(format-fn-symbol t "time-~a-of" name) (time-list)
      (elt time-list ,pos)))

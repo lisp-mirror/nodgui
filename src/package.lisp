@@ -84,6 +84,7 @@
            #:nodgui-color-syntax
            #:lisp-bool->tcl
            #:tcl-bool->lisp
+           #:tcl-error->boolean
            #:time-second-of
            #:time-minutes-of
            #:time-hour-of
@@ -1526,6 +1527,7 @@
            #:send-lazy
            #:with-lazy
            #:require-tcl-package
+           #:try-to-load-tcl-package
            #:set-coords
            #:set-coords*
            #:set-focus-next
