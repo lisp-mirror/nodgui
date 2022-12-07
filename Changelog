@@ -1,8 +1,29 @@
+2022-12-07 cage
+
+        * src/demo-tests.lisp,
+        * src/package.lisp,
+        * src/photo-image.lisp,
+        * src/utils.lisp,
+        * src/wish-communication.lisp:
+
+        - used tkimg package, if available, to load bitamps from a file.
+
+2022-11-18 cage
+
+        * NEWS.org,
+        * README.org,
+        * README.txt,
+        * src/utils.lisp:
+
+        - updated NEWS.org and READMEs.
+
 2022-11-10 cage
 
+        * Changelog,
         * nodgui.asd:
 
         - increased version number.
+        - updated Changelog.
 
 2022-11-09 cage
 
