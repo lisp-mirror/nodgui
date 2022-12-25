@@ -47,7 +47,7 @@
   (:text t))
 
 (p:defrule virtual-event (and #\< #\< (p:+ (not #\>)) #\> #\>)
-  (:text t))
+  (:function (lambda (a) (strcat "<" (coerce (third a) 'string) ">"))))
 
 (defun remove-separators (field)
   (remove-if (lambda (a) (member a '("<" ">" "-") :test #'string=))
