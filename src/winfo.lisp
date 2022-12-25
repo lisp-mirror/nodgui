@@ -82,3 +82,9 @@
     (if (string= y "")
         nil
         (parse-integer y))))
+
+(defun rootx (widget)
+  (root-x widget))
+
+(defun rooty (widget)
+  (root-y widget))

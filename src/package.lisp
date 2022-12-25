@@ -1513,6 +1513,8 @@
            #:parent-pathname
            #:root-x
            #:root-y
+           #:rootx
+           #:rooty
            #:children-pathname
            #:scrollbar
            #:scrolled-canvas
