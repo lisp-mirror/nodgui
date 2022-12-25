@@ -1,5 +1,16 @@
+2022-12-25 cage
+
+        * nodgui.asd,
+        * src/demo-tests.lisp,
+        * src/event-parser.lisp:
+
+        - fixed parsing of virtual events.
+        - increased version number.
+
 2022-12-07 cage
 
+        * Changelog,
+        * nodgui.asd,
         * src/demo-tests.lisp,
         * src/package.lisp,
         * src/photo-image.lisp,
@@ -7,6 +18,8 @@
         * src/wish-communication.lisp:
 
         - used tkimg package, if available, to load bitamps from a file.
+        - updated changelog.
+        - increased version number.
 
 2022-11-18 cage
 
