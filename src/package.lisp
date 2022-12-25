@@ -1515,6 +1515,8 @@
            #:root-y
            #:rootx
            #:rooty
+           #:widget-width
+           #:widget-height
            #:children-pathname
            #:scrollbar
            #:scrolled-canvas
