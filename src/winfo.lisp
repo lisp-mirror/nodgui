@@ -68,3 +68,17 @@
     (if (string= parent "")
         nil
         parent)))
+
+(defun root-x (widget)
+  (format-wish (tclize `(senddatastring [winfo rootx ,(widget-path widget) ])))
+  (let ((x (read-data)))
+    (if (string= x "")
+        nil
+        (parse-integer x))))
+
+(defun root-y (widget)
+  (format-wish (tclize `(senddatastring [winfo rooty ,(widget-path widget) ])))
+  (let ((y (read-data)))
+    (if (string= y "")
+        nil
+        (parse-integer y))))

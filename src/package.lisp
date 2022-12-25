@@ -1511,6 +1511,8 @@
            #:screen-width-mm
            #:toplevel-pathname
            #:parent-pathname
+           #:root-x
+           #:root-y
            #:children-pathname
            #:scrollbar
            #:scrolled-canvas
