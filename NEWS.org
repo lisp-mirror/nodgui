@@ -1,5 +1,12 @@
 * News
 
+** 2022-12-26 Version 0.3.0
+
+   - added a new widget: a text entry with auto completion feature;
+   - specialized function "see" on listbox;
+   - added "listbox-move-selection" to shift,  by an arbitrary offset,
+     the selected entry in a listbox;
+
 ** 2022-11-18 Version 0.1.6
 
    Implemented an API to modify the styles of the widgets

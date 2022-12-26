@@ -1,11 +1,31 @@
+2022-12-26 cage
+
+        * src/demo-tests.lisp,
+        * src/listbox.lisp,
+        * src/nodgui-mw.lisp,
+        * src/package.lisp,
+        * src/text.lisp,
+        * src/widget-helpers.lisp:
+
+        - added 'listbox-move-selection';
+        - added 'see' command for listbox;
+        - added an autocomplete entry widget.
+
 2022-12-25 cage
 
+        * Changelog,
         * nodgui.asd,
         * src/demo-tests.lisp,
-        * src/event-parser.lisp:
+        * src/event-parser.lisp,
+        * src/package.lisp,
+        * src/winfo.lisp:
 
         - fixed parsing of virtual events.
         - increased version number.
+        - updated changelog.
+        - added 'root-x' and 'root-y'.
+        - added aliases for 'root-x' and 'root-y'.
+        - added 'widget-width' and 'widget-height'.
 
 2022-12-07 cage
 
