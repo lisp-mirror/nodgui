@@ -1594,7 +1594,14 @@
     :initform (lambda (hint) (list hint))
     :initarg  :autocomplete-function
     :accessor autocomplete-function
-    :type     function)))
+    :type     function
+    :documentation "A function that accepts a single parameter and return a list of candidates (or nil) that matches `hint' and are suitable to complete the text contained in the entry."))
+  (:documentation
+   "A text  entry that display in  a listbox, the possible  candidates to
+complete the  text input.  Clicking on  a listbox  item will  fill the
+entry with the  clicked item's text, pressing <tab>  complete the text
+with the  selected item;  finally pressing  \"up\" or  \"down\" arrows
+will shift the selected item up o down respectively."))
 
 (defmethod pack ((object autocomplete-entry)
                  &key
