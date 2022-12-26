@@ -95,6 +95,8 @@
 
 (defgeneric listbox-colorize-item (object index &key background foreground))
 
+(defgeneric listbox-move-selection (object offset))
+
 (defmethod listbox-append ((l listbox) values)
   "append values (which may be a list) to the list box"
   (if (listp values)
@@ -211,6 +213,17 @@ alternatively a list of numbers may be given"
                      :foreground foreground)
   object)
 
+(defmethod listbox-move-selection ((object listbox) offset)
+  (let* ((size  (listbox-size object))
+         (index (or (first (listbox-get-selection-index object))
+                    0)))
+    (listbox-clear object 0 :end)
+    (incf index offset)
+    (setf index (min (1- size) index))
+    (setf index (max 0 index))
+    (listbox-select object index)
+    object))
+
 (defclass scrolled-listbox (frame)
   ((listbox
     :initform nil
@@ -225,6 +238,7 @@ alternatively a list of numbers may be given"
 (defmethod initialize-instance :after ((object scrolled-listbox)
                                        &key
                                          (select-mode       :browse)
+                                         (selectmode        select-mode)
                                          (export-selection   nil)
                                          &allow-other-keys)
   (setf (hscroll object) (make-scrollbar object :orientation "horizontal"))
@@ -245,7 +259,7 @@ alternatively a list of numbers may be given"
   (configure (listbox object) "xscrollcommand" (strcat (widget-path (hscroll object)) " set"))
   (configure (listbox object) "yscrollcommand" (strcat (widget-path (vscroll object)) " set"))
   (listbox-export-selection object export-selection)
-  (listbox-select-mode object select-mode))
+  (listbox-select-mode object (or select-mode selectmode)))
 
 (defmethod listbox-append ((l scrolled-listbox) values)
   (listbox-append (listbox l) values)
@@ -300,3 +314,11 @@ alternatively a list of numbers may be given"
 (defmethod listbox-size ((object scrolled-listbox))
   (with-accessors ((listbox listbox)) object
     (listbox-size object)))
+
+(defmethod listbox-move-selection ((object scrolled-listbox) offset)
+  (with-accessors ((listbox listbox)) object
+    (listbox-move-selection listbox offset)))
+
+(defmethod see ((object scrolled-listbox) pos)
+  (with-accessors ((listbox listbox)) object
+    (see listbox pos)))

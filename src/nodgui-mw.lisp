@@ -606,7 +606,7 @@
     :accessor key
     :initform #'identity
     :initarg  :key
-    :documentation "This function i applied to every element in 'data'
+    :documentation "This function is applied to every element in 'data'
     before the actual match is performed")
    (remove-non-matching-p
     :accessor remove-non-matching-p
@@ -802,7 +802,7 @@
            (remove-if-not #'(lambda (a)
                               (nodgui.conditions:with-default-on-error (nil)
                                 (and text
-                                     (not (string= text ""))
+                                     (not (string-empty-p text))
                                      (cl-ppcre:scan text a))))
                           '("A" "B" "C" "a" "aa" "b" "c" "foo" "bar" "lisp"))))
   (with-nodgui ()
@@ -1494,3 +1494,219 @@
          close-button-label
          (constantly t)
          label-options))
+
+(defclass autocomplete-candidates (toplevel)
+  ((listbox
+    :initform nil
+    :initarg :listbox
+    :accessor listbox)
+   (attached-entry
+    :initform nil
+    :initarg :attached-entry
+    :accessor attached-entry)))
+
+(defmethod initialize-instance :after ((object autocomplete-candidates) &key &allow-other-keys)
+  (setf (listbox object) (make-instance 'listbox
+                                        :master object
+                                        :selectmode :single))
+  (set-wm-overrideredirect object 1)
+  (pack (listbox object) :side :left :expand t :fill :both)
+  (hide-candidates object))
+
+(defun show-candidates (candidates)
+  (with-accessors ((attached-entry attached-entry)) candidates
+    (let ((x-entry (root-x attached-entry))
+          (y-entry (root-y attached-entry))
+          (h-entry (widget-height attached-entry)))
+      (set-geometry-xy candidates
+                       (truncate x-entry)
+                       (truncate (+ y-entry h-entry)))
+      (normalize candidates)
+      (raise candidates))))
+
+(defun hide-candidates (candidates)
+  (withdraw candidates))
+
+(defmethod configure ((object autocomplete-candidates) option value &rest others)
+  (apply #'configure (listbox object) option value others))
+
+(defmethod listbox-append ((l autocomplete-candidates) values)
+  (listbox-append (listbox l) values)
+  l)
+
+(defmethod listbox-get-selection ((l autocomplete-candidates))
+  (listbox-get-selection (listbox l)))
+
+(defmethod listbox-get-selection-index ((object autocomplete-candidates))
+  (listbox-get-selection-index (listbox object)))
+
+(defmethod listbox-get-selection-value ((object autocomplete-candidates))
+  (listbox-get-selection-value (listbox object)))
+
+(defmethod listbox-select ((l autocomplete-candidates) val)
+  (listbox-select (listbox l) val)
+  l)
+
+(defmethod listbox-select-mode ((object autocomplete-candidates) (mode symbol))
+  (listbox-select-mode (listbox object) mode))
+
+(defmethod listbox-export-selection ((object autocomplete-candidates) value)
+  (listbox-export-selection (listbox object) value))
+
+(defmethod listbox-clear ((object autocomplete-candidates) &optional (start 0) (end :end))
+  (with-accessors ((listbox listbox)
+                   (data    data)) object
+    (listbox-clear listbox start end)
+    object))
+
+(defmethod listbox-delete ((object autocomplete-candidates) &optional (start 0) (end :end))
+  (with-accessors ((listbox listbox)) object
+    (listbox-delete listbox start end)
+    object))
+
+(defmethod listbox-values-in-range ((object autocomplete-candidates) &key (from 0) (to :end))
+  (with-accessors ((listbox listbox)) object
+    (listbox-values-in-range listbox :from from :to to)))
+
+(defmethod listbox-all-values ((object autocomplete-candidates))
+  (with-accessors ((listbox listbox)) object
+    (listbox-all-values listbox)))
+
+(defmethod listbox-move-selection ((object autocomplete-candidates) offset)
+  (with-accessors ((listbox listbox)) object
+    (listbox-move-selection listbox offset)))
+
+(defmethod see ((object autocomplete-candidates) pos)
+  (with-accessors ((listbox listbox)) object
+    (see listbox pos)))
+
+(defclass autocomplete-entry ()
+  ((entry-widget
+    :initform (make-instance 'entry)
+    :initarg :entry-widget
+    :accessor entry-widget)
+   (candidates-widget
+    :initform (make-instance 'autocomplete-candidates)
+    :initarg  :candidates-widget
+    :accessor  candidates-widget
+    :type     (or null autocomplete-candidates))
+   (autocomplete-function
+    :initform (lambda (hint) (list hint))
+    :initarg  :autocomplete-function
+    :accessor autocomplete-function
+    :type     function)))
+
+(defmethod pack ((object autocomplete-entry)
+                 &key
+                   (side :top)
+                   fill
+                   expand
+                   after
+                   before
+                   padx
+                   pady
+                   ipadx
+                   ipady
+                   anchor)
+  (pack (entry-widget object)
+        :side   side
+        :fill   fill
+        :expand expand
+        :after  after
+        :before before
+        :padx   padx
+        :pady   pady
+        :ipadx  ipadx
+        :ipady  ipady
+        :anchor anchor))
+
+(defmethod grid ((object autocomplete-entry)  row column
+                 &key
+                   columnspan
+                   ipadx
+                   ipady
+                   padx
+                   pady
+                   rowspan
+                   sticky)
+  (grid (entry-widget object)
+        row
+        column
+        :columnspan columnspan
+        :ipadx      ipadx
+        :ipady      ipady
+        :padx       padx
+        :pady       pady
+        :rowspan    rowspan
+        :sticky     sticky))
+
+(defun autocomplete-click-1-clsr (candidates-widget entry-widget)
+  (lambda (event)
+    (declare (ignore event))
+    (when-let ((selected (listbox-get-selection-value candidates-widget)))
+      (setf (text entry-widget)
+            (first selected))
+      (set-cursor-index entry-widget :end)
+      (focus entry-widget)
+      (hide-candidates candidates-widget))))
+
+(defun autocomplete-keypress-clsr (candidates-widget entry-widget autocomplete-function)
+  (lambda (event)
+    (declare (ignore event))
+    (let* ((hint (text entry-widget))
+           (data (funcall autocomplete-function
+                          (text entry-widget))))
+      (if (string-empty-p hint)
+          (hide-candidates candidates-widget)
+          (progn
+            (listbox-delete candidates-widget)
+            (listbox-append candidates-widget data)
+            (listbox-select candidates-widget 0)
+            (show-candidates candidates-widget))))))
+
+(defun scroll-candidates (candidates-widget offset)
+  (lambda (event)
+    (declare (ignore event))
+    (listbox-move-selection candidates-widget offset)
+    (see candidates-widget (first (listbox-get-selection-index candidates-widget)))))
+
+(defmethod initialize-instance :after ((object autocomplete-entry) &key &allow-other-keys)
+  (with-accessors ((entry-widget          entry-widget)
+                   (candidates-widget     candidates-widget)
+                   (autocomplete-function autocomplete-function)) object
+    (setf (attached-entry candidates-widget) entry-widget)
+    (bind candidates-widget #$<1>$ (autocomplete-click-1-clsr candidates-widget entry-widget))
+    (bind entry-widget #$<KeyPress-Down>$ (scroll-candidates candidates-widget 1))
+    (bind entry-widget #$<KeyPress-Up>$ (scroll-candidates candidates-widget -1))
+    (bind entry-widget #$<KeyPress-Tab>$ (autocomplete-click-1-clsr candidates-widget entry-widget)
+          :exclusive t)
+    (bind entry-widget
+          #$<KeyPress>$
+          (autocomplete-keypress-clsr candidates-widget entry-widget autocomplete-function)
+          :append t)))
+
+(defmethod configure ((object autocomplete-entry) option value &rest others)
+  (apply #'configure (entry-widget object) option value others))
+
+(defmethod text ((object autocomplete-entry))
+  (text (entry-widget object)))
+
+(defun autocomplete-entry-test ()
+  (with-nodgui ()
+    (let* ((data                  (append '("foo" "bar" "baz")
+                                          (loop for i from 0 to 10 collect
+                                                                   (format nil "~2,'0d" i))))
+           (autocomplete-function (lambda (hint)
+                                    (remove-if-not (lambda (a) (cl-ppcre:scan hint a))
+                                                   data)))
+           (autocomplete-widget   (make-instance 'autocomplete-entry
+                                                 :autocomplete-function autocomplete-function))
+           (button-command        (lambda ()
+                                    (do-msg (format nil
+                                                    "selected ~s~%"
+                                                    (text (entry-widget autocomplete-widget))))))
+           (button                (make-instance 'button
+                                                 :text "OK"
+                                                 :command button-command)))
+      (grid autocomplete-widget 0 0)
+      (grid button              1 0))))

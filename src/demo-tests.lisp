@@ -151,6 +151,10 @@
                                                     :text "Custom style"
                                                     :command (lambda ()
                                                                (demo-custom-style))))
+           (demo-autocomplete-entry  (make-instance 'button
+                                                    :text "Entry with auto completion"
+                                                    :command (lambda ()
+                                                               (demo-autocomplete-entry))))
            (b-quit              (make-instance  'button
                                                 :text    "quit lisp :)"
                                                 :command (lambda ()
@@ -191,7 +195,8 @@
       (grid demo-validate-command    11 0 :sticky :nswe)
       (grid demo-multithread         11 1 :sticky :nswe)
       (grid demo-style               11 2 :sticky :nswe)
-      (grid b-quit                   12 0 :sticky :nswe :columnspan 3)
+      (grid demo-style               12 0 :sticky :nswe)
+      (grid b-quit                   13 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
 
@@ -1148,3 +1153,23 @@
                     (layout-configure corner-style blue-layout))
                 (incf corner-state)))
         (pack b)))))
+
+(defun demo-autocomplete-entry ()
+  (with-nodgui ()
+    (let* ((data                  (append '("foo" "bar" "baz")
+                                          (loop for i from 0 to 10 collect
+                                                                   (format nil "~2,'0d" i))))
+           (autocomplete-function (lambda (hint)
+                                    (remove-if-not (lambda (a) (cl-ppcre:scan hint a))
+                                                   data)))
+           (autocomplete-widget   (make-instance 'autocomplete-entry
+                                                 :autocomplete-function autocomplete-function))
+           (button-command        (lambda ()
+                                    (do-msg (format nil
+                                                    "selected ~s~%"
+                                                    (text (entry-widget autocomplete-widget))))))
+           (button                (make-instance 'button
+                                                 :text "OK"
+                                                 :command button-command)))
+      (grid autocomplete-widget 0 0)
+      (grid button              1 0))))

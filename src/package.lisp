@@ -1438,6 +1438,7 @@
            #:listbox-get-selection-value
            #:listbox-values-in-range
            #:listbox-all-values
+           #:listbox-move-selection
            #:listbox-colorize-item
            #:listbox-nearest
            #:listbox-select
@@ -1752,7 +1753,11 @@
    #:progress-bar-star
    #:value
    #:message-with-timeout
-   #:message-with-timeout-callback))
+   #:message-with-timeout-callback
+   #:autocomplete-entry
+   #:entry-widget
+   #:candidates-widget
+   #:autocomplete-function))
 
 (defpackage :nodgui.demo
   (:use :cl

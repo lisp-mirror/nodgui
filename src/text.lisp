@@ -251,7 +251,7 @@
                (widget-path obj))
   txt)
 
-(defgeneric see (txt pos)
+(defgeneric see (object pos)
   (:documentation "Makes sure the widget is visible"))
 
 (defmethod see ((txt scrolled-text) pos)

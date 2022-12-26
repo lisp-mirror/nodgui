@@ -426,7 +426,7 @@
       `(progn
          (defclass ,class (,@parents)
            ,slots)
-         (defmethod initialize-instance :after ((widget ,class) &key ,@keylist)
+         (defmethod initialize-instance :after ((widget ,class) &key ,@keylist &allow-other-keys)
                     (setf (init-command widget)
                           (format nil ,cmdstring (widget-class-name widget)
                                   ,@(mapcar (lambda (a) `(sanitize ,a)) codelist)))
