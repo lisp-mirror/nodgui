@@ -195,7 +195,7 @@
       (grid demo-validate-command    11 0 :sticky :nswe)
       (grid demo-multithread         11 1 :sticky :nswe)
       (grid demo-style               11 2 :sticky :nswe)
-      (grid demo-style               12 0 :sticky :nswe)
+      (grid demo-autocomplete-entry  12 0 :sticky :nswe)
       (grid b-quit                   13 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
@@ -1168,8 +1168,10 @@
                                     (do-msg (format nil
                                                     "selected ~s~%"
                                                     (text (entry-widget autocomplete-widget))))))
+           (label                 (make-instance 'label :text "Type a digit or a letter in [aobfrz]"))
            (button                (make-instance 'button
                                                  :text "OK"
                                                  :command button-command)))
-      (grid autocomplete-widget 0 0)
-      (grid button              1 0))))
+      (grid label               0 0)
+      (grid autocomplete-widget 1 0)
+      (grid button              2 0))))
