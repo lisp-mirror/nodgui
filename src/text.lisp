@@ -72,13 +72,17 @@
     :initform nil))
   "text")
 
+(defun parse-line-char-index (raw-index)
+  (let ((index (split-sequence raw-index ".")))
+    (values (parse-integer (first index))
+            (parse-integer (second index)))))
+
 (defmethod cursor-index ((text text))
   (format-wish "senddatastring [~a index insert]" (widget-path text))
-  (let* ((raw-index (read-data))
-         (index (split-sequence raw-index ".")))
-    (values (parse-integer (first index))
-            (parse-integer (second index))
-            raw-index)))
+  (let* ((raw-index (read-data)))
+    (multiple-value-bind (lines chars)
+        (parse-line-char-index raw-index)
+      (values lines chars raw-index))))
 
 (defun make-text (master &key (width nil) (height nil) (xscroll nil) (yscroll nil))
   (make-instance 'text
@@ -87,6 +91,8 @@
                  :height  height
                  :xscroll xscroll
                  :yscroll yscroll))
+
+(defgeneric sync-text-metrics (object))
 
 (defgeneric clear-text (txt))
 
@@ -97,6 +103,9 @@
 (defgeneric search-all-text (text pattern))
 
 (defgeneric search-next-text (text pattern))
+
+(defgeneric search-regexp (object pattern from-index
+                           &key to-index case-insensitive forward tag-matching-region))
 
 (defgeneric save-text (txt filename &key if-exists if-does-not-exist))
 
@@ -319,6 +328,7 @@
                          {+ ,(parse-indices coordinates) }
                          {+ ,string }))))
 
+
 (defmethod delete-in-range ((object text) from-index &optional (to-index nil))
   (format-wish (tclize `(,(widget-path object) " "
                          delete
@@ -336,6 +346,9 @@
 
 (defun append-newline (text-widget &rest tags )
   (apply #'append-line text-widget "" tags))
+
+(defmethod sync-text-metrics ((object text))
+  (format-wish "~a sync" (widget-path object)))
 
 (defmethod clear-text ((txt text))
   (format-wish "~a delete ~a ~a"
@@ -355,6 +368,42 @@
 (defmethod search-next-text ((txt text) pattern)
   (format-wish "searchnext ~a {~a}" (widget-path txt) pattern)
   txt)
+
+
+(defmethod search-regexp ((object text) pattern from-index
+                         &key
+                          (to-index (make-indices-end))
+                          (case-insensitive t)
+                          (forward          t)
+                          (tag-matching-region nil))
+  (let ((count-variable-name (create-name "count")))
+    (format-wish "global {~a}" count-variable-name)
+    (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                                            search
+                                            -regexp
+                                            ,(if forward
+                                                 '-forwards
+                                                 '-backwards)
+                                            -nolinestop
+                                            -count ,count-variable-name " "
+                                            ,(empty-string-if-nil (not case-insensitive)
+                                                                  '-nocase)
+                                            {+ ,pattern }
+                                            {+ ,from-index }
+                                            {+ ,to-index }
+                                            ])))
+    (let ((indices (read-data)))
+      (when (not (string-empty-p indices))
+        (format-wish "global {~a} ; senddata ${~a}"
+                     count-variable-name count-variable-name)
+        (let ((size (read-data)))
+          (multiple-value-bind (lines chars)
+              (parse-line-char-index indices)
+            (if tag-matching-region
+                (let ((tag-name (create-name "tagre")))
+                  (tag-create object tag-name indices `(:line ,lines :char ,(+ chars size)))
+                  (values lines chars size tag-name))
+                (values lines chars size nil))))))))
 
 (defmethod tag-create ((object text) tag-name from-index &rest other-indices)
   (format-wish "~a tag add {~a} {~a} ~{{~a} ~}"
@@ -551,6 +600,16 @@
 (defmethod cget ((object scrolled-text) option)
   (cget (inner-text object) option))
 
+(defmethod clear-text ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (clear-text text-widget)
+    object))
+
+(defmethod sync-text-metrics ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (sync-text-metrics text-widget))
+  object)
+
 (defmethod append-text ((txt scrolled-text) text &rest tags )
   (format-wish "~a insert end \"~a\" {~{ ~(~a~)~}}"
                (widget-path (inner-text txt))
@@ -651,6 +710,19 @@
                              (to-index (raw-coordinates object)))
   (with-inner-text (text-widget object)
     (highlight-text text-widget from-index :tag-name tag-name :to-index to-index)))
+
+(defmethod search-regexp ((object scrolled-text) pattern from-index
+                         &key
+                           (to-index (make-indices-end))
+                           (case-insensitive t)
+                           (forward          t)
+                           (tag-matching-region nil))
+  (with-inner-text (text-widget object)
+    (search-regexp text-widget pattern from-index
+                   :to-index            to-index
+                   :case-insensitive    case-insensitive
+                   :forward             forward
+                   :tag-matching-region tag-matching-region)))
 
 (defgeneric fit-words-to-text-widget (object text font))
 

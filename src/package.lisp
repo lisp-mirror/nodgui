@@ -1272,6 +1272,7 @@
            #:append-text
            #:append-line
            #:append-newline
+           #:make-indices-end
            #:parse-indices
            #:insert-window
            #:insert-image
@@ -1280,6 +1281,7 @@
            #:replace-in-range
            #:search-all-text
            #:search-next-text
+           #:search-regexp
            #:tag-create
            #:tag-delete
            #:highlight-text
@@ -1327,6 +1329,7 @@
            #:choose-color
            #:choose-directory
            #:clear-text
+           #:sync-text-metrics
            #:clear
            #:clipboard-append
            #:clipboard-clear

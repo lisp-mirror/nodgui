@@ -911,7 +911,7 @@
 (defun demo-text ()
   (let ((*debug-tk* t))
     (with-nodgui ()
-      (let* ((text-widget       (make-instance 'scrolled-text
+      (let* ((text-widget       (make-instance 'text
                                                :use-horizontal-scrolling-p nil))
              (default-font      (font-create   "default"
                                                :family "Serif"
@@ -921,7 +921,7 @@
                                                :size   "14"
                                                :weight :bold
                                                :slant  :italic
-                                               :underline t))
+                                               :underline (lisp-bool->tcl t)))
              (index-third-line (parse-indices '(:line 3 ; first line starts at '1' not '0'!
                                                 :char 0)))
              (tag-link-index-start (parse-indices '(+ (:line 6 :char 0) 13 :chars)))
@@ -953,12 +953,27 @@
           (make-text-tag-button text-widget tag-link
                                 (lambda ()
                                   (delete-in-range text-widget
-                                                   `(:tag ,tag-placeholder-image :first)
-                                                   `(:tag ,tag-placeholder-image :last))
+                                                    `(:tag ,tag-placeholder-image :first)
+                                                    `(:tag ,tag-placeholder-image :last))
                                   (insert-image text-widget
-                                                bell-image
-                                                '(:line 3 :char 0))
-                                  (format t "ok~%"))))))))
+                                                  bell-image
+                                                  '(:line 3 :char 0))
+                                  (sync-text-metrics text-widget)
+                                  (multiple-value-bind (lines chars size tag-name)
+                                      (search-regexp text-widget
+                                                     "click.+l"
+                                                     "1.0"
+                                                     :tag-matching-region t)
+                                    (format t
+                                            "matching ~a ~a ~a tag; ~s"
+                                            lines
+                                            chars
+                                            size
+                                            tag-name)
+                                    (tag-configure text-widget
+                                                   tag-name
+                                                   :underline  (lisp-bool->tcl nil)
+                                                   :foreground "#AAAAAA")))))))))
 
 ;; tklib
 
