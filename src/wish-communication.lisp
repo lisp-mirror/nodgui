@@ -541,7 +541,7 @@ event to read and blocking is set to nil"
 
 (defun read-data (&key (expected-list-as-data nil))
   "Read data from wish. Non-data events are postponed, bogus messages (eg.
-+error-strings) are ignored."
+error-strings) are ignored."
   (bt:with-recursive-lock-held ((wish-main-iteration-lock *wish*))
     (setf (wish-waiting-data-p *wish*) t)
     (labels ((get-data ()

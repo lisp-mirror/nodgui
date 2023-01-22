@@ -40,3 +40,11 @@
                        (widget-path button)
                        (name val)))
   button)
+
+(defmethod configure ((object button) option value &rest others)
+  (declare (ignorable others))
+  (if (eq option :text)
+      (progn
+        (setf (text object) value)
+        object)
+      (call-next-method)))

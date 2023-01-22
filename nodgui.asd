@@ -106,6 +106,7 @@
                                      (:file "all-tests")
                                      (:file "test-tcl-emitter")
                                      (:file "test-event-parser")
-                                     (:file "test-styles")))))
+                                     (:file "test-styles")
+                                     (:file "test-text-indices")))))
 
 (pushnew :nodgui *features*)

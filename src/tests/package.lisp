@@ -53,3 +53,15 @@
         :nodgui
         :all-tests)
   (:export :tk-style-suite))
+
+(defpackage :test-text-indices
+  (:use :cl
+        :alexandria
+        :clunit
+        :nodgui.config
+        :nodgui.constants
+        :nodgui.utils
+        :nodgui.conditions
+        :nodgui
+        :all-tests)
+  (:export :text-indices-suite))

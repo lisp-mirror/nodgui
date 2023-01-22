@@ -66,6 +66,9 @@
            (demo-image     (make-instance  'button
                                            :text    "images"
                                            :command (lambda () (demo-image))))
+           (demo-text      (make-instance 'button
+                                          :text    "text widget"
+                                          :command (lambda () (demo-text))))
            (demo-treelist  (make-instance  'button
                                            :text    "(mw) treelist"
                                            :command (lambda () (nodgui.mw::treelist-test))))
@@ -117,9 +120,6 @@
            (demo-timeout-dialog (make-instance 'button
                                                :text    "(mw) message dialog with timeout"
                                                :command (lambda () (demo-message-timeout *tk*))))
-           (demo-fitted-text    (make-instance 'button
-                                               :text    "text widget that accomodates words"
-                                               :command (lambda () (demo-fitted-text))))
            (demo-tklib-calendar (make-instance 'button
                                                :text    "(tklib) calendar"
                                                :command (lambda () (demo-tklib-calendar))))
@@ -174,18 +174,18 @@
       (grid defwidget                4 0  :sticky :nswe)
       (grid demo-canvas              4 1  :sticky :nswe)
       (grid demo-image               4 2  :sticky :nswe)
-      (grid demo-treelist            5 0  :sticky :nswe)
-      (grid demo-tooltip             5 1  :sticky :nswe)
-      (grid demo-gtree               5 2  :sticky :nswe)
-      (grid demo-auto-listbox        6 0  :sticky :nswe)
-      (grid demo-search-listbox      6 1  :sticky :nswe)
-      (grid demo-list-select         6 2  :sticky :nswe)
-      (grid demo-listbox-dialog      7 0  :sticky :nswe)
-      (grid demo-date-picker         7 1  :sticky :nswe)
-      (grid demo-password            7 2  :sticky :nswe)
-      (grid demo-star-progress       8 0  :sticky :nswe)
-      (grid demo-timeout-dialog      8 1  :sticky :nswe)
-      (grid demo-fitted-text         8 2  :sticky :nswe)
+      (grid demo-text                5 0  :sticky :nswe)
+      (grid demo-treelist            5 1  :sticky :nswe)
+      (grid demo-tooltip             5 2  :sticky :nswe)
+      (grid demo-gtree               6 0  :sticky :nswe)
+      (grid demo-auto-listbox        6 1  :sticky :nswe)
+      (grid demo-search-listbox      6 2  :sticky :nswe)
+      (grid demo-list-select         7 0  :sticky :nswe)
+      (grid demo-listbox-dialog      7 1  :sticky :nswe)
+      (grid demo-date-picker         7 2  :sticky :nswe)
+      (grid demo-password            8 0  :sticky :nswe)
+      (grid demo-star-progress       8 1  :sticky :nswe)
+      (grid demo-timeout-dialog      8 2  :sticky :nswe)
       (grid demo-tklib-calendar      9 0  :sticky :nswe)
       (grid demo-tklib-notify        9 1  :sticky :nswe)
       (grid demo-tklib-dot-plot      9 2  :sticky :nswe)
@@ -801,56 +801,57 @@
              (declare (ignore e))
              (item-delete canvas item)
              (do-msg "You clicked on green and the blue arc disappeared!"))))
-    (with-nodgui ()
-      (let* ((size         500)
-             (canvas       (make-canvas nil :width size :height size))
-             (arc1         (create-arc canvas
-                                       (/ size 4) (/ size 4)
-                                       (* size 3/4) (* size 3/4) :start 0 :extent 180))
-             (arc2         (create-arc canvas
-                                       (/ size 4) (/ size 4)
-                                       (* size 3/4) (* size 3/4) :start 180 :extent 180))
-             (ball         (create-arc canvas
-                                       0 0
-                                       (* size 1/10) (* size 1/10)
-                                       :start 0
-                                       :extent 359
-                                       :style :pieslice
-                                       :fill  "#0000ff"))
-             (star         (make-star canvas 80 0.5 "#ff0000" "#000000" 5))
-             (bicolor-star (make-two-color-star canvas 80 0.5
-                                                "#FFFF00" "#FFFF00"
-                                                "#BEBEBE"   "#FFFF00"
-                                                10
-                                                :outline-width 10))
-             (rotated-text (create-text canvas 0 20
-                                        (strcat (format nil "Text can be rotated~%at an ")
-                                                "arbitrary angle like this!")
-                                        :angle -80)))
-        (let ((aabb-rotated-text (canvas-item-bbox canvas rotated-text)))
-          (item-move    canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0))
-        (shape-move-to  bicolor-star (/ size 2) (/ size 2))
-        (shape-move-to  star 30 30)
-        (create-text    canvas 0 0  "Slices of the pie are clickable")
-        (item-configure canvas arc1 "fill"  "#ff0000") ;; using x11-colors via cl-colors2
-        (item-configure canvas arc2 "fill"  "#00ff00") ;; strings are accepted, though
-        (item-configure canvas arc1 "tag"   "red")
-        (item-configure canvas arc2 "tag"   "green")
-        (tag-bind       canvas      "red"   #$<ButtonPress-1>$ #'bind-red)
-        (tag-bind       canvas      "green" #$<ButtonPress-1>$ (bind-green canvas ball))
-        (item-move-to   canvas ball (* size 9/10) (* size 9/10))
-        (item-raise     canvas ball arc1)
-        (make-rectangle canvas
-                         0  (* 3/4 size)
-                         50 (+ (/ size 2) 50)
-                         :fill    "#ff0000"
-                         :outline "#0000ff")
-        (make-items canvas `((:rectangle 0  ,(/ size 2) 50 ,(+ (/ size 2) 50))
-                             (:arc       0  ,(+ (/ size 2) 10)
-                                         50 ,(+ (/ size 2) 60)
-                                         :start 0 :extent 180 :fill "#A020F0")
-                             (:line      0 ,size ,size ,(- size 10) :width 5)))
-        (pack canvas)))))
+    (let ((*debug-tk* t))
+      (with-nodgui ()
+        (let* ((size         500)
+               (canvas       (make-canvas nil :width size :height size))
+               (arc1         (create-arc canvas
+                                         (/ size 4) (/ size 4)
+                                         (* size 3/4) (* size 3/4) :start 0 :extent 180))
+               (arc2         (create-arc canvas
+                                         (/ size 4) (/ size 4)
+                                         (* size 3/4) (* size 3/4) :start 180 :extent 180))
+               (ball         (create-arc canvas
+                                         0 0
+                                         (* size 1/10) (* size 1/10)
+                                         :start 0
+                                         :extent 359
+                                         :style :pieslice
+                                         :fill  "#0000ff"))
+               (star         (make-star canvas 80 0.5 "#ff0000" "#000000" 5))
+               (bicolor-star (make-two-color-star canvas 80 0.5
+                                                  "#FFFF00" "#FFFF00"
+                                                  "#BEBEBE"   "#FFFF00"
+                                                  10
+                                                  :outline-width 10))
+               (rotated-text (create-text canvas 0 20
+                                          (strcat (format nil "Text can be rotated~%at an ")
+                                                  "arbitrary angle like this!")
+                                          :angle -80)))
+          (let ((aabb-rotated-text (canvas-item-bbox canvas rotated-text)))
+            (item-move    canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0))
+          (shape-move-to  bicolor-star (/ size 2) (/ size 2))
+          (shape-move-to  star 30 30)
+          (create-text    canvas 0 0  "Slices of the pie are clickable")
+          (item-configure canvas arc1 "fill"  "#ff0000") ;; using x11-colors via cl-colors2
+          (item-configure canvas arc2 "fill"  "#00ff00") ;; strings are accepted, though
+          (item-configure canvas arc1 "tag"   "red")
+          (item-configure canvas arc2 "tag"   "green")
+          (tag-bind       canvas      "red"   #$<ButtonPress-1>$ #'bind-red)
+          (tag-bind       canvas      "green" #$<ButtonPress-1>$ (bind-green canvas ball))
+          (item-move-to   canvas ball (* size 9/10) (* size 9/10))
+          (item-raise     canvas ball arc1)
+          (make-rectangle canvas
+                          0  (* 3/4 size)
+                          50 (+ (/ size 2) 50)
+                          :fill    "#ff0000"
+                          :outline "#0000ff")
+          (make-items canvas `((:rectangle 0  ,(/ size 2) 50 ,(+ (/ size 2) 50))
+                               (:arc       0  ,(+ (/ size 2) 10)
+                                           50 ,(+ (/ size 2) 60)
+                                           :start 0 :extent 180 :fill "#A020F0")
+                               (:line      0 ,size ,size ,(- size 10) :width 5)))
+          (pack canvas))))))
 
 (defun demo-image ()
   (with-nodgui ()
@@ -894,22 +895,70 @@
                                   10
                                   "OK"))
 
-(defun demo-fitted-text ()
-  (with-nodgui ()
-    (let ((text (make-instance 'scrolled-text :use-horizontal-scrolling-p nil)))
-      (configure (inner-text text) :font +tk-fixed-font+)
-      (grid text 0 0 :sticky :news)
-      (setf (text (inner-text text))
-            "type random text, it will try fit it to the width of this widget")
-      (bind (inner-text text)
-            #$<KeyPress>$
-            (lambda (event)
-              (when (not (or (cl-ppcre:scan "\\s" (string (code-char (event-char-code event))))
-                             (not (keysym-printable-p (event-char-code event)))))
-                (with-inner-text (text-widget text)
-                  (setf (text text-widget)
-                        (fit-words-to-text-widget text (text text-widget) "TkFixedFont")))))
-            :append t))))
+(define-constant +bell-icon+
+    (strcat "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA7wDGACtqWfjDAA"
+            "AACXBIWXMAAA7DAAAOwwHHb6hkAAABXklEQVRYw9WWPU4DQQyF7RUpo1UKGlqUioqWG+wd"
+            "0uUA6RElF+AAdLlDbpCWigbECSiiUZpIkTJUg2bNeO3xzhB41f5pbH9+6xkEo54fr318v3"
+            "z4QMs6jTG46plG2VnvtjceAKC9vE1XNF9jNQKn94Uv8Y2JQKg8iCOQS6KBMwsVSAEAwH2+"
+            "sL130xXA4Q3a4+bH2s18PZ6AGDxcT7r4lcoLF9rgnNr9Uy8RBxCT8BLlKh4gJGwEot5nBS"
+            "c++F6H84KagPTbWdWcE7+YgGRAZRI+ywOp3ufgDx5wk67nB84LQwR8wXZ4cRKGDFP4tQTC"
+            "LAizgZBAslfwBCzBaWAtURyq3PL7UQqhDZEfkPWA1fWZ8kkCqeBjho+brjgv9HfLGsFTOy"
+            "VHAulJp/TYpSTESVhj5g+RQOmUW1t//0wonY6pZnev+K8IjE/g6v7XE8CBJLC6Bzgv5Pa+"
+            "RAuwRCFf0dKhJufiL2QAAAAASUVORK5CYII=")
+  :test          #'string=
+  :documentation "A bell icon in png format.")
+
+(defun demo-text ()
+  (let ((*debug-tk* t))
+    (with-nodgui ()
+      (let* ((text-widget       (make-instance 'scrolled-text
+                                               :use-horizontal-scrolling-p nil))
+             (default-font      (font-create   "default"
+                                               :family "Serif"
+                                               :size   "14")) ; positive number = units in points
+             (link-font         (font-create   "linkFont"
+                                               :family "Sans"
+                                               :size   "14"
+                                               :weight :bold
+                                               :slant  :italic
+                                               :underline t))
+             (index-third-line (parse-indices '(:line 3 ; first line starts at '1' not '0'!
+                                                :char 0)))
+             (tag-link-index-start (parse-indices '(+ (:line 6 :char 0) 13 :chars)))
+             (tag-link-index-end   (parse-indices '(+ (:line 6 :char 0) 32 :chars)))
+             (link-color           "#0000ff")
+             (bell-image           (make-image +bell-icon+)))
+        (configure text-widget :font default-font)
+        (configure text-widget :wrap :word)
+        (grid text-widget 0 0 :sticky :news)
+        (append-line text-widget
+                     "type random text, it will try fit it to the width of this widget")
+        (append-line text-widget "")
+        (append-line text-widget
+                     "this line will replaced with an image if you click below 👇")
+        (loop repeat 2 do
+          (append-newline text-widget))
+        (append-line text-widget "some text is clickable like that." index-third-line)
+        (let ((tag-link              (tag-create text-widget
+                                                 "link-tag"
+                                                 tag-link-index-start
+                                                 tag-link-index-end))
+              (tag-placeholder-image (highlight-text text-widget
+                                                     '(:line 3 :char 0)
+                                                     :to-index '(:line 3 :char :end))))
+          (tag-configure text-widget
+                         tag-link
+                         :font link-font
+                         :foreground link-color)
+          (make-text-tag-button text-widget tag-link
+                                (lambda ()
+                                  (delete-in-range text-widget
+                                                   `(:tag ,tag-placeholder-image :first)
+                                                   `(:tag ,tag-placeholder-image :last))
+                                  (insert-image text-widget
+                                                bell-image
+                                                '(:line 3 :char 0))
+                                  (format t "ok~%"))))))))
 
 ;; tklib
 

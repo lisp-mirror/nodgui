@@ -84,17 +84,16 @@ can be passed to AFTER-CANCEL"
 
 ;; tool functions used by the objects
 
+(defparameter *generate-name-lock* (bt:make-lock))
+
 (defun get-counter()
   "incremental counter to create unique numbers"
-  (incf (wish-counter *wish*)))
+  (bt:with-lock-held (*generate-name-lock*)
+    (incf (wish-counter *wish*))))
 
-#+nil(defun create-name ()
-  "create unique widget name, append unique number to 'w'"
-  (format nil "w~A" (get-counter)))
-
-(defun create-name ()
+(defun create-name (&optional (prefix nil))
   "create unique widget name, append unique number to 'n'"
-  (format nil "n~a" (encode-base-52 (get-counter))))
+  (format nil "~@[~a~]n~a" prefix (encode-base-52 (get-counter))))
 
 (defun create-path (master name)
   "create pathname from master widget <master> and widget name <name>"
@@ -132,6 +131,17 @@ can be passed to AFTER-CANCEL"
    "sb_v_double_arrow" "shuttle" "sizing" "spider" "spraycan" "star"
    "target" "tcross" "top_left_arrow" "top_left_corner" "top_right_corner"
    "top_side" "top_tee" "trek" "ul_angle" "umbrella" "ur_angle" "watch" "xterm"))
+
+(defun configure-mouse-pointer (widget pointer-shape-name)
+  (let* ((old-pointer-name (if (stringp pointer-shape-name)
+                               pointer-shape-name
+                               (symbol-name pointer-shape-name)))
+         (new-pointername  (string-downcase (cl-ppcre:regex-replace-all "-"
+                                                                        old-pointer-name
+                                                                        "_"))))
+    (assert (member new-pointername *cursors* :test #'string=))
+    (configure widget :cursor new-pointername)
+    widget))
 
 (defun bell ()
   (send-wish (format nil "bell")))
@@ -580,7 +590,11 @@ set y [winfo y ~a]
 
 (defgeneric tag-bind (object tag event fun &key exclusive))
 
-(defgeneric tag-configure (txt tag option value &rest others))
+(defgeneric tag-configure (object tag-name option value &rest others))
+
+(defgeneric tag-raise (object tag-name &optional on-top-of-tag))
+
+(defgeneric tag-lower (object tag-name &optional on-top-of-tag))
 
 (defmethod tag-configure ((c canvas) tag option value &rest others)
   (format-wish "~a itemconfigure {~a}~{ {-~(~a~)} {~a}~}" (widget-path c)
@@ -589,6 +603,9 @@ set y [winfo y ~a]
                    (format nil "~(~a~)" tag))
                (mapcar #'down (list* option value others)))
   c)
+
+(defgeneric see (object pos)
+  (:documentation "Makes sure the widget is visible"))
 
 ;;; for tkobjects, the name of the widget is taken
 (defmethod configure (widget option (value tkobject) &rest others)

@@ -120,9 +120,10 @@
     (loop
        while (> value 0)
        do
-      (multiple-value-bind (mul rest) (truncate value 52)
-        (setf result (format nil "~a~a" result (elt +base52-encode-table+ rest)))
-        (setf value mul)))
+          (multiple-value-bind (mul rest)
+              (truncate value 52)
+            (setf result (format nil "~a~a" result (elt +base52-encode-table+ rest)))
+            (setf value mul)))
     result))
 
 (defun split-sequence (string at)

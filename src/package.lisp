@@ -1270,12 +1270,26 @@
            #:after-cancel
            #:after-idle
            #:append-text
+           #:append-line
            #:append-newline
+           #:parse-indices
+           #:insert-window
+           #:insert-image
+           #:insert-text
+           #:delete-in-range
+           #:replace-in-range
+           #:search-all-text
+           #:search-next-text
+           #:tag-create
+           #:tag-delete
+           #:highlight-text
+           #:make-text-tag-button
            #:ask-okcancel
            #:ask-yesno
            #:background
            #:bbox
            #:bell
+           #:configure-mouse-pointer
            #:bind
            #:button
            #:calc-scroll-region
@@ -1545,6 +1559,8 @@
            #:spinbox
            #:start-wish
            #:tag-bind
+           #:tag-lower
+           #:tag-raise
            #:tag-configure
            #:text
            #:scrolled-text
