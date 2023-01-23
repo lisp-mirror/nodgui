@@ -1284,7 +1284,6 @@
            #:match-string
            #:match-tag-name
            #:search-all-text
-           #:search-next-text
            #:search-regexp
            #:tag-create
            #:tag-delete

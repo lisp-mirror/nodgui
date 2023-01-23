@@ -85,25 +85,6 @@
        (})
        (puts $server [strcat > > ]))
 
-     (defproc searchall (widget pattern)
-       (set l       [string length $pattern])
-       (set results [$widget search $pattern 1.0])
-       (set previous 0)
-       (while {$results .> \  $previous} {)
-       ($widget tag add sel $results $results+${l}chars)
-       (set previous $results)
-       (set result [$widget search $pattern $results+${l}chars] }))
-
-     (defproc searchnext (widget pattern)
-       (set l [string length $pattern])
-       (set result [$widget search $pattern insert])
-       (:if ($result .> \ 0)
-            (:group
-             ($widget tag remove sel 1.0 end)
-             ($widget tag add sel $result $result+${l}chars)
-             ($widget mark set insert $result+${l}chars)
-             ($widget see insert))))
-
      (defproc resetscroll (c)
        ($c configure -scrollregion [$c bbox all]))
 
