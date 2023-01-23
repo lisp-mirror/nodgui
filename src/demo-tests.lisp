@@ -945,7 +945,7 @@
                                                  tag-link-index-end))
               (tag-placeholder-image (highlight-text text-widget
                                                      '(:line 3 :char 0)
-                                                     :to-index '(:line 3 :char :end))))
+                                                     :end-index '(:line 3 :char :end))))
           (tag-configure text-widget
                          tag-link
                          :font link-font
@@ -958,15 +958,28 @@
                                   (insert-image text-widget
                                                   bell-image
                                                   '(:line 3 :char 0)))
+                                :button-2-callback
+                                (lambda ()
+                                  (format t
+                                          "match data ~s~%"
+                                          (search-all-text text-widget
+                                                           "[aeiou].")))
                                 :button-3-callback
                                 (lambda ()
-                                  (multiple-value-bind (lines chars size tag-name)
+                                  (multiple-value-bind (start-index
+                                                        end-index
+                                                        tag-name
+                                                        lines
+                                                        chars
+                                                        size)
                                       (search-regexp text-widget
                                                      "click.+l"
                                                      "1.0"
                                                      :tag-matching-region t)
                                     (format t
-                                            "matching ~a ~a ~a tag; ~s"
+                                            "matching ~a ~a ~a ~a ~a tag; ~s"
+                                            start-index
+                                            end-index
                                             lines
                                             chars
                                             size

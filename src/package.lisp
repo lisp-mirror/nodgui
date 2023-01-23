@@ -1279,6 +1279,10 @@
            #:insert-text
            #:delete-in-range
            #:replace-in-range
+           #:match-start
+           #:match-end
+           #:match-string
+           #:match-tag-name
            #:search-all-text
            #:search-next-text
            #:search-regexp
@@ -1546,7 +1550,6 @@
            #:fit-words-to-text-widget
            #:scrollregion
            #:search-all-text
-           #:search-next-text
            #:see
            #:send-lazy
            #:with-lazy

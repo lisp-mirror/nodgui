@@ -96,16 +96,16 @@
 
 (defgeneric clear-text (txt))
 
+(defgeneric text-in-range (object start-index &optional end-index))
+
 (defgeneric append-text (txt text &rest tags))
 
 (defgeneric append-line (txt text &rest tags))
 
-(defgeneric search-all-text (text pattern))
+(defgeneric search-all-text (text pattern &key start-index end-index case-insensitive accum))
 
-(defgeneric search-next-text (text pattern))
-
-(defgeneric search-regexp (object pattern from-index
-                           &key to-index case-insensitive forward tag-matching-region))
+(defgeneric search-regexp (object pattern start-index
+                           &key end-index case-insensitive forward tag-matching-region))
 
 (defgeneric save-text (txt filename &key if-exists if-does-not-exist))
 
@@ -119,11 +119,11 @@
 
 (defgeneric insert-text (object text &optional coordinates))
 
-(defgeneric delete-in-range (object from-index &optional to-index))
+(defgeneric delete-in-range (object start-index &optional end-index))
 
-(defgeneric replace-in-range (object string from-index &optional to-index))
+(defgeneric replace-in-range (object string start-index &optional end-index))
 
-(defgeneric tag-create (object tag-name from-index &rest other-indices))
+(defgeneric tag-create (object tag-name start-index &rest other-indices))
 
 (defgeneric tag-delete (object &rest tag-names))
 
@@ -131,7 +131,7 @@
 
 (defgeneric tag-raise (object tag-name &optional on-top-of-tag))
 
-(defgeneric highlight-text (object from-index &key tag-name to-index))
+(defgeneric highlight-text (object start-index &key tag-name end-index))
 
 (defun make-indices-xy (x y)
   (format nil "@~a,~a" x y))
@@ -329,19 +329,19 @@
                          {+ ,string }))))
 
 
-(defmethod delete-in-range ((object text) from-index &optional (to-index nil))
+(defmethod delete-in-range ((object text) start-index &optional (end-index nil))
   (format-wish (tclize `(,(widget-path object) " "
                          delete
-                         {+ ,(parse-indices from-index) }
-                         ,(empty-string-if-nil to-index
-                                            `(  {+ ,(parse-indices to-index) }))))))
+                         {+ ,(parse-indices start-index) }
+                         ,(empty-string-if-nil end-index
+                                            `(  {+ ,(parse-indices end-index) }))))))
 
-(defmethod replace-in-range ((object text) string from-index
-                             &optional (to-index (make-indices-end)))
+(defmethod replace-in-range ((object text) string start-index
+                             &optional (end-index (make-indices-end)))
   (format-wish (tclize `(,(widget-path object) " "
                          replace
-                         {+ ,(parse-indices from-index) } " "
-                         {+ ,(parse-indices to-index) } " "
+                         {+ ,(parse-indices start-index) } " "
+                         {+ ,(parse-indices end-index) } " "
                          string))))
 
 (defun append-newline (text-widget &rest tags )
@@ -357,61 +357,96 @@
                (widget-path txt))
   txt)
 
+(defmethod text-in-range ((object text) start-index &optional (end-index (make-indices-end)))
+  (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                                        get
+                                        {+ ,(parse-indices start-index) }
+                                        {+ ,(parse-indices end-index) }
+                                        ])))
+  (read-data))
+
 (defmethod see ((txt text) pos)
   (format-wish "~a see {~(~a~)}" (widget-path txt) pos)
   txt)
 
-(defmethod search-all-text ((txt text) pattern)
-  (format-wish "searchall ~a {~a}" (widget-path txt) pattern)
-  txt)
+(defstruct match
+  (start)
+  (end)
+  (string)
+  (tag-name))
 
-(defmethod search-next-text ((txt text) pattern)
-  (format-wish "searchnext ~a {~a}" (widget-path txt) pattern)
-  txt)
+(defmethod search-all-text ((object text) pattern
+                            &key
+                              (start-index      (make-indices-start))
+                              (end-index        (make-indices-end))
+                              (case-insensitive t)
+                              (accum            '()))
+  (multiple-value-bind (re-start-index re-end-index tag-name x y z)
+      (ignore-errors
+       (search-regexp object
+                      pattern
+                      start-index
+                      :tag-matching-region t
+                      :case-insensitive    case-insensitive
+                      :end-index           end-index))
+    (declare (ignore x y z))
+    (if tag-name
+        (let ((results (make-match :start    re-start-index
+                                   :end      re-end-index
+                                   :string   (text-in-range object re-start-index re-end-index)
+                                   :tag-name tag-name)))
+          (search-all-text object
+                           pattern
+                           :start-index       re-end-index
+                           :end-index         end-index
+                           :case-insensitive  case-insensitive
+                           :accum             (push results accum)))
+        accum)))
 
-
-(defmethod search-regexp ((object text) pattern from-index
+(defmethod search-regexp ((object text) pattern start-index
                          &key
-                          (to-index (make-indices-end))
+                          (end-index (make-indices-end))
                           (case-insensitive t)
                           (forward          t)
                           (tag-matching-region nil))
   (let ((count-variable-name (create-name "count")))
     (format-wish "global {~a}" count-variable-name)
     (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
-                                            search
-                                            -regexp
-                                            ,(if forward
-                                                 '-forwards
-                                                 '-backwards)
-                                            -nolinestop
-                                            -count ,count-variable-name " "
-                                            ,(empty-string-if-nil (not case-insensitive)
-                                                                  '-nocase)
-                                            {+ ,pattern }
-                                            {+ ,from-index }
-                                            {+ ,to-index }
-                                            ])))
+                                          search
+                                          -regexp
+                                          ,(if forward
+                                               '-forwards
+                                               '-backwards)
+                                          -nolinestop
+                                          -count ,count-variable-name " "
+                                          ,(empty-string-if-nil (not case-insensitive)
+                                                                '-nocase)
+                                          {+ ,pattern }
+                                          {+ ,(parse-indices start-index) }
+                                          {+ ,(parse-indices end-index) }
+                                             ])
+                         :sanitize nil))
     (let ((indices (read-data)))
       (when (not (string-empty-p indices))
         (format-wish "global {~a} ; senddata ${~a}"
                      count-variable-name count-variable-name)
-        (let* ((size(read-data)))
+        (let ((size(read-data)))
           (multiple-value-bind (lines chars)
               (parse-line-char-index indices)
-            (let ((end-index `(+ (:line ,lines :char ,chars)
-                                 ,size :chars)))
+            (let ((re-start-index `(:line ,lines :char ,chars))
+                  (re-end-index  `(+ (:line ,lines :char ,chars)
+                                     ,size :chars)))
               (if tag-matching-region
                   (let ((tag-name  (create-name "tagre")))
                     (tag-create object tag-name indices end-index)
-                    (values lines chars size tag-name end-index))
-                  (values lines chars size nil end-index)))))))))
+                    (values re-start-index re-end-index tag-name lines chars size))
+                  (values re-start-index re-end-index nil lines chars size)))))))))
 
-(defmethod tag-create ((object text) tag-name from-index &rest other-indices)
+(defmethod tag-create ((object text) tag-name start-index &rest other-indices)
   (format-wish "~a tag add {~a} {~a} ~{{~a} ~}"
                (widget-path object)
                tag-name
-               (parse-indices from-index)
+               (parse-indices start-index)
                (mapcar #'parse-indices other-indices))
   tag-name)
 
@@ -452,14 +487,14 @@
                                                before-tag)))))
 
 
-(defmethod highlight-text ((object text) from-index
+(defmethod highlight-text ((object text) start-index
                            &key
                              (tag-name nil)
-                             (to-index (raw-coordinates object)))
+                             (end-index (raw-coordinates object)))
   (let ((highlight-foreground (cget object :highlightcolor))
         (highlight-background (cget object :highlightbackground))
         (tag-name             (or tag-name (create-name "tag"))))
-    (tag-create object tag-name from-index to-index)
+    (tag-create object tag-name start-index end-index)
     (tag-configure object
                    tag-name
                    :foreground highlight-foreground
@@ -496,7 +531,8 @@
     (tag-bind object
               tag-name
               #$<ButtonPress-3>$
-              button-3-callback))
+              button-3-callback
+              :exclusive t))
   (tag-bind object
             tag-name
             #$<Enter>$
@@ -509,8 +545,7 @@
               (configure-mouse-pointer object cursor-outside))))
 
 (defmethod text ((text text))
-  (format-wish "senddatastring [~a get 1.0 end]" (widget-path text))
-  (read-data))
+  (text-in-range text (make-indices-start) (make-indices-end)))
 
 (defmethod (setf text) (val (text text))
   (format-wish "~A delete 0.0 end;~A insert end {~A}"
@@ -607,6 +642,21 @@
     (clear-text text-widget)
     object))
 
+(defmethod text-in-range ((object scrolled-text) start-index
+                          &optional (end-index (make-indices-end)))
+  (with-inner-text (text-widget object)
+    (text-in-range text-widget start-index end-index)))
+
+(defmethod save-text ((object scrolled-text) filename
+                      &key
+                        (if-exists         :supersede)
+                        (if-does-not-exist :create))
+  (with-inner-text (text-widget object)
+    (save-text text-widget
+               filename
+               :if-exists if-exists
+               :if-does-not-exist if-does-not-exist)))
+
 (defmethod sync-text-metrics ((object scrolled-text))
   (with-inner-text (text-widget object)
     (sync-text-metrics text-widget))
@@ -653,18 +703,18 @@
   (with-inner-text (text-widget object)
     (insert-text text-widget string coordinates)))
 
-(defmethod delete-in-range ((object scrolled-text) from-index &optional (to-index nil))
+(defmethod delete-in-range ((object scrolled-text) start-index &optional (end-index nil))
   (with-inner-text (text-widget object)
-    (delete-in-range text-widget from-index to-index)))
+    (delete-in-range text-widget start-index end-index)))
 
-(defmethod replace-in-range ((object scrolled-text) string from-index
-                             &optional (to-index (make-indices-end)))
+(defmethod replace-in-range ((object scrolled-text) string start-index
+                             &optional (end-index (make-indices-end)))
   (with-inner-text (text-widget object)
-    (replace-in-range text-widget string from-index to-index)))
+    (replace-in-range text-widget string start-index end-index)))
 
-(defmethod tag-create ((object scrolled-text) tag-name from-index &rest other-indices)
+(defmethod tag-create ((object scrolled-text) tag-name start-index &rest other-indices)
   (with-inner-text (text-widget object)
-    (apply #'tag-create text-widget tag-name from-index other-indices)))
+    (apply #'tag-create text-widget tag-name start-index other-indices)))
 
 (defmethod tag-delete ((object scrolled-text) &rest tag-names)
   (assert (not (null tag-names)))
@@ -706,25 +756,39 @@
                           :cursor-outside    cursor-outside)))
 
 
-(defmethod highlight-text ((object scrolled-text) from-index
+(defmethod highlight-text ((object scrolled-text) start-index
                            &key
                              (tag-name nil)
-                             (to-index (raw-coordinates object)))
+                             (end-index (raw-coordinates object)))
   (with-inner-text (text-widget object)
-    (highlight-text text-widget from-index :tag-name tag-name :to-index to-index)))
+    (highlight-text text-widget start-index :tag-name tag-name :end-index end-index)))
 
-(defmethod search-regexp ((object scrolled-text) pattern from-index
+(defmethod search-regexp ((object scrolled-text) pattern start-index
                          &key
-                           (to-index (make-indices-end))
+                           (end-index (make-indices-end))
                            (case-insensitive t)
                            (forward          t)
                            (tag-matching-region nil))
   (with-inner-text (text-widget object)
-    (search-regexp text-widget pattern from-index
-                   :to-index            to-index
+    (search-regexp text-widget pattern start-index
+                   :end-index           end-index
                    :case-insensitive    case-insensitive
                    :forward             forward
                    :tag-matching-region tag-matching-region)))
+
+(defmethod search-all-text ((object scrolled-text) pattern
+                            &key
+                              (start-index      (make-indices-start))
+                              (end-index        (make-indices-end))
+                              (case-insensitive t)
+                              (accum            '()))
+  (with-inner-text (text-widget object)
+    (search-all-text text-widget
+                     pattern
+                     :start-index      start-index
+                     :end-index        end-index
+                     :case-insensitive case-insensitive
+                     :accum            accum)))
 
 (defgeneric fit-words-to-text-widget (object text font))
 
