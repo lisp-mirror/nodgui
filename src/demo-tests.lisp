@@ -957,8 +957,9 @@
                                                     `(:tag ,tag-placeholder-image :last))
                                   (insert-image text-widget
                                                   bell-image
-                                                  '(:line 3 :char 0))
-                                  (sync-text-metrics text-widget)
+                                                  '(:line 3 :char 0)))
+                                :button-3-callback
+                                (lambda ()
                                   (multiple-value-bind (lines chars size tag-name)
                                       (search-regexp text-widget
                                                      "click.+l"

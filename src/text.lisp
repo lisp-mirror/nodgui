@@ -396,14 +396,16 @@
       (when (not (string-empty-p indices))
         (format-wish "global {~a} ; senddata ${~a}"
                      count-variable-name count-variable-name)
-        (let ((size (read-data)))
+        (let* ((size(read-data)))
           (multiple-value-bind (lines chars)
               (parse-line-char-index indices)
-            (if tag-matching-region
-                (let ((tag-name (create-name "tagre")))
-                  (tag-create object tag-name indices `(:line ,lines :char ,(+ chars size)))
-                  (values lines chars size tag-name))
-                (values lines chars size nil))))))))
+            (let ((end-index `(+ (:line ,lines :char ,chars)
+                                 ,size :chars)))
+              (if tag-matching-region
+                  (let ((tag-name  (create-name "tagre")))
+                    (tag-create object tag-name indices end-index)
+                    (values lines chars size tag-name end-index))
+                  (values lines chars size nil end-index)))))))))
 
 (defmethod tag-create ((object text) tag-name from-index &rest other-indices)
   (format-wish "~a tag add {~a} {~a} ~{{~a} ~}"
