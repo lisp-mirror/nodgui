@@ -92,6 +92,8 @@
                  :xscroll xscroll
                  :yscroll yscroll))
 
+(defgeneric maximum-lines-number (object))
+
 (defgeneric sync-text-metrics (object))
 
 (defgeneric clear-text (txt))
@@ -349,6 +351,14 @@
 
 (defmethod sync-text-metrics ((object text))
   (format-wish "~a sync" (widget-path object)))
+
+(defmethod maximum-lines-number ((object text))
+  (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                                        index
+                                        ,(make-indices-end)
+                                        ])))
+  (let* ((raw-index (read-data)))
+    (1- (nth-value 0 (parse-line-char-index raw-index)))))
 
 (defmethod clear-text ((txt text))
   (format-wish "~a delete ~a ~a"
@@ -631,6 +641,10 @@
   `(with-accessors ((,text-slot inner-text)) ,scrolled-text
      ,@body))
 
+(defmethod cursor-index ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (cursor-index text-widget)))
+
 (defmethod configure ((object scrolled-text) option value &rest others)
   (apply #'configure (inner-text object) option value others))
 
@@ -661,6 +675,10 @@
   (with-inner-text (text-widget object)
     (sync-text-metrics text-widget))
   object)
+
+(defmethod maximum-lines-number ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (maximum-lines-number text-widget)))
 
 (defmethod append-text ((txt scrolled-text) text &rest tags )
   (format-wish "~a insert end \"~a\" {~{ ~(~a~)~}}"

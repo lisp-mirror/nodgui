@@ -961,7 +961,8 @@
                                 :button-2-callback
                                 (lambda ()
                                   (format t
-                                          "match data ~s~%"
+                                          "match data for ~a lines: ~s~%"
+                                          (maximum-lines-number text-widget)
                                           (search-all-text text-widget
                                                            "[aeiou].")))
                                 :button-3-callback

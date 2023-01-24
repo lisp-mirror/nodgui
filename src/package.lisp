@@ -1333,6 +1333,7 @@
            #:choose-directory
            #:clear-text
            #:sync-text-metrics
+           #:maximum-lines-number
            #:clear
            #:clipboard-append
            #:clipboard-clear
