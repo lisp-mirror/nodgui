@@ -708,8 +708,16 @@ set y [winfo y ~a]
                                          ])))
   (read-data))
 
-(defun font-chooser-show ()
-  (format-wish (tclize `(tk fontchooser show))))
+(defun font-chooser-show (&key (parent *tk*) (title "Choose a font"))
+  (format-wish (tclize `(tk fontchooser configure
+                            -parent {+ ,(widget-path parent) }
+                            -title  {+ ,title }
+                            -command senddatastring)))
+  (format-wish (tclize `(tk fontchooser show)))
+  (read-data))
+
+(defun font-chooser-hide ()
+  (format-wish (tclize `(tk fontchooser hide))))
 
 ;;; misc functions
 
