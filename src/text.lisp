@@ -135,6 +135,29 @@
 
 (defgeneric highlight-text (object start-index &key tag-name end-index))
 
+(defgeneric make-text-tag-button (object
+                                  tag-name
+                                  button-1-callback
+                                  &key
+                                    button-2-callback
+                                    button-3-callback
+                                    cursor-over
+                                    cursor-outside))
+
+(defgeneric move-cursor-to (object index))
+
+(defgeneric move-cursor-to-last-visible-line (object))
+
+(defgeneric move-cursor-to-first-visible-line (object))
+
+(defgeneric move-cursor-next-char (object))
+
+(defgeneric move-cursor-previous-char (object))
+
+(defgeneric move-cursor-next-line (object))
+
+(defgeneric move-cursor-previous-line (object))
+
 (defun make-indices-xy (x y)
   (format nil "@~a,~a" x y))
 
@@ -376,7 +399,7 @@
   (read-data))
 
 (defmethod see ((txt text) pos)
-  (format-wish "~a see {~(~a~)}" (widget-path txt) pos)
+  (format-wish "~a see {~(~a~)}" (widget-path txt) (parse-indices pos))
   txt)
 
 (defstruct match
@@ -511,14 +534,46 @@
                    :background highlight-background)
     tag-name))
 
-(defgeneric make-text-tag-button (object
-                                  tag-name
-                                  button-1-callback
-                                  &key
-                                    button-2-callback
-                                    button-3-callback
-                                    cursor-over
-                                    cursor-outside))
+(defmethod move-cursor-to ((object text) index)
+  (let ((parsed-index (parse-indices index)))
+    (format-wish (tclize `(,(widget-path object) " "
+                           mark set insert
+                           {+ ,parsed-index })))
+    (values object index)))
+
+(defmethod move-cursor-to-last-visible-line ((object text))
+  (let* ((height (parse-integer (cget object :height)))
+         (column (nth-value 1 (cursor-index object)))
+         (index  `(:line ,height :char ,column)))
+    (move-cursor-to object index)))
+
+(defmethod move-cursor-to-first-visible-line ((object text))
+  (let* ((column (nth-value 1
+                            (cursor-index object)))
+         (index  `(+ (:x  0 :y 0)
+                     ,column :chars)))
+    (move-cursor-to object index)))
+
+(defmethod move-cursor-next-char ((object text))
+  (multiple-value-bind (lines chars)
+      (cursor-index object)
+    (move-cursor-to object `(+ (:line ,lines :char ,chars) 1 :chars))))
+
+(defmethod move-cursor-previous-char ((object text))
+  (multiple-value-bind (lines chars)
+      (cursor-index object)
+    (when (> chars 0)
+      (move-cursor-to object `(- (:line ,lines :char ,chars) 1 :chars)))))
+
+(defmethod move-cursor-next-line ((object text))
+  (multiple-value-bind (lines chars)
+      (cursor-index object)
+    (move-cursor-to object `(+ (:line ,lines :char ,chars) 1 :lines))))
+
+(defmethod move-cursor-previous-line ((object text))
+    (multiple-value-bind (lines chars)
+      (cursor-index object)
+      (move-cursor-to object `(- (:line ,lines :char ,chars) 1 :lines))))
 
 (defmethod make-text-tag-button ((object text)
                                  tag-name
@@ -599,27 +654,63 @@
 (defun make-scrolled-text (master)
   (make-instance 'scrolled-text :master master))
 
+(defun set-scrolled-text-read-only-with-cursor (text-widget)
+  (bind (inner-text text-widget)
+        #$<KeyPress>$
+        (lambda (event)
+          (let ((keycode (event-char event)))
+            (cond
+              ((string= keycode nodgui.event-symbols:+up+)
+               (move-cursor-previous-line text-widget)
+               (see text-widget (nth-value 2 (cursor-index text-widget))))
+              ((string= keycode nodgui.event-symbols:+down+)
+               (move-cursor-next-line text-widget)
+               (see text-widget (nth-value 2 (cursor-index text-widget))))
+              ((string= keycode nodgui.event-symbols:+left+)
+               (move-cursor-previous-char text-widget)
+               (see text-widget (nth-value 2 (cursor-index text-widget))))
+              ((string= keycode nodgui.event-symbols:+right+)
+               (move-cursor-next-char text-widget)
+               (see text-widget (nth-value 2 (cursor-index text-widget)))))))
+        :exclusive t))
+
+(defun set-scrolled-text-read-only (text-widget)
+  (bind (inner-text text-widget)
+        #$<KeyPress>$
+        (lambda (event)
+          (let ((keycode (event-char event)))
+            (cond
+              ((string= keycode nodgui.event-symbols:+up+)
+               (move-cursor-to-first-visible-line text-widget)
+               (move-cursor-previous-line text-widget)
+               (see text-widget (nth-value 2 (cursor-index text-widget))))
+              ((string= keycode nodgui.event-symbols:+down+)
+               (move-cursor-to-last-visible-line text-widget)
+               (move-cursor-next-line text-widget)
+               (see text-widget (nth-value 2 (cursor-index text-widget)))))))
+        :exclusive t))
+
 (defmethod initialize-instance :after ((object scrolled-text)
-                                       &key (use-horizontal-scrolling-p t)
+                                       &key
+                                         (use-horizontal-scrolling-p t)
+                                         (read-only nil)
                                          &allow-other-keys)
   (with-accessors ((inner-text inner-text)
                    (hscroll    hscroll)
                    (vscroll    vscroll)) object
-
     (setf vscroll (make-scrollbar object))
     (setf inner-text (make-text object
                                 :xscroll hscroll
                                 :yscroll vscroll))
     (grid inner-text  0 0 :sticky :news)
-
     (grid vscroll 0 1     :sticky :ns)
     (grid-columnconfigure object 0 :weight 1)
     (grid-columnconfigure object 1 :weight 0)
     (grid-rowconfigure    object 0 :weight 1)
-    (grid-rowconfigure    object 1 :weight 0)
     (when use-horizontal-scrolling-p
       (setf hscroll (make-scrollbar object :orientation "horizontal"))
-      (grid hscroll 1 0     :sticky :we)
+      (grid hscroll 1 0 :sticky :we)
+      (grid-rowconfigure object 1 :weight 0)
       (configure hscroll
                  "command"
                  (concatenate 'string (widget-path inner-text) " xview")))
@@ -631,7 +722,14 @@
                (concatenate 'string (widget-path inner-text) " yview"))
     (configure inner-text
                "yscrollcommand"
-               (concatenate 'string (widget-path vscroll) " set"))))
+               (concatenate 'string (widget-path vscroll) " set"))
+    (move-cursor-to inner-text (make-indices-start))
+    (cond
+      ((eq read-only :with-cursor)
+       (set-scrolled-text-read-only-with-cursor object))
+      (read-only
+       (set-scrolled-text-read-only object)))))
+
 
 (defmacro with-inner-text ((text-slot scrolled-text) &body body)
   "Syntatic sugar to  access the text slot of a scrolled-text
@@ -648,8 +746,10 @@
 (defmethod configure ((object scrolled-text) option value &rest others)
   (apply #'configure (inner-text object) option value others))
 
-(defmethod cget ((object scrolled-text) option)
-  (cget (inner-text object) option))
+(defmethod cget ((object scrolled-text) option &key (query-container nil))
+  (if query-container
+      (call-next-method)
+      (cget (inner-text object) option)))
 
 (defmethod clear-text ((object scrolled-text))
   (with-inner-text (text-widget object)
@@ -780,6 +880,45 @@
                              (end-index (raw-coordinates object)))
   (with-inner-text (text-widget object)
     (highlight-text text-widget start-index :tag-name tag-name :end-index end-index)))
+
+(defmethod move-cursor-to ((object scrolled-text) index)
+  (with-inner-text (text-widget object)
+    (move-cursor-to text-widget index)))
+
+(defmethod move-cursor-to-last-visible-line ((object scrolled-text))
+  "Note:  there is  a bad  heuristic involved  in this  function, column
+position  could be  wrong  if  the latest  visible  line  uses a  font
+different from the default (expecially if  such a font is smaller than
+the size of the default one"
+  (with-inner-text (text-widget object)
+    (let* ((height               (widget-height text-widget))
+           (font-metrics         (font-metrics (cget object :font)))
+           (font-approx-baseline (getf font-metrics :descent))
+           (column (nth-value 1 (cursor-index text-widget)))
+           (index  `(+ (:x 0
+                        :y ,(- height font-approx-baseline))
+                       ,column :chars)))
+      (move-cursor-to text-widget index))))
+
+(defmethod move-cursor-to-first-visible-line ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (move-cursor-to-first-visible-line text-widget)))
+
+(defmethod move-cursor-next-char ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (move-cursor-next-char text-widget)))
+
+(defmethod move-cursor-previous-char ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (move-cursor-previous-char text-widget)))
+
+(defmethod move-cursor-next-line ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (move-cursor-next-line text-widget)))
+
+(defmethod move-cursor-previous-line ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (move-cursor-previous-line text-widget)))
 
 (defmethod search-regexp ((object scrolled-text) pattern start-index
                          &key

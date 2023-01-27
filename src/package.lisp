@@ -1273,6 +1273,7 @@
            #:append-line
            #:append-newline
            #:make-indices-end
+           #:make-indices-start
            #:parse-indices
            #:insert-window
            #:insert-image
@@ -1288,6 +1289,13 @@
            #:tag-create
            #:tag-delete
            #:highlight-text
+           #:move-cursor-to
+           #:move-cursor-to-last-visible-line
+           #:move-cursor-to-first-visible-line
+           #:move-cursor-next-char
+           #:move-cursor-previous-char
+           #:move-cursor-next-line
+           #:move-cursor-previous-line
            #:make-text-tag-button
            #:ask-okcancel
            #:ask-yesno
@@ -1535,6 +1543,8 @@
            #:parent-pathname
            #:root-x
            #:root-y
+           #:relative-x
+           #:relative-y
            #:rootx
            #:rooty
            #:widget-width

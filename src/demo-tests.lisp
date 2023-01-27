@@ -911,10 +911,11 @@
 (defun demo-text ()
   (let ((*debug-tk* t))
     (with-nodgui ()
-      (let* ((text-widget       (make-instance 'text
+      (let* ((text-widget       (make-instance 'scrolled-text
+                                               :read-only                  nil
                                                :use-horizontal-scrolling-p nil))
              (default-font      (font-create   "default"
-                                               :family "Serif"
+                                               :family "Sans"
                                                :size   "14")) ; positive number = units in points
              (link-font         (font-create   "linkFont"
                                                :family "Sans"
@@ -926,7 +927,8 @@
                                                 :char 0)))
              (tag-link-index-start (parse-indices '(+ (:line 6 :char 0) 13 :chars)))
              (tag-link-index-end   (parse-indices '(+ (:line 6 :char 0) 32 :chars)))
-             (link-color           "#0000ff")
+             (link-color           (rgb->tk cl-colors2:+blue+))
+             (re-matched-color     (rgb->tk cl-colors2:+grey+))
              (bell-image           (make-image +bell-icon+)))
         (configure text-widget :font default-font)
         (configure text-widget :wrap :word)
@@ -935,7 +937,8 @@
                      "type random text, it will try fit it to the width of this widget")
         (append-line text-widget "")
         (append-line text-widget
-                     "this line will replaced with an image if you click below 👇")
+                     (format nil
+                             "this line will replaced with an image if you click below 👇"))
         (loop repeat 2 do
           (append-newline text-widget))
         (append-line text-widget "some text is clickable like that." index-third-line)
@@ -948,7 +951,7 @@
                                                      :end-index '(:line 3 :char :end))))
           (tag-configure text-widget
                          tag-link
-                         :font link-font
+                         :font       link-font
                          :foreground link-color)
           (make-text-tag-button text-widget tag-link
                                 (lambda ()
@@ -988,7 +991,7 @@
                                     (tag-configure text-widget
                                                    tag-name
                                                    :underline  (lisp-bool->tcl nil)
-                                                   :foreground "#AAAAAA")))))))))
+                                                   :foreground re-matched-color)))))))))
 
 ;; tklib
 

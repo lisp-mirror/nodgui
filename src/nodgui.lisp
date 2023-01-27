@@ -613,9 +613,9 @@ set y [winfo y ~a]
                (widget-path widget) option (widget-path value) others)
   widget)
 
-(defgeneric cget (widget option))
+(defgeneric cget (widget option &key &allow-other-keys))
 
-(defmethod cget ((widget widget) option)
+(defmethod cget ((widget widget) option &key &allow-other-keys)
   (format-wish "senddatastring [~a cget {-~(~a~)}]" (widget-path widget) option)
   (read-data))
 
@@ -707,6 +707,9 @@ set y [winfo y ~a]
                                                 " "))
                                          ])))
   (read-data))
+
+(defun font-chooser-show ()
+  (format-wish (tclize `(tk fontchooser show))))
 
 ;;; misc functions
 

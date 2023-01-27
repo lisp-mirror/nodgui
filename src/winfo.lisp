@@ -89,6 +89,20 @@
 (defun rooty (widget)
   (root-y widget))
 
+(defun relative-x (widget)
+  (format-wish (tclize `(senddatastring [winfo x ,(widget-path widget) ])))
+  (let ((x (read-data)))
+    (if (string= x "")
+        nil
+        (parse-integer x))))
+
+(defun relative-y (widget)
+  (format-wish (tclize `(senddatastring [winfo y ,(widget-path widget) ])))
+  (let ((y (read-data)))
+    (if (string= y "")
+        nil
+        (parse-integer y))))
+
 (defun widget-width (widget)
   (format-wish (tclize `(senddatastring [winfo width ,(widget-path widget) ])))
   (let ((w (read-data)))
