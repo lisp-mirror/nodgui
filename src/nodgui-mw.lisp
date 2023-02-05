@@ -1521,6 +1521,9 @@
       (set-geometry-xy candidates
                        (truncate x-entry)
                        (truncate (+ y-entry h-entry)))
+      (set-geometry-wh candidates
+                       (widget-width  attached-entry)
+                       (widget-height candidates))
       (normalize candidates)
       (raise candidates))))
 
