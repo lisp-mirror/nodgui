@@ -1582,7 +1582,7 @@
 
 (defclass autocomplete-entry ()
   ((entry-widget
-    :initform (make-instance 'entry)
+    :initform nil
     :initarg :entry-widget
     :accessor entry-widget)
    (candidates-widget
@@ -1677,10 +1677,12 @@ will shift the selected item up o down respectively."))
     (listbox-move-selection candidates-widget offset)
     (see candidates-widget (first (listbox-get-selection-index candidates-widget)))))
 
-(defmethod initialize-instance :after ((object autocomplete-entry) &key &allow-other-keys)
+(defmethod initialize-instance :after ((object autocomplete-entry)
+                                       &key (master nil) &allow-other-keys)
   (with-accessors ((entry-widget          entry-widget)
                    (candidates-widget     candidates-widget)
                    (autocomplete-function autocomplete-function)) object
+    (setf entry-widget (make-instance 'entry :master master))
     (setf (attached-entry candidates-widget) entry-widget)
     (bind candidates-widget #$<1>$ (autocomplete-click-1-clsr candidates-widget entry-widget))
     (bind entry-widget #$<KeyPress-Down>$ (scroll-candidates candidates-widget 1))
