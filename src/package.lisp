@@ -1304,6 +1304,7 @@
            #:bell
            #:configure-mouse-pointer
            #:bind
+           #:wait-complete-redraw
            #:button
            #:calc-scroll-region
            #:+tag-all-items+
@@ -1547,8 +1548,8 @@
            #:relative-y
            #:rootx
            #:rooty
-           #:widget-width
-           #:widget-height
+           #:window-width
+           #:window-height
            #:children-pathname
            #:scrollbar
            #:scrolled-canvas

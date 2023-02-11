@@ -228,6 +228,12 @@ can be passed to AFTER-CANCEL"
     (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A ~:[~;;break~]}"
                  s event append name exclusive)))
 
+(defun update-idle-tasks ()
+  (send-wish "update idletasks"))
+
+(defun wait-complete-redraw ()
+  (update-idle-tasks))
+
 ;;; window menu bar
 
 (defclass menubar (widget) ())
@@ -1032,7 +1038,7 @@ tk input to terminate"
           (*exit-mainloop* nil)
           ;(*buffer-for-atomic-output* nil)
           )
-     (send-wish "update idletasks")
+     (wait-complete-redraw)
      (unwind-protect
          (catch 'modal-toplevel
            (block nil
