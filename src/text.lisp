@@ -84,8 +84,9 @@
         (parse-line-char-index raw-index)
       (values lines chars raw-index))))
 
-(defun make-text (master &key (width nil) (height nil) (xscroll nil) (yscroll nil))
+(defun make-text (master &key (width nil) (height nil) (xscroll nil) (yscroll nil) (cursor :terminal))
   (make-instance 'text
+                 :cursor  cursor
                  :master  master
                  :width   width
                  :height  height
@@ -717,6 +718,7 @@
 
 (defmethod initialize-instance :after ((object scrolled-text)
                                        &key
+                                         (cursor                     :terminal)
                                          (use-horizontal-scrolling-p t)
                                          (read-only nil)
                                          &allow-other-keys)
@@ -725,6 +727,7 @@
                    (vscroll    vscroll)) object
     (setf vscroll (make-scrollbar object))
     (setf inner-text (make-text object
+                                :cursor  cursor
                                 :xscroll hscroll
                                 :yscroll vscroll))
     (grid inner-text  0 0 :sticky :news)
@@ -1046,8 +1049,29 @@ the size of the default one"
           (setf selected-tag (highlight-text-line widget selected-line-index))))
       widget)))
 
+(defun boldify-multifont-item (widget line bold-char-indices)
+  (loop for index in bold-char-indices do
+    (let ((tag-name (create-name "tag")))
+      (tag-create widget
+                  tag-name
+                  `(:line ,line :char ,index)
+                  `(:line ,line :char ,(1+ index)))
+      (tag-configure widget
+                     tag-name
+                     :font "bold"))))
+
 (defmethod initialize-instance :after ((object multifont-listbox) &key &allow-other-keys)
-  (set-multifont-listbox-read-only object))
+  (set-multifont-listbox-read-only object)
+  (configure object :wrap :none)
+  (bind (inner-text object)
+        #$<ButtonPress-1>$
+        (lambda (e)
+          (declare (ignore e))
+          (let* ((new-selected-line  (cursor-index object))
+                 (new-selected-index (1- new-selected-line)))
+            (when (and (>= new-selected-index 0)
+                       (<  new-selected-index (listbox-size object)))
+              (listbox-select object new-selected-index))))))
 
 (defmacro with-sync-data ((widget) &body body)
   (let ((last-form         (a:last-elt body))
