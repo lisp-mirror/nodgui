@@ -1517,13 +1517,13 @@
   (with-accessors ((attached-entry attached-entry)) candidates
     (let ((x-entry (root-x attached-entry))
           (y-entry (root-y attached-entry))
-          (h-entry (widget-height attached-entry)))
+          (h-entry (window-height attached-entry)))
       (set-geometry-xy candidates
                        (truncate x-entry)
                        (truncate (+ y-entry h-entry)))
       (set-geometry-wh candidates
-                       (widget-width  attached-entry)
-                       (widget-height candidates))
+                       (window-width  attached-entry)
+                       (window-height candidates))
       (normalize candidates)
       (raise candidates))))
 

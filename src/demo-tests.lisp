@@ -909,10 +909,10 @@
   :documentation "A bell icon in png format.")
 
 (defun demo-text ()
-  (let ((*debug-tk* t))
+  (let ((*debug-tk* nil))
     (with-nodgui ()
       (let* ((text-widget       (make-instance 'scrolled-text
-                                               :read-only                  nil
+                                               :read-only                  t
                                                :use-horizontal-scrolling-p nil))
              (default-font      (font-create   "default"
                                                :family "Sans"
@@ -933,6 +933,8 @@
         (configure text-widget :font default-font)
         (configure text-widget :wrap :word)
         (grid text-widget 0 0 :sticky :news)
+        (grid-columnconfigure *tk* :all :weight 1)
+        (grid-rowconfigure *tk* :all :weight 1)
         (append-line text-widget
                      "type random text, it will try fit it to the width of this widget")
         (append-line text-widget "")
@@ -941,7 +943,8 @@
                              "this line will replaced with an image if you click below 👇"))
         (loop repeat 2 do
           (append-newline text-widget))
-        (append-line text-widget "some text is clickable like that." index-third-line)
+        (loop for i from 0 below 200 do
+          (append-line text-widget (format nil "~a some text is clickable like that." i)))
         (let ((tag-link              (tag-create text-widget
                                                  "link-tag"
                                                  tag-link-index-start

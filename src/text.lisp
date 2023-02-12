@@ -102,7 +102,7 @@
 
 (defgeneric append-text (txt text &rest tags))
 
-(defgeneric append-line (txt text &rest tags))
+(defgeneric append-line (object text &rest tags))
 
 (defgeneric search-all-text (text pattern &key start-index end-index case-insensitive accum))
 
@@ -135,6 +135,8 @@
 
 (defgeneric highlight-text (object start-index &key tag-name end-index))
 
+(defgeneric highlight-text-line (object line-index &key tag-name))
+
 (defgeneric make-text-tag-button (object
                                   tag-name
                                   button-1-callback
@@ -157,6 +159,10 @@
 (defgeneric move-cursor-next-line (object))
 
 (defgeneric move-cursor-previous-line (object))
+
+(defgeneric width-in-chars (object))
+
+(defgeneric height-in-chars (object))
 
 (defun make-indices-xy (x y)
   (format nil "@~a,~a" x y))
@@ -385,9 +391,9 @@
 
 (defmethod clear-text ((txt text))
   (format-wish "~a delete ~a ~a"
+               (widget-path txt)
                (make-indices-start)
-               (make-indices-end)
-               (widget-path txt))
+               (make-indices-end))
   txt)
 
 (defmethod text-in-range ((object text) start-index &optional (end-index (make-indices-end)))
@@ -398,9 +404,9 @@
                                         ])))
   (read-data))
 
-(defmethod see ((txt text) pos)
-  (format-wish "~a see {~(~a~)}" (widget-path txt) (parse-indices pos))
-  txt)
+(defmethod see ((object text) pos)
+  (format-wish "~a see {~(~a~)}" (widget-path object) (parse-indices pos))
+  object)
 
 (defstruct match
   (start)
@@ -485,17 +491,17 @@
 
 (defmethod tag-delete ((object text) &rest tag-names)
   (assert (not (null tag-names)))
-  (format-wish "~a tag delete {~a} ~{{~a} ~}" (widget-path object) tag-names)
+  (format-wish "~a tag delete ~{{~a} ~}" (widget-path object) tag-names)
   object)
 
-(defmethod tag-configure ((txt text) tag option value &rest others)
+(defmethod tag-configure ((object text) tag option value &rest others)
   (format-wish "~a tag configure {~a}~{ {-~(~a~)} {~a}~}"
-               (widget-path txt)
+               (widget-path object)
                (if (stringp tag)
                    tag
                    (format nil "~(~a~)" tag))
                (mapcar #'down (list* option value others)))
-  txt)
+  object)
 
 (defmethod tag-bind ((object text) tag event fun &key (exclusive nil))
   "bind fun to event of the tag of the text widget object"
@@ -522,7 +528,7 @@
 
 (defmethod highlight-text ((object text) start-index
                            &key
-                             (tag-name nil)
+                             (tag-name (create-name "tag"))
                              (end-index (raw-coordinates object)))
   (let ((highlight-foreground (cget object :highlightcolor))
         (highlight-background (cget object :highlightbackground))
@@ -534,6 +540,12 @@
                    :background highlight-background)
     tag-name))
 
+(defmethod highlight-text-line ((object text) line-index &key (tag-name (create-name "tag")))
+  (highlight-text object
+                  (raw-coordinates object)
+                  :end-index `(:line ,line-index :char :end)
+                  :tag-name  tag-name))
+
 (defmethod move-cursor-to ((object text) index)
   (let ((parsed-index (parse-indices index)))
     (format-wish (tclize `(,(widget-path object) " "
@@ -542,7 +554,7 @@
     (values object index)))
 
 (defmethod move-cursor-to-last-visible-line ((object text))
-  (let* ((height (parse-integer (cget object :height)))
+  (let* ((height (window-height object))
          (column (nth-value 1 (cursor-index object)))
          (index  `(:line ,height :char ,column)))
     (move-cursor-to object index)))
@@ -574,6 +586,19 @@
     (multiple-value-bind (lines chars)
       (cursor-index object)
       (move-cursor-to object `(- (:line ,lines :char ,chars) 1 :lines))))
+
+(defmethod width-in-chars ((object text))
+  (let* ((width-in-pixel  (window-width object))
+         (font            (cget object :font))
+         (zero-char-width (font-measure font "0")))
+    (round (/ width-in-pixel zero-char-width))))
+
+(defmethod height-in-chars ((object text))
+  (let* ((height-in-pixel (window-height object))
+         (font            (cget object :font))
+         (font-metrics    (font-metrics font))
+         (font-linespace  (parse-integer (getf font-metrics :linespace))))
+    (round (/ height-in-pixel font-linespace))))
 
 (defmethod make-text-tag-button ((object text)
                                  tag-name
@@ -617,23 +642,23 @@
                (widget-path text) (widget-path text) val)
   val)
 
-(defmethod save-text ((txt text) filename
+(defmethod save-text ((object text) filename
                       &key
                         (if-exists         :supersede)
                         (if-does-not-exist :create))
   "save the content of the text widget into the file <filename>"
-  (let ((data (text txt)))
+  (let ((data (text object)))
     (with-open-file (stream filename
                             :direction         :output
                             :if-exists         if-exists
                             :if-does-not-exist if-does-not-exist)
       (write-sequence data stream)))
-  txt)
+  object)
 
-(defmethod load-text((txt text) filename)
+(defmethod load-text((object text) filename)
   "load the content of the file <filename>"
-  (setf (text txt) (alexandria:read-file-into-string filename))
-  txt)
+  (setf (text object) (alexandria:read-file-into-string filename))
+  object)
 
 ;;; scrolled-text
 
@@ -780,12 +805,12 @@
   (with-inner-text (text-widget object)
     (maximum-lines-number text-widget)))
 
-(defmethod append-text ((txt scrolled-text) text &rest tags )
+(defmethod append-text ((object scrolled-text) text &rest tags )
   (format-wish "~a insert end \"~a\" {~{ ~(~a~)~}}"
-               (widget-path (inner-text txt))
+               (widget-path (inner-text object))
                text
                tags)
-  txt)
+  object)
 
 (defmethod append-line ((object scrolled-text) text &rest tags)
   (with-inner-text (text-widget object)
@@ -797,15 +822,16 @@
 (defmethod (setf text) (new-text (self scrolled-text))
   (setf (text (inner-text self)) new-text))
 
-(defmethod insert-object ((txt scrolled-text) obj)
+(defmethod insert-object ((object scrolled-text) obj)
   (format-wish "~a window create end -window ~a"
-               (widget-path (inner-text txt))
+               (widget-path (inner-text object))
                (widget-path obj))
-  txt)
+  object)
 
-(defmethod see ((txt scrolled-text) pos)
-  (format-wish "~a see {~(~a~)}" (widget-path (inner-text txt)) pos)
-  txt)
+(defmethod see ((object scrolled-text) pos)
+  (with-inner-text (text-widget object)
+    (see text-widget pos)
+    object))
 
 (defmethod insert-window ((object scrolled-text) obj
                           &optional (coordinates (raw-coordinates object)))
@@ -881,6 +907,10 @@
   (with-inner-text (text-widget object)
     (highlight-text text-widget start-index :tag-name tag-name :end-index end-index)))
 
+(defmethod highlight-text-line ((object scrolled-text) line-index &key (tag-name (create-name "tag")))
+  (with-inner-text (text-widget object)
+    (highlight-text-line text-widget line-index :tag-name tag-name)))
+
 (defmethod move-cursor-to ((object scrolled-text) index)
   (with-inner-text (text-widget object)
     (move-cursor-to text-widget index)))
@@ -891,7 +921,7 @@ position  could be  wrong  if  the latest  visible  line  uses a  font
 different from the default (expecially if  such a font is smaller than
 the size of the default one"
   (with-inner-text (text-widget object)
-    (let* ((height               (widget-height text-widget))
+    (let* ((height               (window-height text-widget))
            (font-metrics         (font-metrics (cget object :font)))
            (font-approx-baseline (getf font-metrics :descent))
            (column (nth-value 1 (cursor-index text-widget)))
@@ -920,6 +950,14 @@ the size of the default one"
   (with-inner-text (text-widget object)
     (move-cursor-previous-line text-widget)))
 
+(defmethod width-in-chars ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (width-in-chars text-widget)))
+
+(defmethod height-in-chars ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (height-in-chars text-widget)))
+
 (defmethod search-regexp ((object scrolled-text) pattern start-index
                          &key
                            (end-index (make-indices-end))
@@ -946,6 +984,142 @@ the size of the default one"
                      :end-index        end-index
                      :case-insensitive case-insensitive
                      :accum            accum)))
+
+
+(defclass multifont-listbox (scrolled-text)
+  ((selected-index
+    :initform 0
+    :initarg :selected-index
+    :accessor selected-index)
+   (selected-tag
+    :initform (create-name "tag")
+    :initarg :selected-tag
+    :accessor selected-tag)
+   (items
+    :initform '()
+    :initarg  :items
+    :accessor items)))
+
+(defun set-multifont-listbox-read-only (widget)
+  (with-accessors ((selected-index selected-index)
+                   (selected-tag   selected-tag)
+                   (items          items)) widget
+    (bind (inner-text widget)
+          #$<KeyPress>$
+          (lambda (event)
+            (let ((keycode (event-char event))
+                  (remap-indices-p nil))
+              (cond
+                ((string= keycode nodgui.event-symbols:+up+)
+                 (setf remap-indices-p t)
+                 (setf selected-index (max 0
+                                           (1- selected-index))))
+                ((string= keycode nodgui.event-symbols:+down+)
+                 (setf remap-indices-p t)
+                 (setf selected-index  (rem (1+ selected-index)
+                                            (length items)))))
+              (when remap-indices-p
+                (let ((selected-line-index (1+ selected-index)))
+                   (tag-delete widget selected-tag)
+                   (move-cursor-to widget `(:line ,selected-line-index :char 0))
+                   (setf selected-tag (highlight-text-line widget selected-line-index))
+                   (see widget (raw-coordinates widget))))))
+          :exclusive t)))
+
+(defun sync-multifont-data (widget)
+  (with-accessors ((items          items)
+                   (selected-index selected-index)
+                   (selected-tag   selected-tag)) widget
+    (wait-complete-redraw)
+    (let ((max-line-length (width-in-chars (inner-text widget))))
+      (clear-text widget)
+      (loop for item in items do
+        (let ((padding (- max-line-length (length item))))
+          (if (> padding 0)
+              (append-line widget (strcat item (make-string padding
+                                                            :initial-element #\Space)))
+              (append-line widget item))))
+      (when selected-index
+        (let ((selected-line-index (1+ selected-index)))
+          (see widget `(:line ,selected-line-index :char 0))
+          (move-cursor-to widget `(:line ,selected-line-index :char 0))
+          (setf selected-tag (highlight-text-line widget selected-line-index))))
+      widget)))
+
+(defmethod initialize-instance :after ((object multifont-listbox) &key &allow-other-keys)
+  (set-multifont-listbox-read-only object))
+
+(defmacro with-sync-data ((widget) &body body)
+  (let ((last-form         (a:last-elt body))
+        (all-but-last-form (subseq body 0 (1- (length body)))))
+    `(progn
+       ,@all-but-last-form
+       (prog1
+           ,last-form
+         (sync-multifont-data ,widget)))))
+
+(defmethod listbox-append ((object multifont-listbox) (vals list))
+  (with-sync-data (object)
+    (with-accessors ((items items)) object
+      (loop for value in vals do
+        (let ((reversed-items (nreverse items)))
+          (push value reversed-items)
+          (setf items (nreverse reversed-items)))))))
+
+(defmethod listbox-append ((object multifont-listbox) vals)
+  (listbox-append object (list vals)))
+
+(defun multifont-translate-end-tcl->lisp (end-value)
+  (if (eq end-value :end)
+      nil
+      end-value))
+
+(defmethod listbox-delete ((object multifont-listbox) &optional (start 0) (end :end))
+  (with-sync-data (object)
+    (with-accessors ((items items)) object
+      (let* ((actual-end (multifont-translate-end-tcl->lisp end)))
+        (if (null actual-end)
+            (setf items (subseq items 0 start))
+            (setf items
+                  (append (subseq items 0 start)
+                          (subseq items actual-end))))))))
+
+(defmethod listbox-get-selection-index ((object multifont-listbox))
+  (selected-index object))
+
+(defmethod listbox-get-selection-value ((object multifont-listbox))
+  (elt (items object) (selected-index object)))
+
+(defmethod listbox-values-in-range ((object multifont-listbox) &key (from 0) (to :end))
+  (with-accessors ((items items)) object
+    (let ((actual-end (multifont-translate-end-tcl->lisp to)))
+      (subseq items from actual-end))))
+
+(defmethod listbox-all-values ((object multifont-listbox))
+  (items object))
+
+(defmethod listbox-move-selection ((object multifont-listbox) offset)
+  (with-sync-data (object)
+    (with-accessors ((selected-index selected-index)) object
+      (incf selected-index offset))))
+
+(defmethod listbox-clear  ((object multifont-listbox) &optional (start 0) (end :end))
+  (with-sync-data (object)
+    (let ((actual-end (or (multifont-translate-end-tcl->lisp end)
+                          (length (items object)))))
+      (when (<= start (selected-index object) (1- actual-end))
+        (setf (selected-index object) nil)))))
+
+(defmethod listbox-select ((object multifont-listbox) val)
+  "modify the selection in listbox, if nil is given, the selection is cleared,
+if  a  number   is  given  the  corresponding   element  is  selected,
+alternatively a list of numbers may be given"
+  (with-accessors ((selected-index selected-index)) object
+    (with-sync-data (object)
+      (setf selected-index val))))
+
+(defmethod listbox-size ((object multifont-listbox))
+  (length (items object)))
 
 (defgeneric fit-words-to-text-widget (object text font))
 
