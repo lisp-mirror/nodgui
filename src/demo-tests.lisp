@@ -152,13 +152,17 @@
                                                     :command (lambda ()
                                                                (demo-custom-style))))
            (demo-autocomplete-entry  (make-instance 'button
-                                                    :text "Entry with auto completion"
+                                                    :text "(mw) Entry with auto completion"
                                                     :command (lambda ()
                                                                (demo-autocomplete-entry))))
-           (b-quit              (make-instance  'button
-                                                :text    "quit lisp :)"
-                                                :command (lambda ()
-                                                           (break-mainloop)))))
+           (demo-multifont-listbox    (make-instance 'button
+                                                     :text "(mw) multifont listbox"
+                                                     :command (lambda ()
+                                                                (demo-multifont-listbox))))
+           (b-quit                   (make-instance  'button
+                                                     :text    "quit lisp :)"
+                                                     :command (lambda ()
+                                                                (break-mainloop)))))
       (grid widget                   0 0  :sticky :nswe)
       (grid eyes                     0 1  :sticky :nswe)
       (grid modal                    0 2  :sticky :nswe)
@@ -196,6 +200,7 @@
       (grid demo-multithread         11 1 :sticky :nswe)
       (grid demo-style               11 2 :sticky :nswe)
       (grid demo-autocomplete-entry  12 0 :sticky :nswe)
+      (grid demo-multifont-listbox   12 1 :sticky :nswe)
       (grid b-quit                   13 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
@@ -923,10 +928,8 @@
                                                :weight :bold
                                                :slant  :italic
                                                :underline (lisp-bool->tcl t)))
-             (index-third-line (parse-indices '(:line 3 ; first line starts at '1' not '0'!
-                                                :char 0)))
-             (tag-link-index-start (parse-indices '(+ (:line 6 :char 0) 13 :chars)))
-             (tag-link-index-end   (parse-indices '(+ (:line 6 :char 0) 32 :chars)))
+             (tag-link-index-start (parse-indices '(+ (:line 6 :char 0) 12 :chars)))
+             (tag-link-index-end   (parse-indices '(+ (:line 6 :char 0) 34 :chars)))
              (link-color           (rgb->tk cl-colors2:+blue+))
              (re-matched-color     (rgb->tk cl-colors2:+red+))
              (bell-image           (make-image +bell-icon+)))
@@ -995,6 +998,29 @@
                                                    tag-name
                                                    :underline  (lisp-bool->tcl nil)
                                                    :foreground re-matched-color)))))))))
+
+(defun demo-multifont-listbox ()
+  (with-nodgui ()
+    (let ((listbox (make-instance 'multifont-listbox
+                                  :master *tk*)))
+      (grid listbox 0 0 :sticky :news)
+      (grid-columnconfigure *tk* :all :weight 1)
+      (grid-rowconfigure *tk* :all :weight 1)
+      (wait-complete-redraw)
+      (loop for word in (split-words "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.")
+            do
+               (listbox-append listbox word))
+      (boldify-multifont-item listbox 1 '(1 3 4))
+      (let* ((custom-font     (font-create "sans" :size 14 :overstrike t))
+             (tag-custom-font (tag-create listbox
+                                          (create-tag-name)
+                                          `(:line 3 :char 0)
+                                          `(:line 3 :char 5))))
+        (tag-configure listbox
+                       tag-custom-font
+                       :font       custom-font
+                       :foreground (rgb->tk cl-colors2:+white+)
+                       :background (rgb->tk cl-colors2:+red+))))))
 
 ;; tklib
 

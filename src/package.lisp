@@ -68,6 +68,8 @@
            #:highlight-text-line
            #:raw-coordinates
            #:width-in-chars
+           #:multifont-listbox
+           #:boldify-multifont-item
            #:namestring->pathname
            #:pngp
            #:gifp

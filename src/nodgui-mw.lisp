@@ -1653,19 +1653,6 @@ if  a  number   is  given  the  corresponding   element  is  selected."
 (defmethod listbox-size ((object multifont-listbox))
   (length (items object)))
 
-(defun demo-multifont-listbox ()
-  (with-nodgui ()
-    (let ((listbox (make-instance 'multifont-listbox
-                                  :master *tk*)))
-      (grid listbox 0 0 :sticky :news)
-      (grid-columnconfigure *tk* :all :weight 1)
-      (grid-rowconfigure *tk* :all :weight 1)
-      (wait-complete-redraw)
-      (loop for word in (split-words "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.")
-            do
-               (listbox-append listbox word))
-      (boldify-multifont-item listbox 1 '(1 3 4)))))
-
 (defclass autocomplete-candidates (toplevel)
   ((listbox
     :initform nil
