@@ -55,6 +55,7 @@
                (:file "wish-communication")
                (:file "widget-helpers")
                (:file "widget")
+               (:file "events")
                (:file "photo-image")
                (:file "tkvariable")
                (:file "tktextvariable")
