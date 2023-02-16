@@ -1736,11 +1736,11 @@
 (defpackage :nodgui.mw
   (:use
    :cl
-   :alexandria
    :cl-ppcre
    :nodgui.event-parser
    :nodgui.utils
    :nodgui)
+  (:local-nicknames (:a :alexandria))
   (:export
    #:redraw-on-resize
    #:history-entry

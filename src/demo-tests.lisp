@@ -1240,23 +1240,29 @@
         (pack b)))))
 
 (defun demo-autocomplete-entry ()
-  (with-nodgui ()
-    (let* ((data                  (append '("foo" "bar" "baz")
-                                          (loop for i from 0 to 10 collect
-                                                                   (format nil "~2,'0d" i))))
-           (autocomplete-function (lambda (hint)
-                                    (remove-if-not (lambda (a) (cl-ppcre:scan hint a))
-                                                   data)))
-           (autocomplete-widget   (make-instance 'autocomplete-entry
-                                                 :autocomplete-function autocomplete-function))
-           (button-command        (lambda ()
-                                    (do-msg (format nil
-                                                    "selected ~s~%"
-                                                    (text (entry-widget autocomplete-widget))))))
-           (label                 (make-instance 'label :text "Type a digit or a letter in [aobfrz]"))
-           (button                (make-instance 'button
-                                                 :text "OK"
-                                                 :command button-command)))
-      (grid label               0 0)
-      (grid autocomplete-widget 1 0)
-      (grid button              2 0))))
+  (let ((*debug-tk* t))
+    (with-nodgui ()
+      (let* ((data                  (append '("foo" "bar" "baz")
+                                            (loop for i from 0 to 10 collect
+                                                                     (format nil "~2,'0d" i))))
+             (autocomplete-function (lambda (hint)
+                                      (values (loop for datum in data when (cl-ppcre:scan hint datum)
+                                                    collect datum)
+                                              (loop for datum in data when (cl-ppcre:scan hint datum)
+                                                    collect
+                                                    (multiple-value-bind (start end)
+                                                        (cl-ppcre:scan hint datum)
+                                                      (loop for i from start below end collect i))))))
+             (autocomplete-widget   (make-instance 'autocomplete-entry
+                                                   :autocomplete-function autocomplete-function))
+             (button-command        (lambda ()
+                                      (do-msg (format nil
+                                                      "selected ~s~%"
+                                                      (text (entry-widget autocomplete-widget))))))
+             (label                 (make-instance 'label :text "Type a digit or a letter in [aobfrz]"))
+             (button                (make-instance 'button
+                                                   :text "OK"
+                                                   :command button-command)))
+        (grid label               0 0)
+        (grid autocomplete-widget 1 0)
+        (grid button              2 0)))))

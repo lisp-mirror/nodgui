@@ -152,17 +152,17 @@
                                                     (right-parens-ornament)))))
                          res)))
                 (when history
-                  (when-let* ((sorted-history (sort (copy-list history)
-                                                    (lambda (a b) (> (length a) (length b)))))
-                              (candidates     (remove-if-not (lambda (a)
-                                                               (scan (strcat "^" text-entry)
-                                                                     a))
-                                                             sorted-history))
-                              (prefix         (apply #'common-prefix candidates))
-                              (new-text       (if (> (length candidates) 1)
-                                                  (strcat prefix " "
-                                                          (format-candidates candidates))
-                                                  prefix)))
+                  (a:when-let* ((sorted-history (sort (copy-list history)
+                                                      (lambda (a b) (> (length a) (length b)))))
+                                (candidates     (remove-if-not (lambda (a)
+                                                                 (scan (strcat "^" text-entry)
+                                                                       a))
+                                                               sorted-history))
+                                (prefix         (apply #'common-prefix candidates))
+                                (new-text       (if (> (length candidates) 1)
+                                                    (strcat prefix " "
+                                                            (format-candidates candidates))
+                                                    prefix)))
                     (setf saved-text-entry text-entry)
                     (setf text-entry new-text)
                     (set-cursor-index entry (length prefix))
@@ -940,7 +940,7 @@
           (grid-columnconfigure toplevel 0 :weight 1))))
     res))
 
-(define-constant +date-today-dom-wrapper+  "*" :test #'string=)
+(a:define-constant +date-today-dom-wrapper+  "*" :test #'string=)
 
 (defclass date-picker (frame)
   ((on-pressed-cb
@@ -1495,6 +1495,177 @@
          (constantly t)
          label-options))
 
+(defclass multifont-listbox (scrolled-text)
+  ((selected-index
+    :initform 0
+    :initarg :selected-index
+    :accessor selected-index)
+   (selected-tag
+    :initform (nodgui::create-name "tag")
+    :initarg :selected-tag
+    :accessor selected-tag)
+   (items
+    :initform '()
+    :initarg  :items
+    :accessor items)))
+
+(defun set-multifont-listbox-read-only (widget)
+  (with-accessors ((selected-index selected-index)
+                   (selected-tag   selected-tag)
+                   (items          items)) widget
+    (bind (inner-text widget)
+          #$<KeyPress>$
+          (lambda (event)
+            (let ((keycode (event-char event))
+                  (remap-indices-p nil))
+              (cond
+                ((string= keycode nodgui.event-symbols:+up+)
+                 (setf remap-indices-p t)
+                 (setf selected-index (max 0
+                                           (1- selected-index))))
+                ((string= keycode nodgui.event-symbols:+down+)
+                 (setf remap-indices-p t)
+                 (setf selected-index  (rem (1+ selected-index)
+                                            (length items)))))
+              (when remap-indices-p
+                (let ((selected-line-index (1+ selected-index)))
+                   (tag-delete widget selected-tag)
+                   (move-cursor-to widget `(:line ,selected-line-index :char 0))
+                   (setf selected-tag (nodgui::highlight-text-line widget selected-line-index))
+                   (see widget (nodgui::raw-coordinates widget))))))
+          :exclusive t)))
+
+(defun sync-multifont-data (widget)
+  (with-accessors ((items          items)
+                   (selected-index selected-index)
+                   (selected-tag   selected-tag)) widget
+    (wait-complete-redraw)
+    (let ((max-line-length (nodgui::width-in-chars (inner-text widget))))
+      (clear-text widget)
+      (loop for item in items do
+        (let ((padding (- max-line-length (length item))))
+          (if (> padding 0)
+              (append-line widget (strcat item (make-string padding
+                                                            :initial-element #\Space)))
+              (append-line widget item))))
+      (when selected-index
+        (let ((selected-line-index (1+ selected-index)))
+          (see widget `(:line ,selected-line-index :char 0))
+          (move-cursor-to widget `(:line ,selected-line-index :char 0))
+          (setf selected-tag (nodgui::highlight-text-line widget selected-line-index))))
+      widget)))
+
+(defun boldify-multifont-item (widget line bold-char-indices)
+  (loop for index in bold-char-indices do
+    (let ((tag-name (nodgui::create-name "tag")))
+      (tag-create widget
+                  tag-name
+                  `(:line ,line :char ,index)
+                  `(:line ,line :char ,(1+ index)))
+      (tag-configure widget
+                     tag-name
+                     :font "bold"))))
+
+(defmethod initialize-instance :after ((object multifont-listbox) &key &allow-other-keys)
+  (set-multifont-listbox-read-only object)
+  (configure object :wrap :none)
+  (bind (inner-text object)
+        #$<ButtonPress-1>$
+        (lambda (e)
+          (declare (ignore e))
+          (let* ((new-selected-line  (cursor-index object))
+                 (new-selected-index (1- new-selected-line)))
+            (when (and (>= new-selected-index 0)
+                       (<  new-selected-index (listbox-size object)))
+              (listbox-select object new-selected-index))))))
+
+(defmacro with-sync-data ((widget) &body body)
+  (let ((last-form         (a:last-elt body))
+        (all-but-last-form (subseq body 0 (1- (length body)))))
+    `(progn
+       ,@all-but-last-form
+       (prog1
+           ,last-form
+         (sync-multifont-data ,widget)))))
+
+(defmethod listbox-append ((object multifont-listbox) (vals list))
+  (with-sync-data (object)
+    (with-accessors ((items items)) object
+      (loop for value in vals do
+        (let ((reversed-items (nreverse items)))
+          (push value reversed-items)
+          (setf items (nreverse reversed-items)))))))
+
+(defmethod listbox-append ((object multifont-listbox) vals)
+  (listbox-append object (list vals)))
+
+(defun multifont-translate-end-tcl->lisp (end-value)
+  (if (eq end-value :end)
+      nil
+      end-value))
+
+(defmethod listbox-delete ((object multifont-listbox) &optional (start 0) (end :end))
+  (with-sync-data (object)
+    (with-accessors ((items items)) object
+      (let* ((actual-end (multifont-translate-end-tcl->lisp end)))
+        (if (null actual-end)
+            (setf items (subseq items 0 start))
+            (setf items
+                  (append (subseq items 0 start)
+                          (subseq items actual-end))))))))
+
+(defmethod listbox-get-selection-index ((object multifont-listbox))
+  (list (selected-index object)))
+
+(defmethod listbox-get-selection-value ((object multifont-listbox))
+  (list (elt (items object) (selected-index object))))
+
+(defmethod listbox-values-in-range ((object multifont-listbox) &key (from 0) (to :end))
+  (with-accessors ((items items)) object
+    (let ((actual-end (multifont-translate-end-tcl->lisp to)))
+      (subseq items from actual-end))))
+
+(defmethod listbox-all-values ((object multifont-listbox))
+  (items object))
+
+(defmethod listbox-move-selection ((object multifont-listbox) offset)
+  (with-sync-data (object)
+    (with-accessors ((selected-index selected-index)) object
+      (incf selected-index offset))))
+
+(defmethod listbox-clear  ((object multifont-listbox) &optional (start 0) (end :end))
+  (with-sync-data (object)
+    (let ((actual-end (or (multifont-translate-end-tcl->lisp end)
+                          (length (items object)))))
+      (when (<= start (selected-index object) (1- actual-end))
+        (setf (selected-index object) nil)))))
+
+(defmethod listbox-select ((object multifont-listbox) (val number))
+  "modify the selection in listbox, if nil is given, the selection is cleared,
+if  a  number   is  given  the  corresponding   element  is  selected."
+  (with-accessors ((selected-index selected-index)) object
+    (with-sync-data (object)
+      (setf selected-index val))))
+
+(defmethod listbox-select ((object multifont-listbox) (val null))
+  (listbox-clear object))
+
+(defmethod listbox-size ((object multifont-listbox))
+  (length (items object)))
+
+(defun demo-multifont-listbox ()
+  (with-nodgui ()
+    (let ((listbox (make-instance 'multifont-listbox
+                                  :master *tk*)))
+      (grid listbox 0 0 :sticky :news)
+      (grid-columnconfigure *tk* :all :weight 1)
+      (grid-rowconfigure *tk* :all :weight 1)
+      (wait-complete-redraw)
+      (loop for word in (split-words "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.")
+            do
+               (listbox-append listbox word))
+      (boldify-multifont-item listbox 1 '(1 3 4)))))
+
 (defclass autocomplete-candidates (toplevel)
   ((listbox
     :initform nil
@@ -1506,9 +1677,8 @@
     :accessor attached-entry)))
 
 (defmethod initialize-instance :after ((object autocomplete-candidates) &key &allow-other-keys)
-  (setf (listbox object) (make-instance 'listbox
-                                        :master object
-                                        :selectmode :single))
+  (setf (listbox object) (make-instance 'multifont-listbox
+                                        :master object))
   (set-wm-overrideredirect object 1)
   (pack (listbox object) :side :left :expand t :fill :both)
   (hide-candidates object))
@@ -1581,7 +1751,7 @@
 
 (defmethod see ((object autocomplete-candidates) pos)
   (with-accessors ((listbox listbox)) object
-    (see listbox pos)))
+    (see listbox `(:line ,(1+ pos) :char 0))))
 
 (defclass autocomplete-entry ()
   ((entry-widget
@@ -1594,11 +1764,18 @@
     :accessor  candidates-widget
     :type     (or null autocomplete-candidates))
    (autocomplete-function
-    :initform (lambda (hint) (list hint))
+    :initform (lambda (hint) (values hint '()))
     :initarg  :autocomplete-function
     :accessor autocomplete-function
     :type     function
-    :documentation "A function that accepts a single parameter and return a list of candidates (or nil) that matches `hint' and are suitable to complete the text contained in the entry."))
+    :documentation "A function that accepts a single parameter and return two values:
+ - the list of candidates (or nil) that matches `hint' and are suitable to complete the text contained in the entry;
+- a list where each element is a list of index value that idicates the matching character in the corresponding string, for example:
+
+first value:  (\"foo\" \"school\")
+second value: ((1 2) (3 4))
+
+The matching character are the two 'o' in the candidates."))
   (:documentation
    "A text  entry that display in  a listbox, the possible  candidates to
 complete the  text input.  Clicking on  a listbox  item will  fill the
@@ -1653,7 +1830,7 @@ will shift the selected item up o down respectively."))
 (defun autocomplete-click-1-clsr (candidates-widget entry-widget)
   (lambda (event)
     (declare (ignore event))
-    (when-let ((selected (listbox-get-selection-value candidates-widget)))
+    (a:when-let ((selected (listbox-get-selection-value candidates-widget)))
       (setf (text entry-widget)
             (first selected))
       (set-cursor-index entry-widget :end)
@@ -1663,16 +1840,21 @@ will shift the selected item up o down respectively."))
 (defun autocomplete-keypress-clsr (candidates-widget entry-widget autocomplete-function)
   (lambda (event)
     (declare (ignore event))
-    (let* ((hint (text entry-widget))
-           (data (funcall autocomplete-function
-                          (text entry-widget))))
+    (let ((hint (text entry-widget)))
+      (multiple-value-bind (candidates matching-indices)
+           (funcall autocomplete-function hint)
       (if (string-empty-p hint)
           (hide-candidates candidates-widget)
           (progn
             (listbox-delete candidates-widget)
-            (listbox-append candidates-widget data)
+            (listbox-append candidates-widget candidates)
             (listbox-select candidates-widget 0)
-            (show-candidates candidates-widget))))))
+            (when matching-indices
+              (loop for i from 0 below (length matching-indices) do
+                (boldify-multifont-item (listbox candidates-widget)
+                                        (1+ i)
+                                        (elt matching-indices i))))
+            (show-candidates candidates-widget)))))))
 
 (defun scroll-candidates (candidates-widget offset)
   (lambda (event)
@@ -1709,8 +1891,12 @@ will shift the selected item up o down respectively."))
                                           (loop for i from 0 to 10 collect
                                                                    (format nil "~2,'0d" i))))
            (autocomplete-function (lambda (hint)
-                                    (remove-if-not (lambda (a) (cl-ppcre:scan hint a))
-                                                   data)))
+                                    (loop for datum in data when (cl-ppcre:scan hint datum)
+                                          collect
+                                          (multiple-value-bind (start end)
+                                              (cl-ppcre:scan hint datum)
+                                              (values (loop for i from start below end collect i)
+                                                      datum)))))
            (autocomplete-widget   (make-instance 'autocomplete-entry
                                                  :autocomplete-function autocomplete-function))
            (button-command        (lambda ()

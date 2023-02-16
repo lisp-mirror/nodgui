@@ -132,15 +132,24 @@ can be passed to AFTER-CANCEL"
    "target" "tcross" "top_left_arrow" "top_left_corner" "top_right_corner"
    "top_side" "top_tee" "trek" "ul_angle" "umbrella" "ur_angle" "watch" "xterm"))
 
+(defgeneric find-cursor (object))
+
+(defmethod find-cursor ((object symbol))
+  (if (eq object :x-cursor)
+      "X_cursor"
+      (let* ((old-pointer-name (symbol-name object))
+             (new-pointername  (string-downcase (cl-ppcre:regex-replace-all "-"
+                                                                            old-pointer-name
+                                                                            "_"))))
+        (find-cursor new-pointername))))
+
+(defmethod find-cursor ((object string))
+  (find object *cursors* :test #'string=))
+
 (defun configure-mouse-pointer (widget pointer-shape-name)
-  (let* ((old-pointer-name (if (stringp pointer-shape-name)
-                               pointer-shape-name
-                               (symbol-name pointer-shape-name)))
-         (new-pointername  (string-downcase (cl-ppcre:regex-replace-all "-"
-                                                                        old-pointer-name
-                                                                        "_"))))
-    (assert (member new-pointername *cursors* :test #'string=))
-    (configure widget :cursor new-pointername)
+  (let ((cursor (find-cursor pointer-shape-name)))
+    (assert cursor)
+    (configure widget :cursor cursor)
     widget))
 
 (defun bell ()
