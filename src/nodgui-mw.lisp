@@ -1501,7 +1501,7 @@
     :initarg :selected-index
     :accessor selected-index)
    (selected-tag
-    :initform (nodgui::create-name "tag")
+    :initform (create-tag-name)
     :initarg :selected-tag
     :accessor selected-tag)
    (items
@@ -1531,8 +1531,8 @@
                 (let ((selected-line-index (1+ selected-index)))
                    (tag-delete widget selected-tag)
                    (move-cursor-to widget `(:line ,selected-line-index :char 0))
-                   (setf selected-tag (nodgui::highlight-text-line widget selected-line-index))
-                   (see widget (nodgui::raw-coordinates widget))))))
+                   (setf selected-tag (highlight-text-line widget selected-line-index))
+                   (see widget (raw-coordinates widget))))))
           :exclusive t)))
 
 (defun sync-multifont-data (widget)
@@ -1540,7 +1540,7 @@
                    (selected-index selected-index)
                    (selected-tag   selected-tag)) widget
     (wait-complete-redraw)
-    (let ((max-line-length (nodgui::width-in-chars (inner-text widget))))
+    (let ((max-line-length (width-in-chars (inner-text widget))))
       (clear-text widget)
       (loop for item in items do
         (let ((padding (- max-line-length (length item))))
@@ -1552,12 +1552,12 @@
         (let ((selected-line-index (1+ selected-index)))
           (see widget `(:line ,selected-line-index :char 0))
           (move-cursor-to widget `(:line ,selected-line-index :char 0))
-          (setf selected-tag (nodgui::highlight-text-line widget selected-line-index))))
+          (setf selected-tag (highlight-text-line widget selected-line-index))))
       widget)))
 
 (defun boldify-multifont-item (widget line bold-char-indices)
   (loop for index in bold-char-indices do
-    (let ((tag-name (nodgui::create-name "tag")))
+    (let ((tag-name (create-tag-name)))
       (tag-create widget
                   tag-name
                   `(:line ,line :char ,index)

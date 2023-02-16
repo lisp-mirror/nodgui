@@ -534,11 +534,11 @@
 
 (defmethod highlight-text ((object text) start-index
                            &key
-                             (tag-name (create-name "tag"))
+                             (tag-name (create-tag-name))
                              (end-index (raw-coordinates object)))
   (let ((highlight-foreground (cget object :highlightcolor))
         (highlight-background (cget object :highlightbackground))
-        (tag-name             (or tag-name (create-name "tag"))))
+        (tag-name             (or tag-name (create-tag-name))))
     (tag-create object tag-name start-index end-index)
     (tag-configure object
                    tag-name
@@ -546,7 +546,7 @@
                    :background highlight-background)
     tag-name))
 
-(defmethod highlight-text-line ((object text) line-index &key (tag-name (create-name "tag")))
+(defmethod highlight-text-line ((object text) line-index &key (tag-name (create-tag-name)))
   (highlight-text object
                   (raw-coordinates object)
                   :end-index `(:line ,line-index :char :end)
@@ -914,7 +914,7 @@
   (with-inner-text (text-widget object)
     (highlight-text text-widget start-index :tag-name tag-name :end-index end-index)))
 
-(defmethod highlight-text-line ((object scrolled-text) line-index &key (tag-name (create-name "tag")))
+(defmethod highlight-text-line ((object scrolled-text) line-index &key (tag-name (create-tag-name)))
   (with-inner-text (text-widget object)
     (highlight-text-line text-widget line-index :tag-name tag-name)))
 

@@ -371,7 +371,7 @@ example:
                            '(:plus  :cross :circle
                              :up    :down  :dot
                              :upfilled :downfilled)))
-           (setf (handle series) (strcat "series_" (nodgui::create-name)))
+           (setf (handle series) (strcat "series_" (create-name)))
            (let* ((size-as-num        (size series))
                   (size               (nodgui::process-coords size-as-num))
                   (displayed-symbol   (keyword->tcl (value-symbol series)
@@ -441,7 +441,7 @@ example:
 
 (defmethod bind-last (object (series event-responsive-series) event fn)
   "Set the callback bound to the last added point"
-  (let ((name (nodgui::create-name))
+  (let ((name (create-name))
         (*suppress-newline-for-tcl-statements* t))
     (with-accessors ((handle handle)) object
       (nodgui::add-callback name fn)
@@ -461,7 +461,7 @@ example:
 (defmethod bind ((object dot-plot) event fun &key append exclusive)
   "Bind fun to event of the plot (to bind the data see 'bind-data')"
   (declare (ignore append exclusive))
-  (let ((name (nodgui::create-name))
+  (let ((name (create-name))
         (*suppress-newline-for-tcl-statements* t))
     (with-accessors ((handle     handle)
                      (all-series all-series)) object
@@ -536,7 +536,7 @@ example:
       ;; add title
       (format-wish (tclize `(,handle title {+ ,title })))
       (loop for series in all-series do
-           (setf (handle series) (strcat "series_" (nodgui::create-name)))
+           (setf (handle series) (strcat "series_" (create-name)))
            (let ((*suppress-newline-for-tcl-statements* t)
                  (ys (process-coords (ys series))))
              (format-wish (tclize `(,handle " "

@@ -95,6 +95,9 @@ can be passed to AFTER-CANCEL"
   "create unique widget name, append unique number to 'n'"
   (format nil "~@[~a~]n~a" prefix (encode-base-52 (get-counter))))
 
+(defun create-tag-name ()
+  (create-name "tag"))
+
 (defun create-path (master name)
   "create pathname from master widget <master> and widget name <name>"
   (let ((master-path (if (or (null master)

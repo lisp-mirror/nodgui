@@ -61,6 +61,13 @@
            #:file-exists-p
            #:split-path-elements
            #:create-file
+           #:find-cursor
+           #:find-cursor
+           #:create-name
+           #:create-tag-name
+           #:highlight-text-line
+           #:raw-coordinates
+           #:width-in-chars
            #:namestring->pathname
            #:pngp
            #:gifp
