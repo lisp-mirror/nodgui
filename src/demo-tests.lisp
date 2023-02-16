@@ -928,7 +928,7 @@
              (tag-link-index-start (parse-indices '(+ (:line 6 :char 0) 13 :chars)))
              (tag-link-index-end   (parse-indices '(+ (:line 6 :char 0) 32 :chars)))
              (link-color           (rgb->tk cl-colors2:+blue+))
-             (re-matched-color     (rgb->tk cl-colors2:+grey+))
+             (re-matched-color     (rgb->tk cl-colors2:+red+))
              (bell-image           (make-image +bell-icon+)))
         (configure text-widget :font default-font)
         (configure text-widget :wrap :word)

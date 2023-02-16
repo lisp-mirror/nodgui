@@ -483,7 +483,7 @@
                                      ,size :chars)))
               (if tag-matching-region
                   (let ((tag-name  (create-name "tagre")))
-                    (tag-create object tag-name indices end-index)
+                    (tag-create object tag-name re-start-index re-end-index)
                     (values re-start-index re-end-index tag-name lines chars size))
                   (values re-start-index re-end-index nil lines chars size)))))))))
 
