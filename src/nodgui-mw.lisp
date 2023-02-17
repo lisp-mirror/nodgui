@@ -1675,6 +1675,7 @@ if  a  number   is  given  the  corresponding   element  is  selected."
 
 (defun show-candidates (candidates)
   (with-accessors ((attached-entry attached-entry)) candidates
+    (wait-complete-redraw)
     (let ((x-entry (root-x attached-entry))
           (y-entry (root-y attached-entry))
           (h-entry (window-height attached-entry)))
