@@ -1273,6 +1273,7 @@
            #:*wish-args*
            #:*wish-pathname*
            #:*default-nodgui-debugger*
+           #:*force-sync-data-multifont-listbox*
            #:add-pane
            #:add-separator
            #:after

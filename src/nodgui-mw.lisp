@@ -1579,6 +1579,8 @@
                        (<  new-selected-index (listbox-size object)))
               (listbox-select object new-selected-index))))))
 
+(defparameter *force-sync-data-multifont-listbox* t)
+
 (defmacro with-sync-data ((widget) &body body)
   (let ((last-form         (a:last-elt body))
         (all-but-last-form (subseq body 0 (1- (length body)))))
@@ -1586,7 +1588,8 @@
        ,@all-but-last-form
        (prog1
            ,last-form
-         (sync-multifont-data ,widget)))))
+         (when *force-sync-data-multifont-listbox*
+           (sync-multifont-data ,widget))))))
 
 (defmethod listbox-append ((object multifont-listbox) (vals list))
   (with-sync-data (object)
@@ -1832,10 +1835,11 @@ will shift the selected item up o down respectively."))
            (funcall autocomplete-function hint)
       (if (string-empty-p hint)
           (hide-candidates candidates-widget)
-          (progn
+          (let ((*force-sync-data-multifont-listbox* nil))
             (listbox-delete candidates-widget)
             (listbox-append candidates-widget candidates)
             (listbox-select candidates-widget 0)
+            (sync-multifont-data (listbox candidates-widget))
             (when matching-indices
               (loop for i from 0 below (length matching-indices) do
                 (boldify-multifont-item (listbox candidates-widget)
