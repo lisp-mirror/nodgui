@@ -26,7 +26,7 @@
 (defmacro gen-wm-type-constants (&rest names)
   `(progn
      ,@(loop for name in names collect
-            `(gen-wm-constant ,name type))))
+            `(gen-wm-constant ,name wm-type))))
 
 (gen-wm-type-constants
  desktop
@@ -48,7 +48,7 @@
   (alpha       1.0)
   (fullscreen  0)
   (topmost     0)
-  (type        +type-normal+)
+  (type        +wm-type-normal+)
   (zoomed      0))
 
 (defgeneric resizable (widget x y))

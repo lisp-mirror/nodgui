@@ -62,7 +62,6 @@
            #:split-path-elements
            #:create-file
            #:find-cursor
-           #:find-cursor
            #:create-name
            #:create-tag-name
            #:highlight-text-line
@@ -1243,20 +1242,21 @@
   (:local-nicknames (:a :alexandria)
                     (:p :esrap))
   (:export #:syntax
-           #:+type-desktop+
-           #:+type-dock+
-           #:+type-toolbar+
-           #:+type-menu+
-           #:+type-utility+
-           #:+type-splash+
-           #:+type-dialog+
-           #:+type-dropdown_menu+
-           #:+type-popup_menu+
-           #:+type-tooltip+
-           #:+type-notification+
-           #:+type-combo+
-           #:+type-dnd+
-           #:+type-normal+
+           #:+wm-type-desktop+
+           #:+wm-type-dock+
+           #:+wm-type-toolbar+
+           #:+wm-type-menu+
+           #:+wm-type-utility+
+           #:+wm-type-splash+
+           #:+wm-type-dialog+
+           #:+wm-type-dropdown_menu+
+           #:+wm-type-popup_menu+
+           #:+wm-type-tooltip+
+           #:+wm-type-notification+
+           #:+wm-type-combo+
+           #:+wm-type-dnd+
+           #:+wm-type-normal+
+           #:+standard-cursor+
            #:*cursors*
            #:*debug-tk*
            #:*debug-buffers*
