@@ -1798,7 +1798,7 @@
    #:message-with-timeout
    #:message-with-timeout-callback
    #:autocomplete-entry
-   #:entry-widget
+   #:sutocomplete-entry-widget
    #:candidates-widget
    #:autocomplete-function))
 

@@ -1745,10 +1745,10 @@ if  a  number   is  given  the  corresponding   element  is  selected."
     (see listbox `(:line ,(1+ pos) :char 0))))
 
 (defclass autocomplete-entry ()
-  ((entry-widget
+  ((autocomplete-entry-widget
     :initform nil
-    :initarg :entry-widget
-    :accessor entry-widget)
+    :initarg :autocomplete-entry-widget
+    :accessor autocomplete-entry-widget)
    (candidates-widget
     :initform (make-instance 'autocomplete-candidates)
     :initarg  :candidates-widget
@@ -1786,7 +1786,7 @@ will shift the selected item up o down respectively."))
                    ipadx
                    ipady
                    anchor)
-  (pack (entry-widget object)
+  (pack (autocomplete-entry-widget object)
         :side   side
         :fill   fill
         :expand expand
@@ -1807,7 +1807,7 @@ will shift the selected item up o down respectively."))
                    pady
                    rowspan
                    sticky)
-  (grid (entry-widget object)
+  (grid (autocomplete-entry-widget object)
         row
         column
         :columnspan columnspan
@@ -1818,20 +1818,21 @@ will shift the selected item up o down respectively."))
         :rowspan    rowspan
         :sticky     sticky))
 
-(defun autocomplete-click-1-clsr (candidates-widget entry-widget)
+(defun autocomplete-click-1-clsr (candidates-widget autocomplete-entry-widget)
   (lambda (event)
     (declare (ignore event))
     (a:when-let ((selected (listbox-get-selection-value candidates-widget)))
-      (setf (text entry-widget)
-            (first selected))
-      (set-cursor-index entry-widget :end)
-      (focus entry-widget)
+      (setf (text autocomplete-entry-widget) (first selected))
+      (set-cursor-index autocomplete-entry-widget :end)
+      (focus autocomplete-entry-widget)
       (hide-candidates candidates-widget))))
 
-(defun autocomplete-keypress-clsr (candidates-widget entry-widget autocomplete-function)
+(defun autocomplete-keypress-clsr (candidates-widget
+                                   autocomplete-entry-widget
+                                   autocomplete-function)
   (lambda (event)
     (declare (ignore event))
-    (let ((hint (text entry-widget)))
+    (let ((hint (text autocomplete-entry-widget)))
       (multiple-value-bind (candidates matching-indices)
            (funcall autocomplete-function hint)
       (if (string-empty-p hint)
@@ -1856,26 +1857,29 @@ will shift the selected item up o down respectively."))
 
 (defmethod initialize-instance :after ((object autocomplete-entry)
                                        &key (master nil) &allow-other-keys)
-  (with-accessors ((entry-widget          entry-widget)
-                   (candidates-widget     candidates-widget)
-                   (autocomplete-function autocomplete-function)) object
-    (setf entry-widget (make-instance 'entry :master master))
-    (setf (attached-entry candidates-widget) entry-widget)
-    (bind candidates-widget #$<1>$ (autocomplete-click-1-clsr candidates-widget entry-widget))
-    (bind entry-widget #$<KeyPress-Down>$ (scroll-candidates candidates-widget 1))
-    (bind entry-widget #$<KeyPress-Up>$ (scroll-candidates candidates-widget -1))
-    (bind entry-widget #$<KeyPress-Tab>$ (autocomplete-click-1-clsr candidates-widget entry-widget)
+  (with-accessors ((autocomplete-entry-widget autocomplete-entry-widget)
+                   (candidates-widget         candidates-widget)
+                   (autocomplete-function     autocomplete-function)) object
+    (setf autocomplete-entry-widget (make-instance 'entry :master master))
+    (setf (attached-entry candidates-widget) autocomplete-entry-widget)
+    (bind candidates-widget #$<1>$ (autocomplete-click-1-clsr candidates-widget
+                                                              autocomplete-entry-widget))
+    (bind autocomplete-entry-widget #$<KeyPress-Down>$ (scroll-candidates candidates-widget 1))
+    (bind autocomplete-entry-widget #$<KeyPress-Up>$ (scroll-candidates candidates-widget -1))
+    (bind autocomplete-entry-widget
+          #$<KeyPress-Tab>$
+          (autocomplete-click-1-clsr candidates-widget autocomplete-entry-widget)
           :exclusive t)
-    (bind entry-widget
+    (bind autocomplete-entry-widget
           #$<KeyPress>$
-          (autocomplete-keypress-clsr candidates-widget entry-widget autocomplete-function)
+          (autocomplete-keypress-clsr candidates-widget autocomplete-entry-widget autocomplete-function)
           :append t)))
 
 (defmethod configure ((object autocomplete-entry) option value &rest others)
-  (apply #'configure (entry-widget object) option value others))
+  (apply #'configure (autocomplete-entry-widget object) option value others))
 
 (defmethod text ((object autocomplete-entry))
-  (text (entry-widget object)))
+  (text (autocomplete-entry-widget object)))
 
 (defun autocomplete-entry-test ()
   (with-nodgui ()
@@ -1894,7 +1898,7 @@ will shift the selected item up o down respectively."))
            (button-command        (lambda ()
                                     (do-msg (format nil
                                                     "selected ~s~%"
-                                                    (text (entry-widget autocomplete-widget))))))
+                                                    (text (autocomplete-entry-widget autocomplete-widget))))))
            (button                (make-instance 'button
                                                  :text "OK"
                                                  :command button-command)))

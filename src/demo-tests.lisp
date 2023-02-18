@@ -1284,8 +1284,9 @@
              (button-command        (lambda ()
                                       (do-msg (format nil
                                                       "selected ~s~%"
-                                                      (text (entry-widget autocomplete-widget))))))
-             (label                 (make-instance 'label :text "Type a digit or a letter in [aobfrz]"))
+                                                      (text autocomplete-widget)))))
+             (label                 (make-instance 'label
+                                                   :text "Type a digit or a letter in [aobfrz]"))
              (button                (make-instance 'button
                                                    :text "OK"
                                                    :command button-command)))
