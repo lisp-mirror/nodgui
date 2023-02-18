@@ -1509,6 +1509,21 @@
     :initarg  :items
     :accessor items)))
 
+(defun autocomplete-shift-selected-index (widget offset)
+  (with-accessors ((selected-index selected-index)
+                   (items          items)) widget
+    (let ((new-index (max 0 (+ selected-index offset))))
+     (setf selected-index (rem new-index (length items))))))
+
+(defun autocomplete-highlight-selected (widget)
+  (with-accessors ((selected-index selected-index)
+                   (selected-tag   selected-tag)) widget
+    (let ((selected-line-index (1+ selected-index)))
+      (tag-delete widget selected-tag)
+      (move-cursor-to widget `(:line ,selected-line-index :char 0))
+      (setf selected-tag (highlight-text-line widget selected-line-index))
+      (see widget (raw-coordinates widget)))))
+
 (defun set-multifont-listbox-read-only (widget)
   (with-accessors ((selected-index selected-index)
                    (selected-tag   selected-tag)
@@ -1516,23 +1531,12 @@
     (bind (inner-text widget)
           #$<KeyPress>$
           (lambda (event)
-            (let ((keycode (event-char event))
-                  (remap-indices-p nil))
+            (let ((keycode (event-char event)))
               (cond
                 ((string= keycode nodgui.event-symbols:+up+)
-                 (setf remap-indices-p t)
-                 (setf selected-index (max 0
-                                           (1- selected-index))))
+                 (listbox-move-selection widget -1))
                 ((string= keycode nodgui.event-symbols:+down+)
-                 (setf remap-indices-p t)
-                 (setf selected-index  (rem (1+ selected-index)
-                                            (length items)))))
-              (when remap-indices-p
-                (let ((selected-line-index (1+ selected-index)))
-                   (tag-delete widget selected-tag)
-                   (move-cursor-to widget `(:line ,selected-line-index :char 0))
-                   (setf selected-tag (highlight-text-line widget selected-line-index))
-                   (see widget (raw-coordinates widget))))))
+                 (listbox-move-selection widget 1)))))
           :exclusive t)))
 
 (defun sync-multifont-data (widget)
@@ -1632,9 +1636,15 @@
   (items object))
 
 (defmethod listbox-move-selection ((object multifont-listbox) offset)
-  (with-sync-data (object)
-    (with-accessors ((selected-index selected-index)) object
-      (incf selected-index offset))))
+  (with-accessors ((selected-index selected-index)
+                   (selected-tag   selected-tag)) object
+    (autocomplete-shift-selected-index object offset)
+    (autocomplete-highlight-selected object)
+    (let ((selected-line-index (1+ selected-index)))
+      (tag-delete object selected-tag)
+      (move-cursor-to object `(:line ,selected-line-index :char 0))
+      (setf selected-tag (highlight-text-line object selected-line-index))
+      (see object (raw-coordinates object)))))
 
 (defmethod listbox-clear  ((object multifont-listbox) &optional (start 0) (end :end))
   (with-sync-data (object)
