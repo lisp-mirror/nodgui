@@ -1296,6 +1296,8 @@
            #:match-tag-name
            #:search-all-text
            #:search-regexp
+           #:make-indices-start
+           #:make-indices-end
            #:tag-create
            #:tag-delete
            #:highlight-text
