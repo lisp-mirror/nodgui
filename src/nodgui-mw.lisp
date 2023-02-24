@@ -1708,6 +1708,9 @@ if  a  number   is  given  the  corresponding   element  is  selected."
   (listbox-append (listbox l) values)
   l)
 
+(defmethod listbox-size ((l autocomplete-candidates))
+  (listbox-size (listbox l)))
+
 (defmethod listbox-get-selection ((l autocomplete-candidates))
   (listbox-get-selection (listbox l)))
 
@@ -1841,23 +1844,26 @@ will shift the selected item up o down respectively."))
                                    autocomplete-entry-widget
                                    autocomplete-function)
   (lambda (event)
-    (declare (ignore event))
-    (let ((hint (text autocomplete-entry-widget)))
-      (multiple-value-bind (candidates matching-indices)
-           (funcall autocomplete-function hint)
-      (if (string-empty-p hint)
-          (hide-candidates candidates-widget)
-          (let ((*force-sync-data-multifont-listbox* nil))
-            (listbox-delete candidates-widget)
-            (listbox-append candidates-widget candidates)
-            (listbox-select candidates-widget 0)
-            (sync-multifont-data (listbox candidates-widget))
-            (when matching-indices
-              (loop for i from 0 below (length matching-indices) do
-                (boldify-multifont-item (listbox candidates-widget)
-                                        (1+ i)
-                                        (elt matching-indices i))))
-            (show-candidates candidates-widget)))))))
+    (when (or (nodgui.event-symbols:keysym-printable-p (event-char-code event))
+              (string= (event-char event) "BackSpace")
+              (string= (event-char event) "Delete"))
+      (let ((hint (text autocomplete-entry-widget)))
+        (multiple-value-bind (candidates matching-indices)
+            (funcall autocomplete-function hint)
+          (if (string-empty-p hint)
+              (hide-candidates candidates-widget)
+              (let ((*force-sync-data-multifont-listbox* nil))
+                (listbox-delete candidates-widget)
+                (listbox-append candidates-widget candidates)
+                (when (> (listbox-size candidates-widget) 0)
+                  (listbox-select candidates-widget 0)
+                  (sync-multifont-data (listbox candidates-widget))
+                  (when matching-indices
+                    (loop for i from 0 below (length matching-indices) do
+                      (boldify-multifont-item (listbox candidates-widget)
+                                              (1+ i)
+                                              (elt matching-indices i))))
+                  (show-candidates candidates-widget)))))))))
 
 (defun scroll-candidates (candidates-widget offset)
   (lambda (event)
