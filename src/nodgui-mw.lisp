@@ -1509,13 +1509,13 @@
     :initarg  :items
     :accessor items)))
 
-(defun autocomplete-shift-selected-index (widget offset)
+(defun %multifont-listbox-shift-selected-index (widget offset)
   (with-accessors ((selected-index selected-index)
                    (items          items)) widget
     (let ((new-index (max 0 (+ selected-index offset))))
      (setf selected-index (rem new-index (length items))))))
 
-(defun autocomplete-highlight-selected (widget)
+(defun %multifont-listbox-highlight-selected (widget)
   (with-accessors ((selected-index selected-index)
                    (selected-tag   selected-tag)) widget
     (let ((selected-line-index (1+ selected-index)))
@@ -1638,8 +1638,8 @@
 (defmethod listbox-move-selection ((object multifont-listbox) offset)
   (with-accessors ((selected-index selected-index)
                    (selected-tag   selected-tag)) object
-    (autocomplete-shift-selected-index object offset)
-    (autocomplete-highlight-selected object)
+    (%multifont-listbox-shift-selected-index object offset)
+    (%multifont-listbox-highlight-selected object)
     (let ((selected-line-index (1+ selected-index)))
       (tag-delete object selected-tag)
       (move-cursor-to object `(:line ,selected-line-index :char 0))
