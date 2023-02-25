@@ -448,6 +448,8 @@
                            :accum             (push results accum)))
         accum)))
 
+(a:define-constant +text-tag-prefix-search-results+ "tgre" :test #'string=)
+
 (defmethod search-regexp ((object text) pattern start-index
                          &key
                           (end-index (make-indices-end))
@@ -482,7 +484,7 @@
                   (re-end-index  `(+ (:line ,lines :char ,chars)
                                      ,size :chars)))
               (if tag-matching-region
-                  (let ((tag-name  (create-name "tagre")))
+                  (let ((tag-name  (create-name +text-tag-prefix-search-results+)))
                     (tag-create object tag-name re-start-index re-end-index)
                     (values re-start-index re-end-index tag-name lines chars size))
                   (values re-start-index re-end-index nil lines chars size)))))))))

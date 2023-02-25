@@ -1257,6 +1257,7 @@
            #:+wm-type-dnd+
            #:+wm-type-normal+
            #:+standard-cursor+
+           #:+text-tag-prefix-search-results+
            #:*cursors*
            #:*debug-tk*
            #:*debug-buffers*
