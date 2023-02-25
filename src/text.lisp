@@ -550,7 +550,8 @@
     (loop for line-char in indices
           collect
           (multiple-value-bind (line char)
-              `(:line ,line :char ,char)))))
+              (parse-line-char-index line-char)
+            `(:line ,line :char ,char)))))
 
 (defmethod tag-lower ((object text) tag-name &optional (before-tag nil))
   (format-wish (tclize `(,(widget-path object) " "
