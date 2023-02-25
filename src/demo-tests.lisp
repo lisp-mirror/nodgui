@@ -947,57 +947,56 @@
         (append-newline text-widget))
       (loop for i from 0 below 200 do
         (append-line text-widget (format nil "~a some text is clickable like that." i)))
-      (let ((tag-link              (tag-create text-widget
-                                               "link-tag"
-                                               tag-link-index-start
-                                               tag-link-index-end))
-            (tag-placeholder-image (highlight-text text-widget
-                                                   '(:line 3 :char 0)
-                                                   :end-index '(:line 3 :char :end))))
-        (tag-configure text-widget
-                       tag-link
-                       :font       link-font
-                       :foreground link-color)
-        (append-line text-widget (format nil "link@ ~s" (tag-ranges text-widget tag-link)))
-        (make-text-tag-button text-widget tag-link
-                              (lambda ()
-                                (delete-in-range text-widget
-                                                 `(:tag ,tag-placeholder-image :first)
-                                                 `(:tag ,tag-placeholder-image :last))
-                                (insert-image text-widget
-                                              bell-image
-                                              '(:line 3 :char 0)))
-                              :button-2-callback
-                              (lambda ()
-                                (format t
-                                        "match data for ~a lines: ~s~%"
-                                        (maximum-lines-number text-widget)
-                                        (search-all-text text-widget
-                                                         "[aeiou].")))
-                              :button-3-callback
-                              (lambda ()
-                                (multiple-value-bind (start-index
-                                                      end-index
-                                                      tag-name
-                                                      lines
-                                                      chars
-                                                      size)
-                                    (search-regexp text-widget
-                                                   "click.+l"
-                                                   "1.0"
-                                                   :tag-matching-region t)
-                                  (format t
-                                          "matching ~a ~a ~a ~a ~a tag; ~s"
-                                          start-index
-                                          end-index
-                                          lines
-                                          chars
-                                          size
-                                          tag-name)
-                                  (tag-configure text-widget
-                                                 tag-name
-                                                 :underline  (lisp-bool->tcl nil)
-                                                 :foreground re-matched-color))))))))
+      (let* ((tag-placeholder-image (highlight-text text-widget
+                                                    '(:line 3 :char 0)
+                                                    :end-index '(:line 3 :char :end)))
+             (tag-link (make-link-button text-widget
+                                         tag-link-index-start
+                                         tag-link-index-end
+                                         link-font
+                                         link-color
+                                         (rgb->tk cl-colors2:+green+)
+                                         (lambda ()
+                                           (delete-in-range text-widget
+                                                            `(:tag ,tag-placeholder-image :first)
+                                                            `(:tag ,tag-placeholder-image :last))
+                                           (insert-image text-widget
+                                                         bell-image
+                                                         '(:line 3 :char 0)))
+                                         :button-2-callback
+                                         (lambda ()
+                                           (format t
+                                                   "match data for ~a lines: ~s~%"
+                                                   (maximum-lines-number text-widget)
+                                                   (search-all-text text-widget
+                                                                    "[aeiou].")))
+                                         :button-3-callback
+                                         (lambda ()
+                                           (multiple-value-bind (start-index
+                                                                 end-index
+                                                                 tag-name
+                                                                 lines
+                                                                 chars
+                                                                 size)
+                                               (search-regexp text-widget
+                                                              "click.+l"
+                                                              "1.0"
+                                                              :tag-matching-region t)
+                                             (format t
+                                                     "matching ~a ~a ~a ~a ~a tag; ~s"
+                                                     start-index
+                                                     end-index
+                                                     lines
+                                                     chars
+                                                     size
+                                                     tag-name)
+                                             (tag-configure text-widget
+                                                            tag-name
+                                                            :underline  (lisp-bool->tcl nil)
+                                                            :foreground re-matched-color))))))
+        (append-line text-widget (format nil
+                                         "link@ ~s"
+                                         (tag-ranges text-widget tag-link)))))))
 
 (defun demo-multifont-listbox ()
   (with-nodgui ()

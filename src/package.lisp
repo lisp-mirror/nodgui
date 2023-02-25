@@ -1310,6 +1310,7 @@
            #:move-cursor-next-line
            #:move-cursor-previous-line
            #:make-text-tag-button
+           #:make-link-button
            #:ask-okcancel
            #:ask-yesno
            #:background

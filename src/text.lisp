@@ -153,6 +153,19 @@
                                     button-3-callback
                                     cursor-over
                                     cursor-outside))
+(defgeneric make-link-button (object
+                              from
+                              to
+                              font
+                              foreground
+                              background
+                              button-1-callback
+                              &key
+                                tag-prefix
+                                button-2-callback
+                                button-3-callback
+                                cursor-over
+                                cursor-outside))
 
 (defgeneric move-cursor-to (object index))
 
@@ -479,7 +492,7 @@
       (when (not (string-empty-p indices))
         (format-wish "global {~a} ; senddata ${~a}"
                      count-variable-name count-variable-name)
-        (let ((size(read-data)))
+        (let ((size (read-data)))
           (multiple-value-bind (lines chars)
               (parse-line-char-index indices)
             (let ((re-start-index `(:line ,lines :char ,chars))
@@ -534,10 +547,10 @@
                          {+ ,tag-name }
                          ])))
   (let ((indices (split-words (read-data))))
-    (loop for line-char in indices collect
-          (let ((coordinates-spec (cl-ppcre:split "\\." line-char)))
-            `(:line ,(parse-integer (first coordinates-spec))
-              :char ,(parse-integer (second coordinates-spec)))))))
+    (loop for line-char in indices
+          collect
+          (multiple-value-bind (line char)
+              `(:line ,line :char ,char)))))
 
 (defmethod tag-lower ((object text) tag-name &optional (before-tag nil))
   (format-wish (tclize `(,(widget-path object) " "
@@ -654,6 +667,30 @@
             #$<Leave>$
             (lambda ()
               (configure-mouse-pointer object cursor-outside))))
+
+(defmethod make-link-button ((object text)
+                             from
+                             to
+                             font
+                             foreground
+                             background
+                             button-1-callback
+                             &key
+                               (tag-prefix "link")
+                               button-2-callback
+                               button-3-callback
+                               (cursor-over :hand2)
+                               (cursor-outside (cget object :cursor)))
+  (let ((tag-link (tag-create object (create-name tag-prefix) from to)))
+    (tag-configure object tag-link :font font :foreground foreground :background background)
+    (make-text-tag-button object
+                          tag-link
+                          button-1-callback
+                          :button-2-callback button-2-callback
+                          :button-3-callback button-3-callback
+                          :cursor-over       cursor-over
+                          :cursor-outside    cursor-outside)
+    tag-link))
 
 (defmethod text ((text text))
   (text-in-range text (make-indices-start) (make-indices-end)))
@@ -924,6 +961,34 @@
                           :button-3-callback button-3-callback
                           :cursor-over       cursor-over
                           :cursor-outside    cursor-outside)))
+
+(defmethod make-link-button ((object scrolled-text)
+                             from
+                             to
+                             font
+                             foreground
+                             background
+                             button-1-callback
+                             &key
+                               (tag-prefix "link")
+                               button-2-callback
+                               button-3-callback
+                               (cursor-over :hand2)
+                               (cursor-outside (cget object :cursor)))
+  (with-inner-text (text-widget object)
+    (make-link-button text-widget
+                      from
+                      to
+                      font
+                      foreground
+                      background
+                      button-1-callback
+                      :tag-prefix        tag-prefix
+                      :button-2-callback button-2-callback
+                      :button-3-callback button-3-callback
+                      :cursor-over       cursor-over
+                      :cursor-outside    cursor-outside)))
+
 
 
 (defmethod highlight-text ((object scrolled-text) start-index
