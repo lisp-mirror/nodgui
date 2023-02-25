@@ -593,7 +593,7 @@
 (defmethod move-cursor-to-last-line ((object text))
   (move-cursor-to object (make-indices-end))
   (let ((last-line (cursor-index object)))
-    (move-cursor-to object `(- (:line ,last-line :char 0) 1 :lines))))
+    (move-cursor-to object `(:line ,last-line :char 0))))
 
 (defmethod move-cursor-to-last-visible-line ((object text))
   (let* ((height (window-height object))
