@@ -1591,6 +1591,7 @@
            #:tag-bind
            #:tag-lower
            #:tag-raise
+           #:tag-ranges
            #:tag-configure
            #:text
            #:scrolled-text

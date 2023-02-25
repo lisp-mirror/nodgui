@@ -139,6 +139,8 @@
 
 (defgeneric tag-raise (object tag-name &optional on-top-of-tag))
 
+(defgeneric tag-ranges (object tag-name))
+
 (defgeneric highlight-text (object start-index &key tag-name end-index))
 
 (defgeneric highlight-text-line (object line-index &key tag-name))
@@ -526,6 +528,17 @@
                          ,(empty-string-if-nil on-top-of-tag
                                                on-top-of-tag)))))
 
+(defmethod tag-ranges ((object text) tag-name)
+  (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                         tag ranges
+                         {+ ,tag-name }
+                         ])))
+  (let ((indices (split-words (read-data))))
+    (loop for line-char in indices collect
+          (let ((coordinates-spec (cl-ppcre:split "\\." line-char)))
+            `(:line ,(parse-integer (first coordinates-spec))
+              :char ,(parse-integer (second coordinates-spec)))))))
+
 (defmethod tag-lower ((object text) tag-name &optional (before-tag nil))
   (format-wish (tclize `(,(widget-path object) " "
                          tag lower
@@ -886,6 +899,10 @@
 (defmethod tag-raise ((object scrolled-text) tag-name &optional on-top-of-tag)
   (with-inner-text (text-widget object)
     (tag-raise text-widget tag-name on-top-of-tag)))
+
+(defmethod tag-ranges ((object scrolled-text) tag-name)
+  (with-inner-text (text-widget object)
+    (tag-ranges text-widget tag-name)))
 
 (defmethod tag-lower ((object scrolled-text) tag-name &optional before-tag)
   (with-inner-text (text-widget object)
