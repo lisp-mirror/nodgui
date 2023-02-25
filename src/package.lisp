@@ -64,11 +64,6 @@
            #:find-cursor
            #:create-name
            #:create-tag-name
-           #:highlight-text-line
-           #:raw-coordinates
-           #:width-in-chars
-           #:multifont-listbox
-           #:boldify-multifont-item
            #:namestring->pathname
            #:pngp
            #:gifp
@@ -1285,6 +1280,11 @@
            #:append-newline
            #:make-indices-end
            #:make-indices-start
+           #:highlight-text-line
+           #:raw-coordinates
+           #:width-in-chars
+           #:multifont-listbox
+           #:boldify-multifont-item
            #:parse-indices
            #:insert-window
            #:insert-image
@@ -1297,8 +1297,6 @@
            #:match-tag-name
            #:search-all-text
            #:search-regexp
-           #:make-indices-start
-           #:make-indices-end
            #:tag-create
            #:tag-delete
            #:highlight-text
