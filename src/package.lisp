@@ -1303,6 +1303,7 @@
            #:tag-delete
            #:highlight-text
            #:move-cursor-to
+           #:move-cursor-to-last-line
            #:move-cursor-to-last-visible-line
            #:move-cursor-to-first-visible-line
            #:move-cursor-next-char

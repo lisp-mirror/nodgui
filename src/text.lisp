@@ -169,6 +169,8 @@
 
 (defgeneric move-cursor-to (object index))
 
+(defgeneric move-cursor-to-last-line (object))
+
 (defgeneric move-cursor-to-last-visible-line (object))
 
 (defgeneric move-cursor-to-first-visible-line (object))
@@ -588,6 +590,11 @@
                            {+ ,parsed-index })))
     (values object index)))
 
+(defmethod move-cursor-to-last-line ((object text))
+  (move-cursor-to object (make-indices-end))
+  (let ((last-line (cursor-index object)))
+    (move-cursor-to object `(- (:line ,last-line :char 0) 1 :lines))))
+
 (defmethod move-cursor-to-last-visible-line ((object text))
   (let* ((height (window-height object))
          (column (nth-value 1 (cursor-index object)))
@@ -1006,6 +1013,10 @@
 (defmethod move-cursor-to ((object scrolled-text) index)
   (with-inner-text (text-widget object)
     (move-cursor-to text-widget index)))
+
+(defmethod move-cursor-to-last-line ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (move-cursor-to-last-line text-widget)))
 
 (defmethod move-cursor-to-last-visible-line ((object scrolled-text))
   "Note:  there is  a bad  heuristic involved  in this  function, column

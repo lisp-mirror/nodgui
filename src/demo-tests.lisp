@@ -916,7 +916,7 @@
 (defun demo-text ()
   (with-nodgui ()
     (let* ((text-widget          (make-instance 'scrolled-text
-                                                :read-only                  t
+                                                :read-only                  nil
                                                 :use-horizontal-scrolling-p nil))
            (default-font         (font-create   "default"
                                                 :family "Sans"
@@ -996,7 +996,9 @@
                                                             :foreground re-matched-color))))))
         (append-line text-widget (format nil
                                          "link@ ~s"
-                                         (tag-ranges text-widget tag-link)))))))
+                                         (tag-ranges text-widget tag-link)))
+        (sleep 5)
+        (move-cursor-to-last-line text-widget)))))
 
 (defun demo-multifont-listbox ()
   (with-nodgui ()
