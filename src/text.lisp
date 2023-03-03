@@ -151,6 +151,8 @@
                                   &key
                                     button-2-callback
                                     button-3-callback
+                                    over-callback
+                                    leave-callback
                                     cursor-over
                                     cursor-outside))
 (defgeneric make-link-button (object
@@ -164,6 +166,8 @@
                                 tag-prefix
                                 button-2-callback
                                 button-3-callback
+                                over-callback
+                                leave-callback
                                 cursor-over
                                 cursor-outside))
 
@@ -649,6 +653,8 @@
                                    (button-2-callback nil)
                                    (button-3-callback nil)
                                    (cursor-over :hand2)
+                                   (over-callback nil)
+                                   (leave-callback nil)
                                    (cursor-outside (cget object :cursor)))
   (tag-bind object
             tag-name
@@ -669,12 +675,16 @@
             tag-name
             #$<Enter>$
             (lambda ()
-              (configure-mouse-pointer object cursor-over)))
+              (configure-mouse-pointer object cursor-over)
+              (when over-callback
+                (funcall over-callback))))
   (tag-bind object
             tag-name
             #$<Leave>$
             (lambda ()
-              (configure-mouse-pointer object cursor-outside))))
+              (configure-mouse-pointer object cursor-outside)
+              (when leave-callback
+                (funcall leave-callback)))))
 
 (defmethod make-link-button ((object text)
                              from
@@ -687,6 +697,8 @@
                                (tag-prefix "link")
                                button-2-callback
                                button-3-callback
+                               leave-callback
+                               over-callback
                                (cursor-over :hand2)
                                (cursor-outside (cget object :cursor)))
   (let ((tag-link (tag-create object (create-name tag-prefix) from to)))
@@ -696,6 +708,8 @@
                           button-1-callback
                           :button-2-callback button-2-callback
                           :button-3-callback button-3-callback
+                          :over-callback     over-callback
+                          :leave-callback    leave-callback
                           :cursor-over       cursor-over
                           :cursor-outside    cursor-outside)
     tag-link))
@@ -783,6 +797,36 @@
 
 (defmethod initialize-instance :after ((object scrolled-text)
                                        &key
+                                         autoseparators
+                                         background
+                                         borderwidth
+                                         exportselection
+                                         font
+                                         foreground
+                                         height
+                                         highlightbackground
+                                         highlightcolor
+                                         highlightthickness
+                                         insertbackground
+                                         insertborderwidth
+                                         insertofftime
+                                         insertontime
+                                         insertwidth
+                                         maxundo
+                                         padx
+                                         pady
+                                         selectbackground
+                                         selectborderwidth
+                                         selectforeground
+                                         setgrid
+                                         spacing1
+                                         spacing2
+                                         spacing3
+                                         state
+                                         tabs
+                                         takefocus
+                                         undo
+                                         wrap
                                          (cursor                     (find-cursor :xterm))
                                          (use-horizontal-scrolling-p t)
                                          (read-only nil)
@@ -791,12 +835,43 @@
                    (hscroll    hscroll)
                    (vscroll    vscroll)) object
     (setf vscroll (make-scrollbar object))
-    (setf inner-text (make-text object
-                                :cursor  cursor
-                                :xscroll hscroll
-                                :yscroll vscroll))
+    (setf inner-text (make-instance 'text
+                                    :autoseparators      autoseparators
+                                    :background          background
+                                    :borderwidth         borderwidth
+                                    :exportselection     exportselection
+                                    :font                font
+                                    :foreground          foreground
+                                    :height              height
+                                    :highlightbackground highlightbackground
+                                    :highlightcolor      highlightcolor
+                                    :highlightthickness  highlightthickness
+                                    :insertbackground    insertbackground
+                                    :insertborderwidth   insertborderwidth
+                                    :insertofftime       insertofftime
+                                    :insertontime        insertontime
+                                    :insertwidth         insertwidth
+                                    :maxundo             maxundo
+                                    :padx                padx
+                                    :pady                pady
+                                    :selectbackground    selectbackground
+                                    :selectborderwidth   selectborderwidth
+                                    :selectforeground    selectforeground
+                                    :setgrid             setgrid
+                                    :spacing1            spacing1
+                                    :spacing2            spacing2
+                                    :spacing3            spacing3
+                                    :state               state
+                                    :tabs                tabs
+                                    :takefocus           takefocus
+                                    :undo                undo
+                                    :wrap                wrap
+                                    :master              object
+                                    :cursor              cursor
+                                    :xscroll             hscroll
+                                    :yscroll             vscroll))
     (grid inner-text  0 0 :sticky :news)
-    (grid vscroll 0 1     :sticky :ns)
+    (grid vscroll     0 1 :sticky :ns)
     (grid-columnconfigure object 0 :weight 1)
     (grid-columnconfigure object 1 :weight 0)
     (grid-rowconfigure    object 0 :weight 1)
@@ -959,6 +1034,8 @@
                                  &key
                                    (button-2-callback nil)
                                    (button-3-callback nil)
+                                   (over-callback nil)
+                                   (leave-callback nil)
                                    (cursor-over :hand2)
                                    (cursor-outside (cget object :cursor)))
   (with-inner-text (text-widget object)
@@ -967,6 +1044,8 @@
                           button-1-callback
                           :button-2-callback button-2-callback
                           :button-3-callback button-3-callback
+                          :over-callback     over-callback
+                          :leave-callback    leave-callback
                           :cursor-over       cursor-over
                           :cursor-outside    cursor-outside)))
 
@@ -981,6 +1060,8 @@
                                (tag-prefix "link")
                                button-2-callback
                                button-3-callback
+                               over-callback
+                               leave-callback
                                (cursor-over :hand2)
                                (cursor-outside (cget object :cursor)))
   (with-inner-text (text-widget object)
@@ -995,9 +1076,9 @@
                       :button-2-callback button-2-callback
                       :button-3-callback button-3-callback
                       :cursor-over       cursor-over
-                      :cursor-outside    cursor-outside)))
-
-
+                      :cursor-outside    cursor-outside
+                      :over-callback     over-callback
+                      :leave-callback    leave-callback)))
 
 (defmethod highlight-text ((object scrolled-text) start-index
                            &key
