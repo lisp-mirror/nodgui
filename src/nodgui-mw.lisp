@@ -1698,8 +1698,13 @@ if  a  number   is  given  the  corresponding   element  is  selected."
       (normalize candidates)
       (raise candidates))))
 
-(defun hide-candidates (candidates)
-  (withdraw candidates))
+(defgeneric hide-candidates (object))
+
+(defmethod hide-candidates ((object autocomplete-candidates))
+  (withdraw object))
+
+(defmethod hide-candidates ((object null))
+  t)
 
 (defmethod configure ((object autocomplete-candidates) option value &rest others)
   (apply #'configure (listbox object) option value others))
@@ -1786,6 +1791,9 @@ complete the  text input.  Clicking on  a listbox  item will  fill the
 entry with the  clicked item's text, pressing <tab>  complete the text
 with the  selected item;  finally pressing  \"up\" or  \"down\" arrows
 will shift the selected item up o down respectively."))
+
+(defmethod hide-candidates ((object autocomplete-entry))
+  (hide-candidates (candidates-widget object)))
 
 (defmethod pack ((object autocomplete-entry)
                  &key

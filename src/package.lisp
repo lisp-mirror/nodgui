@@ -1804,6 +1804,7 @@
    #:autocomplete-entry
    #:autocomplete-entry-widget
    #:candidates-widget
+   #:hide-candidates
    #:autocomplete-function))
 
 (defpackage :nodgui.demo
