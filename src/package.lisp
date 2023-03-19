@@ -1489,6 +1489,7 @@
            #:listbox-size
            #:listbox-export-selection
            #:load-text
+           #:scroll-until-line-on-top
            #:lower
            #:mainloop
            #:make-items

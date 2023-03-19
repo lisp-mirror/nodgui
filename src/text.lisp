@@ -191,6 +191,8 @@
 
 (defgeneric height-in-chars (object))
 
+(defgeneric scroll-until-line-on-top (object line-index &optional column-index))
+
 (defun make-indices-xy (x y)
   (format nil "@~a,~a" x y))
 
@@ -735,10 +737,15 @@
       (write-sequence data stream)))
   object)
 
-(defmethod load-text((object text) filename)
+(defmethod load-text ((object text) filename)
   "load the content of the file <filename>"
   (setf (text object) (alexandria:read-file-into-string filename))
   object)
+
+(defmethod scroll-until-line-on-top ((object text) line-index &optional (column-index 0))
+  (let ((indices (parse-indices `(:line ,line-index :char ,column-index))))
+    (format-wish (tclize `(,(widget-path object) " " yview {+ ,indices })))
+    object))
 
 ;;; scrolled-text
 
@@ -973,6 +980,11 @@
 (defmethod see ((object scrolled-text) pos)
   (with-inner-text (text-widget object)
     (see text-widget pos)
+    object))
+
+(defmethod scroll-until-line-on-top ((object scrolled-text) line-index &optional (column-index 0))
+  (with-inner-text (text-widget object)
+    (scroll-until-line-on-top text-widget line-index column-index)
     object))
 
 (defmethod insert-window ((object scrolled-text) obj
