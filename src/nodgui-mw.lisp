@@ -1886,8 +1886,10 @@ will shift the selected item up o down respectively."))
                    (autocomplete-function     autocomplete-function)) object
     (setf autocomplete-entry-widget (make-instance 'entry :master master))
     (setf (attached-entry candidates-widget) autocomplete-entry-widget)
-    (bind candidates-widget #$<1>$ (autocomplete-click-1-clsr candidates-widget
-                                                              autocomplete-entry-widget))
+    (bind (inner-text (listbox candidates-widget))
+          #$<1>$
+          (autocomplete-click-1-clsr candidates-widget autocomplete-entry-widget)
+          :append t)
     (bind autocomplete-entry-widget #$<KeyPress-Down>$ (scroll-candidates candidates-widget 1))
     (bind autocomplete-entry-widget #$<KeyPress-Up>$ (scroll-candidates candidates-widget -1))
     (bind autocomplete-entry-widget
