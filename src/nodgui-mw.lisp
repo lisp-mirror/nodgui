@@ -1573,6 +1573,7 @@
 (defmethod initialize-instance :after ((object multifont-listbox) &key &allow-other-keys)
   (set-multifont-listbox-read-only object)
   (configure object :wrap :none)
+  (configure object :cursor (find-cursor :hand2))
   (bind (inner-text object)
         #$<ButtonPress-1>$
         (lambda (e)
