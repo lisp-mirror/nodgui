@@ -82,9 +82,12 @@
   (assert (every #'numberp min-widths))
   (assert (every #'(lambda (a) (> a 0)) widths))
   (assert (every #'(lambda (a) (> a 0)) min-widths))
-  (format-wish (tclize `(,(widget-path object) " "
-                          configure
-                          -columns {+ ,(join-with-strings column-ids " " ) })))
+  (let ((column-list (with-no-emitted-spaces
+                       (with-no-emitted-newline
+                         (tclize (loop for i in column-ids collect `({+ ,i })))))))
+    (format-wish (tclize `(,(widget-path object) " "
+                           configure
+                           -columns [+ list ,(make-bypass-escape :data column-list) ]))))
   (loop
      for ct        from 0 by 1
      for id        in (append (list :placeholder) column-ids)
@@ -108,9 +111,12 @@
                                 -width {+ ,width }))))))
 
 (defmethod setup-display-columns ((object treeview) (column-ids sequence))
-  (format-wish (tclize `(,(widget-path object) " "
-                         configure
-                         -displayColumns {+ ,(join-with-strings column-ids " " ) }))))
+  (let ((column-list (with-no-emitted-spaces
+                       (with-no-emitted-newline
+                         (tclize (loop for i in column-ids collect `({+ ,i })))))))
+    (format-wish (tclize `(,(widget-path object) " "
+                           configure
+                           -displayColumns [+ list ,(make-bypass-escape :data column-list) ])))))
 
 (defclass tree-item ()
   ((id
