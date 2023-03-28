@@ -67,6 +67,17 @@
 (defgeneric setup-columns (object column-ids
                            &key column-labels min-widths widths))
 
+(defun send-wish-columns-data (widget switch column-ids)
+  (assert (or (string= switch "columns")
+              (string= switch "displaycolumns")))
+  (let ((column-list (with-no-emitted-spaces
+                       (with-no-emitted-newline
+                         (tclize (loop for i in column-ids collect `({+ ,i })))))))
+    (format-wish (tclize `(,(widget-path widget) " "
+                           configure
+                           ,(format nil "-~a" switch) " "
+                           [+ list ,(make-bypass-escape :data column-list) ])))))
+
 (defmethod setup-columns ((object treeview) (column-ids list)
                           &key
                             (column-labels (append (list "") column-ids))
@@ -82,12 +93,7 @@
   (assert (every #'numberp min-widths))
   (assert (every #'(lambda (a) (> a 0)) widths))
   (assert (every #'(lambda (a) (> a 0)) min-widths))
-  (let ((column-list (with-no-emitted-spaces
-                       (with-no-emitted-newline
-                         (tclize (loop for i in column-ids collect `({+ ,i })))))))
-    (format-wish (tclize `(,(widget-path object) " "
-                           configure
-                           -columns [+ list ,(make-bypass-escape :data column-list) ]))))
+  (send-wish-columns-data object "columns" column-ids)
   (loop
      for ct        from 0 by 1
      for id        in (append (list :placeholder) column-ids)
@@ -111,12 +117,7 @@
                                 -width {+ ,width }))))))
 
 (defmethod setup-display-columns ((object treeview) (column-ids sequence))
-  (let ((column-list (with-no-emitted-spaces
-                       (with-no-emitted-newline
-                         (tclize (loop for i in column-ids collect `({+ ,i })))))))
-    (format-wish (tclize `(,(widget-path object) " "
-                           configure
-                           -displayColumns [+ list ,(make-bypass-escape :data column-list) ])))))
+  (send-wish-columns-data object "displaycolumns" column-ids))
 
 (defclass tree-item ()
   ((id
