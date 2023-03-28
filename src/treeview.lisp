@@ -475,18 +475,19 @@ not equal to all the others. The test is performed calling :test"
 (defmethod treeview-refit-columns-width ((object treeview))
   "Nothe that works only with default font"
   (with-accessors ((items items)) object
-    (let* ((all-values (loop for item in items collect (column-values item)))
-           (all-texts  (loop for item in items collect (text item)))
-           (max-text   (reduce (lambda (a b) (> (length a) (length b))) all-texts))
-           (max-values (loop for column from 0 below (length (first all-values))
-                             collect
-                             (let ((max-column 0))
-                               (loop for row from 0 below (length all-values)
-                                     do
-                                        (let ((candidate (elt (elt all-values row) column)))
-                                          (when (> (length candidate) max-column)
-                                            (setf max-column candidate))))
-                               max-column))))
+    (a:when-let* ((all-values (loop for item in items collect (column-values item)))
+                  (all-texts  (loop for item in items collect (text item)))
+                  (max-text   (reduce (lambda (a b) (> (length a) (length b))) all-texts))
+                  (max-values (loop for column from 0 below (length (first all-values))
+                                    collect
+                                    (let ((max-column 0))
+                                      (loop for row from 0 below (length all-values)
+                                            do
+                                               (let ((candidate (elt (elt all-values row)
+                                                                     column)))
+                                                 (when (> (length candidate) max-column)
+                                                   (setf max-column candidate))))
+                                      max-column))))
       (loop repeat (length all-values) do
         (let ((string-width (font-measure +tk-text-font+ max-text)))
           (column-configure object +treeview-first-column-id+ :minwidth string-width))
