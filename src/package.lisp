@@ -1662,6 +1662,7 @@
            #:treeview-delete
            #:treeview-delete-all
            #:column-configure
+           #:treeview-refit-columns-width
            #:children
            #:treeview-focus
            #:treeview-exists

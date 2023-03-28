@@ -179,6 +179,8 @@
 
 (defgeneric treeview-insert-item-new (object &key test &allow-other-keys))
 
+(defgeneric treeview-refit-columns-width (object))
+
 (defmethod treeview-insert-item ((object treeview)
                                  &key
                                    (item          nil)
@@ -470,6 +472,32 @@ not equal to all the others. The test is performed calling :test"
 (defmethod treeview-set-selection ((tv treeview) items)
   (format-wish "~a selection set {~{~a ~}}" (widget-path tv) (mapcar #'id items)))
 
+(defmethod treeview-refit-columns-width ((object treeview))
+  "Nothe that works only with default font"
+  (with-accessors ((items items)) object
+    (let* ((all-values (loop for item in items collect (column-values item)))
+           (all-texts  (loop for item in items collect (text item)))
+           (max-text   (reduce (lambda (a b) (> (length a) (length b))) all-texts))
+           (max-values (loop for column from 0 below (length (first all-values))
+                             collect
+                             (let ((max-column 0))
+                               (loop for row from 0 below (length all-values)
+                                     do
+                                        (let ((candidate (elt (elt all-values row) column)))
+                                          (when (> (length candidate) max-column)
+                                            (setf max-column candidate))))
+                               max-column))))
+      (loop repeat (length all-values) do
+        (let ((string-width (font-measure +tk-text-font+ max-text)))
+          (column-configure object +treeview-first-column-id+ :minwidth string-width))
+        (loop for i from 1
+              for max-value in max-values do
+                (let ((string-width (font-measure +tk-text-font+ max-value)))
+                  (column-configure object
+                                    (format nil "#~a" i)
+                                    :minwidth string-width))))))
+  object)
+
 (defclass scrolled-treeview (frame)
   ((treeview :accessor treeview)
    (hscroll :accessor hscroll)
@@ -649,9 +677,8 @@ not equal to all the others. The test is performed calling :test"
 (defgeneric column-configure (tree column option value &rest rest))
 
 (defmethod column-configure ((tree scrolled-treeview) column option value &rest rest)
-  (format-wish "{~a} column {~a} {-~(~a~)} {~a}~{ {-~(~a~)} {~(~a~)}~}"
-               (widget-path tree) column
-               option value rest))
+  (with-inner-treeview (treeview tree)
+    (apply #'column-configure treeview column option value rest)))
 
 (defmethod items ((object scrolled-treeview))
   "Get the items of this treeview"
@@ -662,3 +689,7 @@ not equal to all the others. The test is performed calling :test"
   "Set the items of this treeview"
   (with-inner-treeview (treeview object)
     (setf (items treeview) val)))
+
+(defmethod treeview-refit-columns-width ((object scrolled-treeview))
+  (with-inner-treeview (treeview object)
+    (treeview-refit-columns-width treeview)))
