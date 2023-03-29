@@ -488,15 +488,18 @@ not equal to all the others. The test is performed calling :test"
                                                  (when (> (length candidate) max-column)
                                                    (setf max-column candidate))))
                                       max-column))))
-      (loop repeat (length all-values) do
+      (flet ((increase-size (size)
+               (truncate (+ size (* 0.2 size)))))
+      (loop repeat (1+ (length all-values)) do
         (let ((string-width (font-measure +tk-text-font+ max-text)))
-          (column-configure object +treeview-first-column-id+ :minwidth string-width))
+          (column-configure object +treeview-first-column-id+
+                            :minwidth (increase-size string-width)))
         (loop for i from 1
               for max-value in max-values do
                 (let ((string-width (font-measure +tk-text-font+ max-value)))
                   (column-configure object
                                     (format nil "#~a" i)
-                                    :minwidth string-width))))))
+                                    :minwidth (increase-size string-width))))))))
   object)
 
 (defclass scrolled-treeview (frame)
