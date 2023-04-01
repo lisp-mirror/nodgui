@@ -50,3 +50,14 @@
                (widget-path w)
                (mapcar #'down options))
   p)
+
+(defgeneric sash-coord (window index))
+
+(defmethod sash-coord ((pw paned-window) index)
+  (format-wish "senddata \"([~a sashpos {~a}])\"" (widget-path pw) index)
+  (read-data))
+
+(defgeneric sash-place (window index pos))
+
+(defmethod sash-place ((pw paned-window) index pos)
+  (format-wish "~a sashpos {~a} {~a}" (widget-path pw) index pos))

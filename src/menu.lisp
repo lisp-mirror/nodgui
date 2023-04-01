@@ -82,3 +82,33 @@
 
 (defmethod menu-label ((a menu) old new)
   (format-wish "~a entryconfigure {~a} -label {~a}"  (widget-path a)  old new))
+
+;;; window menu bar
+
+(defclass menubar (widget) ())
+
+(defun make-menubar (&optional (master nil))
+ (make-instance 'menubar :master master :name "menubar"))
+
+;(defmethod create ((mb menubar))
+(defmethod initialize-instance :after ((mb menubar) &key)
+  (format-wish "menu ~a -tearoff 0 -type menubar" (widget-path mb))
+  (format-wish "~a configure -menu ~a" (if (master mb)
+                                           (widget-path (master mb))
+                                           (widget-path *tk*))
+               (widget-path mb)))
+
+;;; method to pop up a menue at the root window coordinates x and y
+
+(defgeneric popup (menu x y))
+
+(defmethod popup ((menu menu) x y)
+  (format-wish "tk_popup ~A ~A ~A" (widget-path menu)
+               (tk-number x) (tk-number y))
+  menu)
+
+(defgeneric menu-delete (menu index &optional end))
+
+(defmethod menu-delete ((menu menu) index &optional (end :end))
+  (format-wish "~A delete {~a} ~@[ {~(~A~)}~]" (widget-path menu) index (down end))
+  menu)

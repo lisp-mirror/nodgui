@@ -56,3 +56,12 @@ e.g. 'configure'."))
                             :accelerator accelerator
                             :state       state)))
     mb))
+
+(defmethod configure ((item menuentry) option value &rest others)
+  (let ((path (widget-path (master item))))
+    (format-wish "~A entryconfigure [~A index {~A}]~{ {-~(~a~)} {~a}~}"
+                 path
+                 path
+                 (text item)
+                 (mapcar #'down (list* option value others))))
+  item)

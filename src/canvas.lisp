@@ -59,6 +59,14 @@
    (scrollregion-y1 :accessor scrollregion-y1 :initform nil))
   "canvas")
 
+(defmethod tag-configure ((c canvas) tag option value &rest others)
+  (format-wish "~a itemconfigure {~a}~{ {-~(~a~)} {~a}~}" (widget-path c)
+               (if (stringp tag)
+                   tag
+                   (format nil "~(~a~)" tag))
+               (mapcar #'down (list* option value others)))
+  c)
+
 (defgeneric width (object))
 
 (defgeneric height (object))
@@ -80,6 +88,15 @@
   ((handle
     :accessor handle
     :initarg  :handle)))
+
+(defmethod raise ((item canvas-item) &optional above)
+  (itemraise (canvas item) (handle item) (and above (handle above))))
+
+(defmethod configure ((item canvas-item) option value &rest others)
+  (format-wish "~A itemconfigure ~A~{ {-~(~a~)} {~a}~}"
+               (widget-path (canvas item)) (handle item)
+               (mapcar #'down (list* option value others)))
+  item)
 
 (defmethod print-object ((self canvas-item) stream)
   (print-unreadable-object (self stream :type t :identity nil)

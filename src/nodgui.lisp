@@ -199,47 +199,6 @@ can be passed to AFTER-CANCEL"
 (defun wait-complete-redraw ()
   (update-idle-tasks))
 
-;;; window menu bar
-
-(defclass menubar (widget) ())
-
-(defun make-menubar(&optional (master nil))
- (make-instance 'menubar :master master :name "menubar"))
-
-;(defmethod create ((mb menubar))
-(defmethod initialize-instance :after ((mb menubar) &key)
-  (format-wish "menu ~a -tearoff 0 -type menubar" (widget-path mb))
-  (format-wish "~a configure -menu ~a" (if (master mb)
-                                           (widget-path (master mb))
-                                           (widget-path *tk*))
-               (widget-path mb)))
-
-;;; method to pop up a menue at the root window coordinates x and y
-
-(defgeneric popup (menu x y))
-
-(defmethod popup ((menu menu) x y)
-  (format-wish "tk_popup ~A ~A ~A" (widget-path menu)
-               (tk-number x) (tk-number y))
-  menu)
-
-(defgeneric menu-delete (menu index &optional end))
-
-(defmethod menu-delete ((menu menu) index &optional (end :end))
-  (format-wish "~A delete {~a} ~@[ {~(~A~)}~]" (widget-path menu) index (down end))
-  menu)
-
-(defgeneric sash-coord (window index))
-
-(defmethod sash-coord ((pw paned-window) index)
-  (format-wish "senddata \"([~a sashpos {~a}])\"" (widget-path pw) index)
-  (read-data))
-
-(defgeneric sash-place (window index pos))
-
-(defmethod sash-place ((pw paned-window) index pos)
-  (format-wish "~a sashpos {~a} {~a}" (widget-path pw) index pos))
-
 (defclass scrolled-frame (frame)
   ((frame-class
     :accessor frame-class
@@ -544,21 +503,6 @@ set y [winfo y ~a]
                (mapcar #'down (list* option value others)))
   widget)
 
-(defmethod configure ((item menuentry) option value &rest others)
-  (let ((path (widget-path (master item))))
-    (format-wish "~A entryconfigure [~A index {~A}]~{ {-~(~a~)} {~a}~}"
-                 path
-                 path
-                 (text item)
-                 (mapcar #'down (list* option value others))))
-  item)
-
-(defmethod configure ((item canvas-item) option value &rest others)
-  (format-wish "~A itemconfigure ~A~{ {-~(~a~)} {~a}~}"
-               (widget-path (canvas item)) (handle item)
-               (mapcar #'down (list* option value others)))
-  item)
-
 (defgeneric tag-bind (object tag event fun &key exclusive))
 
 (defgeneric tag-configure (object tag-name option value &rest others))
@@ -566,14 +510,6 @@ set y [winfo y ~a]
 (defgeneric tag-raise (object tag-name &optional on-top-of-tag))
 
 (defgeneric tag-lower (object tag-name &optional on-top-of-tag))
-
-(defmethod tag-configure ((c canvas) tag option value &rest others)
-  (format-wish "~a itemconfigure {~a}~{ {-~(~a~)} {~a}~}" (widget-path c)
-               (if (stringp tag)
-                   tag
-                   (format nil "~(~a~)" tag))
-               (mapcar #'down (list* option value others)))
-  c)
 
 (defgeneric see (object pos)
   (:documentation "Makes sure the widget is visible"))
@@ -607,9 +543,6 @@ set y [winfo y ~a]
 (defoption fill)
 |#
 
-
-(defmethod raise ((item canvas-item) &optional above)
-  (itemraise (canvas item) (handle item) (and above (handle above))))
 
 ;;; font functions
 ;; use {~/nodgui::pprint-down/} on the font name to match itemconfigure
