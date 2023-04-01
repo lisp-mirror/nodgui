@@ -65,3 +65,31 @@
     (add-callback name fun)
     (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A ~:[~;;break~]}"
                  s event append name exclusive)))
+
+(defgeneric bind-debounce (w event fun &key append exclusive))
+
+(defun calculate-internal-time-scaling-millis (&optional (scaling 1000))
+  (if (<= (/ internal-time-units-per-second scaling)
+          1000)
+      scaling
+      (calculate-internal-time-scaling-millis (* 10 scaling))))
+
+(defparameter *internal-time-scaling-millis* (calculate-internal-time-scaling-millis))
+
+(defparameter *debounce-minimum-delay* 150
+  "milliseconds")
+
+(defun calculate-milliseconds-elapsed ()
+  (truncate (/ (get-internal-real-time)
+               *internal-time-scaling-millis*)))
+
+(defmacro lambda-debounce (args &body body)
+  (a:with-gensyms (last-fired saved-last-fired now)
+    `(let ((,last-fired (calculate-milliseconds-elapsed)))
+       (lambda ,args
+         (let ((,now (calculate-milliseconds-elapsed))
+               (,saved-last-fired ,last-fired))
+           (setf ,last-fired ,now)
+           (when (> (- ,now ,saved-last-fired)
+                    *debounce-minimum-delay*)
+             ,@body))))))

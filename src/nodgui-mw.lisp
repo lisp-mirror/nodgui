@@ -1849,10 +1849,10 @@ will shift the selected item up o down respectively."))
       (focus autocomplete-entry-widget)
       (hide-candidates candidates-widget))))
 
-(defun autocomplete-keypress-clsr (candidates-widget
-                                   autocomplete-entry-widget
-                                   autocomplete-function)
-  (lambda (event)
+(defun autocomplete-key-release-clsr (candidates-widget
+                                      autocomplete-entry-widget
+                                      autocomplete-function)
+  (lambda-debounce (event)
     (when (or (nodgui.event-symbols:keysym-printable-p (event-char-code event))
               (string= (event-char event) "BackSpace")
               (string= (event-char event) "Delete"))
@@ -1898,8 +1898,10 @@ will shift the selected item up o down respectively."))
           (autocomplete-click-1-clsr candidates-widget autocomplete-entry-widget)
           :exclusive t)
     (bind autocomplete-entry-widget
-          #$<KeyPress>$
-          (autocomplete-keypress-clsr candidates-widget autocomplete-entry-widget autocomplete-function)
+          #$<KeyRelease>$
+          (autocomplete-key-release-clsr candidates-widget
+                                         autocomplete-entry-widget
+                                         autocomplete-function)
           :append t)))
 
 (defmethod configure ((object autocomplete-entry) option value &rest others)

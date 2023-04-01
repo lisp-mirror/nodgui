@@ -1317,6 +1317,9 @@
            #:bell
            #:configure-mouse-pointer
            #:bind
+           #:calculate-internal-time-scaling-millis
+           #:*debounce-minimum-delay*
+           #:lambda-debounce
            #:wait-complete-redraw
            #:button
            #:calc-scroll-region
