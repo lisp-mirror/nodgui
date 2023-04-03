@@ -931,7 +931,7 @@ tk input to terminate"
           (when (not serve-event)
             (exit-wish)))))))
 
-(defmacro with-modal-toplevel ((var &rest toplevel-initargs) &body body)
+(defmacro with-recursive-modal-toplevel ((var &rest toplevel-initargs) &body body)
   `(let* ((,var (make-instance 'toplevel ,@toplevel-initargs))
           (*exit-mainloop* nil)
           ;(*buffer-for-atomic-output* nil)
@@ -949,6 +949,17 @@ tk input to terminate"
        (grab-release ,var)
        (withdraw ,var)
        (flush-wish))))
+
+(defmacro with-modal-toplevel ((var &rest toplevel-initargs) &body body)
+  `(let* ((,var (make-instance 'toplevel ,@toplevel-initargs)))
+     (wait-complete-redraw)
+     (grab ,var)
+     (on-close ,var
+               (lambda ()
+                 (grab-release ,var)
+                 (withdraw ,var)
+                 (flush-wish)))
+     (progn ,@body)))
 
 (defun input-box (prompt &key (title "Input") default)
   (let* ((*exit-mainloop* nil)

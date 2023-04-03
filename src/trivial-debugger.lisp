@@ -27,7 +27,7 @@
         (lambda (condition)
           (when (handle-condition-p prototype condition)
             (restart-case
-                (with-modal-toplevel (tl :title title :height 40 :width 300)
+                (with-recursive-modal-toplevel (tl :title title :height 40 :width 300)
                   (let ((debugger (make-instance class :master tl :condition condition)))
                     (on-close tl (lambda ()
                                    (abort-condition-handler debugger)
@@ -181,7 +181,7 @@
   ;; modal here, and Nodgui users are encouraged to write their own bug
   ;; reporters that start a new Tcl/Tk process and send reports over
   ;; the net.
-  (with-modal-toplevel (tl :title "Save a bug report")
+  (with-recursive-modal-toplevel (tl :title "Save a bug report")
     (let ((summary (make-instance 'label :master tl :text "Summary:"))
           (esummary (make-instance 'entry :master tl :text ""))
           (desc (make-instance 'message :master tl :width 400 :text "Please describe what you were doing, and where so the developers can try to reproduce this situation"))

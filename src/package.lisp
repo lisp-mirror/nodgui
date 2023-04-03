@@ -1623,6 +1623,7 @@
            #:call-with-nodgui
            #:exit-with-remote-nodgui
            #:with-modal-toplevel
+           #:with-recursive-modal-toplevel
            #:with-remote-nodgui
            #:with-widgets
            #:withdraw
