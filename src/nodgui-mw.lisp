@@ -1910,6 +1910,9 @@ will shift the selected item up o down respectively."))
 (defmethod text ((object autocomplete-entry))
   (text (autocomplete-entry-widget object)))
 
+(defmethod (setf text) (new-text (object autocomplete-entry))
+  (setf (text (autocomplete-entry-widget object)) new-text))
+
 (defun autocomplete-entry-test ()
   (with-nodgui ()
     (let* ((data                  (append '("foo" "bar" "baz")

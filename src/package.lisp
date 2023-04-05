@@ -61,7 +61,6 @@
            #:file-exists-p
            #:split-path-elements
            #:create-file
-           #:find-cursor
            #:create-name
            #:create-tag-name
            #:namestring->pathname
@@ -1270,6 +1269,7 @@
            #:*wish-pathname*
            #:*default-nodgui-debugger*
            #:*force-sync-data-multifont-listbox*
+           #:find-cursor
            #:add-pane
            #:add-separator
            #:after
