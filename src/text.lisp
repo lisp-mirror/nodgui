@@ -658,35 +658,40 @@
                                    (over-callback nil)
                                    (leave-callback nil)
                                    (cursor-outside (cget object :cursor)))
-  (tag-bind object
-            tag-name
-            #$<ButtonPress-1>$
-            button-1-callback)
-  (when button-2-callback
+
+  (let ((actual-cursor-outside (or (find-cursor cursor-outside)
+                                   +standard-cursor+))
+        (actual-cursor-over    (or (find-cursor cursor-over)
+                                   +standard-cursor+)))
     (tag-bind object
               tag-name
-              #$<ButtonPress-2>$
-              button-2-callback))
-  (when button-3-callback
+              #$<ButtonPress-1>$
+              button-1-callback)
+    (when button-2-callback
+      (tag-bind object
+                tag-name
+                #$<ButtonPress-2>$
+                button-2-callback))
+    (when button-3-callback
+      (tag-bind object
+                tag-name
+                #$<ButtonPress-3>$
+                button-3-callback
+                :exclusive t))
     (tag-bind object
               tag-name
-              #$<ButtonPress-3>$
-              button-3-callback
-              :exclusive t))
-  (tag-bind object
-            tag-name
-            #$<Enter>$
-            (lambda ()
-              (configure-mouse-pointer object cursor-over)
-              (when over-callback
-                (funcall over-callback))))
-  (tag-bind object
-            tag-name
-            #$<Leave>$
-            (lambda ()
-              (configure-mouse-pointer object cursor-outside)
-              (when leave-callback
-                (funcall leave-callback)))))
+              #$<Enter>$
+              (lambda ()
+                (configure-mouse-pointer object actual-cursor-over)
+                (when over-callback
+                  (funcall over-callback))))
+    (tag-bind object
+              tag-name
+              #$<Leave>$
+              (lambda ()
+                (configure-mouse-pointer object actual-cursor-outside)
+                (when leave-callback
+                  (funcall leave-callback))))))
 
 (defmethod make-link-button ((object text)
                              from
