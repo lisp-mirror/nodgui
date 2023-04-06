@@ -392,6 +392,8 @@
 
 ;;;; tooltip widget
 
+(a:define-constant +tooltip-position-offset+ 10 :test #'=)
+
 (defclass tooltip (toplevel)
   ((label
     :accessor tooltip-label
@@ -403,12 +405,13 @@
 
 (defparameter *tooltip-afterid* nil)
 
-(defmethod initialize-instance :after ((tooltip tooltip) &key)
+(defmethod initialize-instance :after ((tooltip tooltip)
+                                       &key (background :yellow3) &allow-other-keys)
   (withdraw tooltip)
   (setf (tooltip-label tooltip)
         (make-instance 'label
                        :text       ""
-                       :background :yellow3
+                       :background background
                        :master     tooltip
                        :justify    :left))
   (set-wm-overrideredirect tooltip 1)
@@ -431,11 +434,26 @@
                 text)
                (t
                 (to-s text)))))
-    (when (and txt (> (length txt) 0))
+    (when (and txt
+               (> (length txt) 0))
       (setf (text (tooltip-label tooltip)) txt)
-      (set-geometry-xy tooltip (truncate x)  (truncate y))
-      (normalize tooltip)
-      (raise tooltip))))
+      (wait-complete-redraw)
+      (let* ((width  (window-width tooltip))
+             (height (window-height tooltip))
+             (actual-x (if (> (+ x width)
+                              (screen-width))
+                           (- x width +tooltip-position-offset+)
+                           x))
+             (actual-y (if (> (+ y height)
+                              (screen-height))
+                           (- y (- height +tooltip-position-offset+))
+                           y)))
+        (wait-complete-redraw)
+        (set-geometry-xy tooltip
+                         (truncate actual-x)
+                         (truncate actual-y))
+        (normalize tooltip)
+        (raise tooltip)))))
 
 (defmethod popup-tooltip ((tooltip tooltip))
   (normalize tooltip)
@@ -468,8 +486,10 @@
                              (cancel-tooltip tooltip)
                              (schedule-tooltip tooltip
                                                content
-                                               (+ (event-root-x event) 10)
-                                               (- (event-root-y event) 10)
+                                               (+ (event-root-x event)
+                                                  +tooltip-position-offset+)
+                                               (- (event-root-y event)
+                                                  +tooltip-position-offset+)
                                                (popup-time tooltip)))
         :append t)
   widget)
@@ -478,12 +498,13 @@
   (apply #'configure (tooltip-label tooltip) option value others))
 
 (defun tooltip-test ()
-  (with-nodgui ()
-    (let ((b       (make-instance 'button :text "Tooltip"))
-          (tooltip (make-instance 'tooltip)))
-      (pack b)
-      (configure tooltip :borderwidth 1 :relief :solid)
-      (register-tooltip tooltip b (lambda (s) (format s "~d" (random 10000)))))))
+  (let ((*debug-tk* t))
+    (with-nodgui ()
+      (let ((b       (make-instance 'button :text "Tooltip"))
+            (tooltip (make-instance 'tooltip)))
+        (pack b :side :right :anchor :se)
+        (configure tooltip :borderwidth 1 :relief :solid)
+        (register-tooltip tooltip b (lambda (s) (format s "~d" (random 10000))))))))
 
 ;;;; graphical tree widget
 
