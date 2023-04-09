@@ -931,7 +931,7 @@ tk input to terminate"
           (when (not serve-event)
             (exit-wish)))))))
 
-(defmacro with-recursive-modal-toplevel ((var &rest toplevel-initargs) &body body)
+(defmacro with-modal-toplevel ((var &rest toplevel-initargs) &body body)
   `(let* ((,var (make-instance 'toplevel ,@toplevel-initargs))
           (*exit-mainloop* nil)
           ;(*buffer-for-atomic-output* nil)
@@ -950,15 +950,16 @@ tk input to terminate"
        (withdraw ,var)
        (flush-wish))))
 
-(defmacro with-modal-toplevel ((var &rest toplevel-initargs) &body body)
-  `(let* ((,var (make-instance 'toplevel ,@toplevel-initargs)))
+(defun exit-from-toplevel (toplevel)
+  (grab-release toplevel)
+  (withdraw toplevel)
+  (flush-wish))
+
+(defmacro with-toplevel ((toplevel &rest toplevel-initargs) &body body)
+  `(let* ((,toplevel (make-instance 'toplevel ,@toplevel-initargs)))
      (wait-complete-redraw)
-     (grab ,var)
-     (on-close ,var
-               (lambda ()
-                 (grab-release ,var)
-                 (withdraw ,var)
-                 (flush-wish)))
+     (grab ,toplevel)
+     (on-close ,toplevel (lambda () (exit-from-toplevel ,toplevel)))
      (progn ,@body)))
 
 (defun input-box (prompt &key (title "Input") default)
@@ -975,8 +976,7 @@ tk input to terminate"
          (b_cancel (make-instance 'button :master f :text "Cancel"
                                   :command (lambda ()
                                              (setf ok nil)
-                                             (break-mainloop)
-                                             ))))
+                                             (break-mainloop)))))
     (pack l :side :top :anchor :w)
     (pack e :side :top)
     (pack f :side :top :anchor :e)

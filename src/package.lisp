@@ -1622,8 +1622,9 @@
            #:with-nodgui
            #:call-with-nodgui
            #:exit-with-remote-nodgui
+           #:with-toplevel
+           #:exit-from-toplevel
            #:with-modal-toplevel
-           #:with-recursive-modal-toplevel
            #:with-remote-nodgui
            #:with-widgets
            #:withdraw

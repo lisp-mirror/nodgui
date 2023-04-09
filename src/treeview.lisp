@@ -477,22 +477,27 @@ not equal to all the others. The test is performed calling :test"
   (with-accessors ((items items)) object
     (a:when-let* ((all-values (loop for item in items collect (column-values item)))
                   (all-texts  (loop for item in items collect (text item)))
-                  (max-text   (reduce (lambda (a b) (> (length a) (length b))) all-texts))
+                  (max-text   (reduce (lambda (a b)
+                                        (if (> (length a) (length b))
+                                            a
+                                            b))
+                                      all-texts))
                   (max-values (loop for column from 0 below (length (first all-values))
                                     collect
-                                    (let ((max-column 0))
-                                      (loop for row from 0 below (length all-values)
-                                            do
-                                               (let ((candidate (elt (elt all-values row)
-                                                                     column)))
-                                                 (when (> (length candidate) max-column)
-                                                   (setf max-column candidate))))
-                                      max-column))))
+                                      (let ((max-column ""))
+                                        (loop for row from 0 below (length all-values)
+                                              do
+                                                 (let ((candidate (elt (elt all-values row)
+                                                                       column)))
+                                                   (when (> (length candidate)
+                                                            (length max-column))
+                                                     (setf max-column candidate))))
+                                        max-column))))
       (flet ((string-width (string)
                (font-measure +tk-text-font+ (strcat string "oooo"))))
-      (loop repeat (1+ (length all-values)) do
-        (column-configure object +treeview-first-column-id+
-                          :minwidth (string-width max-text)))
+        (loop repeat (1+ (length all-values)) do
+          (column-configure object +treeview-first-column-id+
+                            :minwidth (string-width max-text)))
         (loop for i from 1
               for max-value in max-values do
                 (column-configure object
