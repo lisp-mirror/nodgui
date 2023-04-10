@@ -167,7 +167,7 @@ alternatively a list of numbers may be given"
   (read-data))
 
 (defmethod see ((lb listbox) pos)
-  (format-wish "~a see {~(~a~)}" (widget-path lb) pos)
+  (format-wish "~a see {~a}" (widget-path lb) pos)
   lb)
 
 (alexandria:define-constant +legal-select-mode-values+ '(:single :browse :multiple :extended)

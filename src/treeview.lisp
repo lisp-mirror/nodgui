@@ -273,7 +273,7 @@ not equal to all the others. The test is performed calling :test"
   val)
 
 (defmethod see ((tv treeview) (item tree-item))
-  (format-wish "~a see \"~a\"" (widget-path tv) (id item))
+  (format-wish "~a see {~a}" (widget-path tv) (id item))
   tv)
 
 (defgeneric children (tree item))

@@ -434,7 +434,7 @@
   (read-data))
 
 (defmethod see ((object text) pos)
-  (format-wish "~a see {~(~a~)}" (widget-path object) (parse-indices pos))
+  (format-wish "~a see {~a}" (widget-path object) (parse-indices pos))
   object)
 
 (defstruct match
