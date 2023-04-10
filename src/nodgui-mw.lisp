@@ -717,7 +717,7 @@
            (label (make-instance 'label :master fsearch :text entry-label))
            (entry (make-instance 'entry :master fsearch)))
       (pack scrolled :side :top :fill :both :expand t)
-      (pack fsearch  :side :top :fill :x)
+      (pack fsearch  :side :top :fill :x :ipady 2)
       (pack label    :side :left)
       (pack entry    :side :left :fill :x :expand t)
       (setf (scrolled-listbox lb) scrolled

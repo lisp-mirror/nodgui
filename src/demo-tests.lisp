@@ -993,7 +993,8 @@
                                              (tag-configure text-widget
                                                             tag-name
                                                             :underline  (lisp-bool->tcl nil)
-                                                            :foreground re-matched-color))))))
+                                                            :foreground re-matched-color)
+                                             (see text-widget `(:tag ,tag-name :first)))))))
         (append-line text-widget (format nil
                                          "link@ ~s"
                                          (tag-ranges text-widget tag-link)))

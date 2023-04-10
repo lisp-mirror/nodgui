@@ -489,7 +489,7 @@
                                                '-backwards)
                                           -nolinestop
                                           -count ,count-variable-name " "
-                                          ,(empty-string-if-nil (not case-insensitive)
+                                          ,(empty-string-if-nil case-insensitive
                                                                 '-nocase)
                                           {+ ,pattern }
                                           {+ ,(parse-indices start-index) }
