@@ -144,7 +144,7 @@
                      (command show) #'show))
              (give-up () (abort-condition-handler handler))
              (debugger () (invoke-restart 'send-to-debugger (handler-condition handler)))
-         (exit () (invoke-restart 'exit)))
+             (exit () (uiop:quit 1)))
       (setf (command ok) #'give-up
             (command exit) #'exit
             (command yes) #'continue
