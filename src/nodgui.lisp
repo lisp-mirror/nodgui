@@ -779,93 +779,15 @@ tk input to terminate"
                     :report "Exit Nodgui main loop"
                     nil))))))))
 
-(defun mainloop (&key serve-event)
+(defun mainloop ()
   (let ((reentrant? (member *wish* *inside-mainloop*))
-        (*inside-mainloop* (adjoin *wish* *inside-mainloop*)))
-    (cond
-      (serve-event (install-input-handler))
-      ((wish-input-handler *wish*)
-       (let ((*exit-mainloop* nil)
-             (*break-mainloop* nil))
-         (loop until (or *break-mainloop* *exit-mainloop*)
-               do (serve-event))))
-      (t (let ((*exit-mainloop* nil)
-               (*break-mainloop* nil))
-           (if reentrant?
-               (loop while (main-iteration :reentrant? t))
-               (loop while (with-nodgui-handlers ()
-                             (main-iteration)))))))))
-
-;;; Event server
-
-#-(or sbcl cmu)
-(progn
-  (defun install-input-handler ()
-    (error "SERVE-EVENT is not implemented on this system"))
-  (defun remove-input-handler ()
-    nil)
-  (defun serve-event ()
-    (error "SERVE-EVENT is not implemented on this system")))
-
-#+(or sbcl cmu)
-(progn
-  (defun add-fd-handler (fd direction function)
-    #+sbcl (sb-sys:add-fd-handler fd direction function)
-    #+cmu (system:add-fd-handler fd direction function))
-
-  (defun remove-fd-handler (handler)
-    #+sbcl (sb-sys:remove-fd-handler handler)
-    #+cmu (system:remove-fd-handler handler))
-
-  (defun serve-event ()
-    #+sbcl (sb-sys:serve-event)
-    #+cmu (system:serve-event))
-
-  (defun fd-stream-fd (stream)
-    #+sbcl (sb-sys:fd-stream-fd stream)
-    #+cmu (system:fd-stream-fd stream))
-
-  (defun make-input-handler (wish)
-    "Return a SERVE-EVENT input handler."
-    (let ((fd-stream (two-way-stream-input-stream (wish-stream wish))))
-      (labels ((call-main ()
-                 (with-nodgui-handlers ()
-                   (handler-bind ((stream-error
-                                   ;; If there was a stream error on the fd that
-                                   ;; we're listening to, we need to remove the
-                                   ;; input handler to avoid getting stuck in an
-                                   ;; infinite loop of stream errors making
-                                   ;; noise on the fd, causing us to try to read
-                                   ;; from it, causing an error, which makes
-                                   ;; noise on the fd...
-                                   (lambda (e)
-                                     (when (eql (stream-error-stream e) fd-stream)
-                                       (return-from call-main nil)))))
-                     (catch wish (main-iteration)))))
-               (nodgui-input-handler (fd)
-                 (declare (ignore fd))
-                 (let ((*wish* wish)) ; use the wish we were given as an argument
-                   (if (find wish *inside-mainloop*)
-                       (call-main)
-                       (let ((*exit-mainloop* nil)
-                             (*break-mainloop* nil))
-                         (unless (call-main)
-                           (remove-input-handler)))))))
-        #'nodgui-input-handler)))
-
-  (defun install-input-handler ()
-    (unless (wish-input-handler *wish*)
-      (let ((fd (fd-stream-fd (two-way-stream-input-stream (wish-stream *wish*)))))
-        (setf (wish-input-handler *wish*)
-              (add-fd-handler fd :input (make-input-handler *wish*))
-              *exit-mainloop* nil
-              *break-mainloop* nil))))
-
-  (defun remove-input-handler ()
-    (remove-fd-handler (wish-input-handler *wish*))
-    (setf (wish-input-handler *wish*) nil)))
-
-;;
+        (*inside-mainloop* (adjoin *wish* *inside-mainloop*))
+        (*exit-mainloop* nil)
+        (*break-mainloop* nil))
+    (if reentrant?
+        (loop while (main-iteration :reentrant? t))
+        (loop while (with-nodgui-handlers ()
+                      (main-iteration))))))
 
 (defun filter-keys (desired-keys keyword-arguments)
   (loop for (key val) on keyword-arguments by #'cddr
@@ -895,13 +817,11 @@ tk input to terminate"
   (declare (ignore debug serve-event stream title))
   `(call-with-nodgui (lambda () ,@body) ,@keys))
 
-(defun call-with-nodgui (thunk &rest keys &key (debug 2) stream serve-event remotep
-                      &allow-other-keys)
+(defun call-with-nodgui (thunk &rest keys &key (debug 2) stream serve-event &allow-other-keys)
   "Functional interface to with-nodgui, provided to allow the user the build similar macros."
   (declare (ignore stream))
   (flet ((start-wish ()
            (apply #'start-wish
-                  :remotep remotep
                   (append (filter-keys '(:stream :debugger-class :debug-tcl)
                                        keys)
                           (list :debugger-class (debug-setting-condition-handler debug)))))
@@ -917,7 +837,7 @@ tk input to terminate"
                                         *default-toplevel-name*))
            (*wish-args*              (append-wish-args (list +arg-toplevel-name+
                                                              *default-toplevel-name*)))
-           (*wish*                   (make-nodgui-connection :remotep remotep)))
+           (*wish*                   (make-nodgui-connection)))
       (catch *wish*
         (unwind-protect
              (progn
