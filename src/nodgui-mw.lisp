@@ -1647,12 +1647,15 @@
   (list (selected-index object)))
 
 (defmethod listbox-get-selection-value ((object multifont-listbox))
-  (list (elt (items object) (selected-index object))))
+  (with-accessors ((items items)) object
+    (when items
+      (list (elt items (selected-index object))))))
 
 (defmethod listbox-values-in-range ((object multifont-listbox) &key (from 0) (to :end))
   (with-accessors ((items items)) object
-    (let ((actual-end (multifont-translate-end-tcl->lisp to)))
-      (subseq items from actual-end))))
+    (when items
+      (let ((actual-end (multifont-translate-end-tcl->lisp to)))
+        (subseq items from actual-end)))))
 
 (defmethod listbox-all-values ((object multifont-listbox))
   (items object))
@@ -1668,7 +1671,7 @@
       (setf selected-tag (highlight-text-line object selected-line-index))
       (see object (raw-coordinates object)))))
 
-(defmethod listbox-clear  ((object multifont-listbox) &optional (start 0) (end :end))
+(defmethod listbox-clear ((object multifont-listbox) &optional (start 0) (end :end))
   (with-sync-data (object)
     (let ((actual-end (or (multifont-translate-end-tcl->lisp end)
                           (length (items object)))))
