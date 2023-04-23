@@ -54,7 +54,7 @@
 
 ;;; global var for holding the communication stream
 (defstruct (nodgui-connection
-             (:constructor make-nodgui-connection (&key remotep))
+             (:constructor make-nodgui-connection)
              (:conc-name #:wish-))
   (stream                   nil)
   (callbacks                (make-hash-table :test #'equal))
@@ -75,9 +75,6 @@
   ;; allows the user to specify error-handling in START-WISH, and have
   ;; it take place inside of MAINLOOP.
   (call-with-condition-handlers-function (lambda (f) (funcall f)))
-  ;; This is only used to support SERVE-EVENT.
-  (input-handler nil)
-  (remotep nil)
   (output-buffer nil)
   (error-collecting-thread nil)
   (variables (make-hash-table :test #'equal)))
@@ -193,7 +190,7 @@
                                                :message (read-line error-stream))))))
                   :name "nodgui collecting thread"))
 ;;; start wish and set (wish-stream *wish*)
-(defun start-wish (&rest keys &key debugger-class remotep stream debug-tcl)
+(defun start-wish (&rest keys &key debugger-class stream debug-tcl)
   ;; open subprocess
   (if (null (wish-stream *wish*))
       (progn
@@ -210,11 +207,7 @@
               (make-call-with-condition-handlers-function debugger-class))
         ;; perform tcl initialisations
         (with-nodgui-handlers ()
-          (unless remotep
-            (init-tcl :debug-tcl debug-tcl))
-          (when remotep
-            (send-wish "fconfigure $server -blocking 0 -translation lf -encoding utf-8")
-            (flush-wish))
+          (init-tcl :debug-tcl debug-tcl)
           (prog1 (init-wish)
             (ensure-timer))))
       ;; By default, we don't automatically create a new connection, because the
@@ -224,7 +217,7 @@
         (new-wish ()
           :report "Create an additional inferior wish."
           (push *wish* *wish-connections*)
-          (setf *wish* (make-nodgui-connection :remotep remotep))
+          (setf *wish* (make-nodgui-connection))
           (apply #'start-wish keys)))))
 
 ;;; CMUCL, SCL, and SBCL, use a two-way-stream and the constituent
@@ -244,7 +237,6 @@
   (with-nodgui-handlers ()
     (let ((stream (wish-stream *wish*)))
       (when stream
-        (remove-input-handler)
         (when (open-stream-p stream)
           (ignore-errors
             (send-wish "exit")
@@ -254,9 +246,6 @@
       (setf (wish-stream *wish*) nil)
       #+:allegro (system:reap-os-subprocess)
       (setf *wish-connections* (remove *wish* *wish-connections*))))
-  #+:lispworks
-  (when (wish-remotep *wish*)
-    (throw 'exit-with-remote-nodgui nil))
   (throw *wish* nil))
 
 (defun send-wish (text)
@@ -280,15 +269,7 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
       (format stream line)
       (finish-output stream))))
 
-;; (defun check-for-errors ()
-;;   (let ((wstream (wish-stream *wish*)))
-;;     (when (can-read wstream)
-;;       (let ((event (verify-event (read-preserving-whitespace wstream nil nil))))
-;;         (setf (wish-event-queue *wish*)
-;;               (append (wish-event-queue *wish*) (list event))))))
-;;   nil)
-
-;; maximum line length sent over to non-remote Tk
+;; maximum line length sent over Tk
 (defparameter *max-line-length* 1000)
 
 (defun flush-wish ()
@@ -305,10 +286,6 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
                          #+lispworks
                          (comm:socket-error (lambda (e) (handle-dead-stream e stream))))
             (cond
-              ((wish-remotep *wish*)
-               (let ((content (format nil "~{~a~%~}" buffer)))
-                 (format stream "~d ~a~%"(length content) content)
-                 (dbg "~d ~a~%" (length content) content)))
               (*max-line-length*
                (when (or *debug-buffers*
                          *debug-tk*)
