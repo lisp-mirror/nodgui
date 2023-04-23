@@ -63,18 +63,22 @@
   (after-counter            1)
   (data-queue               ())
   (event-queue              ())
+  (lock                     (bt:make-lock "lock"))
+  (read-data-lock           (bt:make-lock "read-data"))
+  (flush-lock               (bt:make-lock "flush"))
+  (read-lock                (bt:make-lock "read"))
+  (queue-data-lock          (bt:make-lock "queue-data"))
+  (queue-event-lock         (bt:make-lock "queue-event"))
+  (main-loop-lock           (bt:make-lock "main-loop"))
+  (main-loop-cond           (bt:make-condition-variable))
   (waiting-data-p           nil)
-  (lock                     (bt:make-recursive-lock))
-  (flush-lock               (bt:make-recursive-lock))
-  (read-lock                (bt:make-recursive-lock))
-  (read-data-lock           (bt:make-recursive-lock))
-  (read-event-lock          (bt:make-recursive-lock))
-  (main-iteration-lock      (bt:make-recursive-lock))
   ;; This is should be a function that takes a thunk, and calls it in
   ;; an environment with some condition handling in place.  It is what
   ;; allows the user to specify error-handling in START-WISH, and have
   ;; it take place inside of MAINLOOP.
   (call-with-condition-handlers-function (lambda (f) (funcall f)))
+  ;; This is only used to support SERVE-EVENT.
+  (input-handler nil)
   (output-buffer nil)
   (error-collecting-thread nil)
   (variables (make-hash-table :test #'equal)))
@@ -132,6 +136,7 @@
 (defun dbg (fmt &rest args)
   (when *debug-tk*
     (apply #'format *trace-output* fmt args)
+    (format *trace-output* "~%")
     (finish-output *trace-output*)))
 
 (defmacro with-atomic (&rest code)
@@ -147,6 +152,26 @@
   `(let ((*buffer-for-atomic-output* t))
      ,@code))
 
+(defparameter *with-read-data-no-lock* nil)
+
+(defun call-with-read-data (fn)
+  (if *with-read-data-no-lock*
+      (funcall fn)
+      (bt:with-lock-held ((wish-read-data-lock *wish*))
+        (funcall fn))))
+
+(defmacro with-read-data ((&optional (read-data-fn 'read-data)) &body body)
+  (assert (or (null read-data-fn)
+              (member read-data-fn '(read-data read-wish))))
+  `(progn
+     ,(if read-data-fn
+          `(call-with-read-data (lambda () (progn ,@body (,read-data-fn))))
+          `(call-with-read-data (lambda () (progn ,@body))))))
+
+(defmacro with-main-loop-lock (() &body body)
+  `(bt:with-lock-held ((wish-main-loop-lock *wish*))
+     ,@body))
+
 (defun require-tcl-package (name)
   (format-wish (tcl-str (:if ([catch {package require ~a} err ])
                              ("tk_messageBox" \++
@@ -157,8 +182,9 @@
 
 (defun try-to-load-tcl-package (name)
   "Return non nil if the package has been successfully loaded"
-  (format-wish (tclize `(senddata [ catch { package require ,name } ])))
-  (tcl-error->boolean (read-data)))
+  (with-read-data (nil)
+    (format-wish (tclize `(senddata [ catch { package require ,name } ])))
+    (tcl-error->boolean (read-data))))
 
 (defparameter *tkimg-loaded-p* nil)
 
@@ -167,6 +193,7 @@
 
 ;;; setup of wish
 ;;; put any tcl function definitions needed for running nodgui here
+
 (defun init-wish ()
   (send-lazy
    (send-wish "package require Tk")
@@ -189,7 +216,9 @@
                         (error (make-condition 'tk-communication-error
                                                :message (read-line error-stream))))))
                   :name "nodgui collecting thread"))
+
 ;;; start wish and set (wish-stream *wish*)
+
 (defun start-wish (&rest keys &key debugger-class stream debug-tcl)
   ;; open subprocess
   (if (null (wish-stream *wish*))
@@ -208,7 +237,8 @@
         ;; perform tcl initialisations
         (with-nodgui-handlers ()
           (init-tcl :debug-tcl debug-tcl)
-          (prog1 (init-wish)
+          (prog1
+              (init-wish)
             (ensure-timer))))
       ;; By default, we don't automatically create a new connection, because the
       ;; user may have simply been careless and doesn't want to push the old
@@ -249,7 +279,7 @@
   (throw *wish* nil))
 
 (defun send-wish (text)
-  (bt:with-recursive-lock-held ((wish-lock *wish*))
+  (bt:with-lock-held ((wish-lock *wish*))
     (push text (wish-output-buffer *wish*))
     (unless *buffer-for-atomic-output*
       (flush-wish))))
@@ -260,7 +290,7 @@ coupled with a 'gets' from the TCL side, for example.
 
 Note also that this function  blocks the communication until wish read
 the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
-  (bt:with-recursive-lock-held ((wish-lock *wish*))
+  (bt:with-lock-held ((wish-lock *wish*))
     (let ((*print-pretty* nil)
           (stream         (wish-stream *wish*))
           (line           (format nil "~a~%" data)))
@@ -269,11 +299,11 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
       (format stream line)
       (finish-output stream))))
 
-;; maximum line length sent over Tk
-(defparameter *max-line-length* 1000)
+;; maximum line length sent over to Tk
+(defparameter *max-line-length* nil)
 
 (defun flush-wish ()
-  (bt:with-recursive-lock-held ((wish-flush-lock *wish*))
+  (bt:with-lock-held ((wish-flush-lock *wish*))
     (let ((buffer (nreverse (wish-output-buffer *wish*))))
       (when buffer
         (let ((len (loop for s in buffer summing (length s)))
@@ -289,13 +319,14 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
               (*max-line-length*
                (when (or *debug-buffers*
                          *debug-tk*)
-                 (format t "buffer size ~a~%" len) (finish-output))
+                 (dbg t "buffer size ~a~%" len))
                (dolist (string buffer)
                  (loop while (> (length string) *max-line-length*)
                     do
                       (let ((sub (subseq string 0 *max-line-length*)))
                         (setf string (subseq string *max-line-length*))
                         (format stream "bt \"~A\"~%" (tkescape2 sub))
+                        (finish-output stream)
                         (dbg "bt \"~A\"~%" (tkescape2 sub))))
                  (format stream "bt \"~A~%\"~%" (tkescape2 string))
                  (dbg "bt \"~A\"~%" (tkescape2 string)))
@@ -308,53 +339,20 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
                  (format stream "bt \"~A~%\"~%" (tkescape2 string))
                  (dbg "bt \"~A\"~%" (tkescape2 string)))
                (format stream "process_buffer~%")
+               (finish-output stream)
                (dbg "process_buffer~%")))
             (finish-output stream)
-            #+nil(loop for string in buffer
-                    do (loop with end = (length string)
-                          with start = 0
-                          for amount = (min 1024 (- end start))
-                          while (< start end)
-                          do (let ((string (subseq string start (+ start amount))))
-                               (format stream "buffer_text {~A}~%" string)
-                               (dbg "buffer_text {~A}~%" string)
-                               (incf start amount)))
-                      (format stream "buffer_text \"\\n\"~%")
-                      (dbg "buffer_text \"\\n\"~%")
-                    finally (progn (format stream "process_buffer~%")
-                                   (dbg "process_buffer~%")
-                                   (finish-output stream)))
             (setf (wish-output-buffer *wish*) nil)))))))
 
 (defun handle-dead-stream (err stream)
   (when *debug-tk*
-    (format *trace-output* "Error sending command to wish: ~A" err)
-    (finish-output))
+    (dbg "Error sending command to wish: ~A" err))
   (ignore-errors (close stream))
   (exit-wish))
 
 (defun format-wish (control &rest args)
   "format 'args using 'control as control string to wish"
   (send-wish (apply #'format nil control (mapcar #'sanitize args))))
-
-#+nil
-(defmacro format-wish (control &rest args)
-  "format 'args using 'control as control string to wish"
-  (let ((stream (gensym)))
-    `(progn
-       (when *debug-tk*
-         (format *trace-output* ,control ,@args)
-         (format *trace-output* "~%")
-         (finish-output))
-       (let ((*print-pretty* nil)
-             (,stream (wish-stream *wish*)))
-         (declare (type stream ,stream)
-                  (optimize (speed 3)))
-
-         (format ,stream ,control ,@args)
-         (format ,stream "~%")
-         (finish-output ,stream))
-       nil)))
 
 ;; differences:
 ;; cmucl/sbcl READ expressions only if there is one more character in the stream, if
@@ -396,7 +394,7 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
   "Reads from wish. If the next thing in the stream is looks like a lisp-list
   read it as such, otherwise read one line as a string."
   (flush-wish)
-  (bt:with-recursive-lock-held ((wish-read-lock *wish*))
+  (bt:with-lock-held ((wish-read-lock *wish*))
     (let ((*read-eval* nil)
           (*package* (find-package :nodgui))
           (stream (wish-stream *wish*)))
@@ -469,7 +467,7 @@ event to read and blocking is set to nil"
   (handler-case
       (let ((wstream (wish-stream *wish*)))
         (flush-wish)
-        (bt:with-recursive-lock-held ((wish-read-lock *wish*))
+        (bt:with-lock-held ((wish-read-lock *wish*))
           (let ((event (if (and (not force-read-from-stream)
                                 (check-enqueued-event))
                            (pop-enqueued-event)
@@ -489,29 +487,29 @@ event to read and blocking is set to nil"
   (eq (first event) :read-stream-error))
 
 (defun check-enqueued-data ()
-  (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
+  (bt:with-lock-held ((wish-queue-data-lock *wish*))
     (wish-data-queue *wish*)))
 
 (defun pop-enqueued-data ()
-  (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
+  (bt:with-lock-held ((wish-queue-data-lock *wish*))
     (pop (wish-data-queue *wish*))))
 
 (defun push-enqueued-data (data)
-  (bt:with-recursive-lock-held ((wish-read-data-lock *wish*))
+  (bt:with-lock-held ((wish-queue-data-lock *wish*))
     (let ((new-queue (append (wish-data-queue *wish*) (list data))))
       (setf (wish-data-queue *wish*)
             new-queue))))
 
 (defun check-enqueued-event ()
-  (bt:with-recursive-lock-held ((wish-read-event-lock *wish*))
+  (bt:with-lock-held ((wish-queue-event-lock *wish*))
     (wish-event-queue *wish*)))
 
 (defun pop-enqueued-event ()
-  (bt:with-recursive-lock-held ((wish-read-event-lock *wish*))
+  (bt:with-lock-held ((wish-queue-event-lock *wish*))
     (pop (wish-event-queue *wish*))))
 
 (defun push-enqueued-event (event)
-  (bt:with-recursive-lock-held ((wish-read-event-lock *wish*))
+  (bt:with-lock-held ((wish-queue-event-lock *wish*))
     (let ((new-queue (append (wish-event-queue *wish*) (list event))))
       (setf (wish-event-queue *wish*)
             new-queue))))
@@ -519,47 +517,55 @@ event to read and blocking is set to nil"
 (defun read-data (&key (expected-list-as-data nil))
   "Read data from wish. Non-data events are postponed, bogus messages (eg.
 error-strings) are ignored."
-  (bt:with-recursive-lock-held ((wish-main-iteration-lock *wish*))
-    (setf (wish-waiting-data-p *wish*) t)
-    (labels ((get-data ()
-               (declare (optimize (debug 0) (speed 3)))
-               (cond
-                 ((check-enqueued-data)
-                  (pop-enqueued-data))
-                 (t
-                  (main-iteration :reentrant? t)
-                  (get-data)))))
-      (let ((data (get-data)))
-        (setf (wish-waiting-data-p *wish*) nil)
-        (if (listp data)
-            (cond
-              ((event-got-error-p data)
-               (exit-wish)
-               (return-from read-data nil))
-              ((null data)
-               (exit-wish)
-               (return-from read-data nil))
-              ((eq (first data) :data)
-               (dbg "read-data: ~s~%" data)
-               (if expected-list-as-data
-                   (return-from read-data (rest data))
-                   (return-from read-data (second data))))
-              ((eq (first data) :debug)
-               (if expected-list-as-data
-                   (tcldebug (rest data))
-                   (tcldebug (second data))))
-              ((eq (first data) :error)
-               (error 'tk-error :message (normalize-error data)))
-              (t
-               (finish-output)
-               data))
-            data)))))
+  (dbg "read enter ~a" (nodgui::wish-waiting-data-p *wish*))
+  (with-main-loop-lock ()
+    (loop while (wish-waiting-data-p *wish*) do
+      (bt:condition-wait (wish-main-loop-cond *wish*)
+                         (wish-main-loop-lock *wish*))))
+  (dbg "read unlock")
+  (setf (wish-waiting-data-p *wish*) t)
+  (labels ((get-data ()
+             (declare (optimize (debug 0) (speed 3)))
+             (if (check-enqueued-data)
+                 (progn
+                   (pop-enqueued-data))
+                 (progn
+                   (dbg "read-data forced~%")
+                   (manage-wish-output (read-single-input (cons nil nil) t)
+                                       nil
+                                       :read-data)
+                   (get-data)))))
+    (let ((data (get-data)))
+      (if (listp data)
+          (cond
+            ((event-got-error-p data)
+             (exit-wish)
+             (return-from read-data nil))
+            ((null data)
+             (exit-wish)
+             (return-from read-data nil))
+            ((eq (first data) :data)
+             (dbg "read-data: ~s~%" data)
+             (if expected-list-as-data
+                 (return-from read-data (rest data))
+                 (return-from read-data (second data))))
+            ((eq (first data) :debug)
+             (if expected-list-as-data
+                 (tcldebug (rest data))
+                 (tcldebug (second data))))
+            ((eq (first data) :error)
+             (error 'tk-error :message (normalize-error data)))
+            (t
+             (finish-output)
+             data))
+          data))))
 
 (defun read-keyword ()
-  (let ((string (read-data)))
-    (when (> (length string) 0)
-      (values (intern #-scl (string-upcase string)
-                      #+scl (if (eq ext:*case-mode* :upper)
-                                (string-upcase string)
-                                (string-downcase string))
-                      :keyword)))))
+  (with-read-data (nil)
+    (let ((string (read-data)))
+      (when (> (length string) 0)
+        (values (intern #-scl (string-upcase string)
+                        #+scl (if (eq ext:*case-mode* :upper)
+                                  (string-upcase string)
+                                  (string-downcase string))
+                        :keyword))))))

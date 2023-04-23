@@ -29,8 +29,8 @@
                (widget-path (master m)) (text m) (name m) (and (command m) (name m))))
 
 (defmethod value ((cb menucheckbutton))
-  (format-wish "global ~a; senddata $~a" (name cb) (name cb))
-  (read-data))
+  (with-read-data ()
+    (format-wish "global ~a; senddata $~a" (name cb) (name cb))))
 
 (defmethod (setf value) (val (cb menucheckbutton))
   (format-wish "global ~a; set ~a {~a}" (name cb) (name cb) val)

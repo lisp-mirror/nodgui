@@ -1581,6 +1581,9 @@
            #:see
            #:send-lazy
            #:with-lazy
+           #:*with-read-data-no-lock*
+           #:with-read-data
+           #:with-main-loop-lock
            #:require-tcl-package
            #:try-to-load-tcl-package
            #:set-coords

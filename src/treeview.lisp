@@ -365,24 +365,27 @@ not equal to all the others. The test is performed calling :test"
 
 (defmethod treeview-exists ((tree treeview) item)
   "Check if tree contains item"
-  (format-wish "senddata [~a exists {~a}]" (widget-path tree) item)
-  (tcl-bool->lisp (read-data)))
+  (with-read-data (nil)
+    (format-wish "senddata [~a exists {~a}]" (widget-path tree) item)
+    (tcl-bool->lisp (read-data))))
 
 (defgeneric treeview-focus (tree))
 
 (defmethod treeview-focus ((tree treeview))
-  (format-wish "senddatastring [~a focus]" (widget-path tree))
-  (let ((name (read-data)))
-    (find name (items tree) :key #'id :test #'equal)))
+  (with-read-data (nil)
+    (format-wish "senddatastring [~a focus]" (widget-path tree))
+    (let ((name (read-data)))
+      (find name (items tree) :key #'id :test #'equal))))
 
 (defgeneric treeview-identify-item (tree x y))
 
 (defmethod treeview-identify-item ((tree treeview) x y)
-  (format-wish "senddatastring [~a identify row ~a ~a ]" (widget-path tree)
-               (tk-number x)
-               (tk-number y))
-  (let ((name (read-data)))
-    (find name (items tree) :key #'id :test #'equal)))
+  (with-read-data (nil)
+    (format-wish "senddatastring [~a identify row ~a ~a ]" (widget-path tree)
+                 (tk-number x)
+                 (tk-number y))
+    (let ((name (read-data)))
+      (find name (items tree) :key #'id :test #'equal))))
 
 (defgeneric (setf treeview-focus) (item tree))
 
@@ -399,9 +402,9 @@ not equal to all the others. The test is performed calling :test"
      (format-wish "~a item {~a} ~{ {-~(~a~)} {~a}~}"
                   (widget-path tree) item (mapcar #'down options)))
     (t ;; query
-     (format-wish "senddatastring [~a item {~a} ~@[ {-~(~a~)}~]]"
-                  (widget-path tree) item (car options))
-     (read-data))))
+     (with-read-data ()
+       (format-wish "senddatastring [~a item {~a} ~@[ {-~(~a~)}~]]"
+                    (widget-path tree) item (car options))))))
 
 (defun treeview-column (tree column &rest options)
   "Query or modify the options for the specified column."
@@ -410,9 +413,10 @@ not equal to all the others. The test is performed calling :test"
      (format-wish "~a column {~a} ~{ {-~(~a~)} {~a}~}"
                   (widget-path tree) column (mapcar #'down options)))
     (t ;; query
-     (format-wish "senddatastring [~a column {~a} ~@[ {-~(~a~)}~]]"
-                  (widget-path tree) column (car options))
-     (read-data))))
+     (with-read-data ()
+       (format-wish "senddatastring [~a column {~a} ~@[ {-~(~a~)}~]]"
+                    (widget-path tree) column (car options))
+       (read-data)))))
 
 (defgeneric treeview-heading (object column-id &key text image anchor command))
 
@@ -461,11 +465,12 @@ not equal to all the others. The test is performed calling :test"
 
 (defmethod treeview-get-selection ((tv treeview))
   "Get the selected items (a list of tree-item) of this treeview"
-  (format-wish "senddatastrings [~a selection]" (widget-path tv))
-  (let ((names (read-data))
-        (items (items tv)))
-    (mapcar (lambda (name) (find name items :key #'id :test #'treeview-test-item))
-            names)))
+  (with-read-data (nil)
+    (format-wish "senddatastrings [~a selection]" (widget-path tv))
+    (let ((names (read-data))
+          (items (items tv)))
+      (mapcar (lambda (name) (find name items :key #'id :test #'treeview-test-item))
+              names))))
 
 (defgeneric treeview-set-selection (w items))
 

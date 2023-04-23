@@ -115,12 +115,14 @@
   (read-data :expected-list-as-data t))
 
 (defmethod listbox-get-selection-value ((object listbox))
-  (let ((indices (listbox-get-selection-index object)))
-    (loop for i in indices collect
-         (let ((*add-space-after-emitted-unspecialized-element* nil))
-           (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
-                                                 get {+ ,i } ])))
-           (read-data)))))
+  (with-read-data (nil)
+    (let ((indices (listbox-get-selection-index object)))
+      (loop for i in indices
+            collect
+            (let ((*add-space-after-emitted-unspecialized-element* nil))
+              (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                                                    get {+ ,i } ])))
+              (read-data))))))
 
 (defmethod listbox-select ((l listbox) val)
   "modify the selection in listbox, if nil is given, the selection is cleared,
@@ -163,8 +165,8 @@ alternatively a list of numbers may be given"
   l)
 
 (defmethod listbox-nearest ((l listbox) y)
-  (format-wish "senddata [~a nearest {~a}]" (widget-path l) y)
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a nearest {~a}]" (widget-path l) y)))
 
 (defmethod see ((lb listbox) pos)
   (format-wish "~a see {~a}" (widget-path lb) pos)
@@ -179,8 +181,8 @@ alternatively a list of numbers may be given"
                           configure -selectmode {+ ,(down mode) }))))
 
 (defmethod listbox-size ((object listbox))
-  (format-wish (tclize `(senddata [,(widget-path object) " " size ])))
-  (read-data))
+  (with-read-data ()
+    (format-wish (tclize `(senddata [,(widget-path object) " " size ])))))
 
 (defmethod listbox-export-selection ((object listbox) value)
   (format-wish (tclize `(,(widget-path object) " "
@@ -188,13 +190,13 @@ alternatively a list of numbers may be given"
 
 (defmethod listbox-values-in-range ((object listbox) &key (from 0) (to :end))
   "Get the values of the entries in a listbox in range [from to]"
-  (format-wish (tclize
-                `(senddatastrings [ ,(widget-path object) " "
-                                  get
-                                  {+ ,(down from) }
-                                  {+ ,(down to) }
-                           ])))
-  (read-data))
+  (with-read-data ()
+    (format-wish (tclize
+                  `(senddatastrings [ ,(widget-path object) " "
+                                    get
+                                    {+ ,(down from) }
+                                    {+ ,(down to) }
+                                    ])))))
 
 (defmethod listbox-all-values ((object listbox))
   "Get all values of a listbox"

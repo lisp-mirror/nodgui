@@ -38,10 +38,11 @@
     (setf (value v) initial-value)))
 
 (defmethod value ((v tkvariable))
-  (format-wish "global ~a; senddata $~a" (name v) (name v))
-  (if (data-returned-are-list-p v)
-      (read-data :expected-list-as-data t)
-      (read-data)))
+  (with-read-data (nil)
+    (format-wish "global ~a; senddata $~a" (name v) (name v))
+    (if (data-returned-are-list-p v)
+        (read-data :expected-list-as-data t)
+        (read-data))))
 
 (defmethod (setf value) (val (v tkvariable))
   (format-wish "global ~a; set ~a {~a}" (name v) (name v) val)

@@ -32,11 +32,12 @@
   object)
 
 (defmethod value ((object control-widget))
-  (with-accessors ((widget-path widget-path)
-                   (name        name)) object
-    (with-no-emitted-newline
-      (format-wish (tclize `(senddata ,widget-path " " get)))
-      (read-data))))
+  (with-read-data (nil)
+    (with-accessors ((widget-path widget-path)
+                     (name        name)) object
+      (with-no-emitted-newline
+        (format-wish (tclize `(senddata ,widget-path " " get)))
+        (read-data)))))
 
 (defmethod (setf value) (new-value (object control-widget))
   (with-accessors ((widget-path widget-path)

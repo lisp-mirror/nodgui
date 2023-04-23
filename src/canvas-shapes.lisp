@@ -90,18 +90,18 @@ coords:        the vertices of this polygon
 fill-color:    the color that fills this polygon
 outline-color: the color of  the contour that surrond this polygon
 outline-width: the width in pixel of the outline of this polygon"
-  (let ((*suppress-newline-for-tcl-statements* t))
-    (format-wish (tclize `(senddata [,(widget-path canvas) " "
-                                    create polygon
-                                    ,(process-coords coords) " "
-                                    ,(empty-string-if-nil fill-color
-                                         `(-fill  {+ ,fill-color }))
-                                    ,(empty-string-if-nil outline-color
-                                         `(-outline  {+ ,outline-color }))
-                                    ,(empty-string-if-nil outline-width
-                                         `(-width  {+ ,outline-width  }))
-                                    ])))
-    (read-data)))
+  (with-read-data ()
+    (let ((*suppress-newline-for-tcl-statements* t))
+      (format-wish (tclize `(senddata [,(widget-path canvas) " "
+                                      create polygon
+                                      ,(process-coords coords) " "
+                                      ,(empty-string-if-nil fill-color
+                                                            `(-fill  {+ ,fill-color }))
+                                      ,(empty-string-if-nil outline-color
+                                                            `(-outline  {+ ,outline-color }))
+                                      ,(empty-string-if-nil outline-width
+                                                            `(-width  {+ ,outline-width  }))
+                                      ]))))))
 
 (defclass polygon (shape canvas-handler-holder)
   ()

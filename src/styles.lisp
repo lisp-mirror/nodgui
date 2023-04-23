@@ -230,24 +230,27 @@
 (defgeneric fetch-layout (object))
 
 (defmethod fetch-layout ((object string))
-  (let ((name (find-style object)))
-    (format-wish "senddatastring [ttk::style layout ~a]"
-                 (serialize-style-name name))
-    (let ((raw (read-data)))
-      (parse-layout raw))))
+  (with-read-data (nil)
+    (let ((name (find-style object)))
+      (format-wish "senddatastring [ttk::style layout ~a]"
+                   (serialize-style-name name))
+      (let ((raw (read-data)))
+        (parse-layout raw)))))
 
 (defmethod fetch-layout ((object symbol))
-  (let ((name (find-style (symbol->stylename object))))
-    (format-wish "senddatastring [ttk::style layout ~a]"
-                 (serialize-style-name name))
-    (let ((raw (read-data)))
-      (parse-layout raw))))
+  (with-read-data (nil)
+    (let ((name (find-style (symbol->stylename object))))
+      (format-wish "senddatastring [ttk::style layout ~a]"
+                   (serialize-style-name name))
+      (let ((raw (read-data)))
+        (parse-layout raw)))))
 
 (defmethod fetch-layout ((object style))
+  (with-read-data (nil)
     (format-wish "senddatastring [ttk::style layout ~a]"
                  (serialize-style-name object))
     (let ((raw (read-data)))
-      (parse-layout raw)))
+      (parse-layout raw))))
 
 (defgeneric layout-configure (object layout))
 

@@ -44,13 +44,14 @@
 
 (defmethod value ((rb radio-button))
   "reads the content of the shared variable of the radio button set"
-  (if (radio-button-variable rb)
-      (progn
-        (format-wish "global ~a; senddata ${~a}"
-                     (radio-button-variable rb)
-                     (radio-button-variable rb))
-        (read-data))
-      nil))
+  (with-read-data (nil)
+    (if (radio-button-variable rb)
+        (progn
+          (format-wish "global ~a; senddata ${~a}"
+                       (radio-button-variable rb)
+                       (radio-button-variable rb))
+          (read-data))
+        nil)))
 
 (defmethod (setf value) (val (rb radio-button))
   "sets the content of the shared variable of the radio button set"

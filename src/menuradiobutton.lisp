@@ -37,8 +37,8 @@
                (and (command m) (name m))))
 
 (defmethod value ((cb menuradiobutton))
-  (format-wish "global ~a; senddata ${~a}" (group cb) (group cb))
-  (read-data))
+  (with-read-data ()
+    (format-wish "global ~a; senddata ${~a}" (group cb) (group cb))))
 
 (defmethod (setf value) (val (cb menuradiobutton))
   (format-wish "global ~a; set ~a {~a}" (group cb) (group cb) val)

@@ -26,13 +26,11 @@
 
 (defun add-callback (sym fun)
   "create a callback sym is the name to use for storage, fun is the function to call"
-  (when *debug-tk*
-    (format *trace-output* "add-callback (~A ~A)~%" sym fun))
+  (dbg "add-callback (~A ~A)~%" sym fun)
   (setf (gethash sym (wish-callbacks *wish*)) fun))
 
 (defun remove-callback (sym)
-  (when *debug-tk*
-    (format *trace-output* "remove-callback (~A)~%" sym))
+  (dbg "remove-callback (~A)~%" sym)
   (setf (gethash sym (wish-callbacks *wish*)) nil))
 
 (defun callback (sym arg)
@@ -48,32 +46,35 @@
 (defun after (time fun)
  "after <time> msec call function <fun>, returns the after event id,
 which can be passed to AFTER-CANCEL"
- (let ((name (format nil "after~a" (incf (wish-after-counter *wish*)))))
-   (format-wish (tcl-str (senddatastring [after {~a} {callback ~A}])) time name)
-   ;(senddatastring "[after ~a {callback ~A}]" time name)
-   (let ((id (read-data))
-         (blah (wish-after-ids *wish*)))
-     (setf (gethash id blah) name)
-     (add-callback name
-                   (lambda ()
-                     (funcall fun)
-                     (remhash id blah)
-                     (remove-callback name)))
-     id)))
+  (incf (wish-after-counter *wish*))
+    (let* ((name (create-name (format nil "after~a" (wish-after-counter *wish*))))
+           (id   (with-read-data ()
+                   (format-wish (tcl-str (senddatastring [after {~a} {callback ~A}]))
+                                time
+                                name)))
+           (blah (wish-after-ids *wish*)))
+      (setf (gethash id blah) name)
+      (add-callback name
+                    (lambda ()
+                      (funcall fun)
+                      (remhash id blah)
+                      (remove-callback name)))
+      id))
 
 (defun after-idle (fun)
  "call fun when tk becomes idle, returns the after event id, which
 can be passed to AFTER-CANCEL"
- (let ((name (format nil "afteridle~a" (incf (wish-after-counter *wish*)))))
-   (format-wish "senddatastring [after idle {callback ~A}]" name)
-   (let ((id (read-data))
-         (blah (wish-after-ids *wish*)))
-     (add-callback name
-                   (lambda ()
-                     (funcall fun)
-                     (remhash id blah)
-                     (remove-callback name)))
-     id)))
+  (with-read-data (nil)
+    (let ((name (format nil "afteridle~a" (incf (wish-after-counter *wish*)))))
+      (format-wish "senddatastring [after idle {callback ~A}]" name)
+      (let ((id (read-data))
+            (blah (wish-after-ids *wish*)))
+        (add-callback name
+                      (lambda ()
+                        (funcall fun)
+                        (remhash id blah)
+                        (remove-callback name)))
+        id))))
 
 (defun after-cancel (id)
  "cancels a call scheduled with AFTER or AFTER-IDLE by its id"
@@ -171,8 +172,8 @@ can be passed to AFTER-CANCEL"
   (send-wish "clipboard clear"))
 
 (defun clipboard-get ()
-  (format-wish "senddatastring [clipboard get]")
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddatastring [clipboard get]")))
 
 (defun clipboard-append (txt)
   (format-wish "clipboard append {~a}" txt))
@@ -523,8 +524,8 @@ set y [winfo y ~a]
 (defgeneric cget (widget option &key &allow-other-keys))
 
 (defmethod cget ((widget widget) option &key &allow-other-keys)
-  (format-wish "senddatastring [~a cget {-~(~a~)}]" (widget-path widget) option)
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddatastring [~a cget {-~(~a~)}]" (widget-path widget) option)))
 
 ;(defun background (widget)
 ;  (cget widget :background))
@@ -578,47 +579,47 @@ set y [winfo y ~a]
                (down name) family size weight slant underline overstrike))
 
 (defun font-create (name &key family size weight slant underline overstrike)
-  (format-wish "senddatastring [font create {~a}~@[ -family {~a}~]~@[ -size {~a}~]~@[ -weight {~(~a~)}~]~@[ -slant {~(~a~)}~]~@[ -underline {~a}~]~@[ -overstrike {~a}~]]"
-               (down name) family size weight slant underline overstrike)
-   (read-data))
+  (with-read-data ()
+    (format-wish "senddatastring [font create {~a}~@[ -family {~a}~]~@[ -size {~a}~]~@[ -weight {~(~a~)}~]~@[ -slant {~(~a~)}~]~@[ -underline {~a}~]~@[ -overstrike {~a}~]]"
+                 (down name) family size weight slant underline overstrike)))
 
 (defun font-delete (&rest names)
   (format-wish "font delete~{ {~a}~}" (down names)))
 
 (defun font-measure (font-spec text &key (display-of nil))
-  (let ((*suppress-newline-for-tcl-statements* t))
-    (format-wish (tclize `(senddata [ font measure
-                                    ,(empty-string-if-nil font-spec
-                                         `({+ ,font-spec } " "))
-                                    ,(empty-string-if-nil display-of
-                                         `(-displayof  {+ ,(widget-path display-of) }
-                                           " "))
-                                    ,(empty-string-if-nil text
-                                         `({+ ,text }))
-                                    ])))
-    (read-data)))
+  (with-read-data ()
+    (let ((*suppress-newline-for-tcl-statements* t))
+      (format-wish (tclize `(senddata [ font measure
+                                      ,(empty-string-if-nil font-spec
+                                                            `({+ ,font-spec } " "))
+                                      ,(empty-string-if-nil display-of
+                                                            `(-displayof {+ ,(widget-path display-of) }
+                                                                         " "))
+                                      ,(empty-string-if-nil text
+                                                            `({+ ,text }))
+                                      ]))))))
 
 (defun font-metrics (font)
-  (format-wish "sendpropertylist [font metrics {~a}]" (down font))
-  (read-data))
+  (with-read-data ()
+    (format-wish "sendpropertylist [font metrics {~a}]" (down font))))
 
 ;;(defun font-names ...)
 
 (defun font-families (&optional (display-of nil))
-  (format-wish (tclize `(senddatastrings [ font families " "
-                                         ,(empty-string-if-nil display-of
-                                              `(-displayof  {+ ,(widget-path display-of) }
-                                                " "))
-                                         ])))
-  (read-data))
+  (with-read-data ()
+    (format-wish (tclize `(senddatastrings [ font families " "
+                                           ,(empty-string-if-nil display-of
+                                                                 `(-displayof  {+ ,(widget-path display-of) }
+                                                                               " "))
+                                           ])))))
 
 (defun font-chooser-show (&key (parent *tk*) (title "Choose a font"))
-  (format-wish (tclize `(tk fontchooser configure
-                            -parent {+ ,(widget-path parent) }
+  (with-read-data ()
+    (format-wish (tclize `(tk fontchooser configure
+                              -parent {+ ,(widget-path parent) }
                             -title  {+ ,title }
                             -command senddatastring)))
-  (format-wish (tclize `(tk fontchooser show)))
-  (read-data))
+    (format-wish (tclize `(tk fontchooser show)))))
 
 (defun font-chooser-hide ()
   (format-wish (tclize `(tk fontchooser hide))))
@@ -697,9 +698,7 @@ set y [winfo y ~a]
 
 (defun process-one-event (event)
   (when event
-    (when *debug-tk*
-      (format *trace-output* "event:~s<=~%" event)
-      (finish-output *trace-output*))
+    (dbg "event:~s<=~%" event)
     (cond
      ((and (not (listp event))
            *trace-tk*)
@@ -711,18 +710,18 @@ set y [winfo y ~a]
         (callback (first params) (rest params))))
      ((eq (first event) :event)
       (let* ((params (rest event))
-             (callback (first params))
+             (callback-name (first params))
              (evp (rest params))
              (event (construct-tk-event evp)))
-        (callback callback (list event))))
+        (callback callback-name (list event))))
       ((eq (first event) :keepalive)
-       (format *trace-output* "Ping from wish: ~{~A~^~}~%" (rest event))
-       (finish-output *trace-output*))
+       (dbg "Ping from wish: ~{~A~^~}~%" (rest event)))
       ((eq (first event) :debug)
        (tcldebug (second event)))
-     (t
-      (handle-output
-       (first event) (rest event))))))
+      (t
+       ;; handle-output does nothing!
+       (handle-output (first event)
+                      (rest event))))))
 
 (defun process-events ()
   "A function to temporarliy yield control to wish so that pending
@@ -735,59 +734,75 @@ tk input to terminate"
 
 (defparameter *inside-mainloop* ())
 
+(defun read-single-input (no-event-value &optional (force-read-from-wish nil))
+  (let ((event (if (or force-read-from-wish
+                       (wish-waiting-data-p *wish*))
+                   (read-event :no-event-value no-event-value
+                               :force-read-from-stream t)
+                   (read-event :no-event-value no-event-value))))
+    event))
+
+(define-constant +no-event-value+ (cons nil nil) :test #'equalp)
+
+(defun manage-wish-output (event process-callback from)
+  (dbg "manage ~a from ~a" event from)
+  (cond
+    ((or (null event)
+         (event-got-error-p event))
+     (ignore-errors (close (wish-stream *wish*)))
+     (exit-wish)
+     nil)
+    ((eq (first event) :data)
+     (push-enqueued-data event)
+     (with-main-loop-lock ()
+       (setf (nodgui::wish-waiting-data-p *wish*) nil)
+       (bt:condition-notify
+        (nodgui::wish-main-loop-cond *wish*))
+       t))
+    ((eql event +no-event-value+)
+     t)
+    (t
+     (if (null process-callback)
+         (push-enqueued-event event)
+         (progn
+           (with-atomic
+               (process-one-event event))
+           (cond
+             (*break-mainloop* nil)
+             (*exit-mainloop*
+              (exit-wish)
+              nil)
+             (t t)))))))
+
 (defun main-iteration (&key (reentrant? nil))
   "The heart of the main loop.  Returns true as long as the main loop should continue."
-  (bt:with-recursive-lock-held ((wish-main-iteration-lock *wish*))
-    (or (check-enqueued-data)
-        (let ((no-event (cons nil nil)))
-          (labels ((proc-event ()
-                     (let ((event (if (wish-waiting-data-p *wish*)
-                                      (read-event :no-event-value no-event
-                                                  :force-read-from-stream t)
-                                      (read-event :no-event-value no-event))))
-                       (cond
-                         ((or (null event)
-                              (event-got-error-p event))
-                          (ignore-errors (close (wish-stream *wish*)))
-                          (exit-wish)
-                          nil)
-                         ((eq (first event) :data)
-                          (push-enqueued-data event))
-                         ((eql event no-event)
-                          t)
-                         (t
-                          (if (wish-waiting-data-p *wish*)
-                              (push-enqueued-event event)
-                              (progn
-                                (with-atomic
-                                    (process-one-event event))
-                                (cond
-                                  (*break-mainloop* nil)
-                                  (*exit-mainloop*
-                                   (exit-wish)
-                                   nil)
-                                  (t t)))))))))
-            ;; For recursive calls to mainloop, we don't want to setup our
-            ;; ABORT and EXIT restarts.  They make things too complex.
-            (if reentrant?
-                (proc-event)
-                (restart-case (proc-event)
-                  (abort ()
-                    :report "Abort handling Tk event"
-                    t)
-                  (exit ()
-                    :report "Exit Nodgui main loop"
-                    nil))))))))
+  ;; For recursive calls to mainloop, we don't want to setup our
+  ;; ABORT and EXIT restarts.  They make things too complex.
+  (dbg "iter enter")
+  (if reentrant?
+      (manage-wish-output (read-single-input +no-event-value+ nil)
+                          t
+                          :iter)
+      (restart-case
+          (manage-wish-output (read-single-input +no-event-value+ nil)
+                              t
+                              :iter)
+        (abort ()
+          :report "Abort handling Tk event"
+          t)
+        (exit ()
+          :report "Exit Nodgui main loop"
+          nil))))
 
 (defun mainloop ()
   (let ((reentrant? (member *wish* *inside-mainloop*))
-        (*inside-mainloop* (adjoin *wish* *inside-mainloop*))
-        (*exit-mainloop* nil)
-        (*break-mainloop* nil))
-    (if reentrant?
-        (loop while (main-iteration :reentrant? t))
-        (loop while (with-nodgui-handlers ()
-                      (main-iteration))))))
+        (*inside-mainloop* (adjoin *wish* *inside-mainloop*)))
+    (let ((*exit-mainloop* nil)
+          (*break-mainloop* nil))
+      (if reentrant?
+          (loop while (main-iteration :reentrant? t))
+          (loop while (with-nodgui-handlers ()
+                        (main-iteration)))))))
 
 (defun filter-keys (desired-keys keyword-arguments)
   (loop for (key val) on keyword-arguments by #'cddr
@@ -824,11 +839,7 @@ tk input to terminate"
            (apply #'start-wish
                   (append (filter-keys '(:stream :debugger-class :debug-tcl)
                                        keys)
-                          (list :debugger-class (debug-setting-condition-handler debug)))))
-         (mainloop ()
-           (apply #'mainloop (filter-keys '(:serve-event) keys))))
-
-
+                          (list :debugger-class (debug-setting-condition-handler debug))))))
     (let* ((class-name  (or (getf keys :class)
                             (getf keys :name)))
            (title-value (getf keys :title))
@@ -853,9 +864,7 @@ tk input to terminate"
 
 (defmacro with-modal-toplevel ((var &rest toplevel-initargs) &body body)
   `(let* ((,var (make-instance 'toplevel ,@toplevel-initargs))
-          (*exit-mainloop* nil)
-          ;(*buffer-for-atomic-output* nil)
-          )
+          (*exit-mainloop* nil))
      (wait-complete-redraw)
      (unwind-protect
          (catch 'modal-toplevel

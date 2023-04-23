@@ -188,8 +188,8 @@
   (canvas-bbox (canvas item) (handle item)))
 
 (defmethod bbox ((canvas canvas))
-  (format-wish "senddata \"([~a bbox all])\"" (widget-path canvas))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata \"([~a bbox all])\"" (widget-path canvas))))
 
 (defun canvas-bbox (canvas handle)
   (warn "Canvas bbox is a misleading name: use \"canvas-item-bbox\" instead")
@@ -228,11 +228,12 @@
      (bbox-min-y aabb)))
 
 (defun canvas-item-bbox (canvas handle)
-  (format-wish "senddata \"([~a bbox {~a}])\"" (widget-path canvas) handle)
-  (let ((bbox (read-data)))
-    (if (epsilon= *bbox-scale-fix* 1.0)
-        bbox
-        (mapcar (lambda (a) (round (* a *bbox-scale-fix*))) bbox))))
+  (with-read-data (nil)
+    (format-wish "senddata \"([~a bbox {~a}])\"" (widget-path canvas) handle)
+    (let ((bbox (read-data)))
+      (if (epsilon= *bbox-scale-fix* 1.0)
+          bbox
+          (mapcar (lambda (a) (round (* a *bbox-scale-fix*))) bbox)))))
 
 (defmethod calc-scroll-region ((canvas canvas))
   (format-wish "~a configure -scrollregion [~a bbox all]"
@@ -336,12 +337,12 @@
   c)
 
 (defmethod canvasx ((canvas canvas) screenx)
-  (format-wish "senddata [~a canvasx ~a]" (widget-path canvas) (tk-number screenx))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a canvasx ~a]" (widget-path canvas) (tk-number screenx))))
 
 (defmethod canvasy ((canvas canvas) screeny)
-  (format-wish "senddata [~a canvasy ~a]" (widget-path canvas) (tk-number screeny))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a canvasy ~a]" (widget-path canvas) (tk-number screeny))))
 
 (defmethod canvas-x ((canvas canvas) screenx)
   (canvasx canvas screenx))
@@ -419,8 +420,8 @@
 ;; canvas item functions
 
 (defun create-line (canvas coords)
-  (format-wish "senddata [~a create line ~a]" (widget-path canvas) (process-coords coords))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a create line ~a]" (widget-path canvas) (process-coords coords))))
 
 (defun create-line* (canvas &rest coords)
   (funcall #'create-line canvas coords))
@@ -460,10 +461,10 @@
        object)))
 
 (defun create-oval (canvas x0 y0 x1 y1)
-  (format-wish "senddata [~a create oval ~a ~a ~a ~a]" (widget-path canvas)
-               (tk-number x0) (tk-number y0)
-               (tk-number x1) (tk-number y1))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a create oval ~a ~a ~a ~a]" (widget-path canvas)
+                 (tk-number x0) (tk-number y0)
+                 (tk-number x1) (tk-number y1))))
 
 (defclass canvas-oval (canvas-item)
   ())
@@ -502,9 +503,9 @@
     (colorize shape fill outline)))
 
 (defun create-rectangle (canvas x0 y0 x1 y1)
-  (format-wish "senddata [~a create rectangle ~a ~a ~a ~a]" (widget-path canvas)
-               (tk-number x0) (tk-number y0) (tk-number x1) (tk-number y1))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a create rectangle ~a ~a ~a ~a]" (widget-path canvas)
+                 (tk-number x0) (tk-number y0) (tk-number x1) (tk-number y1))))
 
 (defclass canvas-rectangle (canvas-item)
   ())
@@ -596,40 +597,42 @@
 
 (defun make-items (canvas items)
   "Create canvas items according to the item specs and return a list of canvas-items."
-  (let ((code (with-output-to-string (s)
-                (format s "senddata \"( ~%")
-                (dolist (item items)
-                  (format s " [")
-                  (create-item-command canvas item s)
-                  (format s " ]~%"))
-                (format s ")\"~%"))))
-    (send-wish code)
-    (let ((handles (read-data)))
-      ;;(format t "data: ~s~%" erg) (finish-output)
-      (loop for handle in handles as (itemtype) in items collect
-           (let ((class (if (consp itemtype)
-                            (cdr itemtype)
-                            'canvas-item)))
-             (make-instance class :canvas canvas :handle handle))))))
+  (with-read-data (nil)
+    (let ((code (with-output-to-string (s)
+                  (format s "senddata \"( ~%")
+                  (dolist (item items)
+                    (format s " [")
+                    (create-item-command canvas item s)
+                    (format s " ]~%"))
+                  (format s ")\"~%"))))
+      (send-wish code)
+      (let ((handles (read-data)))
+        ;;(format t "data: ~s~%" erg) (finish-output)
+        (loop for handle in handles as (itemtype) in items
+              collect
+              (let ((class (if (consp itemtype)
+                               (cdr itemtype)
+                               'canvas-item)))
+                (make-instance class :canvas canvas :handle handle)))))))
 
 (defun create-text (canvas x y text &key
                                       (anchor :nw) (justify :left)
                                       (angle 0.0)  (font nil))
-  (assert (find justify '(:left :right :center)))
-  (with-canvas-path (path canvas)
-    (let ((*suppress-newline-for-tcl-statements* t))
-      (format-wish (tclize
-                    `(senddata [ ,path                         " "
-                               create text
-                               ,(tk-number x)                  " "
-                               ,(tk-number y)                  " "
-                               ,(empty-string-if-nil font
-                                    `(-font    {+ ,font }  " "))
-                               -angle   ,(tk-number angle)     " "
-                               -justify {+ ,(down justify) } " "
-                               -anchor  {+ ,(down anchor ) } " "
-                               -text    {+ ,text } ])))
-      (read-data))))
+  (with-read-data ()
+    (assert (find justify '(:left :right :center)))
+    (with-canvas-path (path canvas)
+      (let ((*suppress-newline-for-tcl-statements* t))
+        (format-wish (tclize
+                      `(senddata [ ,path                         " "
+                                 create text
+                                 ,(tk-number x)                  " "
+                                 ,(tk-number y)                  " "
+                                 ,(empty-string-if-nil font
+                                                       `(-font    {+ ,font }  " "))
+                                 -angle   ,(tk-number angle)     " "
+                                 -justify {+ ,(down justify) } " "
+                                 -anchor  {+ ,(down anchor ) } " "
+                                 -text    {+ ,text } ])))))))
 
 (defclass canvas-text (canvas-item) ())
 
@@ -637,10 +640,10 @@
   (setf (handle c) (create-text canvas x y text)))
 
 (defun create-image (canvas x y &key image)
-  (format-wish "senddata [~a create image ~a ~a -anchor nw~@[ -image ~a~]]" (widget-path canvas)
-               (tk-number x) (tk-number y)
-               (and image (name image)))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a create image ~a ~a -anchor nw~@[ -image ~a~]]" (widget-path canvas)
+                 (tk-number x) (tk-number y)
+                 (and image (name image)))))
 
 (defclass canvas-image (canvas-item)
   ())
@@ -659,27 +662,27 @@
   image)
 
 (defun create-bitmap (canvas x y &key (bitmap nil))
-  (format-wish "senddata [~a create image ~a ~a -anchor nw~@[ -bitmap ~a~]]"
-               (widget-path canvas)
-               (tk-number x) (tk-number y)
-               (and bitmap (name bitmap)))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a create image ~a ~a -anchor nw~@[ -bitmap ~a~]]"
+                 (widget-path canvas)
+                 (tk-number x) (tk-number y)
+                 (and bitmap (name bitmap)))))
 
 (defun create-arc (canvas x0 y0 x1 y1
                    &key (start 0) (extent 180) (style "pieslice") (fill "#ff0000"))
-  (with-canvas-path (path canvas)
-    (format-wish (tclize
-                  `(senddata [ ,path         " "
-                             create arc
-                             ,(tk-number x0) " "
-                             ,(tk-number y0) " "
-                             ,(tk-number x1) " "
-                             ,(tk-number y1) " "
-                             -start  {+ ,(down start  ) }
-                             -extent {+ ,(down extent ) }
-                             -style  {+ ,(down style  ) }
-                             -fill   {+ ,(down fill   ) } ])))
-    (read-data)))
+  (with-read-data ()
+    (with-canvas-path (path canvas)
+      (format-wish (tclize
+                    `(senddata [ ,path         " "
+                               create arc
+                               ,(tk-number x0) " "
+                               ,(tk-number y0) " "
+                               ,(tk-number x1) " "
+                               ,(tk-number y1) " "
+                               -start  {+ ,(down start  ) }
+                               -extent {+ ,(down extent ) }
+                               -style  {+ ,(down style  ) }
+                               -fill   {+ ,(down fill   ) } ]))))))
 
 (defclass canvas-arc (canvas-item)
   ())
@@ -740,35 +743,35 @@
     widget))
 
 (defun item-cget (canvas item option)
-  (format-wish (tcl-str (senddatastring [~a itemcget {~\(~a~\)} {-~\(~a~\)}]))
-               (widget-path canvas) item (down option))
-  (read-data))
+  (with-read-data ()
+    (format-wish (tcl-str (senddatastring [~a itemcget {~\(~a~\)} {-~\(~a~\)}]))
+                 (widget-path canvas) item (down option))))
 
 (defmethod initialize-instance :after ((c canvas-window) &key canvas (x 0) (y 0) widget (anchor :nw))
   (setf (handle c) (create-window canvas x y widget :anchor anchor)))
 
 (defun create-window (canvas x y widget &key (anchor :nw))
-  (format-wish "senddata [~a create window ~a ~a -anchor {~(~a~)} -window ~a]"
-               (widget-path canvas)
-               (tk-number x)
-               (tk-number y)
-               (down anchor)
-               (widget-path widget))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a create window ~a ~a -anchor {~(~a~)} -window ~a]"
+                 (widget-path canvas)
+                 (tk-number x)
+                 (tk-number y)
+                 (down anchor)
+                 (widget-path widget))))
 
 (defun postscript (canvas &key rotate pagewidth pageheight)
-  (if (and (scrollregion-x0 canvas)
-           (scrollregion-x1 canvas)
-           (scrollregion-y0 canvas)
-           (scrollregion-y1 canvas))
-      (format-wish "senddatastring [~a postscript -colormode color -x ~a -y ~a -width ~a -height ~a~@[ -rotate ~a~]~@[ -pagewidth ~a~]~@[ -pageheight ~a~]]"
-                (widget-path canvas)
-                (scrollregion-x0 canvas) (scrollregion-y0 canvas)
-                (- (scrollregion-x1 canvas) (scrollregion-x0 canvas))
-                (- (scrollregion-y1 canvas) (scrollregion-y0 canvas))
-                (tk-number rotate) (tk-number pageheight) (tk-number pagewidth))
-    (format-wish "senddatastring [~a postscript -colormode color]" (widget-path canvas)))
-  (read-data))
+  (with-read-data ()
+    (if (and (scrollregion-x0 canvas)
+             (scrollregion-x1 canvas)
+             (scrollregion-y0 canvas)
+             (scrollregion-y1 canvas))
+        (format-wish "senddatastring [~a postscript -colormode color -x ~a -y ~a -width ~a -height ~a~@[ -rotate ~a~]~@[ -pagewidth ~a~]~@[ -pageheight ~a~]]"
+                     (widget-path canvas)
+                     (scrollregion-x0 canvas) (scrollregion-y0 canvas)
+                     (- (scrollregion-x1 canvas) (scrollregion-x0 canvas))
+                     (- (scrollregion-y1 canvas) (scrollregion-y0 canvas))
+                     (tk-number rotate) (tk-number pageheight) (tk-number pagewidth))
+        (format-wish "senddatastring [~a postscript -colormode color]" (widget-path canvas)))))
 
 (defclass scrolled-canvas (frame)
   ((canvas :accessor canvas)

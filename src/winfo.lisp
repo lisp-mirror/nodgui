@@ -20,68 +20,73 @@
 
 (defun screen-width (&optional (w nil))
   "give the width of the screen in pixels (if w is given, of the screen the widget w is displayed on)"
-  (format-wish "senddata [winfo screenwidth ~a]" (if w (widget-path w) "."))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [winfo screenwidth ~a]" (if w (widget-path w) "."))))
 
 (defun screen-height (&optional (w nil))
   "give the height of the screen in pixels (if w is given, of the screen the widget w is displayed on)"
-  (format-wish "senddata [winfo screenheight ~a]" (if w (widget-path w) "."))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [winfo screenheight ~a]" (if w (widget-path w) "."))))
 
 (defun screen-width-mm (&optional (w nil))
   "give the width of the screen in mm (if w is given, of the screen the widget w is displayed on)"
-  (format-wish "senddata [winfo screenmmwidth ~a]" (if w (widget-path w) "."))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [winfo screenmmwidth ~a]" (if w (widget-path w) "."))))
 
 (defun screen-height-mm (&optional (w nil))
   "give the height of the screen in mm (if w is given, of the screen the widget w is displayed on)"
-  (format-wish "senddata [winfo screenmmheight ~a]" (if w (widget-path w) "."))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [winfo screenmmheight ~a]" (if w (widget-path w) "."))))
 
 (defun screen-mouse-x (&optional (w nil))
   "give x position of the mouse on screen (if w is given, of the screen the widget w is displayed on)"
-  (format-wish "senddata [winfo pointerx ~a]" (if w (widget-path w) "."))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [winfo pointerx ~a]" (if w (widget-path w) "."))))
 
 (defun screen-mouse-y (&optional (w nil))
   "give y position of the mouse on screen (if w is given, of the screen the widget w is displayed on)"
-  (format-wish "senddata [winfo pointery ~a]" (if w (widget-path w) "."))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [winfo pointery ~a]" (if w (widget-path w) "."))))
 
 (defun screen-mouse (&optional (w nil))
   "give the position of the mouse on screen as (x y) (if w is given, of the screen the widget w is displayed on)"
-  (format-wish "senddata \"([winfo pointerxy ~a])\"" (if w (widget-path w) "."))
-  (let ((vals (read-data)))
-    (values (first vals) (second vals))))
+  (with-read-data (nil)
+    (format-wish "senddata \"([winfo pointerxy ~a])\"" (if w (widget-path w) "."))
+    (let ((vals (read-data)))
+      (values (first vals) (second vals)))))
 
 (defun toplevel-pathname (widget)
-  (format-wish (tclize `(senddatastring [winfo toplevel ,(widget-path widget) ])))
-  (read-data))
+  (with-read-data ()
+    (format-wish (tclize `(senddatastring [winfo toplevel ,(widget-path widget) ])))))
 
 (defun children-pathname (widget)
-  (format-wish (tclize `(senddatastring [winfo children ,(widget-path widget) ])))
-  (split-words (read-data)))
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [winfo children ,(widget-path widget) ])))
+    (split-words (read-data))))
 
 (defun parent-pathname (widget)
+  (with-read-data (nil)
   (format-wish (tclize `(senddatastring [winfo parent ,(widget-path widget) ])))
-  (let ((parent (read-data)))
-    (if (string= parent "")
-        nil
-        parent)))
+    (let ((parent (read-data)))
+      (if (string= parent "")
+          nil
+          parent))))
 
 (defun root-x (widget)
-  (format-wish (tclize `(senddatastring [winfo rootx ,(widget-path widget) ])))
-  (let ((x (read-data)))
-    (if (string= x "")
-        nil
-        (parse-integer x))))
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [winfo rootx ,(widget-path widget) ])))
+    (let ((x (read-data)))
+      (if (string= x "")
+          nil
+          (parse-integer x)))))
 
 (defun root-y (widget)
-  (format-wish (tclize `(senddatastring [winfo rooty ,(widget-path widget) ])))
-  (let ((y (read-data)))
-    (if (string= y "")
-        nil
-        (parse-integer y))))
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [winfo rooty ,(widget-path widget) ])))
+    (let ((y (read-data)))
+      (if (string= y "")
+          nil
+          (parse-integer y)))))
 
 (defun rootx (widget)
   (root-x widget))
@@ -90,29 +95,33 @@
   (root-y widget))
 
 (defun relative-x (widget)
-  (format-wish (tclize `(senddatastring [winfo x ,(widget-path widget) ])))
-  (let ((x (read-data)))
-    (if (string= x "")
-        nil
-        (parse-integer x))))
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [winfo x ,(widget-path widget) ])))
+    (let ((x (read-data)))
+      (if (string= x "")
+          nil
+          (parse-integer x)))))
 
 (defun relative-y (widget)
-  (format-wish (tclize `(senddatastring [winfo y ,(widget-path widget) ])))
-  (let ((y (read-data)))
-    (if (string= y "")
-        nil
-        (parse-integer y))))
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [winfo y ,(widget-path widget) ])))
+    (let ((y (read-data)))
+      (if (string= y "")
+          nil
+          (parse-integer y)))))
 
 (defun window-width (widget)
-  (format-wish (tclize `(senddatastring [winfo width ,(widget-path widget) ])))
-  (let ((w (read-data)))
-    (if (string= w "")
-        nil
-        (parse-integer w))))
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [winfo width ,(widget-path widget) ])))
+    (let ((w (read-data)))
+      (if (string= w "")
+          nil
+          (parse-integer w)))))
 
 (defun window-height (widget)
-  (format-wish (tclize `(senddatastring [winfo height ,(widget-path widget) ])))
-  (let ((h (read-data)))
-    (if (string= h "")
-        nil
-        (parse-integer h))))
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [winfo height ,(widget-path widget) ])))
+    (let ((h (read-data)))
+      (if (string= h "")
+          nil
+          (parse-integer h)))))

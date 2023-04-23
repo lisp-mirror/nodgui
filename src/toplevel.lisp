@@ -51,28 +51,28 @@
 
 (defun window-id (tl)
   "get the window id of the toplevel"
-  (format-wish "senddatastring [winfo id ~a]" (widget-path tl))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddatastring [winfo id ~a]" (widget-path tl))))
 
 (defun window-width (tl)
   "give the width of the toplevel in pixels"
-  (format-wish "senddata [winfo width ~a]" (widget-path tl))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [winfo width ~a]" (widget-path tl))))
 
 (defun window-height (tl)
   "give the height of the toplevel in pixels"
-  (format-wish "senddata [winfo height ~a]" (widget-path tl))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [winfo height ~a]" (widget-path tl))))
 
 (defun window-x (tl)
   "give the x position of the toplevel in pixels"
-  (format-wish "senddata [winfo rootx ~a];flush $server" (widget-path tl))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [winfo rootx ~a];flush $server" (widget-path tl))))
 
 (defun window-y (tl)
   "give the y position of the toplevel in pixels"
-  (format-wish "senddata [winfo rooty ~a];flush $server" (widget-path tl))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [winfo rooty ~a];flush $server" (widget-path tl))))
 
 (defun window-transient (tl win)
   "set the transient property of tl to be transient to win or nil.

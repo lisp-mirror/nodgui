@@ -253,47 +253,48 @@ example: (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength 10)
                          ,type ,component ,key ,value))))
 
 (defmethod draw-on-canvas ((object xy-plot) (destination canvas) &key &allow-other-keys)
-  (with-accessors ((handle handle)
-                   (x-axis-conf x-axis-conf)
-                   (y-axis-conf y-axis-conf)
-                   (x-text      x-text)
-                   (y-text      y-text)
-                   (x-subtext   x-subtext)
-                   (y-subtext   y-subtext)
-                   (title       title)
-                   (subtitle    subtitle)) object
-    (let* ((x-min         (minimum     x-axis-conf))
-           (x-max         (maximum     x-axis-conf))
-           (x-step        (ticks-step  x-axis-conf))
-           (x-tick-length (tick-length x-axis-conf))
-           (y-min         (minimum     y-axis-conf))
-           (y-max         (maximum     y-axis-conf))
-           (y-step        (ticks-step  y-axis-conf))
-           (y-tick-length (tick-length y-axis-conf))
-           (*suppress-newline-for-tcl-statements*             t)
-           (*add-space-after-emitted-unspecialized-element*   nil))
-      ;; create
-      (when x-tick-length
-        (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength x-tick-length))
-      (when y-tick-length
-        (configure-plot-style 'xyplot +comp-xyplot-leftaxis+   'ticklength y-tick-length))
-      (format-wish (tclize `(senddata
-                             ["::Plotchart::createXYPlot"      " "
-                             {+ ,(widget-path destination)}  " "
-                             [list ,x-min " " ,x-max " " ,x-step ]
-                             [list ,y-min " " ,y-max " " ,y-step ]])))
-      ;; get the handle (used below)
-      (setf handle (read-data))
-      ;; add title
-      (format-wish (tclize `(,handle title {+ ,title })))
-      ;; add subtitle
-      (format-wish (tclize `(,handle subtitle {+ ,subtitle })))
-      ;; axis labels
-      (format-wish (tclize `(,handle xtext    {+ ,x-text })))
-      (format-wish (tclize `(,handle vtext    {+ ,y-text })))
-      (format-wish (tclize `(,handle xsubtext {+ ,x-subtext })))
-      (format-wish (tclize `(,handle ysubtext {+ ,y-subtext })))
-      object)))
+  (with-read-data (nil)
+    (with-accessors ((handle handle)
+                     (x-axis-conf x-axis-conf)
+                     (y-axis-conf y-axis-conf)
+                     (x-text      x-text)
+                     (y-text      y-text)
+                     (x-subtext   x-subtext)
+                     (y-subtext   y-subtext)
+                     (title       title)
+                     (subtitle    subtitle)) object
+      (let* ((x-min         (minimum     x-axis-conf))
+             (x-max         (maximum     x-axis-conf))
+             (x-step        (ticks-step  x-axis-conf))
+             (x-tick-length (tick-length x-axis-conf))
+             (y-min         (minimum     y-axis-conf))
+             (y-max         (maximum     y-axis-conf))
+             (y-step        (ticks-step  y-axis-conf))
+             (y-tick-length (tick-length y-axis-conf))
+             (*suppress-newline-for-tcl-statements*             t)
+             (*add-space-after-emitted-unspecialized-element*   nil))
+        ;; create
+        (when x-tick-length
+          (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength x-tick-length))
+        (when y-tick-length
+          (configure-plot-style 'xyplot +comp-xyplot-leftaxis+   'ticklength y-tick-length))
+        (format-wish (tclize `(senddata
+                               ["::Plotchart::createXYPlot"      " "
+                               {+ ,(widget-path destination)}  " "
+                               [list ,x-min " " ,x-max " " ,x-step ]
+                               [list ,y-min " " ,y-max " " ,y-step ]])))
+        ;; get the handle (used below)
+        (setf handle (read-data))
+        ;; add title
+        (format-wish (tclize `(,handle title {+ ,title })))
+        ;; add subtitle
+        (format-wish (tclize `(,handle subtitle {+ ,subtitle })))
+        ;; axis labels
+        (format-wish (tclize `(,handle xtext    {+ ,x-text })))
+        (format-wish (tclize `(,handle vtext    {+ ,y-text })))
+        (format-wish (tclize `(,handle xsubtext {+ ,x-subtext })))
+        (format-wish (tclize `(,handle ysubtext {+ ,y-subtext })))
+        object))))
 
 (defclass dot-plot (xy-plot)
   ()
@@ -304,20 +305,21 @@ example: (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength 10)
 (defmethod place-line ((plot dot-plot) (series series) x1 y1 x2 y2 color &key (width 1))
   "Draw a  line from (x1, y1)  to (x2 y2) with  specified color. Units
 are in plot space"
-  (with-accessors ((plot-handle handle)) plot
-    (let* ((series-handle      (handle series))
-           (pseudo-series-item (strcat series-handle +pseudo-series-item-suffix+)))
-      (with-no-emitted-newline
-        (format-wish (tclize `(senddata [,plot-handle
-                                        object
-                                        line " " ,pseudo-series-item " "
-                                        ,x1 " " ,y1   " "
-                                        ,x2 " " ,y2   " "
-                                        ,(empty-string-if-nil color
-                                             `(-fill  {+ ,color })) " "
-                                             -width ,width
-                                             ]))))
-      (read-data))))
+  (with-read-data ()
+    (with-accessors ((plot-handle handle)) plot
+      (let* ((series-handle      (handle series))
+             (pseudo-series-item (strcat series-handle +pseudo-series-item-suffix+)))
+        (with-no-emitted-newline
+          (format-wish (tclize `(senddata [,plot-handle
+                                          object
+                                          line " " ,pseudo-series-item " "
+                                          ,x1 " " ,y1   " "
+                                          ,x2 " " ,y2   " "
+                                          ,(empty-string-if-nil color
+                                                                `(-fill  {+ ,color })) " "
+                                          -width ,width
+                                          ]))))))))
+
 
 (defun draw-error-bar (plot series x y error-value stopper-width color)
   "The low level drawing procedure for error bar"
@@ -509,50 +511,51 @@ example:
                                        "must provide two values in its 'ys' slot"))))))
 
 (defmethod draw-on-canvas ((object bar-chart) (destination canvas) &key &allow-other-keys)
-  (with-accessors ((handle handle)
-                   (y-axis-conf   y-axis-conf)
-                   (x-labels      x-labels)
-                   (x-label-angle x-label-angle)
-                   (title         title)
-                   (all-series    all-series)) object
-    (check-barchart-data object)
-    (let* ((y-min           (minimum    y-axis-conf))
-           (y-max           (maximum    y-axis-conf))
-           (y-step          (ticks-step y-axis-conf))
-           (actual-x-labels (mapcar (lambda (a) (strcat a " ")) x-labels))
-           (*suppress-newline-for-tcl-statements*             t)
-           (*add-space-after-emitted-unspecialized-element*   nil))
-      (format-wish (tclize `(senddata ["::Plotchart::createBarchart"     " "
-                                      {+,(widget-path destination) }     " "
-                                      {+ ,@(loop for label in actual-x-labels collect
-                                                `(\"+ ,label \"))
-                                      }
-                                      { ,y-min " " ,y-max " " ,y-step }
-                                      {+ ,(length all-series) }
-                                      -xlabelangle ,(process-coords x-label-angle)
-                                      ])))
-      ;; get the handle (used below)
-      (setf handle (read-data))
-      ;; add title
-      (format-wish (tclize `(,handle title {+ ,title })))
-      (loop for series in all-series do
-           (setf (handle series) (strcat "series_" (create-name)))
-           (let ((*suppress-newline-for-tcl-statements* t)
-                 (ys (process-coords (ys series))))
-             (format-wish (tclize `(,handle " "
-                                            plot " "  ,(handle series) " "
-                                            {+ ,ys }
-                                            ,(color series))))
-             ;; even  if  the  doc  says  that  bindlast  is  a  valid
-             ;; subcommand it does not seems  to work here, where am i
-             ;; wrong?
-             ;; (when (callback series)
-             ;;   (bind-last object
-             ;;              series
-             ;;              (bind-event series)
-             ;;              (callback series)))
-             (format-wish (tclize `(,handle
-                                    legend
-                                    ,(handle series) " "
-                                    ,(legend series))))))
-      object)))
+  (with-read-data (nil)
+    (with-accessors ((handle handle)
+                     (y-axis-conf   y-axis-conf)
+                     (x-labels      x-labels)
+                     (x-label-angle x-label-angle)
+                     (title         title)
+                     (all-series    all-series)) object
+      (check-barchart-data object)
+      (let* ((y-min           (minimum    y-axis-conf))
+             (y-max           (maximum    y-axis-conf))
+             (y-step          (ticks-step y-axis-conf))
+             (actual-x-labels (mapcar (lambda (a) (strcat a " ")) x-labels))
+             (*suppress-newline-for-tcl-statements*             t)
+             (*add-space-after-emitted-unspecialized-element*   nil))
+        (format-wish (tclize `(senddata ["::Plotchart::createBarchart"     " "
+                                        {+,(widget-path destination) }     " "
+                                        {+ ,@(loop for label in actual-x-labels collect
+                                                   `(\"+ ,label \"))
+                                        }
+                                        { ,y-min " " ,y-max " " ,y-step }
+                                        {+ ,(length all-series) }
+                                        -xlabelangle ,(process-coords x-label-angle)
+                                        ])))
+        ;; get the handle (used below)
+        (setf handle (read-data))
+        ;; add title
+        (format-wish (tclize `(,handle title {+ ,title })))
+        (loop for series in all-series do
+          (setf (handle series) (strcat "series_" (create-name)))
+          (let ((*suppress-newline-for-tcl-statements* t)
+                (ys (process-coords (ys series))))
+            (format-wish (tclize `(,handle " "
+                                           plot " "  ,(handle series) " "
+                                           {+ ,ys }
+                                           ,(color series))))
+            ;; even  if  the  doc  says  that  bindlast  is  a  valid
+            ;; subcommand it does not seems  to work here, where am i
+            ;; wrong?
+            ;; (when (callback series)
+            ;;   (bind-last object
+            ;;              series
+            ;;              (bind-event series)
+            ;;              (callback series)))
+            (format-wish (tclize `(,handle
+                                   legend
+                                   ,(handle series) " "
+                                   ,(legend series))))))
+        object))))

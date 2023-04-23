@@ -32,23 +32,23 @@
   (name photo))
 
 (defmethod initialize-instance :after ((object photo-image) &key &allow-other-keys)
-  (with-accessors ((data data)) object
-    (setf (name object) (create-name))
-    (format-wish "image create photo ~a" (name object))
-    (when data
-      (if (stringp data)
-          (format-wish (tclize `(senddatastring [ ,(name object) " "
-                                                put {+ ,data } ])))
-          (format-wish (tclize `(senddatastring [ ,(name object) " " put
-                                                ;; no  need to  escape
-                                                ;; because      base64
-                                                ;; encoded   data  can
-                                                ;; not        contains
-                                                ;; problematic
-                                                ;; characters
-                                                ,(nodgui.base64:encode data)
-                                                ]))))
-      (read-data))))
+  (with-read-data ()
+    (with-accessors ((data data)) object
+      (setf (name object) (create-name))
+      (format-wish "image create photo ~a" (name object))
+      (when data
+        (if (stringp data)
+            (format-wish (tclize `(senddatastring [ ,(name object) " "
+                                                  put {+ ,data } ])))
+            (format-wish (tclize `(senddatastring [ ,(name object) " " put
+                                                  ;; no  need to  escape
+                                                  ;; because      base64
+                                                  ;; encoded   data  can
+                                                  ;; not        contains
+                                                  ;; problematic
+                                                  ;; characters
+                                                  ,(nodgui.base64:encode data)
+                                                  ]))))))))
 
 (defgeneric make-image (data &optional w h channels))
 
@@ -105,38 +105,40 @@ GIF format!"
      (make-instance 'photo-image
                     :data (nodgui.base64:encode object)))
     (t
-     (let ((*max-line-length* nil)
-           (res (make-instance 'photo-image)))
-      (with-atomic
-          (format-wish (tclize `(senddatastring [ ,(sanitize (name res)) " "
-                                                put
-                                                ,(make-image-data object
-                                                                  w
-                                                                  h
-                                                                  channels
-                                                                  :column-offset channels)
-                                                ])
-                               :sanitize nil)))
-      (read-data)
-      res))))
+     (with-read-data (nil)
+       (let ((*max-line-length* nil)
+             (res (make-instance 'photo-image)))
+         (with-atomic
+             (format-wish (tclize `(senddatastring [ ,(sanitize (name res)) " "
+                                                   put
+                                                   ,(make-image-data object
+                                                                     w
+                                                                     h
+                                                                     channels
+                                                                     :column-offset channels)
+                                                   ])
+                                  :sanitize nil)))
+         (read-data)
+         res)))))
 
 (defmethod make-image ((object pixmap) &optional (w nil) (h nil) (channels 4))
   (declare (ignore w h channels))
-  (sync-data-to-bits object)
-  (let* ((res (make-instance 'photo-image)))
-    (let ((*max-line-length* nil))
-      (with-atomic
-          (format-wish (tclize `(senddatastring [ ,(sanitize (name res)) " "
-                                                put
-                                                ,(make-image-data (bits   object)
-                                                                  (width  object)
-                                                                  (height object)
-                                                                  3
+  (with-read-data (nil)
+    (sync-data-to-bits object)
+    (let* ((res (make-instance 'photo-image)))
+      (let ((*max-line-length* nil))
+        (with-atomic
+            (format-wish (tclize `(senddatastring [ ,(sanitize (name res)) " "
+                                                  put
+                                                  ,(make-image-data (bits   object)
+                                                                    (width  object)
+                                                                    (height object)
+                                                                    3
                                                                   :column-offset 4)
-                                                ])
-                               :sanitize nil)))
-      (read-data)
-      res)))
+                                                  ])
+                                 :sanitize nil)))
+        (read-data)
+        res))))
 
 (defmethod make-image ((object pathname) &optional (w nil) (h nil) (channels nil))
   (declare (ignore w h channels))

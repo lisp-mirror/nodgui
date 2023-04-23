@@ -57,14 +57,14 @@
 (defgeneric notebook-identify (nb x y))
 
 (defmethod notebook-identify ((nb notebook) x y)
-  (format-wish "senddatastring [~a identify {~a} {~a}]" (widget-path nb) x y)
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddatastring [~a identify {~a} {~a}]" (widget-path nb) x y)))
 
 (defgeneric notebook-index (nb tab))
 
 (defmethod notebook-index ((nb notebook) (tab widget))
-  (format-wish "senddata [~a index ~a]" (widget-path nb) (widget-path tab))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a index ~a]" (widget-path nb) (widget-path tab))))
 
 (defgeneric notebook-select (nb tab))
 

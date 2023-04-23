@@ -78,11 +78,12 @@
             (parse-integer (second index)))))
 
 (defmethod cursor-index ((text text))
-  (format-wish "senddatastring [~a index insert]" (widget-path text))
-  (let* ((raw-index (read-data)))
-    (multiple-value-bind (lines chars)
-        (parse-line-char-index raw-index)
-      (values lines chars raw-index))))
+  (with-read-data (nil)
+    (format-wish "senddatastring [~a index insert]" (widget-path text))
+    (let* ((raw-index (read-data)))
+      (multiple-value-bind (lines chars)
+          (parse-line-char-index raw-index)
+        (values lines chars raw-index)))))
 
 (defun make-text (master &key
                            (width nil)
@@ -375,12 +376,12 @@
 
 (defmethod insert-image ((object text) (image-resource photo-image)
                          &optional (coordinates (raw-coordinates object)))
-  (format-wish (tclize `(senddata [ ,(widget-path object)      " "
+  (with-read-data ()
+    (format-wish (tclize `(senddata [ ,(widget-path object)      " "
                                     image create
                                     {+ ,(parse-indices coordinates) }
                                     -image ,(name image-resource)
-                                    ])))
-  (read-data))
+                                    ])))))
 
 (defmethod insert-text ((object text) string &optional (coordinates (raw-coordinates object)))
   (format-wish (tclize `(,(widget-path object) " "
@@ -411,12 +412,13 @@
   (format-wish "~a sync" (widget-path object)))
 
 (defmethod maximum-lines-number ((object text))
-  (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
-                                        index
-                                        ,(make-indices-end)
-                                        ])))
-  (let* ((raw-index (read-data)))
-    (1- (nth-value 0 (parse-line-char-index raw-index)))))
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                                          index
+                                          ,(make-indices-end)
+                                          ])))
+    (let* ((raw-index (read-data)))
+      (1- (nth-value 0 (parse-line-char-index raw-index))))))
 
 (defmethod clear-text ((txt text))
   (format-wish "~a delete ~a ~a"
@@ -426,12 +428,12 @@
   txt)
 
 (defmethod text-in-range ((object text) start-index &optional (end-index (make-indices-end)))
-  (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
-                                        get
-                                        {+ ,(parse-indices start-index) }
-                                        {+ ,(parse-indices end-index) }
-                                        ])))
-  (read-data))
+  (with-read-data ()
+    (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                                          get
+                                          {+ ,(parse-indices start-index) }
+                                          {+ ,(parse-indices end-index) }
+                                          ])))))
 
 (defmethod see ((object text) pos)
   (format-wish "~a see {~a}" (widget-path object) (parse-indices pos))
@@ -474,43 +476,44 @@
 (a:define-constant +text-tag-prefix-search-results+ "tgre" :test #'string=)
 
 (defmethod search-regexp ((object text) pattern start-index
-                         &key
-                          (end-index (make-indices-end))
-                          (case-insensitive t)
-                          (forward          t)
-                          (tag-matching-region nil))
-  (let ((count-variable-name (create-name "count")))
-    (format-wish "global {~a}" count-variable-name)
-    (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
-                                          search
-                                          -regexp
-                                          ,(if forward
-                                               '-forwards
-                                               '-backwards)
-                                          -nolinestop
-                                          -count ,count-variable-name " "
-                                          ,(empty-string-if-nil case-insensitive
-                                                                '-nocase)
-                                          {+ ,pattern }
-                                          {+ ,(parse-indices start-index) }
-                                          {+ ,(parse-indices end-index) }
-                                             ])
-                         :sanitize nil))
-    (let ((indices (read-data)))
-      (when (not (string-empty-p indices))
-        (format-wish "global {~a} ; senddata ${~a}"
-                     count-variable-name count-variable-name)
-        (let ((size (read-data)))
-          (multiple-value-bind (lines chars)
-              (parse-line-char-index indices)
-            (let ((re-start-index `(:line ,lines :char ,chars))
-                  (re-end-index  `(+ (:line ,lines :char ,chars)
-                                     ,size :chars)))
-              (if tag-matching-region
-                  (let ((tag-name  (create-name +text-tag-prefix-search-results+)))
-                    (tag-create object tag-name re-start-index re-end-index)
-                    (values re-start-index re-end-index tag-name lines chars size))
-                  (values re-start-index re-end-index nil lines chars size)))))))))
+                          &key
+                            (end-index (make-indices-end))
+                            (case-insensitive t)
+                            (forward          t)
+                            (tag-matching-region nil))
+  (with-read-data (nil)
+    (let ((count-variable-name (create-name "count")))
+      (format-wish "global {~a}" count-variable-name)
+      (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                                            search
+                                            -regexp
+                                            ,(if forward
+                                                 '-forwards
+                                                 '-backwards)
+                                            -nolinestop
+                                            -count ,count-variable-name " "
+                                            ,(empty-string-if-nil case-insensitive
+                                                                  '-nocase)
+                                            {+ ,pattern }
+                                            {+ ,(parse-indices start-index) }
+                                            {+ ,(parse-indices end-index) }
+                                            ])
+                           :sanitize nil))
+      (let ((indices (read-data)))
+        (when (not (string-empty-p indices))
+          (format-wish "global {~a} ; senddata ${~a}"
+                       count-variable-name count-variable-name)
+          (let ((size (read-data)))
+            (multiple-value-bind (lines chars)
+                (parse-line-char-index indices)
+              (let ((re-start-index `(:line ,lines :char ,chars))
+                    (re-end-index  `(+ (:line ,lines :char ,chars)
+                                       ,size :chars)))
+                (if tag-matching-region
+                    (let ((tag-name  (create-name +text-tag-prefix-search-results+)))
+                      (tag-create object tag-name re-start-index re-end-index)
+                      (values re-start-index re-end-index tag-name lines chars size))
+                    (values re-start-index re-end-index nil lines chars size))))))))))
 
 (defmethod tag-create ((object text) tag-name start-index &rest other-indices)
   (format-wish "~a tag add {~a} {~a} ~{{~a} ~}"
@@ -550,16 +553,17 @@
                                                on-top-of-tag)))))
 
 (defmethod tag-ranges ((object text) tag-name)
-  (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
-                         tag ranges
-                         {+ ,tag-name }
-                         ])))
-  (let ((indices (split-words (read-data))))
-    (loop for line-char in indices
-          collect
-          (multiple-value-bind (line char)
-              (parse-line-char-index line-char)
-            `(:line ,line :char ,char)))))
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                                          tag ranges
+                                          {+ ,tag-name }
+                                          ])))
+    (let ((indices (split-words (read-data))))
+      (loop for line-char in indices
+            collect
+            (multiple-value-bind (line char)
+                (parse-line-char-index line-char)
+              `(:line ,line :char ,char))))))
 
 (defmethod tag-lower ((object text) tag-name &optional (before-tag nil))
   (format-wish (tclize `(,(widget-path object) " "
@@ -725,8 +729,10 @@
   (text-in-range text (make-indices-start) (make-indices-end)))
 
 (defmethod (setf text) (val (text text))
-  (format-wish "~A delete 0.0 end;~A insert end {~A}"
-               (widget-path text) (widget-path text) val)
+  (format-wish "~A delete 0.0 end; ~A insert end {~A}"
+               (widget-path text)
+               (widget-path text)
+               val)
   val)
 
 (defmethod save-text ((object text) filename

@@ -54,8 +54,8 @@
 (defgeneric sash-coord (window index))
 
 (defmethod sash-coord ((pw paned-window) index)
-  (format-wish "senddata \"([~a sashpos {~a}])\"" (widget-path pw) index)
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata \"([~a sashpos {~a}])\"" (widget-path pw) index)))
 
 (defgeneric sash-place (window index pos))
 

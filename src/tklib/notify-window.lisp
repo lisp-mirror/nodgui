@@ -39,19 +39,19 @@ message's length should  be 40 characters but even their  demo shows a
 longer text.   Also the documentation  says the image should  has size
 equal to 16x16 pixel but their default is 20x20; I found that 32x32 is
 fine too. :)"
-  (require-tcl-package +notify-library-name+)
-  (let ((*suppress-newline-for-tcl-statements*             t)
-        (*add-space-after-emitted-unspecialized-element*   nil)
-        (*accept-garbage-as-event-p*                       t))
-    ;; the tcl  library has a  spurious 'puts' command that  print the
-    ;; width  of the  window  this will  crash nodgui  so  i made  the
-    ;; library intercepts  and discards  this value  with the  call of
-    ;; 'process-event' below. Because an event should be a list (and a
-    ;; number  is  not) also  we  need  to  set the  special  variable
-    ;; *accept-garbage-as-event-p* to non nil to discard this event
-    (format-wish (tclize `(senddata
-                           ["::notifywindow::notifywindow" " "
-                           { ,message }     " "
-                           ,(empty-string-if-nil image
-                                `([ image create photo -data ,(nodgui::data image)]])))))
-    (read-data)))
+  (with-read-data ()
+    (require-tcl-package +notify-library-name+)
+    (let ((*suppress-newline-for-tcl-statements*             t)
+          (*add-space-after-emitted-unspecialized-element*   nil)
+          (*accept-garbage-as-event-p*                       t))
+      ;; the tcl  library has a  spurious 'puts' command that  print the
+      ;; width  of the  window  this will  crash nodgui  so  i made  the
+      ;; library intercepts  and discards  this value  with the  call of
+      ;; 'process-event' below. Because an event should be a list (and a
+      ;; number  is  not) also  we  need  to  set the  special  variable
+      ;; *accept-garbage-as-event-p* to non nil to discard this event
+      (format-wish (tclize `(senddata
+                             ["::notifywindow::notifywindow" " "
+                             { ,message }     " "
+                             ,(empty-string-if-nil image
+                               `([ image create photo -data ,(nodgui::data image)]]))))))))

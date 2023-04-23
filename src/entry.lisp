@@ -58,8 +58,8 @@
   (:documentation "set cursor position; index can assume the value ':end'"))
 
 (defmethod cursor-index ((e entry))
-  (format-wish "senddata [~a index insert]" (widget-path e))
-  (read-data))
+  (with-read-data ()
+    (format-wish "senddata [~a index insert]" (widget-path e))))
 
 (defmethod set-selection ((object entry) from to)
   (format-wish (tclize `(,(widget-path object)

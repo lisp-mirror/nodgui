@@ -914,6 +914,7 @@
   :documentation "A bell icon in png format.")
 
 (defun demo-text ()
+  (let ((*debug-tk* t))
   (with-nodgui ()
     (let* ((text-widget          (make-instance 'scrolled-text
                                                 :read-only                  nil
@@ -998,8 +999,7 @@
         (append-line text-widget (format nil
                                          "link@ ~s"
                                          (tag-ranges text-widget tag-link)))
-        (sleep 5)
-        (move-cursor-to-last-line text-widget)))))
+        (move-cursor-to-last-line text-widget))))))
 
 (defun demo-multifont-listbox ()
   (with-nodgui ()
@@ -1161,7 +1161,7 @@
                                new-string
                                index
                                validation-action)
-             (format *trace-output*
+             (format t
                      "action ~a current string ~a new ~a index ~a validation action ~a~%"
                      action
                      current-string
@@ -1185,38 +1185,57 @@
         (pack label)
         (pack entry)))))
 
-(defparameter *multithread-text-area* nil)
-
 (defun demo-multithread ()
+  (setf *debug-tk* nil)
   (with-nodgui ()
-    (let* ((description-text (strcat "In this demo 20 threads simultaneously "
-                                     "compete to write to the same text widget"))
+    (let* ((description-text (strcat "In this demo many threads simultaneously "
+                                     "compete to write to and read from the same text widget"
+                                     "moving the mouse over the text area will make the cursor jump at the end of the text"))
            (description      (make-instance 'label
                                             :font "12"
                                             :text description-text))
            (text-area        (make-instance 'scrolled-text))
+           (button           (make-instance 'button :text "start"))
            (wish-subprocess  *wish*))
-      (setf *multithread-text-area* text-area)
       (flet ((start-write-thread (name)
                (bt:make-thread (lambda ()
                                  (let ((*wish* wish-subprocess))
                                    (loop repeat 20 do
-                                        (sleep (random 2))
-                                        (append-text *multithread-text-area*
-                                                     name))))))
+                                     (append-line text-area name))))
+                               :name "read thread"))
              (start-read-thread ()
                (bt:make-thread (lambda ()
                                  (let ((*wish* wish-subprocess))
-                                   (loop repeat 20 do
-                                        (sleep (random 2))
-                                        (format t
-                                                "text ~a~%"
-                                                (text *multithread-text-area*))))))))
+                                   (loop for i from 0 below 100 do
+                                     (format t
+                                             "text ~a ~a~%" i
+                                             (text text-area)))))
+                               :name "write thread")))
         (grid description 0 0 :sticky :nswe)
         (grid text-area   1 0 :sticky :nswe)
-        (start-read-thread)
-        (loop for i from 0 below 20 do
-             (start-write-thread (format nil "thread-~a " i)))))))
+        (grid button      2 0 :sticky :nswe)
+        (bind (inner-text text-area)
+              #$<Motion>$ (lambda (e)
+                            (declare (ignore e))
+                            (see (inner-text text-area) (make-indices-end))))
+        (setf (command button)
+              (lambda ()
+                (let ((read-thread (start-read-thread))
+                      (write-threads (loop for i from 0 below 3000
+                                             collect
+                                             (start-write-thread (format nil "thread-~a " i))))
+                      (more-read-threads (loop repeat 2000
+                                               collect
+                                               (bt:make-thread
+                                                (lambda ()
+                                                  (let ((*wish* wish-subprocess))
+                                                    (maximum-lines-number text-area)))))))
+                  (loop for i in more-read-threads do (bt:join-thread i))
+                  (loop for i in write-threads do (bt:join-thread i))
+                  (format t "end write threads~%")
+                  (bt:join-thread read-thread)
+                  (format t "end read thread~%"))))))))
+
 
 (define-constant +red-corner+
   (strcat "R0lGODlhEAAQAIABAP8AAGdqcSH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAEALAAAAAAQABAA"
@@ -1295,3 +1314,136 @@
         (grid label               0 0)
         (grid autocomplete-widget 1 0)
         (grid button              2 0)))))
+
+(defun demo-multithread-2 ()
+  (setf *debug-tk* t)
+  (let* ((wish-subprocess nil))
+    (with-nodgui ()
+      (let* ((text-area (make-instance 'scrolled-text))
+             (button    (make-instance 'button
+                                       :text "start"
+                                       :command
+                                       (lambda ()
+                                         (with-main-loop-lock ()
+                                           (setf (nodgui::wish-waiting-data-p *wish*) t))
+                                         (bt:make-thread
+                                          (lambda ()
+                                            (setf *wish* wish-subprocess)
+                                            (format t "ww ~a~%" (screen-width))
+                                            (with-main-loop-lock ()
+                                              (setf (nodgui::wish-waiting-data-p *wish*) nil)
+                                              (bt:condition-notify
+                                               (nodgui::wish-main-loop-cond *wish*))))
+                                          :name "read thread"))))
+             (button-append (make-instance 'button
+                                           :text "append \"foobar\""
+                                           :command
+                                           (lambda ()
+                                             (let ((text (alexandria:random-elt '("foo"
+                                                                                  "bar"
+                                                                                  "baz"))))
+                                               (append-line text-area text))))))
+        (setf wish-subprocess *wish*)
+        (grid text-area     0 0 :sticky :nswe)
+        (grid button        1 0 :sticky :nswe)
+        (grid button-append 2 0 :sticky :nswe)
+        (append-line text-area "lorem isum ecceterea")))))
+
+(defparameter *queue* '())
+
+(defparameter *queue-lock* (bt:make-lock "queue lock"))
+
+(defparameter *queue-cond* (bt:make-condition-variable))
+
+(defun pop-event-block ()
+  (bt:with-lock-held (*queue-lock*)
+    (loop while (null *queue*)
+          do
+             (bt:condition-wait *queue-cond* *queue-lock*))
+    (pop *queue*)))
+
+(defun push-event-unblock (value)
+  (bt:with-lock-held (*queue-lock*)
+    (push value *queue*)
+    (bt:condition-notify *queue-cond*)))
+
+(defparameter *stop-events-loop* t)
+
+(defparameter *events-loop-lock* (bt:make-lock "events-loop-lock"))
+
+(defparameter *events-loop-thread* nil)
+
+(defparameter *gui-server* nil)
+
+(defun events-loop-running-p ()
+  (bt:with-lock-held (*events-loop-lock*)
+    (not *stop-events-loop*)))
+
+(defun stop-events-loop ()
+  (bt:with-lock-held (*events-loop-lock*)
+    (setf *stop-events-loop* t)))
+
+(defun start-events-loop ()
+  (bt:with-lock-held (*events-loop-lock*)
+    (setf *stop-events-loop* nil))
+  (setf *events-loop-thread*
+        (bt:make-thread (lambda ()
+                          (let ((*wish* *gui-server*))
+                            (format  t "start~%")
+                            (loop while (events-loop-running-p) do
+                              (dispatch-program-events-or-wait))
+                            (format  t "end~%"))))))
+
+(defun dispatch-program-events-or-wait ()
+  (let ((event (pop-event-block)))
+    (funcall event)))
+
+(defun demo-test-loop ()
+  (start-events-loop)
+  (push-event-unblock (lambda ()
+                        (format t "event!~%")
+                        (finish-output)))
+  (sleep 1) ; simulate user interation
+  (stop-events-loop)
+  (push-event-unblock (lambda ()
+                        (format t "dummy~%")
+                        (finish-output))))
+
+(defun demo-multithread-loop ()
+  (setf *debug-tk* t)
+  (start-events-loop)
+  (with-nodgui ()
+    (setf *gui-server* *wish*)
+    (let* ((text-area (make-instance 'scrolled-text))
+           (button    (make-instance 'button
+                                     :text "start"
+                                     :command
+                                     (lambda ()
+                                       (push-event-unblock
+                                        (lambda ()
+                                          (let ((*wish* *gui-server*))
+                                            (with-main-loop-lock ()
+                                              (setf (nodgui::wish-waiting-data-p *wish*) t))
+                                            (format t "ww ~a~%" (screen-width))))))))
+
+           (button-append (make-instance 'button
+                                         :text "append \"foobar\""
+                                         :command
+                                         (lambda ()
+                                           (let ((text (alexandria:random-elt '("foo"
+                                                                                "bar"
+                                                                                "baz"))))
+                                             (append-line text-area text)))))
+           (button-quit   (make-instance 'button
+                                         :text "quit"
+                                         :command (lambda ()
+                                                    (break-mainloop)
+                                                    (stop-events-loop)
+                                                      (push-event-unblock (lambda ()
+                                                                            (format t "dummy~%")
+                                                                            (finish-output)))))))
+      (grid text-area     0 0 :sticky :nswe)
+      (grid button        1 0 :sticky :nswe)
+      (grid button-append 2 0 :sticky :nswe)
+      (grid button-quit   3 0 :sticky :nswe)
+      (append-line text-area "lorem isum ecceterea"))))
