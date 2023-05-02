@@ -1420,7 +1420,9 @@
                                        (push-event-unblock
                                         (lambda ()
                                           (let ((*wish* *gui-server*))
-                                            (format t "ww ~a~%" (screen-width))))))))
+                                            (format t
+                                                    "screen width ~a~%"
+                                                    (screen-width))))))))
            (button-append (make-instance 'button
                                          :text "append \"foobar\""
                                          :command
@@ -1432,11 +1434,11 @@
            (button-quit   (make-instance 'button
                                          :text "quit"
                                          :command (lambda ()
-                                                    (break-mainloop)
                                                     (stop-events-loop)
                                                     (push-event-unblock (lambda ()
                                                                           (format t "dummy~%")
-                                                                          (finish-output)))))))
+                                                                          (finish-output)))
+                                                    (exit-wish)))))
       (grid text-area     0 0 :sticky :nswe)
       (grid button        1 0 :sticky :nswe)
       (grid button-append 2 0 :sticky :nswe)
