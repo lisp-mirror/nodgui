@@ -637,8 +637,8 @@ set y [winfo y ~a]
   (format-wish "ttk::style theme use {~a}" name))
 
 (defun theme-names ()
-  (send-wish "senddatastrings [ttk::style theme names]")
-  (nodgui::read-data))
+  (with-read-data ()
+    (send-wish "senddatastrings [ttk::style theme names]")))
 
 (defun focus (widget)
   (format-wish "focus ~a" (widget-path widget))
@@ -681,203 +681,53 @@ set y [winfo y ~a]
     (cm e ".menubar"))
   (send-wish ". configure -menu .menubar"))
 
-;;;; main event loop, runs until stream is closed by wish (wish exited) or
-;;;; the variable *exit-mainloop* is set
+(defstruct modal-toplevel
+  (lock    (bt:make-lock))
+  (condvar (bt:make-condition-variable))
+  (close-condition nil)
+  (root-widget nil)
+  (results     nil))
 
-(defvar *exit-mainloop* nil)
+(defgeneric exit-from-modal-toplevel (object))
 
-(defvar *break-mainloop* nil)
+(defmethod exit-from-modal-toplevel ((object modal-toplevel))
+  (bt:with-lock-held ((modal-toplevel-lock object))
+    (grab-release (modal-toplevel-root-widget object))
+    (withdraw (modal-toplevel-root-widget object))
+    (flush-wish)
+    (pop-mainloop-thread)
+    (setf (modal-toplevel-close-condition object) t)
+    (bt:condition-notify (modal-toplevel-condvar object))))
 
-(defun break-mainloop ()
-  (setf *break-mainloop* t))
-
-(defgeneric handle-output (key params))
-
-(defmethod handle-output (key params)
-  (declare (ignore key params)))
-
-(defun process-one-event (event)
-  (when event
-    (dbg "event:~s<=~%" event)
-    (cond
-     ((and (not (listp event))
-           *trace-tk*)
-      (princ event *trace-output*)
-      (finish-output *trace-output*))
-     ((not (listp event)) nil)
-     ((eq (first event) :callback)
-      (let ((params (rest event)))
-        (callback (first params) (rest params))))
-     ((eq (first event) :event)
-      (let* ((params (rest event))
-             (callback-name (first params))
-             (evp (rest params))
-             (event (construct-tk-event evp)))
-        (callback callback-name (list event))))
-      ((eq (first event) :keepalive)
-       (dbg "Ping from wish: ~{~A~^~}~%" (rest event)))
-      ((eq (first event) :debug)
-       (tcldebug (second event)))
-      (t
-       ;; handle-output does nothing!
-       (handle-output (first event)
-                      (rest event))))))
-
-(defun process-events ()
-  "A function to temporarliy yield control to wish so that pending
-events can be processed, useful in long loops or loops that depend on
-tk input to terminate"
-  (let (event)
-    (loop
-     while (setf event (read-event))
-     do (with-atomic (process-one-event event)))))
-
-(defparameter *inside-mainloop* ())
-
-(defun read-single-input (no-event-value &optional (force-read-from-wish nil))
-  (let ((event (if (or force-read-from-wish
-                       (wish-waiting-data-p *wish*))
-                   (read-event :no-event-value no-event-value
-                               :force-read-from-stream t)
-                   (read-event :no-event-value no-event-value))))
-    event))
-
-(define-constant +no-event-value+ (cons nil nil) :test #'equalp)
-
-(defun manage-wish-output (event process-callback from)
-  (dbg "manage ~a from ~a" event from)
-  (cond
-    ((or (null event)
-         (event-got-error-p event))
-     (ignore-errors (close (wish-stream *wish*)))
-     (exit-wish)
-     nil)
-    ((eq (first event) :data)
-     (push-enqueued-data event)
-     (with-main-loop-lock ()
-       (setf (nodgui::wish-waiting-data-p *wish*) nil)
-       (bt:condition-notify
-        (nodgui::wish-main-loop-cond *wish*))
-       t))
-    ((eql event +no-event-value+)
-     t)
-    (t
-     (if (null process-callback)
-         (push-enqueued-event event)
-         (progn
-           (with-atomic
-               (process-one-event event))
-           (cond
-             (*break-mainloop* nil)
-             (*exit-mainloop*
-              (exit-wish)
-              nil)
-             (t t)))))))
-
-(defun main-iteration (&key (reentrant? nil))
-  "The heart of the main loop.  Returns true as long as the main loop should continue."
-  ;; For recursive calls to mainloop, we don't want to setup our
-  ;; ABORT and EXIT restarts.  They make things too complex.
-  (dbg "iter enter")
-  (if reentrant?
-      (manage-wish-output (read-single-input +no-event-value+ nil)
-                          t
-                          :iter)
-      (restart-case
-          (manage-wish-output (read-single-input +no-event-value+ nil)
-                              t
-                              :iter)
-        (abort ()
-          :report "Abort handling Tk event"
-          t)
-        (exit ()
-          :report "Exit Nodgui main loop"
-          nil))))
-
-(defun mainloop ()
-  (let ((reentrant? (member *wish* *inside-mainloop*))
-        (*inside-mainloop* (adjoin *wish* *inside-mainloop*)))
-    (let ((*exit-mainloop* nil)
-          (*break-mainloop* nil))
-      (if reentrant?
-          (loop while (main-iteration :reentrant? t))
-          (loop while (with-nodgui-handlers ()
-                        (main-iteration)))))))
-
-(defun filter-keys (desired-keys keyword-arguments)
-  (loop for (key val) on keyword-arguments by #'cddr
-        when (find key desired-keys) nconc (list key val)))
-
-;;; wrapper macro - initializes everything, calls body and then mainloop
-
-(defmacro with-nodgui ((&rest keys
-                              &key (title "") (debug 2) stream serve-event &allow-other-keys)
-                    &body body)
-  "Create a new Nodgui connection, evaluate BODY, and enter the main loop.
-
-  :DEBUG indicates the level of debugging support to provide.  It can be a
-  number from 0 to 3, or one of the corresponding keywords:
-  :minimum, :deploy, :develop, or :maximum.
-
-  If :SERVE-EVENT is non-NIL, Nodgui will use SERVE-EVENT handlers instead of a
-  blocking main loop.  This is only supported on SBCL and CMUCL.  Note that
-  using SERVE-EVENT means that WITH-NODGUI will return immediately after evaluating
-  BODY.
-
-  If :STREAM is non-NIL, it should be a two-way stream connected to a running
-  wish.  This will be used instead of running a new wish.
-
-  With :name (or :title as a synonym) you can set both title and class
-  name of this window"
-  (declare (ignore debug serve-event stream title))
-  `(call-with-nodgui (lambda () ,@body) ,@keys))
-
-(defun call-with-nodgui (thunk &rest keys &key (debug 2) stream serve-event &allow-other-keys)
-  "Functional interface to with-nodgui, provided to allow the user the build similar macros."
-  (declare (ignore stream))
-  (flet ((start-wish ()
-           (apply #'start-wish
-                  (append (filter-keys '(:stream :debugger-class :debug-tcl)
-                                       keys)
-                          (list :debugger-class (debug-setting-condition-handler debug))))))
-    (let* ((class-name  (or (getf keys :class)
-                            (getf keys :name)))
-           (title-value (getf keys :title))
-           (*default-toplevel-name* (or class-name
-                                        title-value
-                                        *default-toplevel-name*))
-           (*wish-args*              (append-wish-args (list +arg-toplevel-name+
-                                                             *default-toplevel-name*)))
-           (*wish*                   (make-nodgui-connection)))
-      (catch *wish*
-        (unwind-protect
-             (progn
-               (start-wish)
-               (when title-value
-                 (wm-title *tk* title-value))
-               (multiple-value-prog1
-                   (with-nodgui-handlers ()
-                     (with-atomic (funcall thunk)))
-                 (mainloop)))
-          (when (not serve-event)
-            (exit-wish)))))))
-
-(defmacro with-modal-toplevel ((var &rest toplevel-initargs) &body body)
-  `(let* ((,var (make-instance 'toplevel ,@toplevel-initargs))
-          (*exit-mainloop* nil))
-     (wait-complete-redraw)
-     (unwind-protect
-         (catch 'modal-toplevel
-           (block nil
-             (on-close ,var (lambda () (return)))
-             (grab ,var)
-             (multiple-value-prog1
-                 (progn ,@body)
-               (flush-wish)
-               (mainloop))))
-       (grab-release ,var)
-       (withdraw ,var)
-       (flush-wish))))
+(defmacro with-modal-toplevel ((toplevel-struct &rest toplevel-initargs) &body body)
+  (a:with-gensyms (toplevel wish-process modal-widget-thread)
+    `(let* ((,toplevel-struct (make-modal-toplevel))
+            (,wish-process *wish*)
+            (,modal-widget-thread (bt:make-thread
+                                   (lambda ()
+                                     (let* ((*wish*    ,wish-process)
+                                            (,toplevel (make-instance 'toplevel
+                                                                      ,@toplevel-initargs)))
+                                       (setf (modal-toplevel-root-widget ,toplevel-struct)
+                                             ,toplevel)
+                                       (wait-complete-redraw)
+                                       (on-close ,toplevel
+                                                 (lambda ()
+                                                   (exit-from-modal-toplevel ,toplevel-struct)))
+                                       (grab ,toplevel)
+                                       (push-mainloop-thread)
+                                       (start-main-loop)
+                                       (setf (modal-toplevel-results ,toplevel-struct)
+                                             (progn ,@body))
+                                       (flush-wish)
+                                       (bt:with-lock-held ((modal-toplevel-lock ,toplevel-struct))
+                                         (loop while (not (modal-toplevel-close-condition ,toplevel-struct))
+                                               do
+                                               (bt:condition-wait (modal-toplevel-condvar ,toplevel-struct)
+                                                                  (modal-toplevel-lock ,toplevel-struct))))
+                                       (modal-toplevel-results ,toplevel-struct))))))
+       (bt:join-thread ,modal-widget-thread)
+       (modal-toplevel-results ,toplevel-struct))))
 
 (defun exit-from-toplevel (toplevel)
   (grab-release toplevel)
@@ -891,38 +741,6 @@ tk input to terminate"
      (on-close ,toplevel (lambda () (exit-from-toplevel ,toplevel)))
      (progn ,@body)))
 
-(defun input-box (prompt &key (title "Input") default)
-  (let* ((*exit-mainloop* nil)
-         (ok t)
-         (w (make-instance 'toplevel :title title))
-         (l (make-instance 'label :master w :text prompt))
-         (e (make-instance 'entry :master w :width 40))
-         (f (make-instance 'frame :master w))
-         (b_ok (make-instance 'button :master f :text "Ok"
-                              :command (lambda ()
-                                         (break-mainloop)
-                                         )))
-         (b_cancel (make-instance 'button :master f :text "Cancel"
-                                  :command (lambda ()
-                                             (setf ok nil)
-                                             (break-mainloop)))))
-    (pack l :side :top :anchor :w)
-    (pack e :side :top)
-    (pack f :side :top :anchor :e)
-    (pack b_cancel :side :right)
-    (pack b_ok :side :right)
-    (bind w "<Return>" (lambda (event)
-                         (declare (ignore event))
-                         (break-mainloop)))
-    (when (and default (> (length default) 0))
-      (setf (text e) default))
-    (focus e)
-    (grab w)
-    (mainloop)
-    (grab-release w)
-    (withdraw w)
-    (and ok
-         (text e))))
 
 (defmacro with-hourglass (widgets &rest body)
   `(unwind-protect

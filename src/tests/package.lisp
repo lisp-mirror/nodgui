@@ -65,3 +65,15 @@
         :nodgui
         :all-tests)
   (:export :text-indices-suite))
+
+(defpackage :test-nodgui
+  (:use :cl
+        :alexandria
+        :clunit
+        :nodgui.config
+        :nodgui.constants
+        :nodgui.utils
+        :nodgui.conditions
+        :nodgui
+        :all-tests)
+  (:export :regex-search-text))

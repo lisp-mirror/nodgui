@@ -81,6 +81,15 @@ giving the path of tkobjects."
 (defvar *tk* (make-instance 'widget :name "." :path ".")
   "Dummy widget to access the tk root object")
 
+(defun root-toplevel ()
+  *tk*)
+
+(defun root-toplevel-title ()
+  (cget *tk* :title))
+
+(defun set-root-toplevel-title (value)
+  (wm-title *tk* value))
+
 ;;; busy functions
 
 (defgeneric busy-hold (toplevel))

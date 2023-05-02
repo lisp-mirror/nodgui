@@ -162,7 +162,7 @@
            (b-quit                   (make-instance  'button
                                                      :text    "quit lisp :)"
                                                      :command (lambda ()
-                                                                (break-mainloop)))))
+                                                                (exit-nodgui)))))
       (grid widget                   0 0  :sticky :nswe)
       (grid eyes                     0 1  :sticky :nswe)
       (grid modal                    0 2  :sticky :nswe)
@@ -220,6 +220,7 @@
   (finish-output))
 
 (defun demo-widget()
+  (setf *debug-tk* t)
   (with-nodgui (:debug-tcl nil)
     (flet ((write-postscript (canvas)
              #'(lambda ()
@@ -345,7 +346,7 @@
              (mfs-4 (make-menubutton mf-scale "0.5/2" (lambda ()
                                                         (scale c 0.5 2))))
              (sep4 (add-separator mfile))
-             (mf-exit (make-menubutton mfile "Exit" (lambda () (setf *exit-mainloop* t))
+             (mf-exit (make-menubutton mfile "Exit" (lambda () (exit-wish))
                                        :underline 1
                                        :accelerator "Alt Q"))
              (mp (make-menu nil "Popup"))
@@ -364,7 +365,7 @@
         (configure scale :orient :horizontal)
         (bind *tk* #$<Alt-q>$ (lambda (event)
                                 (declare (ignore event))
-                                (setf *exit-mainloop* t)))
+                                (exit-wish)))
         (bind c #$<1>$ (lambda (event)
                          (popup mp (event-root-x event) (event-root-y event))))
         (configure c :borderwidth 2 :relief :sunken)
@@ -543,8 +544,9 @@
   (with-nodgui ()
    (let* ((b (make-instance 'button :text "Input"
                             :command (lambda ()
-                                       (let ((erg (input-box "Enter a string:"
-                                                             :title "String input")))
+                                       (let ((erg (text-input-dialog *tk*
+                                                                     "Enter a string:"
+                                                                     "String input")))
                                          (if erg
                                              (format t "input was: ~a~%" erg)
                                            (format t "input was cancelled~%"))
@@ -552,6 +554,7 @@
      (pack b))))
 
 (defun demo-combo ()
+  (setf *debug-tk* t)
   (with-nodgui ()
     (let* ((c (make-instance 'combobox
                              :text "foo"
@@ -590,9 +593,7 @@
   (with-nodgui (:debug-tcl t)
     (with-atomic
         (dotimes (i 10)
-          (pack (make-instance 'button :text (format nil "Button Nr. ~a" i)))
-          ;(sleep 0.1)
-          ))))
+          (pack (make-instance 'button :text (format nil "Button Nr. ~a" i)))))))
 
 (defun demo-sct ()
   (with-nodgui (:debug-tcl t)
@@ -882,10 +883,12 @@
                      (let ((bitmap (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:jpeg file)))
                        (setf (image b) (make-image bitmap))))
                     (t
-                     (let ((w (input-box "Pixel width?"
-                                         :title "Image size"))
-                           (h (input-box "Pixel Height?"
-                                         :title "Image size")))
+                     (let ((w (text-input-dialog (root-toplevel)
+                                                 "Enter a string"
+                                                 "Pixel width? "))
+                           (h (text-input-dialog (root-toplevel)
+                                                 "Enter a string"
+                                                 "Pixel height? ")))
                        (when (and w h)
                          (with-open-file (stream file :element-type '(unsigned-byte 8))
                            (let* ((data (read-into-array stream (file-length stream))))
@@ -914,7 +917,7 @@
   :documentation "A bell icon in png format.")
 
 (defun demo-text ()
-  (let ((*debug-tk* t))
+  (setf *debug-tk* t)
   (with-nodgui ()
     (let* ((text-widget          (make-instance 'scrolled-text
                                                 :read-only                  nil
@@ -999,7 +1002,7 @@
         (append-line text-widget (format nil
                                          "link@ ~s"
                                          (tag-ranges text-widget tag-link)))
-        (move-cursor-to-last-line text-widget))))))
+        (move-cursor-to-last-line text-widget)))))
 
 (defun demo-multifont-listbox ()
   (with-nodgui ()
@@ -1046,6 +1049,7 @@
     (let ((message (text-input-dialog *tk*
                                       "info"
                                       "Insert the text you want shown as notify")))
+      (format t "message ~a~%" message)
       (nodgui.tklib.notify:notify-window message))))
 
 (defun demo-tklib-dot-plot ()
@@ -1324,16 +1328,10 @@
                                        :text "start"
                                        :command
                                        (lambda ()
-                                         (with-main-loop-lock ()
-                                           (setf (nodgui::wish-waiting-data-p *wish*) t))
                                          (bt:make-thread
                                           (lambda ()
                                             (setf *wish* wish-subprocess)
-                                            (format t "ww ~a~%" (screen-width))
-                                            (with-main-loop-lock ()
-                                              (setf (nodgui::wish-waiting-data-p *wish*) nil)
-                                              (bt:condition-notify
-                                               (nodgui::wish-main-loop-cond *wish*))))
+                                            (format t "ww ~a~%" (screen-width)))
                                           :name "read thread"))))
              (button-append (make-instance 'button
                                            :text "append \"foobar\""
@@ -1422,10 +1420,7 @@
                                        (push-event-unblock
                                         (lambda ()
                                           (let ((*wish* *gui-server*))
-                                            (with-main-loop-lock ()
-                                              (setf (nodgui::wish-waiting-data-p *wish*) t))
                                             (format t "ww ~a~%" (screen-width))))))))
-
            (button-append (make-instance 'button
                                          :text "append \"foobar\""
                                          :command
@@ -1439,9 +1434,9 @@
                                          :command (lambda ()
                                                     (break-mainloop)
                                                     (stop-events-loop)
-                                                      (push-event-unblock (lambda ()
-                                                                            (format t "dummy~%")
-                                                                            (finish-output)))))))
+                                                    (push-event-unblock (lambda ()
+                                                                          (format t "dummy~%")
+                                                                          (finish-output)))))))
       (grid text-area     0 0 :sticky :nswe)
       (grid button        1 0 :sticky :nswe)
       (grid button-append 2 0 :sticky :nswe)

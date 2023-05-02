@@ -26,16 +26,15 @@
       (let ((prototype (make-instance class :prototype t)))
         (lambda (condition)
           (when (handle-condition-p prototype condition)
-            (restart-case
-                (with-modal-toplevel (tl :title title :height 40 :width 300)
-                  (let ((debugger (make-instance class :master tl :condition condition)))
-                    (on-close tl (lambda ()
-                                   (abort-condition-handler debugger)
-                                   (return)))
-                    (pack debugger)))
-              (send-to-debugger (condition)
-                :report "Send condition to the debugger"
-                (invoke-debugger condition))))))
+            (with-modal-toplevel (tl :title title)
+              (let* ((toplevel-widget (modal-toplevel-root-widget tl))
+                     (debugger (make-instance class :master  toplevel-widget
+                                                    :condition condition)))
+                (on-close toplevel-widget
+                          (lambda ()
+                            (exit-from-modal-toplevel tl)
+                            (abort-condition-handler debugger)))
+                (pack debugger))))))
       (constantly nil)))
 
 ;;; The protocol for graphical condition handlers. This, and they must
@@ -72,9 +71,11 @@
     - Throw to nodgui:modal-toplevel, which will leave the condition unhandled."))
 
 (defclass nodgui-condition-handler (frame)
-  ((prototypep :initform nil :initarg :prototype
-               :documentation
-               "When set, do not actually create a Tk widget, this instance exists for purposes of generic-function dispatch only.")
+  ((prototypep
+    :initform nil
+    :initarg :prototype
+    :documentation
+    "When set, do not actually create a Tk widget, this instance exists for purposes of generic-function dispatch only.")
    (condition :initform nil :initarg :condition :accessor handler-condition)))
 
 (defmethod initialize-instance :around ((handler nodgui-condition-handler) &key prototype
@@ -119,20 +120,16 @@
 
 (defmethod compute-buttons ((handler graphical-condition-handler) master)
   (let ((exit (make-instance 'button :master master :text "Exit"))
-        (ok (make-instance 'button :master master :text "Dismiss"))
-        (yes (make-instance 'button :master master :text "Yes"))
-        (no (make-instance 'button :master master :text "No"))
         (show (make-instance 'button :master master :text "Show Details"))
-        (debugger (make-instance 'button :master master :text "Debugger"))
         (report (make-instance 'button :master master :text "Report Bug"))
         (details (details-pane handler))
-        (backtrace-done? nil))
+        (backtrace-done-p nil))
     (labels ((ensure-backtrace ()
-               (unless backtrace-done?
+               (unless backtrace-done-p
                  (append-text details
                               (with-output-to-string (out)
                                 (print-backtrace (handler-condition handler) out)))
-                 (setf backtrace-done? t)))
+                 (setf backtrace-done-p t)))
              (show ()
                (ensure-backtrace)
                (pack details)
@@ -142,38 +139,20 @@
                (pack-forget details)
                (setf (text show) "Show details"
                      (command show) #'show))
-             (give-up () (abort-condition-handler handler))
-             (debugger () (invoke-restart 'send-to-debugger (handler-condition handler)))
-             (exit () (uiop:quit 1)))
-      (setf (command ok) #'give-up
-            (command exit) #'exit
-            (command yes) #'continue
-            (command no) #'abort
+             (exit ()
+               (exit-wish)
+               (uiop:quit 1)))
+      (setf (command exit) #'exit
             (command show) #'show
-            (command debugger) #'debugger
             (command report) (lambda () (report-bug handler)))
-      (append (when (find-restart 'exit)
-                (list exit))
-              (if (find-restart 'continue)
-                  (list yes no)
-                  (list ok))
-              (when (debugp handler) (list show debugger))
-              (list report)))))
+      (list exit show report))))
 
 (defun print-backtrace (error stream)
-  (format stream "~A~%  [Condition of type ~A]"
-          error (class-name (class-of error)))
-  #+sbcl
-  (sb-debug:print-backtrace :stream stream
-                            :start  0
-                            :count  most-positive-fixnum)
-  #+allegro
-  (loop for f = (excl::int-newest-frame)
-        then (excl::int-next-older-frame f)
-        while f
-        do (terpri stream)
-          (debugger:output-frame stream f))
-  #+(or cmu scl) (debug:backtrace most-positive-fixnum stream))
+  (format stream
+          "~a~%  [Condition of type ~a]"
+          error
+          (class-name (class-of error)))
+  (uiop:print-condition-backtrace error :stream stream))
 
 (defmethod report-bug ((handler graphical-condition-handler))
   ;; This is modal only because the earlier non-modal one sometimes
@@ -182,11 +161,13 @@
   ;; reporters that start a new Tcl/Tk process and send reports over
   ;; the net.
   (with-modal-toplevel (tl :title "Save a bug report")
-    (let ((summary (make-instance 'label :master tl :text "Summary:"))
-          (esummary (make-instance 'entry :master tl :text ""))
-          (desc (make-instance 'message :master tl :width 400 :text "Please describe what you were doing, and where so the developers can try to reproduce this situation"))
-          (edesc (make-instance 'scrolled-text :master tl))
-          (bsave (make-instance 'button :master tl :text "Save")))
+    (let* ((toplevel-widget (modal-toplevel-root-widget tl))
+           (summary  (make-instance 'label :master toplevel-widget :text "Summary:"))
+           (esummary (make-instance 'entry :master toplevel-widget :text ""))
+           (desc     (make-instance 'message :master toplevel-widget :width 400
+                                             :text "Please describe what you were doing, and where so the developers can try to reproduce this situation"))
+           (edesc    (make-instance 'scrolled-text :master toplevel-widget))
+           (bsave    (make-instance 'button :master toplevel-widget :text "Save")))
       (labels ((save ()
                  (let ((summary (text esummary))
                        (desc (text edesc))
@@ -196,17 +177,18 @@
                          (decode-universal-time (get-universal-time) 0)
                        (let ((timestamp (format nil "~D/~D/~D ~D:~D:~D GMT"
                                                 yr mo day hr min sec)))
-                         (format out "This bug report was generated by the Nodgui debugger on ~A.~%"
+                         (format out
+                                 "This bug report was generated by the Nodgui debugger on ~A.~%"
                                  timestamp)
                          (format out "Nodgui version: ~A~%" +nodgui-version+)
                          (format out "Lisp: ~A ~A~%"
                                  (lisp-implementation-type) (lisp-implementation-version))
                          (format out "Summary: ~A~%Description:~%~A~%~%" summary desc)
                          (print-backtrace (handler-condition handler) out))))
-                   (return))))
+                   (exit-from-modal-toplevel tl))))
         (setf (command bsave) #'save)
-        (grid-columnconfigure tl 0 :weight 0)
-        (grid-columnconfigure tl 1 :weight 1)
+        (grid-columnconfigure toplevel-widget 0 :weight 0)
+        (grid-columnconfigure toplevel-widget 1 :weight 1)
         (grid summary 2 0 :sticky :w)
         (grid esummary 2 1 :sticky :ew)
         (grid desc 3 0 :columnspan 2 :sticky :w)
@@ -216,43 +198,9 @@
 (defmethod abort-condition-handler ((handler graphical-condition-handler))
   (abort))
 
-;;; The production error handler
-
-(defclass production-condition-handler (graphical-condition-handler)
-  ((debugp :initform nil)))
-
-(defmethod describe-condition ((handler production-condition-handler))
-  (let ((cont (find-restart 'continue)))
-    (if cont
-        (format nil "An internal error has occured.~%~A?" cont)
-        "An internal error has occured")))
-
-;;; Paranoid condition handler
-
-(defclass paranoid-condition-handler (graphical-condition-handler) ())
-
-(defmethod handle-condition-p ((debugger paranoid-condition-handler) condition)
-  (declare (ignore condition))
-  t)
-
-(defmethod abort-condition-handler ((handler paranoid-condition-handler))
-  (if (typep (handler-condition handler) 'serious-condition)
-      (abort)
-      (throw 'modal-toplevel nil)))
-
-;;; Trivial debugger
-
-(defun trivial-debugger (condition hook)
-  "A function appropriate for *debugger-hook*. It prints a stack trace and exits."
-  (declare (ignore hook))
-  (ignore-errors
-    (format *error-output* "An error of has occured: ~%")
-    (print-backtrace condition *error-output*)
-    (uiop:quit)))
-
-(defun debugger-test (debugger-class)
-  (with-nodgui (:debugger-class debugger-class :debug-tcl t)
-    (pack (list (make-instance 'label :text (format nil "Debugger class ~S" debugger-class))
+(defun debugger-test (&optional (debugger-class 'graphical-condition-handler))
+  (with-nodgui (:debugger-class debugger-class)
+    (pack (list (make-instance 'label :text (format nil "Debugger"))
                 (make-instance 'button
                   :text "Error"
                   :command (lambda () (error "This is an error.")))
@@ -260,7 +208,7 @@
                   :text "Continuable Error"
                   :command (lambda ()
                              (cerror "Keep going with this computation"
-                                     "This is an error.")
+                                     "This is an continuable error.")
                              (do-msg "You chose to continue!" :title "Congratulations")))
                 (make-instance 'button
                   :text "Warning"

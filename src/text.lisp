@@ -417,7 +417,7 @@
                                           index
                                           ,(make-indices-end)
                                           ])))
-    (let* ((raw-index (read-data)))
+    (let ((raw-index (read-data)))
       (1- (nth-value 0 (parse-line-char-index raw-index))))))
 
 (defmethod clear-text ((txt text))
@@ -482,26 +482,28 @@
                             (forward          t)
                             (tag-matching-region nil))
   (with-read-data (nil)
-    (let ((count-variable-name (create-name "count")))
-      (format-wish "global {~a}" count-variable-name)
-      (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
-                                            search
-                                            -regexp
-                                            ,(if forward
-                                                 '-forwards
-                                                 '-backwards)
-                                            -nolinestop
-                                            -count ,count-variable-name " "
-                                            ,(empty-string-if-nil case-insensitive
-                                                                  '-nocase)
-                                            {+ ,pattern }
-                                            {+ ,(parse-indices start-index) }
-                                            {+ ,(parse-indices end-index) }
-                                            ])
-                           :sanitize nil))
+    (let ((count-variable-name (create-name "rect")))
+      (with-atomic
+          (format-wish "global ~a; set ~a {}" count-variable-name count-variable-name)
+        (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
+                                        search
+                                        -regexp
+                                        ,(if forward
+                                             '-forwards
+                                             '-backwards)
+                                        -nolinestop
+                                        -count ,count-variable-name  " "
+                                        ,(empty-string-if-nil case-insensitive
+                                                              '-nocase)
+                                        --
+                                        {+ ,pattern }
+                                        {+ ,(parse-indices start-index) }
+                                        {+ ,(parse-indices end-index) }
+                                        ])
+                             :sanitize nil)))
       (let ((indices (read-data)))
         (when (not (string-empty-p indices))
-          (format-wish "global {~a} ; senddata ${~a}"
+          (format-wish "global ~a; senddata $~a"
                        count-variable-name count-variable-name)
           (let ((size (read-data)))
             (multiple-value-bind (lines chars)

@@ -895,27 +895,28 @@
   "A trivial dialog that waits for a textual input from user"
   (let ((res nil))
     (with-modal-toplevel (toplevel :title title)
-      (transient toplevel parent)
-      (flet ((close-window-cb (entry)
-               (lambda ()
-                 (setf res (text entry))
-                 (setf *break-mainloop* t))))
+      (let ((toplevel-widget (modal-toplevel-root-widget toplevel)))
+        (transient toplevel-widget parent)
+        (flet ((close-window-cb (entry)
+                 (lambda ()
+                   (setf res (text entry))
+                   (exit-from-modal-toplevel toplevel))))
         (let* ((label  (make-instance 'label
-                                      :master toplevel
+                                      :master toplevel-widget
                                       :text   message))
                (entry  (make-instance 'entry
                                       :text   text
-                                      :master toplevel))
+                                      :master toplevel-widget))
                (button (make-instance 'button
                                       :text    button-message
                                       :command (close-window-cb entry)
-                                      :master toplevel)))
+                                      :master toplevel-widget)))
           (bind entry #$<Return>$ (lambda (a)
                                     (declare (ignore a))
                                     (funcall (close-window-cb entry))))
           (grid label  0 0 :sticky :n :padx padding-x :pady padding-y)
           (grid entry  1 0 :sticky :n :padx padding-x :pady padding-y)
-          (grid button 2 0 :sticky :n :padx padding-x :pady padding-y))))
+          (grid button 2 0 :sticky :n :padx padding-x :pady padding-y)))))
     res))
 
 (alexandria:define-constant +selection-mode-allow-double-click+ '(:single :browse) :test #'equalp)
@@ -930,35 +931,36 @@
   "A trivial dialog with a listbox that waits for user to select input"
   (let ((res nil))
     (with-modal-toplevel (toplevel :title title)
-      (transient toplevel parent)
-      (flet ((close-window-cb (sc-listbox)
-               (lambda ()
-                 (setf res (listbox-get-selection-value sc-listbox))
-                 (setf *break-mainloop* t))))
-        (let* ((label      (make-instance 'label
-                                          :master toplevel
-                                          :text   message))
-               (sc-listbox (make-instance 'scrolled-listbox
-                                          :select-mode select-mode
-                                          :master      toplevel))
-               (button     (make-instance 'button
-                                          :text    button-message
-                                          :command (close-window-cb sc-listbox)
-                                          :master  toplevel)))
-          (dolist (datum data)
-            (listbox-append sc-listbox (funcall key datum)))
-          (when (find select-mode +selection-mode-allow-double-click+)
-            (bind (listbox sc-listbox) ; internal slot
-                  #$<Double-1>$
-                  (lambda (event)
-                    (declare (ignore event))
-                    (funcall (close-window-cb sc-listbox)))
-                  :append    t))
-          (grid label      0 0 :sticky :n :padx padding-x :pady padding-y)
-          (grid sc-listbox 1 0 :sticky :news :padx padding-x :pady padding-y)
-          (grid button     2 0 :sticky :n :padx padding-x :pady padding-y)
-          (grid-rowconfigure    toplevel 1 :weight 1)
-          (grid-columnconfigure toplevel 0 :weight 1))))
+      (let ((toplevel-widget (modal-toplevel-root-widget toplevel)))
+        (transient toplevel-widget parent)
+        (flet ((close-window-cb (sc-listbox)
+                 (lambda ()
+                   (setf res (listbox-get-selection-value sc-listbox))
+                   (exit-from-modal-toplevel toplevel))))
+          (let* ((label      (make-instance 'label
+                                            :master toplevel-widget
+                                            :text   message))
+                 (sc-listbox (make-instance 'scrolled-listbox
+                                            :select-mode select-mode
+                                            :master      toplevel-widget))
+                 (button     (make-instance 'button
+                                            :text    button-message
+                                            :command (close-window-cb sc-listbox)
+                                            :master  toplevel-widget)))
+            (dolist (datum data)
+              (listbox-append sc-listbox (funcall key datum)))
+            (when (find select-mode +selection-mode-allow-double-click+)
+              (bind (listbox sc-listbox) ; internal slot
+                    #$<Double-1>$
+                    (lambda (event)
+                      (declare (ignore event))
+                      (funcall (close-window-cb sc-listbox)))
+                    :append    t))
+            (grid label      0 0 :sticky :n :padx padding-x :pady padding-y)
+            (grid sc-listbox 1 0 :sticky :news :padx padding-x :pady padding-y)
+            (grid button     2 0 :sticky :n :padx padding-x :pady padding-y)
+            (grid-rowconfigure    toplevel-widget 1 :weight 1)
+            (grid-columnconfigure toplevel-widget 0 :weight 1)))))
     res))
 
 (a:define-constant +date-today-dom-wrapper+  "*" :test #'string=)
@@ -1228,15 +1230,18 @@
 (defun date-picker-demo ()
   (let ((res nil))
     (with-modal-toplevel (toplevel)
-      (set-geometry-wh toplevel 380 256)
-      (let* ((widget (make-instance 'date-picker
-                                    :master        toplevel
-                                    :on-pressed-cb (lambda (a)
-                                                     (setf res (universal-timestamp a))
-                                                     (break-mainloop)))))
-        (grid widget 0 0 :sticky :news)
-        (grid-columnconfigure toplevel :all :weight 1)
-        (grid-rowconfigure    toplevel :all :weight 1)))
+      (let ((toplevel-widget (modal-toplevel-root-widget toplevel)))
+        (transient toplevel-widget (root-toplevel))
+        (set-geometry-wh toplevel-widget 380 256)
+        (let* ((widget (make-instance 'date-picker
+                                      :master        toplevel-widget
+                                      :on-pressed-cb
+                                      (lambda (a)
+                                        (setf res (universal-timestamp a))
+                                        (exit-from-modal-toplevel toplevel)))))
+          (grid widget 0 0 :sticky :news)
+          (grid-columnconfigure toplevel-widget :all :weight 1)
+          (grid-rowconfigure    toplevel-widget :all :weight 1))))
     (and res
          (message-box (format nil
                               "chosen ~s~%"
@@ -1290,15 +1295,17 @@
 (defun password-entry-demo ()
   (let ((res nil))
     (with-modal-toplevel (toplevel)
-      (let* ((widget    (make-instance 'password-entry
+      (let* ((toplevel-widget (modal-toplevel-root-widget toplevel))
+             (widget    (make-instance 'password-entry
                                        :show-password t
-                                       :master        toplevel))
+                                       :master        toplevel-widget))
              (ok-button (make-instance 'button
                                        :text   "OK"
-                                       :master toplevel
-                                       :command (lambda ()
-                                                  (setf res (secret-string widget))
-                                                  (break-mainloop)))))
+                                       :master toplevel-widget
+                                       :command
+                                       (lambda ()
+                                         (setf res (secret-string widget))
+                                         (exit-from-modal-toplevel toplevel)))))
         (grid widget    0 0 :sticky :news)
         (grid ok-button 0 1 :sticky :news)))
     (and res
@@ -1326,6 +1333,14 @@
     :initform "#BEBEBE"
     :accessor not-reached-color
     :documentation "The color of star when not reached")
+   (full-colored-star-count
+    :initform 0
+    :accessor full-colored-star-count
+    :documentation "The number of star fully painted")
+   (partial-colored-star-count
+    :initform -1
+    :accessor partial-colored-star-count
+    :documentation "The number of star partially painted")
    (value
     :initform 0.0
     :initarg :value
@@ -1333,32 +1348,40 @@
     :documentation "The status of the progress in [0.0, 1.0]")))
 
 (defun colorize-progress-star (progress-widget)
-  (with-lazy
-      (with-accessors ((star-num          star-num)
-                       (value             value)
-                       (reached-color     reached-color)
-                       (not-reached-color not-reached-color)
-                       (stars             stars)) progress-widget
-        (multiple-value-bind (full-colored partial-colored)
-            (calc-color-stars progress-widget value)
-          (loop for i from 0 below full-colored do
-               (let* ((star         (elt stars i))
-                      (left-handle  (nodgui.shapes:left-side-handle star))
-                      (right-handle (nodgui.shapes:right-side-handle star)))
-                 (item-configure progress-widget left-handle  :fill    reached-color)
-                 (item-configure progress-widget left-handle  :outline reached-color)
-                 (item-configure progress-widget right-handle :fill    reached-color)
-                 (item-configure progress-widget right-handle :outline reached-color)))
-          (when (>= partial-colored 0)
-            (let* ((half-star    (elt stars partial-colored))
-                   (left-handle  (nodgui.shapes:left-side-handle half-star)))
-              (item-configure progress-widget left-handle :outline reached-color)
-              (item-configure progress-widget left-handle :fill    reached-color)))))))
+  (with-flush
+      (with-accessors ((star-num                   star-num)
+                       (value                      value)
+                       (reached-color              reached-color)
+                       (not-reached-color          not-reached-color)
+                       (full-colored-star-count    full-colored-star-count)
+                       (partial-colored-star-count partial-colored-star-count)
+                       (stars                      stars)) progress-widget
+        (loop for i from 0 below full-colored-star-count do
+          (let* ((star         (elt stars i))
+                 (left-handle  (nodgui.shapes:left-side-handle star))
+                 (right-handle (nodgui.shapes:right-side-handle star)))
+            (item-configure progress-widget left-handle  :fill    reached-color)
+            (item-configure progress-widget left-handle  :outline reached-color)
+            (item-configure progress-widget right-handle :fill    reached-color)
+            (item-configure progress-widget right-handle :outline reached-color)))
+        (when (>= partial-colored-star-count 0)
+          (let* ((half-star    (elt stars partial-colored-star-count))
+                 (left-handle  (nodgui.shapes:left-side-handle half-star)))
+            (item-configure progress-widget left-handle :outline reached-color)
+            (item-configure progress-widget left-handle :fill    reached-color))))))
 
 (defmethod (setf value) (new-value (object progress-bar-star))
-  (clear-star-progress-star object)
-  (setf (slot-value object 'value) (alexandria:clamp new-value 0.0 1.0))
-  (colorize-progress-star object))
+  (with-accessors ((full-colored-star-count    full-colored-star-count)
+                   (partial-colored-star-count partial-colored-star-count)) object
+    (setf (slot-value object 'value) (alexandria:clamp new-value 0.0 1.0))
+    (multiple-value-bind (full-colored partial-colored)
+        (calc-color-stars object new-value)
+      (when (not (and (epsilon= full-colored-star-count    full-colored)
+                      (epsilon= partial-colored-star-count partial-colored)))
+        (clear-star-progress-star object)
+        (setf full-colored-star-count    full-colored
+              partial-colored-star-count partial-colored)
+        (colorize-progress-star object)))))
 
 (defun progress-star-radius (canvas)
   (/ (width canvas)
@@ -1387,10 +1410,10 @@
 (defun calc-color-stars (bar progress-value)
   (with-accessors ((star-num star-num)
                    (value    value)) bar
-    (let* ((star-height         (* 2 (progress-star-radius bar)))
+    (let* ((star-width          (* 2 (progress-star-radius bar)))
            (bar-width           (width bar))
            (filled-width        (* progress-value bar-width))
-           (stars-colored-fract (/ filled-width star-height)))
+           (stars-colored-fract (/ filled-width star-width)))
       (multiple-value-bind (integer-part fractional-part)
           (floor stars-colored-fract)
         (let ((full-colored    integer-part)
@@ -1421,17 +1444,18 @@
        for star in stars
        for x from 0 by (* 2 (progress-star-radius object)) do
          (nodgui.shapes:shape-move-to star x 0))
-    (colorize-progress-star object)))
+    (setf (value object) (slot-value object 'value))))
 
 (defun star-progress-demo ()
   (with-modal-toplevel (toplevel)
-    (let* ((widget (make-instance 'progress-bar-star
+    (let* ((toplevel-widget (modal-toplevel-root-widget toplevel))
+           (widget (make-instance 'progress-bar-star
                                    :star-num 5
                                    :width    200
                                    :height   40
-                                   :master toplevel))
+                                   :master toplevel-widget))
            (scale  (make-instance 'scale
-                                  :master  toplevel
+                                  :master  toplevel-widget
                                   :form    0
                                   :to      100)))
       (setf (command scale) (lambda (a)
@@ -1469,9 +1493,7 @@
                                           :command (lambda ()
                                                      (setf button-clicked-p t)
                                                      (withdraw toplevel))))
-         (wish-subprocess  *wish*)
-         (exit-mainloop    *exit-mainloop*)
-         (break-main-loop  *break-mainloop*))
+         (wish-subprocess  *wish*))
     (transient toplevel parent)
     (grid label            0 0 :sticky :news)
     (grid progress-timeout 1 0 :sticky :news)
@@ -1489,9 +1511,7 @@
                          (- (+ y-parent (/ h-parent 2))
                             (/ h 2)))))
     (bt:make-thread (lambda ()
-                      (let ((*wish*           wish-subprocess)
-                            (*break-mainloop* break-main-loop)
-                            (*exit-mainloop*  exit-mainloop))
+                      (let ((*wish* wish-subprocess))
                         (loop for i from 0 below timeout do
                              (sleep 1)
                              (when (not button-clicked-p)

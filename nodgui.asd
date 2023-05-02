@@ -40,6 +40,7 @@
                (:file "config")
                (:file "constants")
                (:file "utils")
+               (:file "synchronized-queue")
                (:file "base64")
                (:file "ubvec4")
                (:file "vec2")
@@ -108,6 +109,7 @@
                                      (:file "test-tcl-emitter")
                                      (:file "test-event-parser")
                                      (:file "test-styles")
-                                     (:file "test-text-indices")))))
+                                     (:file "test-text-indices")
+                                     (:file "test-nodgui")))))
 
 (pushnew :nodgui *features*)

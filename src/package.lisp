@@ -106,6 +106,15 @@
            #:big-dot
            #:bullet))
 
+(defpackage :syncronized-queue
+  (:use :cl)
+  (:local-nicknames (:a :alexandria))
+  (:export
+    #:synchronized-queue
+    #:pop-block
+    #:push-unblock
+    #:emptyp))
+
 (defpackage :nodgui.base64
   (:use :cl
         :alexandria
@@ -1234,7 +1243,8 @@
         #:nodgui.tcl-emitter)
   (:import-from :alexandria :define-constant)
   (:local-nicknames (:a :alexandria)
-                    (:p :esrap))
+                    (:p :esrap)
+                    (:q :syncronized-queue))
   (:export #:syntax
            #:+wm-type-desktop+
            #:+wm-type-dock+
@@ -1255,8 +1265,6 @@
            #:*cursors*
            #:*debug-tk*
            #:*debug-buffers*
-           #:*break-mainloop*
-           #:*exit-mainloop*
            #:*init-wish-hook*
            #:*mb-icons*
            #:*nodgui-debug*
@@ -1390,6 +1398,7 @@
            #:entry
            #:entry-select
            #:exit-wish
+           #:exit-nodgui
            #:event
            #:event-x
            #:event-y
@@ -1402,6 +1411,9 @@
            #:event-width
            #:event-height
            #:event-unicode-char
+           #:root-toplevel
+           #:root-toplevel-title
+           #:set-root-toplevel-title
            #:focus
            #:+tk-default-font+
            #:+tk-text-font+
@@ -1580,7 +1592,9 @@
            #:search-all-text
            #:see
            #:send-lazy
+           #:with-flush
            #:with-lazy
+           #:with-accept-garbage-as-event
            #:*with-read-data-no-lock*
            #:with-read-data
            #:with-main-loop-lock
@@ -1626,7 +1640,10 @@
            #:call-with-nodgui
            #:with-toplevel
            #:exit-from-toplevel
+           #:modal-toplevel-results
+           #:modal-toplevel-root-widget
            #:with-modal-toplevel
+           #:exit-from-modal-toplevel
            #:with-widgets
            #:withdraw
            #:transient

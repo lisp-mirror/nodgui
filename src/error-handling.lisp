@@ -17,27 +17,6 @@
 
 (in-package :nodgui)
 
-(defparameter *debug-settings-table*
-  (copy-tree
-   '(((0 :minimum) . nil)
-     ((1 :deploy)  . production-condition-handler)
-     ((2 :develop) . graphical-condition-handler)
-     ((3 :maximum) . paranoid-condition-handler))))
-
-(defun debug-setting-condition-handler (debug-setting)
-  "Given a debug setting (see WITH-NODGUI for details), return the debugger class to use."
-  (let* ((debug (if (numberp debug-setting)
-                    (min 3 (max 0 (ceiling debug-setting)))
-                    debug-setting))
-         (cons (assoc (list debug) *debug-settings-table* :test #'intersection)))
-    (cond
-      ((or (typep debug 'class)
-           (and (symbolp debug-setting)
-                (ignore-errors (find-class debug))))
-       debug)
-      (cons (cdr cons))
-      (t (error "Unknown debug setting ~S" debug)))))
-
 (defun make-call-with-condition-handlers-function (handler-class)
   "Return a function that will call a thunk with the appropriate condition handlers in place."
   (if handler-class
@@ -48,8 +27,8 @@
             (generic-handler (make-condition-handler-function
                               :class handler-class :title "Attention")))
         (lambda (thunk)
-          (handler-bind ((condition generic-handler)
+          (handler-bind ((error error-handler)
                          (warning warning-handler)
-                         (error error-handler))
+                         (condition generic-handler))
             (funcall thunk))))
       #'funcall))

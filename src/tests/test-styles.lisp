@@ -1,4 +1,4 @@
-;; This software is Copyright © 2022 cage
+;; This software is Copyright © cage
 
 ;; The authors grant you the rights to distribute
 ;; and use this software as governed by the terms

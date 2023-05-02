@@ -18,7 +18,15 @@
 
 (named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
+(define-constant +no-event-value+ (cons nil nil) :test #'equalp)
+
 (define-constant +arg-toplevel-name+ "-name" :test #'string=)
+
+(defparameter *wish* nil
+  "The current connection to an inferior wish.")
+
+(defparameter *wish-connections* ()
+  "Connections pushed aside by invoking the NEW-WISH restart in START-WISH.")
 
 (defun do-execute (program args &optional (waitp nil))
   "execute program with args a list containing the arguments passed to the program
@@ -61,26 +69,25 @@
   (after-ids                (make-hash-table :test #'equal))
   (counter                  1)
   (after-counter            1)
-  (data-queue               ())
-  (event-queue              ())
+  (data-queue               (make-instance 'q:synchronized-queue))
+  (event-queue              (make-instance 'q:synchronized-queue))
   (lock                     (bt:make-lock "lock"))
   (read-data-lock           (bt:make-lock "read-data"))
   (flush-lock               (bt:make-lock "flush"))
   (read-lock                (bt:make-lock "read"))
-  (queue-data-lock          (bt:make-lock "queue-data"))
-  (queue-event-lock         (bt:make-lock "queue-event"))
-  (main-loop-lock           (bt:make-lock "main-loop"))
-  (main-loop-cond           (bt:make-condition-variable))
-  (waiting-data-p           nil)
+  (break-mainloop-lock      (bt:make-lock "break mainloop"))
+  (break-mainloop                nil)
+  (accept-garbage-for-next-event  nil)
   ;; This is should be a function that takes a thunk, and calls it in
   ;; an environment with some condition handling in place.  It is what
   ;; allows the user to specify error-handling in START-WISH, and have
   ;; it take place inside of MAINLOOP.
   (call-with-condition-handlers-function (lambda (f) (funcall f)))
-  ;; This is only used to support SERVE-EVENT.
-  (input-handler nil)
   (output-buffer nil)
   (error-collecting-thread nil)
+  (input-collecting-thread nil)
+  (main-loop-thread nil)
+  (saved-main-loop-threads '())
   (variables (make-hash-table :test #'equal)))
 
 (defmethod wish-variable (name (wish nodgui-connection))
@@ -93,30 +100,30 @@
   `(funcall (wish-call-with-condition-handlers-function *wish*)
             (lambda () ,@body)))
 
+(defun push-mainloop-thread ()
+  (push (wish-main-loop-thread *wish*)
+        (wish-saved-main-loop-threads *wish*)))
+
+(defun pop-mainloop-thread ()
+  (setf (wish-main-loop-thread *wish*)
+        (pop (wish-saved-main-loop-threads *wish*))))
+
 ;;; global connection information
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf
-   (documentation 'make-nodgui-connection 'function)
-   "Create a new NODGUI-CONNECTION object.  This represents a connection to a
+  (setf (documentation 'make-nodgui-connection 'function)
+        "Create a new NODGUI-CONNECTION object.  This represents a connection to a
     specific wish.  You can maintain connections to several distinct wish
     processes by binding *WISH* to the one you desire to communicate with, and
     using NODGUI functions within that dynamic scope."))
 
-(defvar *wish* (make-nodgui-connection)
-  "The current connection to an inferior wish.")
-
-(defvar *wish-connections* ()
-  "Connections pushed aside by invoking the NEW-WISH restart in START-WISH.")
-
 ;;; verbosity of debug messages, if true, then all communication
-;;; with tk is echoed to stdout
-(defvar *debug-tk* nil)
+;;; with tk is echoed to *trace-output*
+
+(defparameter *debug-tk* nil)
 
 ;; if set to t, nodgui will report the buffer size sent to tk
-(defvar *debug-buffers* nil)
-
-(defvar *trace-tk* nil)
+(defparameter *debug-buffers* nil)
 
 (defvar *wish-pathname*
   #+freebsd "wish8.6"
@@ -139,26 +146,27 @@
     (format *trace-output* "~%")
     (finish-output *trace-output*)))
 
-(defmacro with-atomic (&rest code)
+(defmacro with-atomic (&rest body)
   `(let ((*buffer-for-atomic-output* t))
-     ,@code
+     ,@body
      (flush-wish)))
 
-(defmacro send-lazy (&rest code)
-  `(let ((*buffer-for-atomic-output* t))
-     ,@code))
+(defmacro with-flush (&rest body)
+  `(progn
+     ,@body
+     (flush-wish)))
 
-(defmacro with-lazy (&rest code)
+(defmacro send-lazy (&rest body)
   `(let ((*buffer-for-atomic-output* t))
-     ,@code))
+     ,@body))
 
-(defparameter *with-read-data-no-lock* nil)
+(defmacro with-lazy (&rest body)
+  `(let ((*buffer-for-atomic-output* t))
+     ,@body))
 
 (defun call-with-read-data (fn)
-  (if *with-read-data-no-lock*
-      (funcall fn)
-      (bt:with-lock-held ((wish-read-data-lock *wish*))
-        (funcall fn))))
+  (bt:with-lock-held ((wish-read-data-lock *wish*))
+    (funcall fn)))
 
 (defmacro with-read-data ((&optional (read-data-fn 'read-data)) &body body)
   (assert (or (null read-data-fn)
@@ -195,13 +203,12 @@
 ;;; put any tcl function definitions needed for running nodgui here
 
 (defun init-wish ()
-  (send-lazy
-   (send-wish "package require Tk")
-   (flush-wish)
-   (send-wish (wish-init-code))
-   (init-tkimg)
-   (dolist (fun *init-wish-hook*) ; run init hook functions
-     (funcall fun))))
+  (format-wish "package require Tk")
+  (send-wish (wish-init-code))
+  (flush-wish)
+  (init-tkimg)
+  (dolist (fun *init-wish-hook*) ; run init hook functions
+    (funcall fun)))
 
 (defun init-tcl (&key debug-tcl)
   (let ((translation "lf"))
@@ -219,64 +226,60 @@
 
 ;;; start wish and set (wish-stream *wish*)
 
-(defun start-wish (&rest keys &key debugger-class stream debug-tcl)
-  ;; open subprocess
-  (if (null (wish-stream *wish*))
-      (progn
-        (if stream
-            (setf (wish-stream *wish*) stream)
-            (multiple-value-bind (proc-stream proc)
-                (do-execute *wish-pathname* *wish-args*)
-              (setf (wish-stream *wish*) proc-stream)
-              (let ((error-stream (uiop:process-info-error-output proc)))
-                (setf (wish-error-collecting-thread *wish*)
-                      (make-error-collecting-thread error-stream)))))
-        #+(or mswindows windows win32) (sleep 1)
-        (setf (wish-call-with-condition-handlers-function *wish*)
-              (make-call-with-condition-handlers-function debugger-class))
-        ;; perform tcl initialisations
-        (with-nodgui-handlers ()
-          (init-tcl :debug-tcl debug-tcl)
-          (prog1
-              (init-wish)
-            (ensure-timer))))
-      ;; By default, we don't automatically create a new connection, because the
-      ;; user may have simply been careless and doesn't want to push the old
-      ;; connection aside.  The NEW-WISH restart makes it easy to start another.
-      (restart-case (nodgui-error "There is already an inferior wish.")
-        (new-wish ()
-          :report "Create an additional inferior wish."
-          (push *wish* *wish-connections*)
-          (setf *wish* (make-nodgui-connection))
-          (apply #'start-wish keys)))))
+(defun start-wish-pipe (&optional (stream nil))
+  (if stream
+      (setf (wish-stream *wish*) stream)
+      (multiple-value-bind (proc-stream proc)
+          (do-execute *wish-pathname* *wish-args*)
+        (setf (wish-stream *wish*) proc-stream)
+        (let ((error-stream (uiop:process-info-error-output proc)))
+          (setf (wish-error-collecting-thread *wish*)
+                (make-error-collecting-thread error-stream)))))
+  #+(or mswindows windows win32) (sleep 1))
+
+(defun start-wish (&key debug-tcl)
+  ;; perform tcl initialisations
+  (with-nodgui-handlers ()
+    (init-tcl :debug-tcl debug-tcl)
+    (init-wish)))
 
 ;;; CMUCL, SCL, and SBCL, use a two-way-stream and the constituent
 ;;; streams need to be closed.
+
 (defun close-process-stream (stream)
   "Close a 'stream open by 'do-execute."
-  (when *debug-tk*
-    (format t "Closing wish stream: ~S~%" stream))
+  (dbg "Closing wish stream: ~S~%" stream)
   (ignore-errors (close stream))
   #+(or :cmu :scl :sbcl)
   (when (typep stream 'two-way-stream)
+    (dbg "closing two way stream")
     (close (two-way-stream-input-stream stream) :abort t)
     (close (two-way-stream-output-stream stream) :abort t))
   nil)
 
+(define-constant +closing-loop-event+ :closing-wish :test #'eq)
+
+(define-constant +closing-loop-input+ "puts 1" :test #'string=)
+
+(defun indicate-stop-mainloop-threads ()
+  (push-enqueued-event +closing-loop-event+)
+  (send-wish +closing-loop-input+))
+
 (defun exit-wish ()
   (with-nodgui-handlers ()
-    (let ((stream (wish-stream *wish*)))
-      (when stream
-        (when (open-stream-p stream)
-          (ignore-errors
-            (send-wish "exit")
-            (flush-wish)
-            (bt:destroy-thread (wish-error-collecting-thread *wish*))
-            (close-process-stream stream))))
+    (a:when-let ((stream (wish-stream *wish*)))
+      (break-mainloop)
+      (bt:destroy-thread (wish-error-collecting-thread *wish*))
+      (setf (nodgui::wish-accept-garbage-for-next-event *wish*) t)
+      (indicate-stop-mainloop-threads)
+      (send-wish "exit")
+      ;;(close-process-stream stream))
       (setf (wish-stream *wish*) nil)
       #+:allegro (system:reap-os-subprocess)
-      (setf *wish-connections* (remove *wish* *wish-connections*))))
-  (throw *wish* nil))
+      (setf *wish-connections* (remove *wish* *wish-connections*)))))
+
+(defun exit-nodgui ()
+  (exit-wish))
 
 (defun send-wish (text)
   (bt:with-lock-held ((wish-lock *wish*))
@@ -300,7 +303,7 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
       (finish-output stream))))
 
 ;; maximum line length sent over to Tk
-(defparameter *max-line-length* nil)
+(defparameter *max-line-length* 1000)
 
 (defun flush-wish ()
   (bt:with-lock-held ((wish-flush-lock *wish*))
@@ -319,7 +322,7 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
               (*max-line-length*
                (when (or *debug-buffers*
                          *debug-tk*)
-                 (dbg t "buffer size ~a~%" len))
+                 (dbg "buffer size ~a~%" len))
                (dolist (string buffer)
                  (loop while (> (length string) *max-line-length*)
                     do
@@ -339,7 +342,6 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
                  (format stream "bt \"~A~%\"~%" (tkescape2 string))
                  (dbg "bt \"~A\"~%" (tkescape2 string)))
                (format stream "process_buffer~%")
-               (finish-output stream)
                (dbg "process_buffer~%")))
             (finish-output stream)
             (setf (wish-output-buffer *wish*) nil)))))))
@@ -418,67 +420,37 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
 (defun normalize-error (errors-list)
   (join-with-strings (rest errors-list) " "))
 
-(defparameter *accept-garbage-as-event-p* nil
+(defun accept-garbage-for-next-event-p ()
   "Sometimes tcl  lib print on  standard error for  debugging purpose,
-  ignore the data got in this case setting this variable to non nil")
+  ignore the data got in this case setting this variable to non nil"
+  (wish-accept-garbage-for-next-event *wish*))
 
 (defun verify-event (event)
   (cond
-    ((and *accept-garbage-as-event-p*
-          (not (listp event)))
-     nil)
+    ((accept-garbage-for-next-event-p)
+     (setf (wish-accept-garbage-for-next-event *wish*) nil)
+     (list :ignored event))
     ((not (listp event))
      (error "When reading from tcl, expected a list but instead got ~S" event))
     ((eq (first event) :error)
      (error 'tk-error :message (normalize-error event)))
     (t event)))
 
-(defvar *in-read-event* ()
-  "A list of nodgui-connection objects that are currently waiting to read an event.")
-
-(defun ping-all-wishes ()
-  (dolist (*wish* *in-read-event*)
-    (format-wish "keepalive")))
-
-(defvar *nodgui-ping-timer* nil)
-
-(defvar *ping-interval-seconds* nil)
-
-(defun ensure-timer ()
-  (unless *nodgui-ping-timer*
-    (when *ping-interval-seconds*
-      #+sbcl
-      (let ((timer (sb-ext:make-timer (lambda () (ping-all-wishes))
-                               :name "Nodgui ping timer")))
-        (sb-ext:schedule-timer timer *ping-interval-seconds*
-                        :repeat-interval *ping-interval-seconds*
-                        :absolute-p nil)
-        (setf *nodgui-ping-timer* timer))
-      #+(not sbcl)
-      nil)))
-
 (defun tcldebug (something)
   (format t "tcl debug: ~a~%" something)
   (finish-output))
 
-(defun read-event (&key (blocking t) (no-event-value nil) (force-read-from-stream nil))
+(defun read-event (no-event-value)
   "read the next event from wish, return the event or nil, if there is no
 event to read and blocking is set to nil"
   (handler-case
       (let ((wstream (wish-stream *wish*)))
-        (flush-wish)
         (bt:with-lock-held ((wish-read-lock *wish*))
-          (let ((event (if (and (not force-read-from-stream)
-                                (check-enqueued-event))
-                           (pop-enqueued-event)
-                           (and (or blocking (stream-readable-p wstream))
-                                (read-preserving-whitespace wstream
-                                                            t
-                                                            nil)))))
+          (dbg "queue ~a" (q::container (wish-data-queue *wish*)))
+          (let ((event (read-preserving-whitespace wstream t nil)))
+            (dbg "raw event ~a" event)
             (if event
-                (verify-event
-                 (let ((*in-read-event* (cons *wish* *in-read-event*)))
-                   event))
+                (verify-event event)
                 no-event-value))))
     (error (e)
       (list :read-stream-error e))))
@@ -487,78 +459,52 @@ event to read and blocking is set to nil"
   (eq (first event) :read-stream-error))
 
 (defun check-enqueued-data ()
-  (bt:with-lock-held ((wish-queue-data-lock *wish*))
-    (wish-data-queue *wish*)))
+  (not (q:emptyp (wish-data-queue *wish*))))
 
 (defun pop-enqueued-data ()
-  (bt:with-lock-held ((wish-queue-data-lock *wish*))
-    (pop (wish-data-queue *wish*))))
+  (q:pop-block (wish-data-queue *wish*)))
 
 (defun push-enqueued-data (data)
-  (bt:with-lock-held ((wish-queue-data-lock *wish*))
-    (let ((new-queue (append (wish-data-queue *wish*) (list data))))
-      (setf (wish-data-queue *wish*)
-            new-queue))))
+  (dbg "push data unblock ~a" data)
+  (q:push-unblock (wish-data-queue *wish*) data))
 
 (defun check-enqueued-event ()
-  (bt:with-lock-held ((wish-queue-event-lock *wish*))
-    (wish-event-queue *wish*)))
+  (not (q:emptyp (wish-event-queue *wish*))))
 
 (defun pop-enqueued-event ()
-  (bt:with-lock-held ((wish-queue-event-lock *wish*))
-    (pop (wish-event-queue *wish*))))
+  (q:pop-block (wish-event-queue *wish*)))
 
 (defun push-enqueued-event (event)
-  (bt:with-lock-held ((wish-queue-event-lock *wish*))
-    (let ((new-queue (append (wish-event-queue *wish*) (list event))))
-      (setf (wish-event-queue *wish*)
-            new-queue))))
+  (q:push-unblock (wish-event-queue *wish*) event))
 
 (defun read-data (&key (expected-list-as-data nil))
   "Read data from wish. Non-data events are postponed, bogus messages (eg.
 error-strings) are ignored."
-  (dbg "read enter ~a" (nodgui::wish-waiting-data-p *wish*))
-  (with-main-loop-lock ()
-    (loop while (wish-waiting-data-p *wish*) do
-      (bt:condition-wait (wish-main-loop-cond *wish*)
-                         (wish-main-loop-lock *wish*))))
-  (dbg "read unlock")
-  (setf (wish-waiting-data-p *wish*) t)
-  (labels ((get-data ()
-             (declare (optimize (debug 0) (speed 3)))
-             (if (check-enqueued-data)
-                 (progn
-                   (pop-enqueued-data))
-                 (progn
-                   (dbg "read-data forced~%")
-                   (manage-wish-output (read-single-input (cons nil nil) t)
-                                       nil
-                                       :read-data)
-                   (get-data)))))
-    (let ((data (get-data)))
-      (if (listp data)
-          (cond
-            ((event-got-error-p data)
-             (exit-wish)
-             (return-from read-data nil))
-            ((null data)
-             (exit-wish)
-             (return-from read-data nil))
-            ((eq (first data) :data)
-             (dbg "read-data: ~s~%" data)
-             (if expected-list-as-data
-                 (return-from read-data (rest data))
-                 (return-from read-data (second data))))
-            ((eq (first data) :debug)
-             (if expected-list-as-data
-                 (tcldebug (rest data))
-                 (tcldebug (second data))))
-            ((eq (first data) :error)
-             (error 'tk-error :message (normalize-error data)))
-            (t
-             (finish-output)
-             data))
-          data))))
+  (dbg "read data enter")
+  (let ((data (pop-enqueued-data)))
+    (if (listp data)
+        (cond
+          ((event-got-error-p data)
+           (exit-wish)
+           (return-from read-data nil))
+          ((null data)
+           (exit-wish)
+           (return-from read-data nil))
+          ((eq (first data) :data)
+           (dbg "got data ~a" data)
+           (if expected-list-as-data
+               (return-from read-data (rest data))
+               (return-from read-data (second data))))
+          ((eq (first data) :debug)
+           (if expected-list-as-data
+               (tcldebug (rest data))
+               (tcldebug (second data))))
+          ((eq (first data) :error)
+           (error 'tk-error :message (normalize-error data)))
+          (t
+           (finish-output)
+           data))
+        data)))
 
 (defun read-keyword ()
   (with-read-data (nil)
@@ -569,3 +515,171 @@ error-strings) are ignored."
                                   (string-upcase string)
                                   (string-downcase string))
                         :keyword))))))
+
+;;;; main event loop, runs until stream is closed by wish (wish exited) or
+;;;; the slot break-mainloop is non nil
+
+(defun break-mainloop ()
+  (bt:with-lock-held ((wish-break-mainloop-lock *wish*))
+    (setf (wish-break-mainloop *wish*) t)))
+
+(defun break-mainloop-p ()
+  (bt:with-lock-held ((wish-break-mainloop-lock *wish*))
+    (wish-break-mainloop *wish*)))
+
+(defun restart-mainloop ()
+  (bt:with-lock-held ((wish-break-mainloop-lock *wish*))
+    (setf (wish-break-mainloop *wish*) nil)
+    (start-reading-loop)
+    (start-main-loop)))
+
+(defgeneric handle-output (key params))
+
+(defmethod handle-output (key params)
+  (declare (ignore key params)))
+
+(defun process-one-event (event)
+  (when event
+    (dbg "event:~s<=~%" event)
+    (cond
+     ((not (listp event)) nil)
+     ((eq (first event) :callback)
+      (let ((params (rest event)))
+        (callback (first params) (rest params))))
+     ((eq (first event) :event)
+      (let* ((params (rest event))
+             (callback-name (first params))
+             (evp (rest params))
+             (event (construct-tk-event evp)))
+        (callback callback-name (list event))))
+      ((eq (first event) :keepalive)
+       (dbg "Ping from wish: ~{~A~^~}~%" (rest event)))
+      ((eq (first event) :debug)
+       (tcldebug (second event)))
+      (t
+       ;; handle-output does nothing!
+       (handle-output (first event)
+                      (rest event))))))
+
+;; (defun process-events ()
+;;   "A function to temporarliy yield control to wish so that pending
+;; events can be processed, useful in long loops or loops that depend on
+;; tk input to terminate"
+;;   (let (event)
+;;     (loop
+;;      while (setf event (read-event))
+;;      do (with-atomic (process-one-event event)))))
+
+(defparameter *inside-mainloop* ())
+
+(defun manage-wish-output (event)
+  (dbg "manage ~a from" event)
+  (cond
+    ((or (null event)
+         (event-got-error-p event))
+     (exit-wish)
+     t)
+    ((eq (first event) :data)
+     (push-enqueued-data event))
+    ((or (eql event +no-event-value+)
+         (eq (first event) :ignored))
+     t)
+    (t
+     (push-enqueued-event event))))
+
+(defun start-main-loop ()
+  (dbg "start mainloop")
+  (let ((wish-process *wish*))
+    (setf (wish-main-loop-thread *wish*)
+          (bt:make-thread (lambda ()
+                            (let ((*wish* wish-process))
+                              (loop while (not (break-mainloop-p)) do
+                                (let ((event (pop-enqueued-event)))
+                                  (dbg "pop ~a" event)
+                                  (with-nodgui-handlers ()
+                                    (with-flush
+                                        (process-one-event event)))))
+                              (dbg "main-loop terminated")))
+                          :name "main loop"))))
+
+(defun filter-keys (desired-keys keyword-arguments)
+  (loop for (key val) on keyword-arguments by #'cddr
+        when (find key desired-keys) nconc (list key val)))
+
+(defun start-reading-loop ()
+  (dbg "inizio reading loop")
+  (let ((wish-process *wish*))
+    (setf (wish-input-collecting-thread *wish*)
+          (bt:make-thread (lambda ()
+                            (let ((*wish* wish-process))
+                              (loop while (not (break-mainloop-p))
+                                    do
+                                       (dbg "reading input wait")
+                                       (let ((input (read-event +no-event-value+)))
+                                         (dbg "read input ~a" input)
+                                         (manage-wish-output input)))
+                              (dbg "read input thread terminated")))
+                          :name "read loop"))))
+
+;;; wrapper macro - initializes everything, calls body and then mainloop
+
+(defmacro with-nodgui ((&rest keys
+                              &key (title "") (debug 2) stream &allow-other-keys)
+                    &body body)
+  "Create a new Nodgui connection, evaluate BODY, and enter the main loop.
+
+  :DEBUG indicates the level of debugging support to provide.  It can be a
+  number from 0 to 3, or one of the corresponding keywords:
+  :minimum, :deploy, :develop, or :maximum.
+
+  If :STREAM is non-NIL, it should be a two-way stream connected to a running
+  wish.  This will be used instead of running a new wish.
+
+  With :name (or :title as a synonym) you can set both title and class
+  name of this window"
+  (declare (ignore debug stream title))
+  `(call-with-nodgui (lambda () ,@body) ,@keys))
+
+(defun wait-mainloop-threads ()
+  (bt:join-thread (wish-main-loop-thread *wish*))
+  (bt:join-thread (wish-input-collecting-thread *wish*)))
+
+(defun call-with-nodgui (thunk &rest keys &key stream &allow-other-keys)
+  "Functional interface to with-nodgui, provided to allow the user the build similar macros."
+  (flet ((start-wish ()
+           (apply #'start-wish
+                  (append (filter-keys '(:stream)
+                                       keys)))))
+    (let* ((class-name  (or (getf keys :class)
+                            (getf keys :name)))
+           (title-value (getf keys :title))
+           (*default-toplevel-name* (or class-name
+                                        title-value
+                                        *default-toplevel-name*))
+           (*wish-args*              (append-wish-args (list +arg-toplevel-name+
+                                                             *default-toplevel-name*)))
+           (*wish*                   (make-nodgui-connection)))
+      (if (null (wish-stream *wish*))
+          (start-wish-pipe stream)
+          (restart-case (nodgui-error "There is already an inferior wish.")
+            (new-wish ()
+              :report "Create an additional inferior wish."
+              (push *wish* *wish-connections*)
+              (setf *wish* (make-nodgui-connection))
+              (apply #'start-wish keys))))
+      (when (getf keys :debugger-class)
+        (setf (wish-call-with-condition-handlers-function *wish*)
+              (make-call-with-condition-handlers-function (getf keys :debugger-class))))
+      (start-reading-loop)
+      (start-main-loop)
+      (let ((results-after-exit nil))
+        (multiple-value-prog1
+            (with-nodgui-handlers ()
+              (start-wish)
+              (when title-value
+                (set-root-toplevel-title title-value))
+              (on-close (root-toplevel) (lambda () (exit-wish)))
+              (with-flush
+                  (setf results-after-exit (funcall thunk)))))
+        (wait-mainloop-threads)
+        results-after-exit))))
