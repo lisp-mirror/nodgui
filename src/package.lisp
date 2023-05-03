@@ -1385,8 +1385,6 @@
            #:create-rectangle
            #:create-text
            #:create-window
-           #:break-mainloop
-           #:*debug-settings-table*
            #:*initargs*
            #:*class-args*
            #:defargs
