@@ -408,13 +408,13 @@
 (defmethod initialize-instance :after ((tooltip tooltip)
                                        &key (background :yellow3) &allow-other-keys)
   (withdraw tooltip)
+  (set-wm-overrideredirect tooltip 1)
   (setf (tooltip-label tooltip)
         (make-instance 'label
                        :text       ""
                        :background background
                        :master     tooltip
                        :justify    :left))
-  (set-wm-overrideredirect tooltip 1)
   (pack (tooltip-label tooltip) :side :left :expand t :fill :both))
 
 (defgeneric show (tooltip text x y))
@@ -1722,10 +1722,10 @@ if  a  number   is  given  the  corresponding   element  is  selected."
     :accessor attached-entry)))
 
 (defmethod initialize-instance :after ((object autocomplete-candidates) &key &allow-other-keys)
-  (setf (listbox object) (make-instance 'multifont-listbox :master object))
+  (hide-candidates object)
   (set-wm-overrideredirect object 1)
-  (pack (listbox object) :side :left :expand t :fill :both)
-  (hide-candidates object))
+  (setf (listbox object) (make-instance 'multifont-listbox :master object))
+  (pack (listbox object) :side :left :expand t :fill :both))
 
 (defun show-candidates (candidates)
   (with-accessors ((attached-entry attached-entry)) candidates
