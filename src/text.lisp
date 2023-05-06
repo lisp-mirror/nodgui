@@ -293,8 +293,18 @@
     (values tag-name firstp endp)))
 
 (defun p-coordinates (coordinates-spec)
-  (let ((look-ahead (first coordinates-spec)))
+  (let* ((error-coordinates-message
+           "Unknown coordinates spec: ~s, expected the keyword :end or a list of coordinates")
+        (look-ahead (cond
+                      ((listp coordinates-spec)
+                       (first coordinates-spec))
+                      ((eq coordinates-spec :end)
+                       (make-indices-end))
+                      (t
+                       (error (format nil error-coordinates-message coordinates-spec))))))
     (cond
+      ((string-equal look-ahead (make-indices-end))
+       look-ahead)
       ((string-equal look-ahead "x")
        (let ((x (p-x coordinates-spec))
              (y (p-y (subseq coordinates-spec 2))))

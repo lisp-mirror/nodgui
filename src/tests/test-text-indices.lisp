@@ -37,6 +37,9 @@
       "3.0 +14 chars"
       (parse '(+ (:line 3 :char 0) 14 :chars)))
   (assert-equality #'string=
+      "end +14 chars"
+      (parse '(+ :end 14 :chars)))
+  (assert-equality #'string=
       "3.end -3 chars"
       (parse '(- (:line 3 :char :end) 3 :chars)))
   (assert-condition error
