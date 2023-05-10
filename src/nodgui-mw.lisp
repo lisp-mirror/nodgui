@@ -1892,7 +1892,7 @@ will shift the selected item up o down respectively."))
       (focus autocomplete-entry-widget)
       (hide-candidates candidates-widget))))
 
-(defun autocomplete-key-release-clsr (candidates-widget
+(defun autocomplete-key-press-clsr (candidates-widget
                                       autocomplete-entry-widget
                                       autocomplete-function)
   (lambda-debounce (event)
@@ -1946,10 +1946,10 @@ will shift the selected item up o down respectively."))
           (autocomplete-click-1-clsr candidates-widget autocomplete-entry-widget)
           :exclusive t)
     (bind autocomplete-entry-widget
-          #$<KeyRelease>$
-          (autocomplete-key-release-clsr candidates-widget
-                                         autocomplete-entry-widget
-                                         autocomplete-function)
+          #$<KeyPress>$
+          (autocomplete-key-press-clsr candidates-widget
+                                       autocomplete-entry-widget
+                                       autocomplete-function)
           :append t)))
 
 (defmethod configure ((object autocomplete-entry) option value &rest others)

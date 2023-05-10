@@ -76,7 +76,7 @@
 
 (defparameter *internal-time-scaling-millis* (calculate-internal-time-scaling-millis))
 
-(defparameter *debounce-minimum-delay* 150
+(defparameter *debounce-minimum-delay* 300
   "milliseconds")
 
 (defun calculate-milliseconds-elapsed ()
