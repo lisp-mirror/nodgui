@@ -18,9 +18,9 @@
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
-(define-constant +reference-text-width-char+ "0" :test #'string=
-                 :documentation
-                 "According to the documentation this is the reference size for char width")
+(define-constant +reference-text-width-char+ "0"
+  :test          #'string=
+  :documentation "According to the documentation this is the reference size for char width")
 
 (defargs text ()
   autoseparators
@@ -696,7 +696,7 @@
                 :exclusive t))
     (tag-bind object
               tag-name
-              #$<Enter>$
+              #$<Motion>$
               (lambda ()
                 (configure-mouse-pointer object actual-cursor-over)
                 (when over-callback
