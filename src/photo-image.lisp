@@ -88,11 +88,11 @@
               :sanitize nil))))
 
 (defmethod make-image ((object string) &optional (w nil) (h nil) (channels 3))
-  "If object contains  a `.` is threated as a  pathname, otherwise the
+  "If object is a valid local file path is threated as a  pathname, otherwise the
 string must  be base64 encoded image.  Note in both cases  only PNG or
-GIF format!"
+GIF are supported but if tjimg is used more format are available!"
   (declare (ignore w h channels))
-  (if (find #\. object :test #'char=)
+  (if (file-exists-p object)
       (make-image (namestring->pathname object))
       (make-instance 'photo-image
                      :data object)))
