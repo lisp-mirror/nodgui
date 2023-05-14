@@ -1465,6 +1465,7 @@
            #:cursor-index
            #:set-selection
            #:set-cursor-index
+           #:clear-selection
            #:input-box
            #:insert-object
            #:interior

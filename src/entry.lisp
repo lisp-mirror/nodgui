@@ -57,6 +57,8 @@
 (defgeneric set-cursor-index (object index)
   (:documentation "set cursor position; index can assume the value ':end'"))
 
+(defgeneric clear-selection (object))
+
 (defmethod cursor-index ((e entry))
   (with-read-data ()
     (format-wish "senddata [~a index insert]" (widget-path e))))
@@ -72,4 +74,8 @@
   (format-wish (tclize  `(,(widget-path object)
                            " icursor "
                            ,(down index))))
+  object)
+
+(defmethod clear-selection ((object entry))
+  (format-wish (tclize  `(,(widget-path object) " selection clear ")))
   object)
