@@ -1655,13 +1655,16 @@
 
 (defmethod listbox-delete ((object multifont-listbox) &optional (start 0) (end :end))
   (with-sync-data (object)
-    (with-accessors ((items items)) object
-      (let* ((actual-end (multifont-translate-end-tcl->lisp end)))
+    (with-accessors ((items          items)
+                     (selected-index selected-index)) object
+      (let ((actual-end (multifont-translate-end-tcl->lisp end)))
         (if (null actual-end)
             (setf items (subseq items 0 start))
             (setf items
                   (append (subseq items 0 start)
-                          (subseq items actual-end))))))))
+                          (subseq items actual-end)))))
+      (when (>= selected-index (length items))
+        (setf selected-index (max 0 (1- (length items))))))))
 
 (defmethod listbox-get-selection-index ((object multifont-listbox))
   (list (selected-index object)))
@@ -1893,8 +1896,8 @@ will shift the selected item up o down respectively."))
       (hide-candidates candidates-widget))))
 
 (defun autocomplete-key-press-clsr (candidates-widget
-                                      autocomplete-entry-widget
-                                      autocomplete-function)
+                                    autocomplete-entry-widget
+                                    autocomplete-function)
   (lambda-debounce (event)
     (when (or (nodgui.event-symbols:keysym-printable-p (event-char-code event))
               (string= (event-char event) "BackSpace")
