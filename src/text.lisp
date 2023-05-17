@@ -682,17 +682,23 @@
     (tag-bind object
               tag-name
               #$<ButtonPress-1>$
-              button-1-callback)
+              (lambda ()
+                (configure-mouse-pointer object actual-cursor-outside)
+                (funcall button-1-callback)))
     (when button-2-callback
       (tag-bind object
                 tag-name
                 #$<ButtonPress-2>$
-                button-2-callback))
+                (lambda ()
+                  (configure-mouse-pointer object actual-cursor-outside)
+                  (funcall button-2-callback))))
     (when button-3-callback
       (tag-bind object
                 tag-name
                 #$<ButtonPress-3>$
-                button-3-callback
+                (lambda ()
+                  (configure-mouse-pointer object actual-cursor-outside)
+                  (funcall button-3-callback))
                 :exclusive t))
     (tag-bind object
               tag-name
