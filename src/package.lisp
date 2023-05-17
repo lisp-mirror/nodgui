@@ -1635,6 +1635,7 @@
            #:make-nodgui-connection
            #:widget-class-name
            #:with-atomic
+           #:graphical-condition-handler
            #:with-nodgui
            #:call-with-nodgui
            #:with-toplevel

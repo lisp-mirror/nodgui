@@ -18,18 +18,24 @@
 
 ;;; Basic graphical error/warning/etc handling
 
-(defun make-condition-handler-function (&key (class 'graphical-condition-handler)
-                                        (title "Error"))
+(defun make-condition-handler-function (&key
+                                          (class 'graphical-condition-handler)
+                                          (title "Error"))
   "Create a function appropriate for use in a handler-bind."
   (declare (optimize (debug 3)))
   (if class
       (let ((prototype (make-instance class :prototype t)))
         (lambda (condition)
           (when (handle-condition-p prototype condition)
+            (setf (backtrace prototype)
+                  (with-output-to-string (out)
+                    (print-backtrace condition out)))
             (with-modal-toplevel (tl :title title)
               (let* ((toplevel-widget (modal-toplevel-root-widget tl))
-                     (debugger (make-instance class :master  toplevel-widget
-                                                    :condition condition)))
+                     (debugger (make-instance class
+                                              :backtrace (backtrace prototype)
+                                              :master  toplevel-widget
+                                              :condition condition)))
                 (on-close toplevel-widget
                           (lambda ()
                             (exit-from-modal-toplevel tl)
@@ -90,6 +96,7 @@
 
 (defclass graphical-condition-handler (nodgui-condition-handler)
   ((debugp :initform t :initarg :debugp :accessor debugp)
+   (backtrace :initform t :initarg :backtrace :accessor backtrace)
    (details-pane :accessor details-pane
                  :documentation "The scrolled-text where we display the stacktrace.")))
 
@@ -126,9 +133,7 @@
         (backtrace-done-p nil))
     (labels ((ensure-backtrace ()
                (unless backtrace-done-p
-                 (append-text details
-                              (with-output-to-string (out)
-                                (print-backtrace (handler-condition handler) out)))
+                 (append-text details (backtrace handler))
                  (setf backtrace-done-p t)))
              (show ()
                (ensure-backtrace)
@@ -184,7 +189,7 @@
                          (format out "Lisp: ~A ~A~%"
                                  (lisp-implementation-type) (lisp-implementation-version))
                          (format out "Summary: ~A~%Description:~%~A~%~%" summary desc)
-                         (print-backtrace (handler-condition handler) out))))
+                         (format out (backtrace handler) out))))
                    (exit-from-modal-toplevel tl))))
         (setf (command bsave) #'save)
         (grid-columnconfigure toplevel-widget 0 :weight 0)
