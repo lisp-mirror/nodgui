@@ -1,7 +1,7 @@
 * News
 
 ** 2023-05-17 Version 0.4.0
-   - The main  loop has  been totally rewritten  and shold  works well
+   - The main  loop has  been totally rewritten  and should  works well
      with multithread code;
    - Expanded the wrapper for the 'text' widget.
 
