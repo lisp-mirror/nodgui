@@ -1,5 +1,10 @@
 * News
 
+** 2023-05-17 Version 0.4.0
+   - The main  loop has  been totally rewritten  and shold  works well
+     with multithread code;
+   - Expanded the wrapper for the 'text' widget.
+
 ** 2022-12-26 Version 0.3.0
 
    - added a new widget: a text entry with auto completion feature;

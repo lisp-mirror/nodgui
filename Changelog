@@ -1,15 +1,494 @@
+2023-05-17 cage
+
+	* src/package.lisp,
+	* src/text.lisp,
+	* src/trivial-debugger.lisp:
+
+	- ensured cursor shape is restored when clicking on a text tag button.
+	- printed a better backtrace when using the graphical debugger.
+
+2023-05-16 cage
+
+	* src/nodgui-mw.lisp:
+
+	- fits selected index when deleteing items from a 'multifont-listbox'.
+
+2023-05-14 cage
+
+	* src/entry.lisp,
+	* src/package.lisp:
+
+	- added 'clear-selection' specialized on entry.
+
+2023-05-12 cage
+
+	* src/demo-tests.lisp,
+	* src/photo-image.lisp:
+
+	- changed test to guess if a string is a pathname to a bitmap file or
+	a base64 encoded string representing a bitmap.
+
+2023-05-11 cage
+
+	* src/text.lisp:
+
+	- changed event binding for callback in "make-text-tag-button":
+	previously  the function  bound to  the parameter  "over-callback" was
+	bound  to the  event "Enter",  but  now has  been bound  to the  event
+	"Motion".
+
+2023-05-10 cage
+
+	* src/events.lisp,
+	* src/nodgui-mw.lisp:
+
+	- using keypress instead of keyrelease event for autocomplete entry
+	widget;
+	doubled the debouncing delta.
+
+2023-05-06 cage
+
+	* src/tests/test-text-indices.lisp,
+	* src/text.lisp:
+
+	- updated the coordinate parser to include the ':end' coordinates
+	specification (e.g. '(- :end 1 :chars) ).
+
+2023-05-04 cage
+
+	* src/nodgui-mw.lisp:
+
+	- fixed issue thar prevented autocomplete candidates to pop up.
+
+2023-05-03 cage
+
+	* src/package.lisp:
+
+	- unexport break-mainloop (it is not part of the public API anymore)
+	and :*debug-settings-table* (unused).
+
+2023-05-02 cage
+
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/error-handling.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/synchronized-queue.lisp,
+	* src/tests/package.lisp,
+	* src/tests/test-nodgui.lisp,
+	* src/tests/test-styles.lisp,
+	* src/text.lisp,
+	* src/tklib/notify-window.lisp,
+	* src/trivial-debugger.lisp,
+	* src/widget.lisp,
+	* src/wish-communication.lisp:
+
+	- rewritten the main loop;
+	- modified 'with-modal-toplevel';
+	- optimized stars progress bar.
+	- used the right function to exit from the nodgui mainloop.
+
+2023-04-23 cage
+
+	* src/canvas-shapes.lisp,
+	* src/canvas.lisp,
+	* src/checkbutton.lisp,
+	* src/demo-tests.lisp,
+	* src/dialog.lisp,
+	* src/entry.lisp,
+	* src/listbox.lisp,
+	* src/menucheckbutton.lisp,
+	* src/menuradiobutton.lisp,
+	* src/nodgui.lisp,
+	* src/notebook.lisp,
+	* src/package.lisp,
+	* src/panedwindow.lisp,
+	* src/photo-image.lisp,
+	* src/radiobutton.lisp,
+	* src/styles.lisp,
+	* src/text.lisp,
+	* src/tklib/misc-widget.lisp,
+	* src/tklib/notify-window.lisp,
+	* src/tklib/plot.lisp,
+	* src/tktextvariable.lisp,
+	* src/tkvariable.lisp,
+	* src/toplevel.lisp,
+	* src/treeview.lisp,
+	* src/winfo.lisp,
+	* src/wish-communication.lisp,
+	* src/wm.lisp:
+
+	Merge branch 'various-fix' into wrap-text-widget
+	- wrapped all needed code with the macro 'with-read-data';
+	- used function 'dbg' instead of writing to *trace*output directly;
+	- started experimenting with multithreading.
+
+2023-04-16 cage
+
+	* src/nodgui-mw.lisp:
+
+	- complete automatically the entry if there is only one candidate.
+
+2023-04-15 cage
+
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/text.lisp,
+	* src/trivial-debugger.lisp,
+	* src/wish-communication.lisp:
+
+	- fixed 'height-in-chars';
+	- added navigation with: 'home', 'end', 'pageup' and 'pagedown' keys,
+	for the scrolled text widget in 'read-only' mode;
+	- terminate the program when pressing the 'exit' button in the debug
+	window.
+	- fixed scrolling up (using 'pageup' key) scrolled text widget when in
+	read-only mode.
+	- prevented crash when getting values from an empty multifont-listbox.
+	- removed code about remote connection and serve-event.
+
+2023-04-10 cage
+
+	* src/demo-tests.lisp,
+	* src/listbox.lisp,
+	* src/nodgui-mw.lisp,
+	* src/text.lisp,
+	* src/treeview.lisp:
+
+	- fixed case sensitive argument when searching a regular expression in
+	a text widget;
+	- added minor cosmetic fixes to searchable-listbox.
+	- removed downcasing position for methods 'see'.
+
+2023-04-09 cage
+
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/treeview.lisp,
+	* src/trivial-debugger.lisp:
+
+	- reverted 'with-modal-recursive-toplevel' to 'with-modal-toplevel',
+	added 'with-toplevel';
+	- fixed 'treeview-refit-columns-width'.
+
+2023-04-06 cage
+
+	* src/nodgui-mw.lisp,
+	* src/text.lisp:
+
+	- [MW] fixed positioning of tooltip when it is placed close to the
+	edge.
+	- prevented a crash when asking for a mouse cursor that the library
+	can not handle, use a fallback instead.
+
+2023-04-05 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- fixed package that export 'find-cursor';
+	- specialized text setter on autocomplete entry.
+
+2023-04-03 cage
+
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/trivial-debugger.lisp:
+
+	- simplified (and likely fixed) macro 'with-modal-toplevel'.
+
+2023-04-01 cage
+
+	* nodgui.asd,
+	* src/canvas.lisp,
+	* src/events.lisp,
+	* src/menu.lisp,
+	* src/menubutton.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/panedwindow.lisp,
+	* src/treeview.lisp:
+
+	- added macro 'lambda-debounce';
+	- debouncing keyrelease events for autocomplete entry;
+	- cheged padding for fitting columns in a treeview.
+	- moved a bunch of functions definition to prevent a warning.
+
+2023-03-29 cage
+
+	* src/treeview.lisp:
+
+	- fixed 'treeview-refit-columns-width' ( the loop was missing a
+	column, also increased minwidth to improve the visuals).
+
+2023-03-28 cage
+
+	* src/package.lisp,
+	* src/treeview.lisp:
+
+	- refactored code that was used to configure treeview column data.
+	- added 'treeview-refit-columns-width'.
+	- prevented trying to fit columns when the treeview is empty.
+
+2023-03-27 cage
+
+	* src/treeview.lisp:
+
+	- prevented crash when using heading strings containing spaces for
+	treeview.
+
+2023-03-25 cage
+
+	* src/nodgui-mw.lisp:
+
+	- bound the inner text to the click event in the candidates widget for
+	an autocomplete entry.
+	- changed mouse pointer shape when entering mouse over a multifont
+	listbox.
+
+2023-03-19 cage
+
+	* src/package.lisp,
+	* src/text.lisp:
+
+	- added 'scroll-until-line-on-top' for text widgets.
+
+2023-03-08 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- exported 'hide-candidates' specialized on
+	'autocomplete-entry-widget'.
+
+2023-03-03 cage
+
+	* src/text.lisp:
+
+	- added functions callback arguments for button link when the mouse
+	pointer enter or leave the link;
+	- made the scrolled text accepts and pass to the text widget slot all
+	the intiargs of the text widget class.
+
+2023-02-25 cage
+
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/text.lisp:
+
+	- added constants for tags that surrounds matching text in a regular
+	expression search.
+	- added 'tag-ranges'.
+	- added 'make-link-button' for text widget;
+	- removed duplicated code.
+	- added missing function call to 'parse-line-char-index'.
+	- added 'move-cursor-to-last-line'.
+	- moved some symbols to the right package.
+	- fixed 'move-cursor-to-last-line'.
+
+2023-02-24 cage
+
+	* src/nodgui-mw.lisp:
+
+	- renamed function used by 'multifont-listbox', not
+	'autocomplete-entry'.
+	- discarded useless keypress when doing autocomplete.
+
+2023-02-22 cage
+
+	* src/package.lisp:
+
+	- exported functions to generate start and end indices of a text
+	widget.
+
+2023-02-18 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- renamed autocomplete widget slot: from 'entry-widget' to
+	'autocomplete-entry-widget'.
+	- fixed typo.
+	- forcing a minimum width for candidates of autocomplete entry widget.
+	- optimized 'listbox-move-selection' specialized on
+	'multifont-listbox'; there was no reason to delete the whole
+	multifont-listbox's content, just to shift the highlighted item.
+
+2023-02-17 cage
+
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/wm.lisp:
+
+	- added constant '+standard-cursor+';
+	- added wm-attributes constants names.
+	- added '*force-sync-data-multifont-listbox*' to postpone the
+	expensive synchronization of lisp and TCL data;
+	- optimized a bit autocomplete entry redrawing.
+	- force wait complete redraw before showing candidates window in
+	autocomplete entry widget.
+
+2023-02-16 cage
+
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/events.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/text.lisp,
+	* src/tklib/plot.lisp:
+
+	- moved 'multifont-listbox' in megawidget file;
+	- made 'autocomplete-entry' uses 'multifont-listbox'.
+	- added function 'find-cursor'.
+	- added function 'create-tag-name';
+	- exported a bunch of symbols.
+	- fixed tagging of regex in function 'search-regexp'.
+	- added multifont listbox demo.
+	- moved some events related code to a new file to remove a warning.
+
+2023-02-12 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/text.lisp,
+	* src/winfo.lisp:
+
+	- added two functions to approximate width and height in chars of a
+	text widget;
+	- fixed tag-delete for text widget;
+	- added highlight-text-line for text widget;
+	- added multifont-listbox  a text widget  that try to mimic  a textbox
+	(single selection only, yet);
+	- renamed 'widget-width' and 'widget-height' to 'window-width' and
+	'window-height'.
+	- added default click event response for multifont-listbox;
+	- added 'boldify-multifont-item'.
+
+2023-02-11 cage
+
+	* src/nodgui.lisp,
+	* src/package.lisp:
+
+	- added function 'wait-complete-redraw' (in TK terms is the command
+	'update idletasks').
+
+2023-02-05 cage
+
+	* src/nodgui-mw.lisp:
+
+	- added configuring 'master' for autocomplete trxt entry widget.
+	- made the listbox of the autocomplete-entry widget have the same
+	width of the entry whom it is attached.
+
+2023-01-27 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/text.lisp,
+	* src/winfo.lisp:
+
+	- added function to move cursor in a text widget;
+	- added read-only mode for scrolled text widget;
+	- added functions to get relative coordinates for a widget;
+	- added parsing of coordinates for function 'see' specialized on text
+	widget;
+	- added function 'font-chooser-show'.
+	- added a working wrapper for fontchooser.
+
+2023-01-24 cage
+
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/text.lisp:
+
+	- added method 'maximum-lines-number', specialized on text widgets.
+
+2023-01-23 cage
+
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/tcl-glue-code.lisp,
+	* src/text.lisp:
+
+	- fixed regex tag stopper index in 'search-regexp'.
+	former code was using `(:char start-reline :char ,(+ start-re-char
+	size-re))
+	but this form could go beyond the current line, better use:
+	`(+ (:char start-reline :char ,start-re-char) ,size-re :chars)
+	Also the index  form is returned by the function as  the last of the
+	multiple values.
+	- added function 'text-in-range';
+	- added function 'search-all-text'
+	- chand an argument's name for a few text related functions;
+	- removed two, now unused, TCL procedures;
+	- removed useless exported symbol.
+
+2023-01-22 cage
+
+	* nodgui.asd,
+	* src/button.lisp,
+	* src/demo-tests.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/tests/package.lisp,
+	* src/tests/test-event-parser.lisp,
+	* src/tests/test-text-indices.lisp,
+	* src/text.lisp,
+	* src/utils.lisp,
+	* src/wish-communication.lisp:
+
+      - modified 'configure' specialized on 'button;
+      with 'option' argument equals to ':text' will set the label of the button.
+
+       +---------+
+       | label1  |
+       +---------+
+            |       (configure button :text "label2")
+            ▼
+       +---------+
+       | label2  |
+       +---------+
+	- added a lot more function to wrap the widget text, a couple are
+	syntactic sugar like:
+	- highlight-text;
+	- make-text-tag-button.
+	- the indices specification for the text widget can be specified in a
+	more lispy way:
+	'(+ (:tag "3" :last) 10 :lines), instead of: "3.last +10 lines".
+	- added an optional prefix argument for  'create-name';
+	- added a lock for the function 'get-counter' to prevent race
+	condition.
+	- added function to search a regular expression in the text widget's
+	contents.
+
 2022-12-26 cage
 
-        * src/demo-tests.lisp,
-        * src/listbox.lisp,
-        * src/nodgui-mw.lisp,
-        * src/package.lisp,
-        * src/text.lisp,
-        * src/widget-helpers.lisp:
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/listbox.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/text.lisp,
+	* src/widget-helpers.lisp:
 
-        - added 'listbox-move-selection';
-        - added 'see' command for listbox;
-        - added an autocomplete entry widget.
+	- added 'listbox-move-selection';
+	- added 'see' command for listbox;
+	- added an autocomplete entry widget.
+	- increased version number;
+	- updated NEWS.org.
+	- added a bit of documentation for 'autocomplete-entry'.
+	- fixed demo.
 
 2022-12-25 cage
 
