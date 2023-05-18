@@ -1,9 +1,11 @@
 * News
 
 ** 2023-05-17 Version 0.4.0
-   - The main  loop has  been totally rewritten  and should  works well
+   - the main  loop has  been totally rewritten  and should  works well
      with multithread code;
-   - Expanded the wrapper for the 'text' widget.
+   - expanded the wrapper for the 'text' widget;
+   - used tkimg  to expand the  number of image file  format supported
+     (JPG, TGA and more).
 
 ** 2022-12-26 Version 0.3.0
 

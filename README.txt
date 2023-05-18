@@ -7,6 +7,7 @@ Table of Contents
 ─────────────────
 
 1. NODGUI
+.. 1. important note:
 2. Dependency
 .. 1. Programs
 .. 2. Lisp libraries
@@ -26,6 +27,16 @@ Table of Contents
   /"No Drama GUI"/
 
   Common Lisp bindings for the Tk GUI toolkit.
+
+
+1.1 important note:
+───────────────────
+
+  Version `0.4.0' broke the user API, see [here] for more information
+  about how your code is affected and how to fix it.
+
+
+[here] <https://www.autistici.org/interzona/nodgui.html#orgb470f4b>
 
 
 2 Dependency
