@@ -66,6 +66,8 @@ Table of Contents
 
   • TKlib <https://core.tcl-lang.org/tklib/home>
 
+  • tkimg <https://sourceforge.net/projects/tkimg/>
+
 
 3 Installing
 ════════════
@@ -78,6 +80,12 @@ Table of Contents
   1. optionally install tklib
   ┌────
   │ # apt-get install tklib
+  └────
+
+  1. optionally install tkimg
+
+  ┌────
+  │ # apt-get install libtk-img
   └────
 
   1. open a REPL and type
@@ -107,8 +115,7 @@ Table of Contents
   This software is Copyright (c) 2003-2010 Peter Herth
   <herth@peter-herth.de> Portions Copyright (c) 2005-2010 Thomas
   F. Burdick Portions Copyright (c) 2006-2010 Cadence Design Systems
-  Portions Copyright (c) 2010 Daniel Herring Portions Copyright (c)
-  2018,2019,2020,2022 cage
+  Portions Copyright (c) 2010 Daniel Herring Portions Copyright © cage
 
   The authors grant you the rights to distribute and use this software
   as governed by the terms of the Lisp Lesser GNU Public License

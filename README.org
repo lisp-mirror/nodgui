@@ -10,8 +10,8 @@
 
 ** important note:
 
-Version ~0.4.0~ broke the user API, see
-[[https://www.autistici.org/interzona/nodgui.html#orgb470f4b][here]] for more information about how your code is affected and how to fix it.
+   Version ~0.4.0~ broke the user API, see
+   [[https://www.autistici.org/interzona/nodgui.html#orgb470f4b][here]] for more information about how your code is affected and how to fix it.
 
 * Dependency
 
@@ -36,6 +36,9 @@ All of the above libraries are available on quicklisp.
 - TKlib
   https://core.tcl-lang.org/tklib/home
 
+- tkimg
+  https://sourceforge.net/projects/tkimg/
+
 * Installing
 
   1. install the tk interpreter (example on a Debian system follows)
@@ -48,12 +51,18 @@ All of the above libraries are available on quicklisp.
   # apt-get install tklib
   #+END_SRC
 
-  3. open a REPL and type
+  3. optionally install tkimg
+
+  #+BEGIN_SRC sh
+  # apt-get install libtk-img
+  #+END_SRC
+
+  4. open a REPL and type
   #+BEGIN_SRC lisp
   (ql:quickload "nodgui")
   #+END_SRC
 
-  4. try it!
+  5. try it!
   #+BEGIN_SRC lisp
   (nodgui.demo::demo)
   #+END_SRC
@@ -68,7 +77,7 @@ All of the above libraries are available on quicklisp.
  Portions Copyright (c) 2005-2010 Thomas F. Burdick
  Portions Copyright (c) 2006-2010 Cadence Design Systems
  Portions Copyright (c) 2010 Daniel Herring
- Portions Copyright (c) 2018,2019,2020,2022 cage
+ Portions Copyright © cage
 
  The authors grant you the rights to distribute
  and use this software as governed by the terms
