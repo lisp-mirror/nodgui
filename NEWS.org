@@ -1,5 +1,9 @@
 * News
 
+** 2023-05-17 Version 0.4.2
+   - removed function that does not works with ttk::paned-window.
+   - improved 'lambda-debounce'.
+
 ** 2023-05-17 Version 0.4.0
    - the main  loop has  been totally rewritten  and should  works well
      with multithread code;

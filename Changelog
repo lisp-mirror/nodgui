@@ -1,11 +1,39 @@
+2023-05-20 cage
+
+        * nodgui.asd,
+        * src/demo-tests.lisp,
+        * src/events.lisp,
+        * src/package.lisp,
+        * src/panedwindow.lisp:
+
+        - increased version number;
+        - removed function that does not works with ttk::paned-window.
+        - increased version number;
+        - improved 'lambda-debounce'.
+
+2023-05-18 cage
+
+        * NEWS.org,
+        * README.org,
+        * README.txt:
+
+        - updated documentation.
+        - mentioned tkimg and new API in the README.
+
 2023-05-17 cage
 
-	* src/package.lisp,
-	* src/text.lisp,
-	* src/trivial-debugger.lisp:
+        * Changelog,
+        * NEWS.org,
+        * nodgui.asd,
+        * src/package.lisp,
+        * src/text.lisp,
+        * src/trivial-debugger.lisp:
 
-	- ensured cursor shape is restored when clicking on a text tag button.
-	- printed a better backtrace when using the graphical debugger.
+        - ensured cursor shape is restored when clicking on a text tag button.
+        - printed a better backtrace when using the graphical debugger.
+        - increased version number;
+        - updated news and Changelog files.
+        - fixed typo.
 
 2023-05-16 cage
 
