@@ -1712,7 +1712,6 @@
            #:reset-scroll
            #:scroll-to-top
            #:tagbind
-           #:pane-configure
            #:handle
            #:column-values
            #:listbox-insert

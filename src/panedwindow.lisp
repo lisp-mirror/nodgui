@@ -42,15 +42,6 @@
   (format-wish "~a forget ~a" (widget-path pw) (widget-path w))
   pw)
 
-(defgeneric pane-configure (l i &rest options))
-
-(defmethod pane-configure ((p paned-window) (w widget)  &rest options)
-  (format-wish "~a paneconfigure ~a ~{ {-~(~a~)} {~a}~}"
-               (widget-path p)
-               (widget-path w)
-               (mapcar #'down options))
-  p)
-
 (defgeneric sash-coord (window index))
 
 (defmethod sash-coord ((pw paned-window) index)
