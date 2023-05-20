@@ -76,7 +76,7 @@
 
 (defparameter *internal-time-scaling-millis* (calculate-internal-time-scaling-millis))
 
-(defparameter *debounce-minimum-delay* 300
+(defparameter *debounce-minimum-delay* 120
   "milliseconds")
 
 (defun calculate-milliseconds-elapsed ()
@@ -84,12 +84,15 @@
                *internal-time-scaling-millis*)))
 
 (defmacro lambda-debounce (args &body body)
-  (a:with-gensyms (last-fired saved-last-fired now)
+  (a:with-gensyms (last-fired saved-last-fired fired-time results)
     `(let ((,last-fired (calculate-milliseconds-elapsed)))
        (lambda ,args
-         (let ((,now (calculate-milliseconds-elapsed))
-               (,saved-last-fired ,last-fired))
-           (setf ,last-fired ,now)
-           (when (> (- ,now ,saved-last-fired)
+         (let ((,fired-time (calculate-milliseconds-elapsed))
+               (,saved-last-fired ,last-fired)
+               (,results nil))
+           (when (> (- ,fired-time ,saved-last-fired)
                     *debounce-minimum-delay*)
-             ,@body))))))
+             (setf ,results (progn ,@body)))
+           (setf ,last-fired
+                 (calculate-milliseconds-elapsed))
+           ,results)))))
