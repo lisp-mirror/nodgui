@@ -395,12 +395,12 @@
 (a:define-constant +tooltip-position-offset+ 10 :test #'=)
 
 (defclass tooltip (toplevel)
-  ((x-motion
-    :accessor x-motion
-    :initarg :x-motion)
-   (y-motion
-    :accessor y-motion
-    :initarg :y-motion)
+  ((widget-rectangle
+    :accessor widget-rectangle
+    :initform '()
+    :initarg :widget-rectangle
+    :type list
+    :documentation "a list of x y w h")
    (label
     :accessor tooltip-label
     :initarg :label)
@@ -441,11 +441,19 @@
                (t
                 (to-s text))))
         (x-mouse (screen-mouse-x))
-        (y-mouse (screen-mouse-y)))
+        (y-mouse (screen-mouse-y))
+        (rectangle-x (first (widget-rectangle tooltip)))
+        (rectangle-y (second (widget-rectangle tooltip)))
+        (rectangle-w (third (widget-rectangle tooltip)))
+        (rectangle-h (fourth (widget-rectangle tooltip))))
     (when (and txt
                (> (length txt) 0)
-               (= x-mouse (x-motion tooltip))
-               (= y-mouse (y-motion tooltip)))
+               (< rectangle-x
+                  x-mouse
+                  (+ rectangle-x rectangle-w))
+               (< rectangle-y
+                  y-mouse
+                  (+ rectangle-y rectangle-h)))
       (setf (text (tooltip-label tooltip)) txt)
       (wait-complete-redraw)
       (let* ((width  (window-width tooltip))
@@ -495,10 +503,11 @@
   (bind widget #$<Motion>$ (lambda (event)
                              (clear tooltip)
                              (cancel-tooltip tooltip)
-                             (setf (x-motion tooltip)
-                                   (event-root-x event))
-                             (setf (y-motion tooltip)
-                                   (event-root-y event))
+                             (setf (widget-rectangle tooltip)
+                                   (list (root-x widget)
+                                         (root-y widget)
+                                         (window-width widget)
+                                         (window-height widget)))
                              (schedule-tooltip tooltip
                                                content
                                                (+ (event-root-x event)
