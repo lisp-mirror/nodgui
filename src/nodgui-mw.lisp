@@ -395,7 +395,13 @@
 (a:define-constant +tooltip-position-offset+ 10 :test #'=)
 
 (defclass tooltip (toplevel)
-  ((label
+  ((x-motion
+    :accessor x-motion
+    :initarg :x-motion)
+   (y-motion
+    :accessor y-motion
+    :initarg :y-motion)
+   (label
     :accessor tooltip-label
     :initarg :label)
    (popup-time
@@ -433,9 +439,13 @@
                (string
                 text)
                (t
-                (to-s text)))))
+                (to-s text))))
+        (x-mouse (screen-mouse-x))
+        (y-mouse (screen-mouse-y)))
     (when (and txt
-               (> (length txt) 0))
+               (> (length txt) 0)
+               (= x-mouse (x-motion tooltip))
+               (= y-mouse (y-motion tooltip)))
       (setf (text (tooltip-label tooltip)) txt)
       (wait-complete-redraw)
       (let* ((width  (window-width tooltip))
@@ -464,8 +474,9 @@
 (defmethod schedule-tooltip (tooltip text x y time)
   (cancel-tooltip tooltip)
   (setf *tooltip-afterid*
-        (after time (lambda ()
-                      (show tooltip text x y)))))
+        (after time
+               (lambda ()
+                 (show tooltip text x y)))))
 
 (defmethod cancel-tooltip ((tooltip tooltip))
   (when *tooltip-afterid*
@@ -484,6 +495,10 @@
   (bind widget #$<Motion>$ (lambda (event)
                              (clear tooltip)
                              (cancel-tooltip tooltip)
+                             (setf (x-motion tooltip)
+                                   (event-root-x event))
+                             (setf (y-motion tooltip)
+                                   (event-root-y event))
                              (schedule-tooltip tooltip
                                                content
                                                (+ (event-root-x event)
@@ -500,8 +515,13 @@
 (defun tooltip-test ()
   (let ((*debug-tk* t))
     (with-nodgui ()
-      (let ((b       (make-instance 'button :text "Tooltip"))
-            (tooltip (make-instance 'tooltip)))
+      (let ((b       (make-instance 'button
+                                    :text "Tooltip"
+                                    :command (lambda ()
+                                               (format t "sleep for five seconds~%")
+                                               (sleep 5))))
+            (tooltip (make-instance 'tooltip
+                                    :popup-time 5)))
         (pack b :side :right :anchor :se)
         (configure tooltip :borderwidth 1 :relief :solid)
         (register-tooltip tooltip b (lambda (s) (format s "~d" (random 10000))))))))
