@@ -44,22 +44,22 @@
     (apply 'format-wish fmt args)))
 
 (defun after (time fun)
- "after <time> msec call function <fun>, returns the after event id,
+  "after <time> msec call function <fun>, returns the after event id,
 which can be passed to AFTER-CANCEL"
   (incf (wish-after-counter *wish*))
-    (let* ((name (create-name (format nil "after~a" (wish-after-counter *wish*))))
-           (id   (with-read-data ()
-                   (format-wish (tcl-str (senddatastring [after {~a} {callback ~A}]))
-                                time
-                                name)))
-           (blah (wish-after-ids *wish*)))
-      (setf (gethash id blah) name)
-      (add-callback name
-                    (lambda ()
-                      (funcall fun)
-                      (remhash id blah)
-                      (remove-callback name)))
-      id))
+  (let* ((name (create-name (format nil "after~a" (wish-after-counter *wish*))))
+         (id   (with-read-data ()
+                 (format-wish (tcl-str (senddatastring [after {~a} {callback ~A}]))
+                              time
+                              name)))
+         (blah (wish-after-ids *wish*)))
+    (setf (gethash id blah) name)
+    (add-callback name
+                  (lambda ()
+                    (funcall fun)
+                    (remhash id blah)
+                    (remove-callback name)))
+    id))
 
 (defun after-idle (fun)
  "call fun when tk becomes idle, returns the after event id, which
