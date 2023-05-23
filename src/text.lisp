@@ -132,6 +132,8 @@
 
 (defgeneric replace-in-range (object string start-index &optional end-index))
 
+(defgeneric line-info (object &optional index))
+
 (defgeneric tag-create (object tag-name start-index &rest other-indices))
 
 (defgeneric tag-delete (object &rest tag-names))
@@ -414,6 +416,22 @@
                          {+ ,(parse-indices start-index) } " "
                          {+ ,(parse-indices end-index) } " "
                          string))))
+
+(defmethod line-info ((object text) &optional (coordinates (raw-coordinates object)))
+  "Returns a plist of line information, keys are: :x, :y, :w, :h, :baseline."
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastrings [ ,(widget-path object) " "
+                                           dlineinfo
+                                           {+ ,(parse-indices coordinates) }])))
+    (let ((raw-data (read-data)))
+      (if raw-data
+          (let ((number-data (mapcar #'parse-integer raw-data)))
+            (list :x        (elt number-data 0)
+                  :y        (elt number-data 1)
+                  :w        (elt number-data 2)
+                  :h        (elt number-data 3)
+                  :baseline (elt number-data 4)))
+          nil))))
 
 (defun append-newline (text-widget &rest tags )
   (apply #'append-line text-widget "" tags))
@@ -832,10 +850,13 @@
     (scroll-until-line-on-top text-widget line-number)))
 
 (defun scroll-text-read-only-previous-page (text-widget)
-  (move-cursor-to-last-visible-line text-widget)
-  (move-cursor-next-line text-widget)
-  (let ((line-number (cursor-index text-widget)))
-    (scroll-until-line-on-top text-widget line-number)))
+  (move-cursor-to-first-visible-line text-widget)
+  (wait-complete-redraw)
+  (let* ((height      (height-in-chars text-widget))
+         (line-number (cursor-index text-widget))
+         (new-line    (max 1 (- line-number height))))
+    (move-cursor-to text-widget `(:line ,new-line :char 0))
+    (scroll-until-line-on-top text-widget new-line)))
 
 (defun scroll-text-read-only-go-start-text (text-widget)
   (move-cursor-to text-widget `(:line 1 :char 0))
@@ -849,23 +870,46 @@
 
 (defun set-scrolled-text-read-only (text-widget)
   (bind (inner-text text-widget)
-        #$<KeyPress>$
-        (lambda (event)
-          (let ((keycode (event-char event)))
-            (cond
-              ((string= keycode nodgui.event-symbols:+up+)
-               (scroll-text-read-only-up text-widget))
-              ((string= keycode nodgui.event-symbols:+down+)
-               (scroll-text-read-only-down text-widget))
-              ((string= keycode nodgui.event-symbols:+next+)
-               (scroll-text-read-only-next-page text-widget))
-              ((string= keycode nodgui.event-symbols:+prior+)
-               (scroll-text-read-only-previous-page text-widget))
-              ((string= keycode nodgui.event-symbols:+home+)
-               (scroll-text-read-only-go-start-text text-widget))
-              ((string= keycode nodgui.event-symbols:+end+)
-               (scroll-text-read-only-go-end-text text-widget)))))
-        :exclusive t))
+        #$<KeyPress-Up>$
+        (lambda (e)
+          (declare (ignore e))
+          (scroll-text-read-only-up text-widget))
+        :exclusive t)
+  (bind (inner-text text-widget)
+        #$<KeyPress-Down>$
+        (lambda (e)
+          (declare (ignore e))
+          (scroll-text-read-only-down text-widget))
+        :exclusive t)
+  (bind (inner-text text-widget)
+        #$<KeyPress-Next>$
+        (lambda (e)
+          (declare (ignore e))
+          (scroll-text-read-only-next-page text-widget))
+        :exclusive t)
+  (bind (inner-text text-widget)
+        #$<KeyPress-Prior>$
+        (lambda (e)
+          (declare (ignore e))
+          (scroll-text-read-only-previous-page text-widget))
+        :exclusive t)
+  (bind (inner-text text-widget)
+        #$<KeyPress-Home>$
+        (lambda (e)
+          (declare (ignore e))
+          (scroll-text-read-only-go-start-text text-widget))
+        :exclusive t)
+  (bind (inner-text text-widget)
+        #$<KeyPress-End>$
+        (lambda (e)
+          (declare (ignore e))
+          (scroll-text-read-only-go-end-text text-widget))
+        :exclusive t)
+  (bind (inner-text text-widget) #$<KeyPress>$
+        (lambda (e)
+          (declare (ignore e)) t)
+        :exclusive t
+        :append t))
 
 (defmethod initialize-instance :after ((object scrolled-text)
                                        &key
@@ -1074,6 +1118,10 @@
                              &optional (end-index (make-indices-end)))
   (with-inner-text (text-widget object)
     (replace-in-range text-widget string start-index end-index)))
+
+(defmethod line-info ((object scrolled-text) &optional (coordinates (raw-coordinates object)))
+  (with-inner-text (text-widget object)
+    (line-info text-widget coordinates)))
 
 (defmethod tag-create ((object scrolled-text) tag-name start-index &rest other-indices)
   (with-inner-text (text-widget object)

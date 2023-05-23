@@ -1299,6 +1299,7 @@
            #:insert-text
            #:delete-in-range
            #:replace-in-range
+           #:line-info
            #:match-start
            #:match-end
            #:match-string
@@ -1325,6 +1326,7 @@
            #:bell
            #:configure-mouse-pointer
            #:bind
+           #:unbind
            #:calculate-internal-time-scaling-millis
            #:*debounce-minimum-delay*
            #:lambda-debounce

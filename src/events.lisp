@@ -51,22 +51,32 @@
 
 (defgeneric bind (w event fun &key append exclusive))
 
-(defmethod bind ((w widget) event fun &key append exclusive)
-  "bind fun to event of the widget w"
+(defmethod bind ((object widget) event fun &key append exclusive)
+  "bind fun to event of the widget object"
   (let ((name (create-name)))
     (add-callback name fun)
     (format-wish "bind  ~a {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A ~:[~;;break~]}"
-                 (widget-path w) event append name exclusive)
-    w))
+                 (widget-path object) event append name exclusive)
+    object))
 
-(defmethod bind (s event fun &key append exclusive)
+(defmethod bind ((object string) event fun &key append exclusive)
   "bind fun to event within context indicated by string ie. 'all' or 'Button'"
   (let ((name (create-name)))
     (add-callback name fun)
     (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A ~:[~;;break~]}"
-                 s event append name exclusive)))
+                 object event append name exclusive)))
 
-(defgeneric bind-debounce (w event fun &key append exclusive))
+(defgeneric unbind (object event))
+
+(defmethod unbind ((object widget) event)
+  "bind fun to event of the widget object"
+  (unbind (widget-path object) event)
+  object)
+
+(defmethod unbind ((object string) event)
+  "bind fun to event of the widget object"
+    (format-wish "bind ~a {~a} \"\"" object event)
+    object)
 
 (defun calculate-internal-time-scaling-millis (&optional (scaling 1000))
   (if (<= (/ internal-time-units-per-second scaling)

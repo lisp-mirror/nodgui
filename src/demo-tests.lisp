@@ -966,7 +966,10 @@
                                                             `(:tag ,tag-placeholder-image :last))
                                            (insert-image text-widget
                                                          bell-image
-                                                         '(:line 3 :char 0)))
+                                                         '(:line 3 :char 0))
+                                           (format t
+                                                   "line under cursor info ~s~%"
+                                                   (line-info text-widget)))
                                          :button-2-callback
                                          (lambda ()
                                            (format t
