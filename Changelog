@@ -1,15 +1,41 @@
+2023-05-23 cage
+
+        * src/demo-tests.lisp,
+        * src/events.lisp,
+        * src/package.lisp,
+        * src/text.lisp:
+
+        - added 'unbind';
+        - added 'line-info';
+        - refactorized scrolled text bindings in read -only mode.
+
+2023-05-21 cage
+
+        * nodgui.asd,
+        * src/nodgui-mw.lisp,
+        * src/nodgui.lisp,
+        * src/text.lisp:
+
+        - prevented a tooltip to became persistent when a long computation
+        occurs.
+        - refactored callbacks for scrolled text in read only mode.
+        - improved the test to decide if a tooltip must be scheduled.
+        - increased version number.
+
 2023-05-20 cage
 
+        * Changelog,
+        * NEWS.org,
         * nodgui.asd,
         * src/demo-tests.lisp,
         * src/events.lisp,
         * src/package.lisp,
         * src/panedwindow.lisp:
 
-        - increased version number;
         - removed function that does not works with ttk::paned-window.
         - increased version number;
         - improved 'lambda-debounce'.
+        - updated NEWS and Changelog.
 
 2023-05-18 cage
 
