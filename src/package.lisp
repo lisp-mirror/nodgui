@@ -59,7 +59,10 @@
            #:make-fresh-array
            #:read-into-array
            #:file-exists-p
+           #:directory-exists-p
+           #:subdirectories
            #:split-path-elements
+           #:path-last-element
            #:create-file
            #:create-name
            #:create-tag-name
@@ -1270,6 +1273,7 @@
            #:*nodgui-debug*
            #:*tk*
            #:*wish*
+           #:*themes-directory*
            #:wish-stream
            #:wish-variable
            #:wish-variables

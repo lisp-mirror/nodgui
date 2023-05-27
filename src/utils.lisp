@@ -220,10 +220,19 @@
   (uiop:file-exists-p f))
 
 (defun split-path-elements (path)
-  (cl-ppcre:split *directory-sep-regexp* path))
+  (let ((splitted (cl-ppcre:split *directory-sep-regexp* path)))
+    (substitute *directory-sep* "" splitted :test #'string=)))
+
+(defun path-last-element (path)
+  (let ((elements (split-path-elements path)))
+    (and elements
+         (last-elt elements))))
 
 (defun directory-exists-p (d)
   (uiop:directory-exists-p d))
+
+(defun subdirectories (parent)
+  (uiop:subdirectories parent))
 
 (defun make-directory (path)
   (if (not (cl-ppcre:scan (concatenate 'string *directory-sep* "$") path))
