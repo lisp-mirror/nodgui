@@ -659,7 +659,8 @@ set y [winfo y ~a]
     ((find name (embedded-theme-names) :test #'string=)
      (send-use-theme name))
     ((file-exists-p (build-theme-pathfile name))
-     (eval-tcl-file (build-theme-pathfile name)))
+     (eval-tcl-file (build-theme-pathfile name))
+     (send-use-theme name))
     (t
      (error "Unable to find the theme ~a in the the directory ~a (and it is not an embedded theme)"
             name
@@ -670,15 +671,19 @@ set y [winfo y ~a]
     (send-wish "senddatastrings [ttk::style theme names]")))
 
 (defun theme-names ()
-  (let ((embedded (with-read-data ()
+  (flet ((theme-name (dir-pathname)
+           (let ((dir-namestring (namestring dir-pathname)))
+               (path-last-element dir-namestring))))
+    (let ((embedded (with-read-data ()
                     (send-wish "senddatastrings [ttk::style theme names]")))
         (custom   (remove-if-not (lambda (dir)
-                                   (let* ((dir-namestring (namestring dir))
-                                          (theme-name     (path-last-element dir-namestring))
+                                   (let* ((theme-name     (theme-name dir))
                                           (theme-filename (build-theme-filename theme-name)))
                                      (file-exists-p (merge-pathnames dir theme-filename))))
                                  (subdirectories *themes-directory*))))
-    (remove-duplicates (append embedded custom) :test #'string=)))
+    (remove-duplicates (append embedded
+                               (mapcar (lambda (a) (theme-name a)) custom))
+                       :test #'string=))))
 
 (defun focus (widget)
   (format-wish "focus ~a" (widget-path widget))
