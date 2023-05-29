@@ -15,6 +15,7 @@ Table of Contents
 3. Installing
 4. Documentation
 5. License
+.. 1. Themes
 6. Acknowledgment
 
 
@@ -125,6 +126,15 @@ Table of Contents
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   General Public License for more details.
+
+
+5.1 Themes
+──────────
+
+  The themes definitions found in the `themes/' subdirectory are
+  distributed with many different license, please carefully check the
+  file `LICENSE.org' in each theme's subdirectory (e.g
+  <./themes/yaru/LICENSE.org>) for more information.
 
 
 6 Acknowledgment

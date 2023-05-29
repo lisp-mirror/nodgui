@@ -90,6 +90,12 @@ All of the above libraries are available on quicklisp.
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
+** Themes
+
+The themes definitions found in the ~themes/~ subdirectory are
+distributed with many different license, please carefully check the file
+~LICENSE.org~ in each theme's subdirectory (e.g [[./themes/yaru/LICENSE.org]]) for more information.
+
 * Acknowledgment
 
-  My (cage) deep thanks to Tim Holliefield <tholliefield [at] online.de>, for all the suggestions and help about implementing the widgets styles management.
+My (cage) deep thanks to Tim Holliefield <tholliefield [at] online.de>, for all the suggestions and help about implementing the widgets styles management.
