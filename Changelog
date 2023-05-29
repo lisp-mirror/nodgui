@@ -1,13 +1,83 @@
+2023-05-29 cage
+
+	* README.org,
+	* README.txt,
+	* src/nodgui.lisp,
+	* themes/yaru/LICENSE.org,
+	* themes/yaru/yaru.tcl,
+	* themes/yaru/yaru/arrow-down-basic.png,
+	* themes/yaru/yaru/arrow-down-hover.png,
+	* themes/yaru/yaru/arrow-up-basic.png,
+	* themes/yaru/yaru/arrow-up-hover.png,
+	* themes/yaru/yaru/button-basic.png,
+	* themes/yaru/yaru/button-disabled.png,
+	* themes/yaru/yaru/button-pressed.png,
+	* themes/yaru/yaru/checkbox-basic.png,
+	* themes/yaru/yaru/checkbox-selected-dis.png,
+	* themes/yaru/yaru/checkbox-selected.png,
+	* themes/yaru/yaru/empty.png,
+	* themes/yaru/yaru/entry-basic.png,
+	* themes/yaru/yaru/entry-disabled.png,
+	* themes/yaru/yaru/entry-focus.png,
+	* themes/yaru/yaru/entry-hover.png,
+	* themes/yaru/yaru/minus.png,
+	* themes/yaru/yaru/plus.png,
+	* themes/yaru/yaru/progressbar-hor.png,
+	* themes/yaru/yaru/progressbar-trough-hor.png,
+	* themes/yaru/yaru/progressbar-trough-vert.png,
+	* themes/yaru/yaru/progressbar-vert.png,
+	* themes/yaru/yaru/radio-basic.png,
+	* themes/yaru/yaru/radio-mix.png,
+	* themes/yaru/yaru/radio-selected-dis.png,
+	* themes/yaru/yaru/radio-selected.png,
+	* themes/yaru/yaru/scale-slider-hover.png,
+	* themes/yaru/yaru/scale-slider.png,
+	* themes/yaru/yaru/scale-trough-disabled.png,
+	* themes/yaru/yaru/scale-trough.png,
+	* themes/yaru/yaru/scrollbar-hor-gray.png,
+	* themes/yaru/yaru/scrollbar-hor-orange.png,
+	* themes/yaru/yaru/scrollbar-hor-purple.png,
+	* themes/yaru/yaru/scrollbar-hor-trough.png,
+	* themes/yaru/yaru/scrollbar-vert-gray.png,
+	* themes/yaru/yaru/scrollbar-vert-orange.png,
+	* themes/yaru/yaru/scrollbar-vert-purple.png,
+	* themes/yaru/yaru/scrollbar-vert-trough.png,
+	* themes/yaru/yaru/separator.png,
+	* themes/yaru/yaru/sizegrip.png,
+	* themes/yaru/yaru/tab-basic.png,
+	* themes/yaru/yaru/tab-current.png,
+	* themes/yaru/yaru/tab-hover.png,
+	* themes/yaru/yaru/tree-basic.png,
+	* themes/yaru/yaru/tree-pressed.png:
+
+	- ensured 'use-theme' actually applies the custom theme chosen by the
+	user;
+	- fixed type error in 'theme-names'.
+	- updated README.org
+	- added theme 'yaru'.
+
+2023-05-27 cage
+
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/utils.lisp:
+
+	- used '*themes-directory*' to search for custom themes;
+
 2023-05-23 cage
 
-        * src/demo-tests.lisp,
-        * src/events.lisp,
-        * src/package.lisp,
-        * src/text.lisp:
+	* Changelog,
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/events.lisp,
+	* src/package.lisp,
+	* src/text.lisp:
 
-        - added 'unbind';
-        - added 'line-info';
-        - refactorized scrolled text bindings in read -only mode.
+	- added 'unbind';
+	- added 'line-info';
+	- refactorized scrolled text bindings in read -only mode.
+	- increased version number;
+	- updated changelog.
 
 2023-05-21 cage
 
