@@ -1927,32 +1927,38 @@ will shift the selected item up o down respectively."))
 (defun autocomplete-key-press-clsr (candidates-widget
                                     autocomplete-entry-widget
                                     autocomplete-function)
-  (lambda-debounce (event)
-    (when (or (nodgui.event-symbols:keysym-printable-p (event-char-code event))
-              (string= (event-char event) "BackSpace")
-              (string= (event-char event) "Delete"))
-      (let ((hint (text autocomplete-entry-widget)))
-        (multiple-value-bind (candidates matching-indices)
-            (funcall autocomplete-function hint)
-          (if (string-empty-p hint)
-             (hide-candidates candidates-widget)
-             (let ((*force-sync-data-multifont-listbox* nil))
-               (listbox-delete candidates-widget)
-               (listbox-append candidates-widget candidates)
-               (cond
-                 ((= (listbox-size candidates-widget) 1)
-                  (funcall (autocomplete-click-1-clsr candidates-widget
-                                                      autocomplete-entry-widget)
-                           nil))
-                 ((> (listbox-size candidates-widget) 0)
-                  (listbox-select candidates-widget 0)
-                  (sync-multifont-data (listbox candidates-widget))
-                  (when matching-indices
-                    (loop for i from 0 below (length matching-indices) do
-                      (boldify-multifont-item (listbox candidates-widget)
-                                              (1+ i)
-                                              (elt matching-indices i))))
-                  (show-candidates candidates-widget))))))))))
+  (let ((ignore-next-key nil))
+    (lambda-debounce (event)
+      (cond
+        (ignore-next-key
+         (setf ignore-next-key nil))
+        ((scan "(?i)(control|alt)" (event-char event))
+         (setf ignore-next-key t))
+        ((or (nodgui.event-symbols:keysym-printable-p (event-char-code event))
+             (string= (event-char event) "BackSpace")
+             (string= (event-char event) "Delete"))
+         (let ((hint (text autocomplete-entry-widget)))
+          (multiple-value-bind (candidates matching-indices)
+              (funcall autocomplete-function hint)
+            (if (string-empty-p hint)
+                (hide-candidates candidates-widget)
+                (let ((*force-sync-data-multifont-listbox* nil))
+                  (listbox-delete candidates-widget)
+                  (listbox-append candidates-widget candidates)
+                  (cond
+                    ((= (listbox-size candidates-widget) 1)
+                     (funcall (autocomplete-click-1-clsr candidates-widget
+                                                         autocomplete-entry-widget)
+                              nil))
+                    ((> (listbox-size candidates-widget) 0)
+                     (listbox-select candidates-widget 0)
+                     (sync-multifont-data (listbox candidates-widget))
+                     (when matching-indices
+                       (loop for i from 0 below (length matching-indices) do
+                         (boldify-multifont-item (listbox candidates-widget)
+                                                 (1+ i)
+                                                 (elt matching-indices i))))
+                     (show-candidates candidates-widget))))))))))))
 
 (defun scroll-candidates (candidates-widget offset)
   (lambda (event)
