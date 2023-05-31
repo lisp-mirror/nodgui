@@ -1273,6 +1273,7 @@
            #:*nodgui-debug*
            #:*tk*
            #:*wish*
+           #:*default-theme*
            #:*themes-directory*
            #:wish-stream
            #:wish-variable

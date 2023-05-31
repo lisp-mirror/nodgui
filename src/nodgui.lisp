@@ -641,8 +641,29 @@ set y [winfo y ~a]
 
 ;;; misc functions
 
+(defvar *default-theme* "default"
+  "The default color theme for nodgui. Available ones are: default, alt, aqua (Mac OS only), clam, classic, vista (Windows only) and yaru.
+  Yaru is a more modern theme coming from the ttkthemes collection.")
+
 (defparameter *themes-directory* (asdf:system-relative-pathname :nodgui "themes"
-                                                                :type :directory))
+                                                                :type :directory)
+  "A directory where nodgui looks for themes. By default, it looks under the themes/ directory where nodgui is installed.
+
+ Each theme must be placed in their own directory as a subdirectory of the aforementioned variable, the name of the directory must be the name of the theme; moreover the name of the TCL file that specify the file must be named as the same of the theme with the extension \"tcl\" appended
+
+For example the theme foo has to be: \"foo/foo.tcl\".
+
+Provided these conditions are met using a new theme should be as simple as type:
+
+(nodgui:use-theme \"foo\")
+
+It is also possible to load a third-party .tcl theme file with:
+
+(nodgui: eval-tcl-file)
+
+and then calling use-theme.
+
+The function THEME-NAMES will return both the default and the custom themes.")
 
 (defgeneric eval-tcl-file (object))
 

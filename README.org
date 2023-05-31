@@ -13,6 +13,59 @@
    Version ~0.4.0~ broke the user API, see
    [[https://www.autistici.org/interzona/nodgui.html#orgb470f4b][here]] for more information about how your code is affected and how to fix it.
 
+** Features
+
+- custom themes
+- more widgets:
+  - history-entry
+  - autocomplete
+  - expanded "text" widget
+  - date picker
+  - treelist
+  - tooltip
+  - searchable listbox
+  - password entry
+  - …
+- =tklib=-derived widgets:
+  - calendar
+  - notify-window
+  - plots and charts: dot-plot, bar-chart…
+- asynchronous main event loop
+- and more
+
+** Themes
+
+nodgui supports loading [[https://wiki.tcl-lang.org/page/List+of+ttk+Themes][custom ttk themes]] and ships the "yaru" theme from
+the [[https://ttkthemes.readthedocs.io/en/latest/themes.html#yaru][ttkthemes collection]].
+
+To use a built-in theme other than the "default" one, do:
+
+#+BEGIN_SRC lisp
+(with-nodgui (:theme "yaru")
+   (code here))
+#+end_src
+
+or use =(setf *default-theme* "yaru")=.
+
+You can see how they look with the demos:
+
+#+BEGIN_SRC lisp
+CL-USER> (nodgui.demo:demo :theme "yaru")
+#+end_src
+
+You can load any .tcl file describing a theme:
+
+#+BEGIN_SRC lisp
+(nodgui:eval-tcl-file "path/to/another/theme.tcl")
+(nodgui:use-theme "theme")
+#+end_src
+
+See also =*themes-directory*=.
+
+This currently doesn't work with a few themes using SVG images, but it might
+be fixed with the release of an upcoming Tcl/Tk version.
+
+
 * Dependency
 
 ** Programs

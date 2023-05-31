@@ -635,6 +635,8 @@ error-strings) are ignored."
   If :STREAM is non-NIL, it should be a two-way stream connected to a running
   wish.  This will be used instead of running a new wish.
 
+  :THEME is a string designating a color theme. \"yaru\" is a modern theme shipped in nodgui, from the ttkthemes collection. See also `*themes-directory*'.
+
   With :name (or :title as a synonym) you can set both title and class
   name of this window"
   (declare (ignore debug stream title))
@@ -653,6 +655,8 @@ error-strings) are ignored."
     (let* ((class-name  (or (getf keys :class)
                             (getf keys :name)))
            (title-value (getf keys :title))
+           (theme (or (getf keys :theme)
+                      *default-theme*))
            (*default-toplevel-name* (or class-name
                                         title-value
                                         *default-toplevel-name*))
@@ -681,5 +685,9 @@ error-strings) are ignored."
               (on-close (root-toplevel) (lambda () (exit-wish)))
               (with-flush
                   (setf results-after-exit (funcall thunk)))))
+
+        (when theme
+          (use-theme theme))
+
         (wait-mainloop-threads)
         results-after-exit))))
