@@ -603,6 +603,21 @@ set y [winfo y ~a]
   (with-read-data ()
     (format-wish "sendpropertylist [font metrics {~a}]" (down font))))
 
+(defun font-actual (font-spec &key (display-of nil))
+  (with-read-data (nil)
+    (let ((*suppress-newline-for-tcl-statements* t))
+      (format-wish (tclize `(senddatastrings [ font actual
+                                        {+ ,font-spec } " "
+                                      ,(empty-string-if-nil display-of
+                                                            `(-displayof {+ ,(widget-path display-of) }
+                                                                         " "))
+                                      ])))
+      (let ((raw (read-data)))
+        (a:flatten (loop for (key value) on raw by 'cddr
+                         collect
+                         (list (a:make-keyword (string-upcase (subseq key 1)))
+                               value)))))))
+
 ;;(defun font-names ...)
 
 (defun font-families (&optional (display-of nil))

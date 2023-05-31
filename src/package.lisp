@@ -1434,6 +1434,7 @@
            #:font-metrics
            #:font-measure
            #:font-families
+           #:font-actual
            #:force-focus
            #:forget-pane
            #:format-wish
