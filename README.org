@@ -43,7 +43,7 @@ To use a built-in theme other than the "default" one, do:
 #+BEGIN_SRC lisp
 (with-nodgui (:theme "yaru")
    (code here))
-#+end_src
+#+END_SRC
 
 or use =(setf *default-theme* "yaru")=.
 

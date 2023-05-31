@@ -8,6 +8,8 @@ Table of Contents
 
 1. NODGUI
 .. 1. important note:
+.. 2. Features
+.. 3. Themes
 2. Dependency
 .. 1. Programs
 .. 2. Lisp libraries
@@ -38,6 +40,68 @@ Table of Contents
 
 
 [here] <https://www.autistici.org/interzona/nodgui.html#orgb470f4b>
+
+
+1.2 Features
+────────────
+
+  • custom themes
+  • more widgets:
+    • history-entry
+    • autocomplete
+    • expanded "text" widget
+    • date picker
+    • treelist
+    • tooltip
+    • searchable listbox
+    • password entry
+    • …
+  • `tklib'-derived widgets:
+    • calendar
+    • notify-window
+    • plots and charts: dot-plot, bar-chart…
+  • asynchronous main event loop
+  • and more
+
+
+1.3 Themes
+──────────
+
+  nodgui supports loading [custom ttk themes] and ships the "yaru" theme
+  from the [ttkthemes collection].
+
+  To use a built-in theme other than the "default" one, do:
+
+  ┌────
+  │ (with-nodgui (:theme "yaru")
+  │    (code here))
+  └────
+
+  or use `(setf *default-theme* "yaru")'.
+
+  You can see how they look with the demos:
+
+  ┌────
+  │ CL-USER> (nodgui.demo:demo :theme "yaru")
+  └────
+
+  You can load any .tcl file describing a theme:
+
+  ┌────
+  │ (nodgui:eval-tcl-file "path/to/another/theme.tcl")
+  │ (nodgui:use-theme "theme")
+  └────
+
+  See also `*themes-directory*'.
+
+  This currently doesn't work with a few themes using SVG images, but it
+  might be fixed with the release of an upcoming Tcl/Tk version.
+
+
+[custom ttk themes] <https://wiki.tcl-lang.org/page/List+of+ttk+Themes>
+
+[ttkthemes collection]
+<https://ttkthemes.readthedocs.io/en/latest/themes.html#yaru>
 
 
 2 Dependency
