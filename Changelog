@@ -1,3 +1,35 @@
+2023-05-31 vindarel, cage
+
+        * README.org,
+        * nodgui.asd,
+        * src/demo-tests.lisp,
+        * src/nodgui.lisp,
+        * src/package.lisp,
+        * src/wish-communication.lisp:
+
+        - added 'font-actual'.
+        - added *default-theme* and :theme key to with-nodgui
+          This way it is possible to call the demos with a new theme without
+          modifying their source file,
+          we can define the current theme from outside the with-nodgui event
+          loop, and we can give a theme argument to nodgui.
+          for #13
+	- Merge branch 'master' of vindarel/nodgui into master
+        - added 'default-theme' to prevent a 'missing variable' warning;
+        - set the theme for all the demo at once when calling
+        'nodgui.demo:demo';
+        - moved setting demo form before the user code starts to run.
+        - increased version number.
+
+2023-05-30 cage
+
+        * nodgui.asd,
+        * src/nodgui-mw.lisp:
+
+        - ignore auto-completion when the key  pressed follows a control or an
+        alt key pressed;
+        - increased version number.
+
 2023-05-29 cage
 
 	* README.org,
@@ -50,11 +82,13 @@
 	* themes/yaru/yaru/tree-basic.png,
 	* themes/yaru/yaru/tree-pressed.png:
 
-	- ensured 'use-theme' actually applies the custom theme chosen by the
-	user;
-	- fixed type error in 'theme-names'.
-	- updated README.org
-	- added theme 'yaru'.
+        - ensured 'use-theme' actually applies the custom theme chosen by the
+          user;
+        - fixed type error in 'theme-names'.
+        - updated README.org
+        - added theme 'yaru'.
+        - increased version number;
+        - updated changelog.
 
 2023-05-27 cage
 
