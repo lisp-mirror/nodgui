@@ -19,8 +19,12 @@
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
-(defun demo ()
-  (with-nodgui (:debug-tcl nil)
+(defun demo (&key theme)
+  "Run the demo of the demos.
+
+  :THEME a string designating a GUI theme. \"yaru\" is a modern looking theme shipped in nodgui. See also `*default-theme*'."
+  (with-nodgui (:debug-tcl nil
+                :theme theme)
     (let* ((widget          (make-instance 'button
                                            :text    "widget"
                                            :command (lambda () (demo-widget))))
@@ -219,9 +223,11 @@
             (3 "cooked")))
   (finish-output))
 
-(defun demo-widget()
+(defun demo-widget(&key theme)
   (setf *debug-tk* t)
-  (with-nodgui (:debug-tcl nil)
+  (with-nodgui (:debug-tcl nil
+                :theme theme)
+    ;; (use-theme "yaru")
     (flet ((write-postscript (canvas)
              #'(lambda ()
                  (let ((file (get-save-file :file-types '(("Encapsulated Postscript" "*.ps")))))
@@ -480,8 +486,8 @@
 
 ;;;; the eyes :)
 
-(defun demo-eyes ()
-  (with-nodgui ()
+(defun demo-eyes (&key theme)
+  (with-nodgui (:theme theme)
    (let* ((*debug-tk* nil)
           (w (screen-width))
           (h (screen-height))
@@ -540,8 +546,8 @@
      (itemconfigure c p2 "fill" "blue")
      (after 100 #'update)))))
 
-(defun demo-modal ()
-  (with-nodgui ()
+(defun demo-modal (&key theme)
+  (with-nodgui (:theme theme)
    (let* ((b (make-instance 'button :text "Input"
                             :command (lambda ()
                                        (let ((erg (text-input-dialog *tk*
@@ -553,9 +559,9 @@
                                        (finish-output))))))
      (pack b))))
 
-(defun demo-combo ()
+(defun demo-combo (&key theme)
   (setf *debug-tk* t)
-  (with-nodgui ()
+  (with-nodgui (:theme theme)
     (let* ((c (make-instance 'combobox
                              :text "foo"
                              :values '("bar" "baz" "foo bar")))
@@ -580,8 +586,8 @@
       (pack ok :side :right)
       (pack c :side :left))))
 
-(defun demo-packtest1 ()
-  (with-nodgui ()
+(defun demo-packtest1 (&key theme)
+  (with-nodgui (:theme theme)
     (dotimes (i 10)
       (let ((s ""))
         (dotimes (j i)
@@ -589,14 +595,16 @@
       (pack (make-instance 'button :text (format nil "Button~a Nr. ~a" s i)))
       (sleep 0.1)))))
 
-(defun demo-packtest2 ()
-  (with-nodgui (:debug-tcl t)
+(defun demo-packtest2 (&key theme)
+  (with-nodgui (:debug-tcl t
+                :theme theme)
     (with-atomic
         (dotimes (i 10)
           (pack (make-instance 'button :text (format nil "Button Nr. ~a" i)))))))
 
-(defun demo-sct ()
-  (with-nodgui (:debug-tcl t)
+(defun demo-sct (&key theme)
+  (with-nodgui (:debug-tcl t
+                :theme theme)
     (let* ((sf (make-instance 'scrolled-frame))
            (f  (interior sf))
            (n  1)
@@ -613,8 +621,8 @@
       (pack sf :side :top :fill :both :expand t)
       (pack b1 :side :left))))
 
-(defun demo-escape-text ()
-  (with-nodgui ()
+(defun demo-escape-text (&key theme)
+  (with-nodgui (:theme theme)
     (let ((b (make-instance 'button :text " a button [a] :)")))
       (pack b)
       (setf (text b) " )} ~[eee]~ ")
@@ -678,12 +686,12 @@
                                    :column-values '("bar" "baz"))) ; second and third column
        (format t "~a~%" tree))))
 
-(defun demo-treeview ()
-  (with-nodgui ()
+(defun demo-treeview (&key theme)
+  (with-nodgui (:theme theme)
     (pack (make-instance 'treeviewtest) :fill :both :expand t)))
 
-(defun demo-with-widgets ()
-  (with-nodgui ()
+(defun demo-with-widgets (&key theme)
+  (with-nodgui (:theme theme)
     (with-widgets
         (toplevel top-frame :title "with-widgets-test"
                   (label lb1 :text "Test, Test!" :pack '(:side :top))
@@ -696,8 +704,8 @@
       (setf (text lb1) "Test, Test, Test!"))))
 
 ;; notebook
-(defun demo-notebook ()
-  (with-nodgui ()
+(defun demo-notebook (&key theme)
+  (with-nodgui (:theme theme)
     (let* ((nb (make-instance 'notebook))
            (f1 (make-instance 'frame :master nb))
            (f2 (make-instance 'frame :master nb))
@@ -738,8 +746,8 @@
   (notebook-add nb f2 :text "Frame 2")
   (append-text t1 "Foo [Bar] [[[Baz]]]"))
 
-(defun demo-notebook-2 ()
-  (with-nodgui ()
+(defun demo-notebook-2 (&key theme)
+  (with-nodgui (:theme theme)
     (let ((w (make-instance 'nbw)))
       (pack w :side :top :fill :both :expand t))))
 
@@ -786,9 +794,9 @@
 (defmethod entry-typed ((self test-widget2) keycode)
   (format t "typed:~a~%text:~a~%" keycode (text (e self))) (finish-output))
 
-(defun demo-defwidget ()
+(defun demo-defwidget (&key theme)
   (declare (optimize (debug 3)))
-  (with-nodgui ()
+  (with-nodgui (:theme theme)
     (let ((mw (make-instance 'test-widget2)))
       (format t "mw is: ~a~%" mw) (finish-output)
       ;(error "test: ~a~%" mw)
@@ -798,7 +806,7 @@
                                       (format t "the first is: ~a~%" (firstline mw))
                                       (finish-output))) :side :top :fill :both :expand t))))
 
-(defun demo-canvas ()
+(defun demo-canvas (&key theme)
   (flet ((bind-red (e)
            (declare (ignore e))
            (do-msg "You clicked on red!"))
@@ -808,7 +816,7 @@
              (item-delete canvas item)
              (do-msg "You clicked on green and the blue arc disappeared!"))))
     (let ((*debug-tk* t))
-      (with-nodgui ()
+      (with-nodgui (:theme theme)
         (let* ((size         500)
                (canvas       (make-canvas nil :width size :height size))
                (arc1         (create-arc canvas
@@ -859,8 +867,8 @@
                                (:line      0 ,size ,size ,(- size 10) :width 5)))
           (pack canvas))))))
 
-(defun demo-image ()
-  (with-nodgui ()
+(defun demo-image (&key theme)
+  (with-nodgui (:theme theme)
     (let ((b (make-instance 'button :text "load image")))
       (setf (command b)
             #'(lambda ()
@@ -916,9 +924,9 @@
   :test          #'string=
   :documentation "A bell icon in png format.")
 
-(defun demo-text ()
+(defun demo-text (&key theme)
   (setf *debug-tk* t)
-  (with-nodgui ()
+  (with-nodgui (:theme theme)
     (let* ((text-widget          (make-instance 'scrolled-text
                                                 :read-only                  nil
                                                 :use-horizontal-scrolling-p nil))
@@ -1007,8 +1015,8 @@
                                          (tag-ranges text-widget tag-link)))
         (move-cursor-to-last-line text-widget)))))
 
-(defun demo-multifont-listbox ()
-  (with-nodgui ()
+(defun demo-multifont-listbox (&key theme)
+  (with-nodgui (:theme theme)
     (let ((listbox (make-instance 'multifont-listbox
                                   :master *tk*)))
       (grid listbox 0 0 :sticky :news)
@@ -1032,8 +1040,8 @@
 
 ;; tklib
 
-(defun demo-tklib-calendar ()
-  (with-nodgui ()
+(defun demo-tklib-calendar (&key theme)
+  (with-nodgui (:theme theme)
     (let ((cal (nodgui.tklib.calendar:make-calendar)))
       (nodgui.tklib.calendar:set-date* cal "10/10/2010")
       (setf (command cal)
@@ -1047,16 +1055,16 @@
                              :parent *tk*))))
       (grid cal 0 0))))
 
-(defun demo-tklib-notify ()
-  (with-nodgui ()
+(defun demo-tklib-notify (&key theme)
+  (with-nodgui (:theme theme)
     (let ((message (text-input-dialog *tk*
                                       "info"
                                       "Insert the text you want shown as notify")))
       (format t "message ~a~%" message)
       (nodgui.tklib.notify:notify-window message))))
 
-(defun demo-tklib-dot-plot ()
-  (with-nodgui ()
+(defun demo-tklib-dot-plot (&key theme)
+  (with-nodgui (:theme theme)
     (let* ((canvas     (make-canvas nil :width  800 :height 600))
            (series-callback (lambda (a)
                               (lambda (event)
@@ -1107,8 +1115,8 @@
                                               (event-x event)
                                               (event-y event)))))))
 
-(defun demo-tklib-swaplist ()
-  (with-nodgui ()
+(defun demo-tklib-swaplist (&key theme)
+  (with-nodgui (:theme theme)
     (let* ((swaplist  (nodgui.tklib.swaplist:make-swaplist '(1 2 3) '(4 5 6)
                                                            :left-list-label  "Left"
                                                            :right-list-label "Right"))
@@ -1119,8 +1127,8 @@
       (grid swaplist  0 0)
       (grid ok-button 1 0 :pady 10))))
 
-(defun demo-tklib-equalizer-bar ()
-  (with-nodgui ()
+(defun demo-tklib-equalizer-bar (&key theme)
+  (with-nodgui (:theme theme)
     (let ((equalizer-bar (nodgui.tklib.misc-widget:make-equalizer-bar :from           0.0
                                                                       :to            10.0
                                                                       :warning-level  8.0
@@ -1141,8 +1149,8 @@
                           (animate)))))
         (animate)))))
 
-(defun demo-tklib-bar-plot ()
-  (with-nodgui ()
+(defun demo-tklib-bar-plot (&key theme)
+  (with-nodgui (:theme theme)
     (let* ((canvas          (make-canvas nil :width  800 :height 600))
            (all-series (list (make-instance 'nodgui.tklib.plot:bar-series
                                             :ys  '(20 40 60)
@@ -1161,8 +1169,8 @@
                                               (event-x event)
                                               (event-y event)))))))
 
-(defun demo-validate-command ()
-  (with-nodgui ()
+(defun demo-validate-command (&key theme)
+  (with-nodgui (:theme theme)
     (flet ((validate-function (action
                                current-string
                                new-string
@@ -1192,9 +1200,9 @@
         (pack label)
         (pack entry)))))
 
-(defun demo-multithread ()
+(defun demo-multithread (&key theme)
   (setf *debug-tk* nil)
-  (with-nodgui ()
+  (with-nodgui (:theme theme)
     (let* ((description-text (strcat "In this demo many threads simultaneously "
                                      "compete to write to and read from the same text widget"
                                      "moving the mouse over the text area will make the cursor jump at the end of the text"))
@@ -1254,9 +1262,9 @@
           "AAIqjAOAyWy6VksH0knrU/i8LWWexTneF5knAoorya5aJI9gPUM4utv9jysAADs=")
   :test #'string=)
 
-(defun demo-custom-style ()
+(defun demo-custom-style (&key theme)
   (let ((*debug-tk* t))
-    (with-nodgui ()
+    (with-nodgui (:theme theme)
       (let* ((b            (make-instance 'button :text "Click to change style"))
              (corner-state 0)
              (corner-style (make-style corner-style (:extend "TButton")
@@ -1293,9 +1301,9 @@
                 (incf corner-state)))
         (pack b)))))
 
-(defun demo-autocomplete-entry ()
+(defun demo-autocomplete-entry (&key theme)
   (let ((*debug-tk* t))
-    (with-nodgui ()
+    (with-nodgui (:theme theme)
       (let* ((data                  (append '("foo" "bar" "baz")
                                             (loop for i from 0 to 10 collect
                                                                      (format nil "~2,'0d" i))))
@@ -1322,10 +1330,10 @@
         (grid autocomplete-widget 1 0)
         (grid button              2 0)))))
 
-(defun demo-multithread-2 ()
+(defun demo-multithread-2 (&key theme)
   (setf *debug-tk* t)
   (let* ((wish-subprocess nil))
-    (with-nodgui ()
+    (with-nodgui (:theme theme)
       (let* ((text-area (make-instance 'scrolled-text))
              (button    (make-instance 'button
                                        :text "start"
@@ -1410,10 +1418,10 @@
                         (format t "dummy~%")
                         (finish-output))))
 
-(defun demo-multithread-loop ()
+(defun demo-multithread-loop (&key theme)
   (setf *debug-tk* t)
   (start-events-loop)
-  (with-nodgui ()
+  (with-nodgui (:theme theme)
     (setf *gui-server* *wish*)
     (let* ((text-area (make-instance 'scrolled-text))
            (button    (make-instance 'button
@@ -1448,9 +1456,9 @@
       (grid button-quit   3 0 :sticky :nswe)
       (append-line text-area "lorem isum ecceterea"))))
 
-(defun demo-paned-window ()
+(defun demo-paned-window (&key theme)
   (setf *debug-tk* t)
-  (with-nodgui ()
+  (with-nodgui (:theme theme)
     (let* ((paned-frame (make-instance 'paned-window :orientation :horizontal))
            (text-left   (make-instance 'text :master paned-frame))
            (listbox     (make-instance 'listbox :master paned-frame)))
