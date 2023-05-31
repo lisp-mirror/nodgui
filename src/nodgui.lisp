@@ -645,6 +645,9 @@ set y [winfo y ~a]
   "The default color theme for nodgui. Available ones are: default, alt, aqua (Mac OS only), clam, classic, vista (Windows only) and yaru.
   Yaru is a more modern theme coming from the ttkthemes collection.")
 
+(defun default-theme ()
+  *default-theme*)
+
 (defparameter *themes-directory* (asdf:system-relative-pathname :nodgui "themes"
                                                                 :type :directory)
   "A directory where nodgui looks for themes. By default, it looks under the themes/ directory where nodgui is installed.

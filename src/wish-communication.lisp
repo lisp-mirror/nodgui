@@ -656,7 +656,7 @@ error-strings) are ignored."
                             (getf keys :name)))
            (title-value (getf keys :title))
            (theme (or (getf keys :theme)
-                      *default-theme*))
+                      (default-theme)))
            (*default-toplevel-name* (or class-name
                                         title-value
                                         *default-toplevel-name*))
@@ -682,12 +682,10 @@ error-strings) are ignored."
               (start-wish)
               (when title-value
                 (set-root-toplevel-title title-value))
+              (when theme
+                (use-theme theme))
               (on-close (root-toplevel) (lambda () (exit-wish)))
               (with-flush
                   (setf results-after-exit (funcall thunk)))))
-
-        (when theme
-          (use-theme theme))
-
         (wait-mainloop-threads)
         results-after-exit))))

@@ -23,8 +23,9 @@
   "Run the demo of the demos.
 
   :THEME a string designating a GUI theme. \"yaru\" is a modern looking theme shipped in nodgui. See also `*default-theme*'."
-  (with-nodgui (:debug-tcl nil
-                :theme theme)
+  (when theme
+    (setf *default-theme* theme))
+  (with-nodgui (:debug-tcl nil)
     (let* ((widget          (make-instance 'button
                                            :text    "widget"
                                            :command (lambda () (demo-widget))))

@@ -1282,6 +1282,7 @@
            #:*wish-pathname*
            #:*default-nodgui-debugger*
            #:*force-sync-data-multifont-listbox*
+           #:default-theme
            #:find-cursor
            #:add-pane
            #:add-separator
