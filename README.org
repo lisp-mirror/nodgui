@@ -40,25 +40,23 @@ the [[https://ttkthemes.readthedocs.io/en/latest/themes.html#yaru][ttkthemes col
 
 To use a built-in theme other than the "default" one, do:
 
-#+BEGIN_SRC lisp
-(with-nodgui (:theme "yaru")
-   (code here))
+# note: notabug.org doesn't like org source blocks. We avoid them below.
+
+#+BEGIN_SRC txt
+    (with-nodgui (:theme "yaru")
+      (code here))
 #+END_SRC
 
 or use =(setf *default-theme* "yaru")=.
 
 You can see how they look with the demos:
 
-#+BEGIN_SRC lisp
-CL-USER> (nodgui.demo:demo :theme "yaru")
-#+end_src
+: CL-USER> (nodgui.demo:demo :theme "yaru")
 
 You can load any .tcl file describing a theme:
 
-#+BEGIN_SRC lisp
-(nodgui:eval-tcl-file "path/to/another/theme.tcl")
-(nodgui:use-theme "theme")
-#+end_src
+: (nodgui:eval-tcl-file "path/to/another/theme.tcl")
+: (nodgui:use-theme "theme")
 
 See also =*themes-directory*=.
 
@@ -95,30 +93,25 @@ All of the above libraries are available on quicklisp.
 * Installing
 
   1. install the tk interpreter (example on a Debian system follows)
-  #+BEGIN_SRC sh
-  # apt-get install tk
-  #+END_SRC
+
+: # apt-get install tk
 
   2. optionally install tklib
-  #+BEGIN_SRC sh
-  # apt-get install tklib
-  #+END_SRC
+
+: # apt-get install tklib
 
   3. optionally install tkimg
 
-  #+BEGIN_SRC sh
-  # apt-get install libtk-img
-  #+END_SRC
+: # apt-get install libtk-img
 
   4. open a REPL and type
-  #+BEGIN_SRC lisp
-  (ql:quickload "nodgui")
-  #+END_SRC
+
+: (ql:quickload "nodgui")
 
   5. try it!
-  #+BEGIN_SRC lisp
-  (nodgui.demo::demo)
-  #+END_SRC
+
+: (nodgui.demo:demo)
+
 
 * Documentation
    please follow
