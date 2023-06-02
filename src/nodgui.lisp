@@ -658,7 +658,7 @@ For example the theme foo has to be: \"foo/foo.tcl\".
 
 Provided these conditions are met using a new theme should be as simple as type:
 
-(nodgui:use-theme \"foo\")
+(nodgui:use-theme \"foo\") ; or (:foo, :FOO, 'foo, symbols will be downcased)
 
 It is also possible to load a third-party .tcl theme file with:
 
@@ -694,16 +694,17 @@ The function THEME-NAMES will return both the default and the custom themes.")
                    (build-theme-filename name)))
 
 (defun use-theme (name)
-  (cond
-    ((find name (embedded-theme-names) :test #'string=)
-     (send-use-theme name))
-    ((file-exists-p (build-theme-pathfile name))
-     (eval-tcl-file (build-theme-pathfile name))
-     (send-use-theme name))
-    (t
-     (error "Unable to find the theme ~a in the the directory ~a (and it is not an embedded theme)"
-            name
-            *themes-directory*))))
+  (let ((actual-name (down name)))
+    (cond
+      ((find actual-name (embedded-theme-names) :test #'string=)
+       (send-use-theme actual-name))
+      ((file-exists-p (build-theme-pathfile actual-name))
+       (eval-tcl-file (build-theme-pathfile actual-name))
+       (send-use-theme actual-name))
+      (t
+       (error "Unable to find the theme ~a in the the directory ~a (and it is not an embedded theme)"
+              name
+              *themes-directory*)))))
 
 (defun embedded-theme-names ()
   (with-read-data ()
