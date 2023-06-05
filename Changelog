@@ -1,3 +1,40 @@
+2023-06-05 cage
+
+        * nodgui.asd,
+        * src/nodgui-mw.lisp:
+
+        - increased version number;
+        - prevented auto-completion when deleting last char and only a single
+          candidate exists.
+
+          A loop was present:
+
+	  note: the '<' character indicates the cursor
+
+          bar< ; 'bar' is the only candidate
+
+          pressing backspace (deleting 'r')
+
+          ba< ; auto-completion starts
+
+          bar< ; we are back to square one
+
+2023-06-02 cage
+
+        * nodgui.asd,
+        * src/nodgui.lisp:
+
+        - increased version number;
+        - made symbols a valid argument for 'use-theme'.
+
+2023-06-01 vindarel
+
+        * README.org:
+
+        README: no source blocks
+        fixup for notabug.org :/
+        Merge branch 'master' of vindarel/nodgui into master
+
 2023-05-31 vindarel, cage
 
         * README.org,
