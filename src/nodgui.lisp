@@ -773,6 +773,9 @@ The function THEME-NAMES will return both the default and the custom themes.")
   (root-widget nil)
   (results     nil))
 
+(defmethod widget-path ((object modal-toplevel))
+  (widget-path (modal-toplevel-root-widget object)))
+
 (defgeneric exit-from-modal-toplevel (object))
 
 (defmethod exit-from-modal-toplevel ((object modal-toplevel))
@@ -801,7 +804,9 @@ The function THEME-NAMES will return both the default and the custom themes.")
                                                    (exit-from-modal-toplevel ,toplevel-struct)))
                                        (grab ,toplevel)
                                        (push-mainloop-thread)
-                                       (start-main-loop)
+                                       (start-main-loop :thread-special-bindings
+                                                        ,(getf toplevel-initargs
+                                                               :main-loop-thread-special-bindings))
                                        (setf (modal-toplevel-results ,toplevel-struct)
                                              (progn ,@body))
                                        (flush-wish)

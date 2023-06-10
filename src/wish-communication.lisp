@@ -587,7 +587,7 @@ error-strings) are ignored."
     (t
      (push-enqueued-event event))))
 
-(defun start-main-loop ()
+(defun start-main-loop (&key (thread-special-bindings bt:*default-special-bindings*))
   (dbg "start mainloop")
   (let ((wish-process *wish*))
     (setf (wish-main-loop-thread *wish*)
@@ -600,13 +600,14 @@ error-strings) are ignored."
                                     (with-flush
                                         (process-one-event event)))))
                               (dbg "main-loop terminated")))
-                          :name "main loop"))))
+                          :name "main loop"
+                          :initial-bindings thread-special-bindings))))
 
 (defun filter-keys (desired-keys keyword-arguments)
   (loop for (key val) on keyword-arguments by #'cddr
         when (find key desired-keys) nconc (list key val)))
 
-(defun start-reading-loop ()
+(defun start-reading-loop (&key (thread-special-bindings bt:*default-special-bindings*))
   (dbg "inizio reading loop")
   (let ((wish-process *wish*))
     (setf (wish-input-collecting-thread *wish*)
@@ -619,12 +620,18 @@ error-strings) are ignored."
                                          (dbg "read input ~a" input)
                                          (manage-wish-output input)))
                               (dbg "read input thread terminated")))
-                          :name "read loop"))))
+                          :name "read loop"
+                          :initial-bindings thread-special-bindings))))
 
 ;;; wrapper macro - initializes everything, calls body and then mainloop
 
 (defmacro with-nodgui ((&rest keys
-                              &key (title "") (debug 2) stream &allow-other-keys)
+                        &key
+                          (title   "")
+                          (debug    2)
+                          (main-loop-thread-special-bindings bt:*default-special-bindings*)
+                          (stream nil)
+                        &allow-other-keys)
                     &body body)
   "Create a new Nodgui connection, evaluate BODY, and enter the main loop.
 
@@ -639,14 +646,16 @@ error-strings) are ignored."
 
   With :name (or :title as a synonym) you can set both title and class
   name of this window"
-  (declare (ignore debug stream title))
+  (declare (ignore debug stream title main-loop-thread-special-bindings))
   `(call-with-nodgui (lambda () ,@body) ,@keys))
 
 (defun wait-mainloop-threads ()
   (bt:join-thread (wish-main-loop-thread *wish*))
   (bt:join-thread (wish-input-collecting-thread *wish*)))
 
-(defun call-with-nodgui (thunk &rest keys &key stream &allow-other-keys)
+(defun call-with-nodgui (thunk
+                         &rest keys
+                         &key stream &allow-other-keys)
   "Functional interface to with-nodgui, provided to allow the user the build similar macros."
   (flet ((start-wish ()
            (apply #'start-wish
@@ -655,6 +664,7 @@ error-strings) are ignored."
     (let* ((class-name  (or (getf keys :class)
                             (getf keys :name)))
            (title-value (getf keys :title))
+           (main-loop-special-bindings (getf keys :main-loop-thread-special-bindings))
            (theme (or (getf keys :theme)
                       (default-theme)))
            (*default-toplevel-name* (or class-name
@@ -675,7 +685,7 @@ error-strings) are ignored."
         (setf (wish-call-with-condition-handlers-function *wish*)
               (make-call-with-condition-handlers-function (getf keys :debugger-class))))
       (start-reading-loop)
-      (start-main-loop)
+      (start-main-loop :thread-special-bindings main-loop-special-bindings)
       (let ((results-after-exit nil))
         (multiple-value-prog1
             (with-nodgui-handlers ()
