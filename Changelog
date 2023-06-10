@@ -1,3 +1,13 @@
+2023-06-10 cage
+
+        * nodgui.asd,
+        * src/nodgui.lisp,
+        * src/wish-communication.lisp:
+
+        - allowed to pass special bindings to the main thread;
+        - specialized 'widget-path' on 'modal-toplevel'.
+        - increased version number.
+
 2023-06-05 cage
 
         * nodgui.asd,
