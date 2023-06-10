@@ -138,10 +138,6 @@
 
 (defgeneric tag-delete (object &rest tag-names))
 
-(defgeneric tag-lower (object tag-name &optional before-tag))
-
-(defgeneric tag-raise (object tag-name &optional on-top-of-tag))
-
 (defgeneric tag-ranges (object tag-name))
 
 (defgeneric highlight-text (object start-index &key tag-name end-index))
