@@ -681,6 +681,11 @@ not equal to all the others. The test is performed calling :test"
    (with-inner-treeview (treeview object)
      (children treeview (id item))))
 
+(defmethod children ((object scrolled-treeview) (item string))
+  "List the children of item. Item must be contained in tree"
+   (with-inner-treeview (treeview object)
+     (children treeview item)))
+
 (defmethod (setf children) (val (object scrolled-treeview) item)
   "Set the children of a node: e.g. '(setf (children tree item) (list item1 item2...))"
   (with-inner-treeview (treeview object)
