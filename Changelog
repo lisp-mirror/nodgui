@@ -1,12 +1,31 @@
-2023-06-10 cage
+2023-06-18 cage <cage@invalid>
 
         * nodgui.asd,
+        * src/treeview.lisp:
+
+        - specialized method 'children' on 'scrolled-treeview' and 'string'
+        before these changes was impossible to find the children of the root
+        node like:
+
+        (children tree "{}")
+
+	- increased version number.
+
+2023-06-10 cage <cage@invalid>
+
+        * Changelog,
+        * nodgui.asd,
         * src/nodgui.lisp,
+        * src/text.lisp,
+        * src/toplevel.lisp,
         * src/wish-communication.lisp:
 
         - allowed to pass special bindings to the main thread;
         - specialized 'widget-path' on 'modal-toplevel'.
         - increased version number.
+        - updated changelog.
+        - increased version number;
+        - removed warnings about duplicated functions.
 
 2023-06-05 cage
 
