@@ -20,7 +20,7 @@
   :author           "Peter Herth"
   :encoding         :utf-8
   :maintainer       "cage"
-  :bug-tracker      "https://notabug.org/cage/nodgui/issues"
+  :bug-tracker      "https://codeberg.org/cage/nodgui/issues"
   :licence          "LLGPL"
   :description      "Lisp bindings for the Tk toolkit"
   :pathname         "src"
