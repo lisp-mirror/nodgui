@@ -169,9 +169,10 @@ giving the path of tkobjects."
   toplevel)
 
 (defmacro with-busy ((widget) &body body)
-  `(progn
-     (busy-hold ,widget)
-     ,@body
+  `(unwind-protect
+        (progn
+          (busy-hold ,widget)
+          ,@body)
      (busy-forget ,widget)))
 
 ;;; with-widget stuff
