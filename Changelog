@@ -1,17 +1,34 @@
-2023-06-18 cage <cage@invalid>
+2023-07-12 cage
 
+        * nodgui.asd,
+        * src/widget.lisp:
+
+        - changed macro 'with-busy' to return the value of the last form of
+        'body' argument.
+        - increased version number.
+
+2023-06-20 cage
+
+        * nodgui.asd:
+
+        - fixed references to old repository.
+
+2023-06-18 cage
+
+        * Changelog,
+        * README.txt,
         * nodgui.asd,
         * src/treeview.lisp:
 
         - specialized method 'children' on 'scrolled-treeview' and 'string'
         before these changes was impossible to find the children of the root
         node like:
-
         (children tree "{}")
+        - increased version number.
+        - updated changelog.
+        - removed README.txt
 
-	- increased version number.
-
-2023-06-10 cage <cage@invalid>
+2023-06-10 cage
 
         * Changelog,
         * nodgui.asd,

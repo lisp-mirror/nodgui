@@ -28,7 +28,7 @@
   - …
 - =tklib=-derived widgets:
   - calendar
-  - notify-window
+  - notify-window (a bit buggy, unfortunately)
   - plots and charts: dot-plot, bar-chart…
 - asynchronous main event loop
 - and more
