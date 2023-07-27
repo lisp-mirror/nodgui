@@ -122,8 +122,7 @@
    (action
     :initform nil
     :initarg :action
-    :accessor action
-    :type (or :configure :create))
+    :reader action)
    (pre-application-function
     :initform (constantly t)
     :initarg :pre-application-function
@@ -133,6 +132,11 @@
 (defmethod initialize-instance :after ((object style) &key &allow-other-keys)
   (setf *styles* (remove-if (lambda (a) (string= (name a) (name object))) *styles*))
   (push object *styles*))
+
+(defmethod (setf action) ((object style) val)
+  (assert (or (eq val :configure)
+              (eq val :create)))
+  (setf (slot-value object 'action) val))
 
 (defgeneric root-style-p (object))
 
