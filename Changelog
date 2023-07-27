@@ -1,11 +1,26 @@
+2023-07-27 cage
+
+	* src/styles.lisp:
+
+	- fixed wrong 'type'slot specification.
+	Thanks to the person that reported this issue!
+	https://codeberg.org/cage/nodgui/issues/1
+
+2023-07-14 cage
+
+	* Changelog,
+	* README.org:
+
+	- updated changelog and README.
+
 2023-07-12 cage
 
-        * nodgui.asd,
-        * src/widget.lisp:
+	* nodgui.asd,
+	* src/widget.lisp:
 
-        - changed macro 'with-busy' to return the value of the last form of
-        'body' argument.
-        - increased version number.
+	- changed macro 'with-busy' to return the value of the last form of
+	'body' argument.
+	- increased version number.
 
 2023-06-20 cage
 
