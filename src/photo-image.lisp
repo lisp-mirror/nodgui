@@ -32,11 +32,11 @@
   (name photo))
 
 (defmethod initialize-instance :after ((object photo-image) &key &allow-other-keys)
-  (with-read-data ()
-    (with-accessors ((data data)) object
-      (setf (name object) (create-name))
-      (format-wish "image create photo ~a" (name object))
-      (when data
+  (with-accessors ((data data)) object
+    (setf (name object) (create-name))
+    (format-wish "image create photo ~a" (name object))
+    (when data
+      (with-read-data ()
         (if (stringp data)
             (format-wish (tclize `(senddatastring [ ,(name object) " "
                                                   put {+ ,data } ])))
@@ -148,6 +148,26 @@ GIF are supported but if tjimg is used more format are available!"
 
 (defgeneric image-load (p filename))
 
-(defmethod image-load((p photo-image) filename)
+(defmethod image-load ((p photo-image) filename)
   (format-wish "~A read {~A} -shrink" (name p) filename)
   p)
+
+(defgeneric image-scale (object scale-x &optional scale-y))
+
+(defmethod image-scale ((object photo-image) (scale-x fixnum) &optional (scale-y scale-x))
+  "Scale the  image, if both  scaling factors are positive  numbers this
+function  will  upscale  the  image, a  downscale  will  be  performed
+otherwise"
+  (assert (/= 0 scale-x))
+  (assert (/= 0 scale-y))
+  (let ((new-image (make-instance 'photo-image)))
+    (with-no-emitted-newline
+      (format-wish (tclize
+                    `(,(name new-image) " " copy " " ,(name object) " "
+                      ,(if (or (< scale-x 0)
+                               (< scale-y 0))
+                           (tclize `(-subsample))
+                           (tclize `(-zoom)))
+                      ,(abs scale-x) ,(abs scale-y)))))
+    (setf (name object) (name new-image))
+    object))

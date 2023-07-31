@@ -1470,6 +1470,7 @@
            #:wm-attrib-type
            #:wm-attrib-zoomed
            #:image-load
+           #:image-scale
            #:image-setpixel
            #:cursor-index
            #:set-selection

@@ -869,6 +869,7 @@
           (pack canvas))))))
 
 (defun demo-image (&key theme)
+  (setf *debug-tk* t)
   (with-nodgui (:theme theme)
     (let ((b (make-instance 'button :text "load image")))
       (setf (command b)
@@ -879,7 +880,7 @@
                                                          ("RGB raw" "*.data")))))
                   (cond
                     ((cl-ppcre:scan "png$" file)
-                     (setf (image b) (make-image file)))
+                     (setf (image b) (image-scale (make-image file) -2 4)))
                     ((cl-ppcre:scan "tga$" file)
                      (let ((bitmap (nodgui.pixmap:rotate-pixmap
                                     (nodgui.pixmap:scale-bilinear
