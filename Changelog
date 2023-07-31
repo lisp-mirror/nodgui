@@ -1,10 +1,22 @@
+2023-07-31 cage
+
+        * src/demo-tests.lisp,
+        * src/package.lisp,
+        * src/photo-image.lisp:
+
+        - added 'image-scale'.
+
 2023-07-27 cage
 
-	* src/styles.lisp:
+        * Changelog,
+        * nodgui.asd,
+        * src/styles.lisp:
 
-	- fixed wrong 'type'slot specification.
-	Thanks to the person that reported this issue!
-	https://codeberg.org/cage/nodgui/issues/1
+        - fixed wrong 'type'slot specification.
+        Thanks to the person that reported this issue!
+        https://codeberg.org/cage/nodgui/issues/1
+        - increased version number;
+        - updated changelog.
 
 2023-07-14 cage
 
