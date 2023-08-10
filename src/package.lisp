@@ -1417,6 +1417,7 @@
            #:event-width
            #:event-height
            #:event-unicode-char
+           #:event-timestamp
            #:root-toplevel
            #:root-toplevel-title
            #:set-root-toplevel-title

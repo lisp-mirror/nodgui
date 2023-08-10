@@ -92,13 +92,19 @@
     (set range [$sb get])
     ($sb set 0 [expr [lindex $range 1] - [lindex $range 0]]))
 
-  (defproc sendevent (s x y
-                        charcode keycode char
-                        width height
-                        root_x root_y
-                        mouse_button
-                        unicode_char
-                        ({+ other {+ }+ }))
+     (defproc sendevent (s x
+                           y
+                           charcode
+                           keycode
+                           char
+                           width
+                           height
+                           root_x
+                           root_y
+                           mouse_button
+                           unicode_char
+                           timestamp
+                           ({+ other {+ }+ }))
      (:lisp
      (with-flush-server
          (tcl
@@ -109,6 +115,7 @@
                                    $width \ % $height \ %
                                    $root_x \ % $root_y \ % $mouse_button \ %
                                    \\+ \" $unicode_char+ \\+ \" \ %
+                                   $timestamp \ %
                                    \\+ \" $other+ \\+ \" \ %
                                  > ])))))
 

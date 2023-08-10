@@ -28,26 +28,31 @@
   root-y         ; 8
   mouse-button   ; 9
   unicode-char   ; 10
-  others)        ; 11
+  timestamp      ; 11
+  others)        ; 12
 
 (defun construct-tk-event (properties)
   "create an event structure from a list of values as read from tk"
   (make-event
-   :x            (first properties)               ; 0
-   :y            (second properties)              ; 1
-   :char-code    (third properties)               ; 2
-   :keycode      (fourth properties)              ; 3
-   :char         (fifth properties)               ; 4
-   :width        (sixth properties)               ; 5
-   :height       (seventh properties)             ; 6
-   :root-x       (eighth properties)              ; 7
-   :root-y       (ninth properties)               ; 8
-   :mouse-button (tenth properties)               ; 9
-   :unicode-char (elt   properties 10)            ; 10
-   :others       (if (string= (elt properties 11) ; 11
+   :x            (first properties)                ; 0
+   :y            (second properties)               ; 1
+   :char-code    (third properties)                ; 2
+   :keycode      (fourth properties)               ; 3
+   :char         (fifth properties)                ; 4
+   :width        (sixth properties)                ; 5
+   :height       (seventh properties)              ; 6
+   :root-x       (eighth properties)               ; 7
+   :root-y       (ninth properties)                ; 8
+   :mouse-button (tenth properties)                ; 9
+   :unicode-char (elt   properties 10)             ; 10
+   :timestamp    (let ((data (elt properties 11))) ; 11
+                   (if (numberp data)
+                       data
+                       nil))
+   :others       (if (string= (elt properties 12)  ; 12
                               "")
                      nil
-                     (elt properties 11))))
+                     (elt properties 12))))
 
 (defgeneric bind (w event fun &key append exclusive))
 
@@ -55,7 +60,7 @@
   "bind fun to event of the widget object"
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "bind  ~a {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A ~:[~;;break~]}"
+    (format-wish "bind  ~a {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A %t ~:[~;;break~]}"
                  (widget-path object) event append name exclusive)
     object))
 
@@ -63,7 +68,7 @@
   "bind fun to event within context indicated by string ie. 'all' or 'Button'"
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A ~:[~;;break~]}"
+    (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A %t ~:[~;;break~]}"
                  object event append name exclusive)))
 
 (defgeneric unbind (object event))

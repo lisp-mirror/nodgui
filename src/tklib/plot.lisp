@@ -198,6 +198,8 @@
                 {?}
                 {?}
                 {?}
+                {?}
+                {?}
                 {?}))))
 
 (defmethod initialize-instance :after ((object plot) &key &allow-other-keys)
