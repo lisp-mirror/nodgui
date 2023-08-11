@@ -1730,6 +1730,7 @@
            #:use-theme
            #:theme-names
            #:current-time-milliseconds
+           #:glob
            #:items
            #:image
            #:style

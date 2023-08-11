@@ -714,6 +714,38 @@ The function THEME-NAMES will return both the default and the custom themes.")
   (with-read-data ()
     (send-wish "senddata [clock milliseconds]")))
 
+(defun glob (root-directory pattern &key (type nil))
+  "`type' must be a keyword that contains only characters in set
+   (b c d f / p s r w x)"
+  (let ((chars (remove-duplicates (coerce (string-downcase (symbol-name type))
+                                          'list)
+                                  :test #'char=)))
+    (assert (or (null type)
+                (every (lambda (a) (member a
+                                           '(#\b #\c #\d #\f #\/ #\p #\s #\r #\w #\x)
+                                           :test #'char=))
+                       chars)))
+    ;;(with-read-data ()
+    (let* ((*suppress-newline-for-tcl-statements* t)
+           (globbing-command (with-no-escape-tilde
+                               (tclize `(glob
+                                         -directory {+ ,root-directory } " "
+                                         ,(empty-string-if-nil type
+                                                               `(-type { ,@chars })) " "
+                                                               -- {+ ,pattern })
+                                       :sanitize nil))))
+      (let ((has-error-p (tcl-bool->lisp
+                          (with-read-data ()
+                            (with-no-escape-tilde
+                              (send-wish (tclize `(senddata [catch { ,globbing-command }])
+                                                 :sanitize nil)))))))
+        (when (not has-error-p)
+          (sort (with-read-data ()
+                  (with-no-escape-tilde
+                    (send-wish (tclize `(senddatastrings [ ,globbing-command ])
+                                       :sanitize nil))))
+                #'string<))))))
+
 (defun theme-names ()
   (flet ((theme-name (dir-pathname)
            (let ((dir-namestring (namestring dir-pathname)))
