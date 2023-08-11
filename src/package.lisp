@@ -1729,6 +1729,7 @@
            #:eval-tcl-file
            #:use-theme
            #:theme-names
+           #:current-time-milliseconds
            #:items
            #:image
            #:style

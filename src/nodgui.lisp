@@ -710,6 +710,10 @@ The function THEME-NAMES will return both the default and the custom themes.")
   (with-read-data ()
     (send-wish "senddatastrings [ttk::style theme names]")))
 
+(defun current-time-milliseconds ()
+  (with-read-data ()
+    (send-wish "senddata [clock milliseconds]")))
+
 (defun theme-names ()
   (flet ((theme-name (dir-pathname)
            (let ((dir-namestring (namestring dir-pathname)))

@@ -83,31 +83,18 @@
     (format-wish "bind ~a {~a} \"\"" object event)
     object)
 
-(defun calculate-internal-time-scaling-millis (&optional (scaling 1000))
-  (if (<= (/ internal-time-units-per-second scaling)
-          1000)
-      scaling
-      (calculate-internal-time-scaling-millis (* 10 scaling))))
-
-(defparameter *internal-time-scaling-millis* (calculate-internal-time-scaling-millis))
-
 (defparameter *debounce-minimum-delay* 120
   "milliseconds")
 
-(defun calculate-milliseconds-elapsed ()
-  (truncate (/ (get-internal-real-time)
-               *internal-time-scaling-millis*)))
-
 (defmacro lambda-debounce (args &body body)
   (a:with-gensyms (last-fired saved-last-fired fired-time results)
-    `(let ((,last-fired (calculate-milliseconds-elapsed)))
+    `(let ((,last-fired (current-time-milliseconds)))
        (lambda ,args
-         (let ((,fired-time (calculate-milliseconds-elapsed))
+         (let ((,fired-time (current-time-milliseconds))
                (,saved-last-fired ,last-fired)
                (,results nil))
            (when (> (- ,fired-time ,saved-last-fired)
                     *debounce-minimum-delay*)
              (setf ,results (progn ,@body)))
-           (setf ,last-fired
-                 (calculate-milliseconds-elapsed))
+           (setf ,last-fired (current-time-milliseconds))
            ,results)))))
