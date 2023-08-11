@@ -177,7 +177,7 @@
                               type)))))
 
 (defun parse-event (event-string)
-  (p:parse 'event event-string))
+  (nth-value 0 (p:parse 'event event-string)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
