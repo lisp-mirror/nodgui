@@ -1,13 +1,29 @@
 2023-08-11 cage
 
+        * Changelog,
+        * nodgui.asd,
+        * src/event-parser.lisp,
         * src/events.lisp,
         * src/nodgui.lisp,
         * src/package.lisp:
 
+        - increased version number.
         - added 'calculate-milliseconds-elapsed';
         - using measured milliseconds, via TCL command, to debounce the
           keyboard key pressed.
         - added function 'glob'.
+        - increased version number;
+        - updated changelog.
+        - ensured only the first value from event parsing is returned from the
+          events reader macro.
+          Esrap returns three values when the parsing has completed
+          1. the results of parsing
+          2. last consumed char or nil if all the input has been consumed
+          3. a boolean value: T if errors has *not* occurred
+          The reader macro '#$' (e.g. "#$<1>$") will return only the first value
+          on SBCL but all three values on ECL, leading to an error on load time
+          on the latter.
+	  Many thanks to catap for reporting this interesting issue and testing the patch!
 
 2023-08-10 cage
 
