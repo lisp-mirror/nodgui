@@ -1714,14 +1714,16 @@
 
 (defmethod listbox-move-selection ((object multifont-listbox) offset)
   (with-accessors ((selected-index selected-index)
-                   (selected-tag   selected-tag)) object
-    (%multifont-listbox-shift-selected-index object offset)
-    (%multifont-listbox-highlight-selected object)
-    (let ((selected-line-index (1+ selected-index)))
-      (tag-delete object selected-tag)
-      (move-cursor-to object `(:line ,selected-line-index :char 0))
-      (setf selected-tag (highlight-text-line object selected-line-index))
-      (see object (raw-coordinates object)))))
+                   (selected-tag   selected-tag)
+                   (items          items)) object
+    (when items
+      (%multifont-listbox-shift-selected-index object offset)
+      (%multifont-listbox-highlight-selected object)
+      (let ((selected-line-index (1+ selected-index)))
+        (tag-delete object selected-tag)
+        (move-cursor-to object `(:line ,selected-line-index :char 0))
+        (setf selected-tag (highlight-text-line object selected-line-index))
+        (see object (raw-coordinates object))))))
 
 (defmethod listbox-clear ((object multifont-listbox) &optional (start 0) (end :end))
   (with-sync-data (object)
