@@ -1,3 +1,10 @@
+2023-08-15 cage
+
+        * src/nodgui-mw.lisp:
+
+        - prevented crash when moving around the selection in an empty
+          multifont listbox.
+
 2023-08-11 cage
 
         * Changelog,
@@ -7,13 +14,11 @@
         * src/nodgui.lisp,
         * src/package.lisp:
 
-        - increased version number.
         - added 'calculate-milliseconds-elapsed';
         - using measured milliseconds, via TCL command, to debounce the
           keyboard key pressed.
         - added function 'glob'.
         - increased version number;
-        - updated changelog.
         - ensured only the first value from event parsing is returned from the
           events reader macro.
           Esrap returns three values when the parsing has completed
@@ -24,6 +29,8 @@
           on SBCL but all three values on ECL, leading to an error on load time
           on the latter.
 	  Many thanks to catap for reporting this interesting issue and testing the patch!
+        - increased version number.
+        - updated changelog.
 
 2023-08-10 cage
 
