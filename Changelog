@@ -1,9 +1,22 @@
+2023-08-16 cage
+
+        * src/canvas.lisp,
+        * src/events.lisp,
+        * src/package.lisp,
+        * src/tcl-glue-code.lisp:
+
+        - added triggering of mousewheel event.
+
 2023-08-15 cage
 
+        * Changelog,
+        * nodgui.asd,
         * src/nodgui-mw.lisp:
 
         - prevented crash when moving around the selection in an empty
-          multifont listbox.
+        multifont listbox.
+        - increased version number;
+        - updated changelog.
 
 2023-08-11 cage
 
