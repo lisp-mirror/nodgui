@@ -300,7 +300,7 @@
   "bind fun to event of the widget w"
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "~a bind ~a {~a} {sendevent ~a %x %y %N %k %K %w %h %X %Y %b {??}}"
+    (format-wish "~a bind ~a {~a} {sendevent ~a %x %y %N %k %K %w %h %X %Y %b {??} {??} {??} {??}}"
                  (widget-path canvas) item event name))
   canvas)
 
@@ -312,7 +312,7 @@
   "bind fun to event of the widget w"
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "~a bind {~(~a~)} {~a} {sendevent ~a %x %y %N %k %K %w %h %X %Y %b {??} ~:[~;;break~]}"
+    (format-wish "~a bind {~(~a~)} {~a} {sendevent ~a %x %y %N %k %K %w %h %X %Y %b {??} {??} {??} ~:[~;;break~]}"
                  (widget-path canvas) tag event name exclusive))
   canvas)
 

@@ -1418,6 +1418,7 @@
            #:event-height
            #:event-unicode-char
            #:event-timestamp
+           #:event-delta
            #:root-toplevel
            #:root-toplevel-title
            #:set-root-toplevel-title
