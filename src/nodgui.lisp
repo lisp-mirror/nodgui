@@ -851,7 +851,12 @@ The function THEME-NAMES will return both the default and the custom themes.")
                                                do
                                                (bt:condition-wait (modal-toplevel-condvar ,toplevel-struct)
                                                                   (modal-toplevel-lock ,toplevel-struct))))
-                                       (modal-toplevel-results ,toplevel-struct))))))
+                                       (modal-toplevel-results ,toplevel-struct)))
+                                   :initial-bindings
+                                   ,(or (getf toplevel-initargs
+                                              :modal-toplevel-thread-special-bindings)
+                                        (getf toplevel-initargs
+                                              :main-loop-thread-special-bindings)))))
        (bt:join-thread ,modal-widget-thread)
        (modal-toplevel-results ,toplevel-struct))))
 
