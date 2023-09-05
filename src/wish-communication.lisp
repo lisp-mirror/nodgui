@@ -60,6 +60,14 @@
                           (uiop:process-info-input  proc))
      proc)))
 
+(defstruct mainloop-coordination
+  (mainloop-name -1)
+  (pause         nil)
+  (pause-lock    (bt:make-lock "lock"))
+  (pause-condvar (bt:make-condition-variable))
+  (stop          nil)
+  (stop-lock     (bt:make-lock "lock")))
+
 ;;; global var for holding the communication stream
 (defstruct (nodgui-connection
              (:constructor make-nodgui-connection)
@@ -75,8 +83,6 @@
   (read-data-lock           (bt:make-lock "read-data"))
   (flush-lock               (bt:make-lock "flush"))
   (read-lock                (bt:make-lock "read"))
-  (break-mainloop-lock      (bt:make-lock "break mainloop"))
-  (break-mainloop                nil)
   (accept-garbage-for-next-event  nil)
   ;; This is should be a function that takes a thunk, and calls it in
   ;; an environment with some condition handling in place.  It is what
@@ -88,6 +94,8 @@
   (input-collecting-thread nil)
   (main-loop-thread nil)
   (saved-main-loop-threads '())
+  (main-loop-coordination-data nil)
+  (saved-main-loop-coordination-data '())
   (variables (make-hash-table :test #'equal)))
 
 (defmethod wish-variable (name (wish nodgui-connection))
@@ -107,6 +115,14 @@
 (defun pop-mainloop-thread ()
   (setf (wish-main-loop-thread *wish*)
         (pop (wish-saved-main-loop-threads *wish*))))
+
+(defun push-mainloop-coordination-data ()
+  (push (wish-main-loop-coordination-data *wish*)
+        (wish-saved-main-loop-coordination-data *wish*)))
+
+(defun pop-mainloop-coordination-data ()
+  (setf (wish-main-loop-coordination-data *wish*)
+        (pop (wish-saved-main-loop-coordination-data *wish*))))
 
 ;;; global connection information
 
@@ -520,18 +536,15 @@ error-strings) are ignored."
 ;;;; the slot break-mainloop is non nil
 
 (defun break-mainloop ()
-  (bt:with-lock-held ((wish-break-mainloop-lock *wish*))
-    (setf (wish-break-mainloop *wish*) t)))
+  (let ((lock (mainloop-coordination-stop-lock (wish-main-loop-coordination-data *wish*))))
+    (bt:with-lock-held (lock)
+      (setf (mainloop-coordination-stop (wish-main-loop-coordination-data *wish*))
+            t))))
 
 (defun break-mainloop-p ()
-  (bt:with-lock-held ((wish-break-mainloop-lock *wish*))
-    (wish-break-mainloop *wish*)))
-
-(defun restart-mainloop ()
-  (bt:with-lock-held ((wish-break-mainloop-lock *wish*))
-    (setf (wish-break-mainloop *wish*) nil)
-    (start-reading-loop)
-    (start-main-loop)))
+  (let ((lock (mainloop-coordination-stop-lock (wish-main-loop-coordination-data *wish*))))
+    (bt:with-lock-held (lock)
+      (mainloop-coordination-stop (wish-main-loop-coordination-data *wish*)))))
 
 (defgeneric handle-output (key params))
 
@@ -587,21 +600,37 @@ error-strings) are ignored."
     (t
      (push-enqueued-event event))))
 
-(defun start-main-loop (&key (thread-special-bindings bt:*default-special-bindings*))
-  (dbg "start mainloop")
-  (let ((wish-process *wish*))
-    (setf (wish-main-loop-thread *wish*)
-          (bt:make-thread (lambda ()
-                            (let ((*wish* wish-process))
-                              (loop while (not (break-mainloop-p)) do
-                                (let ((event (pop-enqueued-event)))
-                                  (dbg "pop ~a" event)
-                                  (with-nodgui-handlers ()
-                                    (with-flush
-                                        (process-one-event event)))))
-                              (dbg "main-loop terminated")))
-                          :name "main loop"
-                          :initial-bindings thread-special-bindings))))
+(let ((mainloop-name -1))
+  (defun start-main-loop (&key (thread-special-bindings bt:*default-special-bindings*))
+    (dbg "start mainloop")
+    (incf mainloop-name)
+    (let ((wish-process *wish*)
+          (coordination-data (make-mainloop-coordination :mainloop-name mainloop-name)))
+      (push-mainloop-coordination-data)
+      (setf (wish-main-loop-coordination-data *wish*) coordination-data)
+      (flet ((maybe-wait-for-other-mainloops ()
+               (bt:with-lock-held ((mainloop-coordination-pause-lock coordination-data))
+                 (loop while (mainloop-coordination-pause coordination-data)
+                       do (bt:condition-wait (mainloop-coordination-pause-condvar coordination-data)
+                                             (mainloop-coordination-pause-lock coordination-data)))
+                 nil)))
+        (setf (wish-main-loop-thread *wish*)
+              (bt:make-thread (lambda ()
+                                (let ((*wish*       wish-process)
+                                      (current-name (mainloop-coordination-mainloop-name coordination-data)))
+                                  (loop while (not (or (break-mainloop-p)
+                                                       (maybe-wait-for-other-mainloops)))
+                                        do
+                                           (let ((event (pop-enqueued-event)))
+                                             (dbg "pop from mainloop ~a ~a"
+                                                  current-name
+                                                  event)
+                                             (with-nodgui-handlers ()
+                                               (with-flush
+                                                   (process-one-event event)))))
+                                  (dbg "main-loop ~a terminated" current-name)))
+                              :name "main loop"
+                              :initial-bindings thread-special-bindings))))))
 
 (defun filter-keys (desired-keys keyword-arguments)
   (loop for (key val) on keyword-arguments by #'cddr
