@@ -1,11 +1,32 @@
+2023-09-05 cage
+
+        * nodgui.asd,
+        * src/nodgui.lisp,
+        * src/wish-communication.lisp:
+
+        - fixed cooperation between events threads loop.
+        - increased version number.
+
+2023-08-20 cage
+
+        * .gitignore,
+        * src/nodgui.lisp:
+
+        - added special bindings also to the modal toplevel thread.
+        - added file '.gitignore'.
+
 2023-08-16 cage
 
+        * Changelog,
+        * nodgui.asd,
         * src/canvas.lisp,
         * src/events.lisp,
         * src/package.lisp,
         * src/tcl-glue-code.lisp:
 
         - added triggering of mousewheel event.
+        - increased version number;
+        - updated changelog.
 
 2023-08-15 cage
 
