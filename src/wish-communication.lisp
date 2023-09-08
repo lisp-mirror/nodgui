@@ -713,8 +713,8 @@ error-strings) are ignored."
       (when (getf keys :debugger-class)
         (setf (wish-call-with-condition-handlers-function *wish*)
               (make-call-with-condition-handlers-function (getf keys :debugger-class))))
-      (start-reading-loop)
       (start-main-loop :thread-special-bindings main-loop-special-bindings)
+      (start-reading-loop)
       (let ((results-after-exit nil))
         (multiple-value-prog1
             (with-nodgui-handlers ()
