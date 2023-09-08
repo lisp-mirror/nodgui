@@ -766,8 +766,6 @@ from file: 'file'"
             (jpeg-turbo:decompress-header-from-octets jpeg-handle raw-data)
           (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle raw-data))
                 (new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
-            (format t "w ~a h ~a l uncom ~a l new data ~a" image-w image-h
-                    (length uncompressed-data) (length new-data))
             (loop
                   for i from 0 below (length uncompressed-data) by 3
                   for j from 0 below (length new-data) by 1 do
