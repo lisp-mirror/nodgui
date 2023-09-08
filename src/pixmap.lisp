@@ -760,21 +760,26 @@ from file: 'file'"
   (with-accessors ((data   data)
                    (width  width)
                    (height height)) object
-    (multiple-value-bind (raw-data image-h image-w)
-        (cl-jpeg:decode-stream stream)
-      (let ((new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
-        (loop ; add alpha channel and swap BGR -> RGB
-           for i from 0 below (length raw-data) by 3
-           for j from 0 below (length new-data) by 1 do
-             (setf (elt new-data j)
-                   (ubvec4 (elt raw-data (+ i 2))
-                           (elt raw-data (+ i 1))
-                           (elt raw-data i))))
-      (setf data   new-data
-            width  image-w
-            height image-h)
-      (sync-data-to-bits object)
-      object))))
+    (let ((raw-data (slurp-stream-into-array stream)))
+      (jpeg-turbo:with-decompressor (jpeg-handle)
+        (multiple-value-bind (image-w image-h)
+            (jpeg-turbo:decompress-header-from-octets jpeg-handle raw-data)
+          (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle raw-data))
+                (new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
+            (format t "w ~a h ~a l uncom ~a l new data ~a" image-w image-h
+                    (length uncompressed-data) (length new-data))
+            (loop
+                  for i from 0 below (length uncompressed-data) by 3
+                  for j from 0 below (length new-data) by 1 do
+                    (setf (elt new-data j)
+                          (ubvec4 (elt uncompressed-data    i)
+                                  (elt uncompressed-data (+ i 1))
+                                  (elt uncompressed-data (+ i 2)))))
+            (setf data   new-data
+                  width  image-w
+                  height image-h)
+            (sync-data-to-bits object)
+            object))))))
 
 (alexandria:define-constant +file-matrix-buff-size+    2048               :test '=)
 

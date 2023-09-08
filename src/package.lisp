@@ -58,6 +58,7 @@
            #:make-array-frame
            #:make-fresh-array
            #:read-into-array
+           #:slurp-stream-into-array
            #:file-exists-p
            #:directory-exists-p
            #:subdirectories

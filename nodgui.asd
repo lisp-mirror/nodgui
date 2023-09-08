@@ -33,7 +33,7 @@
                :clunit2
                :cl-colors2
                :named-readtables
-               :cl-jpeg
+               :jpeg-turbo
                :bordeaux-threads
                #-asdf3 :uiop)
   :components ((:file "package")

@@ -216,6 +216,10 @@
     (read-sequence bytes stream)
     bytes))
 
+(defun slurp-stream-into-array (stream)
+  "Read all the octent from stream ad returns them as array"
+  (read-stream-content-into-byte-vector stream))
+
 (defun file-exists-p (f)
   (uiop:file-exists-p f))
 
