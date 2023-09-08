@@ -570,6 +570,8 @@ from file: 'file'"
 
 (defgeneric load-from-stream (object stream))
 
+(defgeneric load-from-vector (object data))
+
 (define-parse-header-chunk (image-id-len +targa-img-id-len-offset+
                                               +targa-img-id-len-size+ tga nil))
 
@@ -761,23 +763,29 @@ from file: 'file'"
                    (width  width)
                    (height height)) object
     (let ((raw-data (slurp-stream-into-array stream)))
-      (jpeg-turbo:with-decompressor (jpeg-handle)
-        (multiple-value-bind (image-w image-h)
-            (jpeg-turbo:decompress-header-from-octets jpeg-handle raw-data)
-          (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle raw-data))
-                (new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
-            (loop
-                  for i from 0 below (length uncompressed-data) by 3
-                  for j from 0 below (length new-data) by 1 do
-                    (setf (elt new-data j)
-                          (ubvec4 (elt uncompressed-data    i)
-                                  (elt uncompressed-data (+ i 1))
-                                  (elt uncompressed-data (+ i 2)))))
-            (setf data   new-data
-                  width  image-w
-                  height image-h)
-            (sync-data-to-bits object)
-            object))))))
+      (load-from-vector object raw-data))))
+
+(defmethod load-from-vector ((object jpeg) (stream vector))
+  (with-accessors ((data   data)
+                   (width  width)
+                   (height height)) object
+    (jpeg-turbo:with-decompressor (jpeg-handle)
+      (multiple-value-bind (image-w image-h)
+          (jpeg-turbo:decompress-header-from-octets jpeg-handle stream)
+        (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle stream))
+              (new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
+          (loop
+            for i from 0 below (length uncompressed-data) by 3
+            for j from 0 below (length new-data) by 1 do
+              (setf (elt new-data j)
+                    (ubvec4 (elt uncompressed-data    i)
+                            (elt uncompressed-data (+ i 1))
+                            (elt uncompressed-data (+ i 2)))))
+          (setf data   new-data
+                width  image-w
+                height image-h)
+          (sync-data-to-bits object)
+          object)))))
 
 (alexandria:define-constant +file-matrix-buff-size+    2048               :test '=)
 

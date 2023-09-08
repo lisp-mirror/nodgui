@@ -207,6 +207,7 @@
    #:jpeg
    #:slurp-pixmap
    #:load-from-stream
+   #:load-from-vector
    #:pixmap->tga-file
    #:h-mirror
    #:v-mirror

@@ -98,28 +98,32 @@ GIF are supported but if tjimg is used more format are available!"
                      :data object)))
 
 (defmethod make-image ((object vector) &optional (w nil) (h nil) (channels 3))
-  (cond
-    ((or *tkimg-loaded-p*
-         (pngp object)
-         (gifp object))
-     (make-instance 'photo-image
-                    :data (nodgui.base64:encode object)))
-    (t
-     (with-read-data (nil)
-       (let ((*max-line-length* nil)
-             (res (make-instance 'photo-image)))
-         (with-atomic
-             (format-wish (tclize `(senddatastring [ ,(sanitize (name res)) " "
-                                                   put
-                                                   ,(make-image-data object
-                                                                     w
-                                                                     h
-                                                                     channels
-                                                                     :column-offset channels)
-                                                   ])
-                                  :sanitize nil)))
-         (read-data)
-         res)))))
+  (flet ((make-image-in-lisp ()
+           (with-read-data (nil)
+             (let ((*max-line-length* nil)
+                   (res (make-instance 'photo-image)))
+               (with-atomic
+                   (format-wish (tclize `(senddatastring [ ,(sanitize (name res)) " "
+                                                         put
+                                                         ,(make-image-data object
+                                                                           w
+                                                                           h
+                                                                           channels
+                                                                           :column-offset channels)
+                                                         ])
+                                        :sanitize nil)))
+               (read-data)
+               res))))
+    (cond
+      ((jpgp object)
+       (make-image (load-from-vector (make-instance 'jpeg) object)))
+      ((or *tkimg-loaded-p*
+           (pngp object)
+           (gifp object))
+       (make-instance 'photo-image
+                      :data (nodgui.base64:encode object)))
+      (t
+       (make-image-in-lisp)))))
 
 (defmethod make-image ((object pixmap) &optional (w nil) (h nil) (channels 4))
   (declare (ignore w h channels))

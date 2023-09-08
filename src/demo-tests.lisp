@@ -874,12 +874,13 @@
     (let ((b (make-instance 'button :text "load image")))
       (setf (command b)
             #'(lambda ()
-                (let ((file (get-open-file :file-types '(("PNG"     "*.png")
-                                                         ("JPG"     "*.jpg")
+                (let ((file (get-open-file :file-types '(("JPG"     "*.jpg")
+                                                         ("PNG"     "*.png")
                                                          ("TGA"     "*.tga")
                                                          ("RGB raw" "*.data")))))
                   (cond
-                    ((cl-ppcre:scan "png$" file)
+                    ((or (cl-ppcre:scan "png$" file)
+                         (cl-ppcre:scan "jpg$" file))
                      (setf (image b) (image-scale (make-image file) -2 4)))
                     ((cl-ppcre:scan "tga$" file)
                      (let ((bitmap (nodgui.pixmap:rotate-pixmap
@@ -888,9 +889,6 @@
                                      2.0 2.1)
                                     30.0
                                     :repeat t)))
-                       (setf (image b) (make-image bitmap))))
-                    ((cl-ppcre:scan "jpg$" file) ; bypass tkimg even if available
-                     (let ((bitmap (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:jpeg file)))
                        (setf (image b) (make-image bitmap))))
                     (t
                      (let ((w (text-input-dialog (root-toplevel)
