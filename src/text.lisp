@@ -391,6 +391,10 @@
                                     -image ,(name image-resource)
                                     ])))))
 
+(defmethod insert-image ((object text) (image-resource pixmap)
+                         &optional (coordinates (raw-coordinates object)))
+  (insert-image* object image-resource coordinates))
+
 (defmethod insert-text ((object text) string &optional (coordinates (raw-coordinates object)))
   (format-wish (tclize `(,(widget-path object) " "
                          insert
