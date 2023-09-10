@@ -1,3 +1,17 @@
+2023-09-10 cage
+
+        * Changelog,
+        * nodgui.asd,
+        * src/demo-tests.lisp,
+        * src/package.lisp,
+        * src/photo-image.lisp,
+        * src/pixmap.lisp,
+        * src/utils.lisp:
+
+        - increased version number;
+        - prevented loading in memory JPEG or TGA file's contents before
+        parsing.
+
 2023-09-09 cage
 
         * src/photo-image.lisp,
