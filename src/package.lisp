@@ -69,8 +69,11 @@
            #:create-tag-name
            #:namestring->pathname
            #:pngp
+           #:file-png-p
            #:gifp
+           #:file-gif-p
            #:jpgp
+           #:file-jpg-p
            #:rgb->tk
            #:safe-parse-number
            #:*default-epsilon*
@@ -209,6 +212,7 @@
    #:load-from-stream
    #:load-from-vector
    #:pixmap->tga-file
+   #:file-tga-p
    #:h-mirror
    #:v-mirror
    #:scale-nearest

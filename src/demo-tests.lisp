@@ -877,11 +877,16 @@
                 (let ((file (get-open-file :file-types '(("JPG"     "*.jpg")
                                                          ("PNG"     "*.png")
                                                          ("TGA"     "*.tga")
+                                                         ("BMP"     "*.bmp")
                                                          ("RGB raw" "*.data")))))
                   (cond
-                    ((or (cl-ppcre:scan "png$" file)
-                         (cl-ppcre:scan "jpg$" file))
+                    ((cl-ppcre:scan "png$" file)
                      (setf (image b) (image-scale (make-image file) -2 4)))
+                    ((cl-ppcre:scan "jpg$" file)
+                     (let ((bitmap (nodgui.pixmap:scale-bilinear
+                                     (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:jpeg file)
+                                     0.1 0.1)))
+                       (setf (image b) (make-image bitmap))))
                     ((cl-ppcre:scan "tga$" file)
                      (let ((bitmap (nodgui.pixmap:rotate-pixmap
                                     (nodgui.pixmap:scale-bilinear

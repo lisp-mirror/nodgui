@@ -148,9 +148,17 @@ GIF are supported but if tjimg is used more format are available!"
 
 (defmethod make-image ((object pathname) &optional (w nil) (h nil) (channels nil))
   (declare (ignore w h channels))
-    (with-open-file (stream object :element-type '(unsigned-byte 8))
-      (let ((data (nodgui.utils:read-into-array stream (file-length stream))))
-        (make-image data))))
+  (with-open-file (stream object :element-type '(unsigned-byte 8))
+    (cond
+      ((file-tga-p object)
+       (let ((pixmap (slurp-pixmap 'tga (file-namestring object))))
+         (make-image pixmap)))
+      ((file-jpg-p object)
+       (let ((pixmap (slurp-pixmap 'jpeg (file-namestring object))))
+         (make-image pixmap)))
+      (t
+       (let ((data (nodgui.utils:read-into-array stream (file-length stream))))
+         (make-image data))))))
 
 (defgeneric image-load (p filename))
 

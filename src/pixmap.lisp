@@ -562,6 +562,21 @@ from file: 'file'"
   ()
   (:documentation "A file in TARGA bitmap format"))
 
+(define-constant +targa-footer-offset+ 26 :test #'=)
+
+(defun file-tga-p (path)
+  (with-open-file (stream path :direction :input :element-type '(unsigned-byte 8))
+    (let ((size (file-length stream)))
+      (when (> size +targa-footer-offset+)
+        (let ((footer (make-list +targa-footer-offset+)))
+          (file-position stream (- size +targa-footer-offset+))
+          (read-sequence footer stream)
+          (let ((signature (subseq footer
+                                   8
+                                   (+ 8 (length nodgui.pixmap::+targa-img-signature+)))))
+            (string= nodgui.pixmap::+targa-img-signature+
+                     (coerce (mapcar #'code-char signature) 'string))))))))
+
 (defmethod initialize-instance :after ((object tga) &key (path nil) &allow-other-keys)
   (when path
     (pixmap-load object path)))
@@ -752,11 +767,33 @@ from file: 'file'"
   (when path
     (pixmap-load object path)))
 
+(defun fill-bits-jpeg (jpeg uncompressed-data image-w image-h)
+  (with-accessors ((data   data)
+                   (width  width)
+                   (height height)) jpeg
+    (let ((new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
+          (loop
+            for i from 0 below (length uncompressed-data) by 3
+            for j from 0 below (length new-data) by 1 do
+              (setf (elt new-data j)
+                    (ubvec4 (elt uncompressed-data    i)
+                            (elt uncompressed-data (+ i 1))
+                            (elt uncompressed-data (+ i 2)))))
+          (setf data   new-data
+                width  image-w
+                height image-h)
+      (sync-data-to-bits jpeg)
+      jpeg)))
+
 (defmethod pixmap-load ((object jpeg) (file string))
-  (with-open-file (stream file
-                          :element-type      +jpeg-stream-element-type+
-                          :if-does-not-exist :error)
-    (load-from-stream object stream)))
+  (with-accessors ((data   data)
+                   (width  width)
+                   (height height)) object
+    (jpeg-turbo:with-decompressor (jpeg-handle)
+      (multiple-value-bind (image-w image-h)
+          (jpeg-turbo:decompress-header jpeg-handle file)
+        (let ((uncompressed-data (jpeg-turbo:decompress jpeg-handle file)))
+          (fill-bits-jpeg object uncompressed-data image-w image-h))))))
 
 (defmethod load-from-stream ((object jpeg) (stream stream))
   (with-accessors ((data   data)
@@ -772,20 +809,8 @@ from file: 'file'"
     (jpeg-turbo:with-decompressor (jpeg-handle)
       (multiple-value-bind (image-w image-h)
           (jpeg-turbo:decompress-header-from-octets jpeg-handle stream)
-        (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle stream))
-              (new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
-          (loop
-            for i from 0 below (length uncompressed-data) by 3
-            for j from 0 below (length new-data) by 1 do
-              (setf (elt new-data j)
-                    (ubvec4 (elt uncompressed-data    i)
-                            (elt uncompressed-data (+ i 1))
-                            (elt uncompressed-data (+ i 2)))))
-          (setf data   new-data
-                width  image-w
-                height image-h)
-          (sync-data-to-bits object)
-          object)))))
+        (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle stream)))
+          (fill-bits-jpeg object uncompressed-data image-w image-h))))))
 
 (alexandria:define-constant +file-matrix-buff-size+    2048               :test '=)
 

@@ -294,9 +294,26 @@
            (return-from check-magic-number t)))
     nil))
 
-(defmacro gen-check-magic-number (name &rest magic)
-  `(defun ,(format-fn-symbol t "~ap" name) (data)
-     (check-magic-number data ,@magic)))
+(defmacro gen-check-magic-number (name &rest magics)
+  (with-gensyms (stream data-from-file magic)
+    (let ((predicate-name (format-fn-symbol t "~ap" name))
+          (file-test-name (format-fn-symbol t "file-~a-p" name)))
+      `(progn
+         (defun ,predicate-name (data)
+           (check-magic-number data ,@magics))
+         (defun ,file-test-name (file-path)
+           (ignore-errors
+            (with-open-file (,stream
+                             file-path
+                             :direction :input
+                             :element-type '(unsigned-byte 8))
+              (loop for ,magic in (list ,@magics) do
+                (let ((,data-from-file (make-array (length ,magic))))
+                  (file-position ,stream :start)
+                  (read-sequence ,data-from-file ,stream)
+                  (when (,predicate-name ,data-from-file)
+                    (return-from ,file-test-name t))))
+              nil)))))))
 
 (gen-check-magic-number png +png-magic-number+)
 

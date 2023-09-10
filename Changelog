@@ -1,11 +1,40 @@
+2023-09-09 cage
+
+        * src/photo-image.lisp,
+        * src/text.lisp:
+
+        - adding support for JPEG image format even if tk-img is not
+        available;
+        - specialized 'insert-image' in text widget for 'pixmap' instances.
+
+2023-09-08 cage
+
+        * nodgui.asd,
+        * src/demo-tests.lisp,
+        * src/package.lisp,
+        * src/photo-image.lisp,
+        * src/pixmap.lisp,
+        * src/utils.lisp,
+        * src/wish-communication.lisp:
+
+        - changed dependency from cl-jpeg to jpeg-turbo.
+        - initialize reading loop after the mainloop, otherwise
+          'break-mainloop-p' fails.
+        - increased version number.
+        - removed debugging code.
+        - used libjpeg-turbo library to load jpeg files even if tk-img is
+          available.
+
 2023-09-05 cage
 
+        * Changelog,
         * nodgui.asd,
         * src/nodgui.lisp,
         * src/wish-communication.lisp:
 
         - fixed cooperation between events threads loop.
         - increased version number.
+        - updated changelog.
 
 2023-08-20 cage
 
