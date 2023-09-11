@@ -208,6 +208,7 @@
    #:sync-data-to-bits
    #:tga
    #:jpeg
+   #:png
    #:slurp-pixmap
    #:load-from-stream
    #:load-from-vector

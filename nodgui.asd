@@ -34,6 +34,8 @@
                :cl-colors2
                :named-readtables
                :jpeg-turbo
+               :pngload
+               :flexi-streams
                :bordeaux-threads
                #-asdf3 :uiop)
   :components ((:file "package")

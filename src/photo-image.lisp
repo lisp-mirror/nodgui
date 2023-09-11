@@ -117,10 +117,11 @@ GIF are supported but if tjimg is used more format are available!"
                res))))
     (cond
       ((or *tkimg-loaded-p*
-           (pngp object)
            (gifp object))
        (make-instance 'photo-image
                       :data (nodgui.base64:encode object)))
+      ((pngp object)
+       (make-image (load-from-vector (make-instance 'png) object)))
       ((jpgp object)
        (make-image (load-from-vector (make-instance 'jpeg) object)))
       (t
@@ -155,6 +156,9 @@ GIF are supported but if tjimg is used more format are available!"
          (make-image pixmap)))
       ((file-jpg-p object)
        (let ((pixmap (slurp-pixmap 'jpeg (file-namestring object))))
+         (make-image pixmap)))
+      ((file-png-p object)
+       (let ((pixmap (slurp-pixmap 'png (file-namestring object))))
          (make-image pixmap)))
       (t
        (let ((data (nodgui.utils:read-into-array stream (file-length stream))))

@@ -767,7 +767,7 @@ from file: 'file'"
   (when path
     (pixmap-load object path)))
 
-(defun fill-bits-jpeg (jpeg uncompressed-data image-w image-h)
+(defun fill-bits-pixmap (jpeg uncompressed-data image-w image-h)
   (with-accessors ((data   data)
                    (width  width)
                    (height height)) jpeg
@@ -793,7 +793,7 @@ from file: 'file'"
       (multiple-value-bind (image-w image-h)
           (jpeg-turbo:decompress-header jpeg-handle file)
         (let ((uncompressed-data (jpeg-turbo:decompress jpeg-handle file)))
-          (fill-bits-jpeg object uncompressed-data image-w image-h))))))
+          (fill-bits-pixmap object uncompressed-data image-w image-h))))))
 
 (defmethod load-from-stream ((object jpeg) (stream stream))
   (with-accessors ((data   data)
@@ -810,7 +810,39 @@ from file: 'file'"
       (multiple-value-bind (image-w image-h)
           (jpeg-turbo:decompress-header-from-octets jpeg-handle stream)
         (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle stream)))
-          (fill-bits-jpeg object uncompressed-data image-w image-h))))))
+          (fill-bits-pixmap object uncompressed-data image-w image-h))))))
+
+(defclass png (pixmap-file)
+  ()
+  (:documentation "A pixmap stored in PNG format"))
+
+(defmethod initialize-instance :after ((object tga) &key (path nil) &allow-other-keys)
+  (when path
+    (pixmap-load object path)))
+
+(defmethod pixmap-load ((object png) (file string))
+  (with-accessors ((data   data)
+                   (width  width)
+                   (height height)) object
+    (with-open-file (stream file :direction :input :element-type '(unsigned-byte 8))
+      (load-from-stream object stream))))
+
+(defmethod load-from-stream ((object png) (stream stream))
+  (with-accessors ((data   data)
+                   (width  width)
+                   (height height)) object
+    (let* ((png-decoded  (pngload:load-stream stream :flatten t))
+           (image-width  (pngload:width png-decoded))
+           (image-height (pngload:height png-decoded))
+           (data         (pngload:data png-decoded)))
+      (fill-bits-pixmap object data image-width image-height))))
+
+(defmethod load-from-vector ((object png) (data vector))
+  (with-accessors ((data   data)
+                   (width  width)
+                   (height height)) object
+    (flexi-streams:with-input-from-sequence (stream data)
+      (load-from-stream object stream))))
 
 (alexandria:define-constant +file-matrix-buff-size+    2048               :test '=)
 
