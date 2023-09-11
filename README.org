@@ -73,12 +73,18 @@ be fixed with the release of an upcoming Tcl/Tk version.
 
 ** Lisp libraries
 
- - alexandria;
- - cl-ppcre-unicode;
- - esrap
- - clunit2;
- - cl-colors2;
- - named-readtables.
+- alexandria;
+- bordeaux-threads;
+- cl-colors2;
+- cl-ppcre-unicode;
+- cl-unicode;
+- clunit2;
+- esrap;
+- flexi-streams;
+- jpeg-turbo;
+- named-readtables;
+- parse-number;
+- pngload.
 
 All of the above libraries are available on quicklisp.
 
