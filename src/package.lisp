@@ -1529,6 +1529,7 @@
            #:create-items
            #:make-canvas
            #:make-frame
+           #:*use-tk-for-decoding-png*
            #:make-image
            #:make-label
            #:make-menu

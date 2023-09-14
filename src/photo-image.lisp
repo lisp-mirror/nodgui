@@ -97,6 +97,10 @@ GIF are supported but if tjimg is used more format are available!"
       (make-instance 'photo-image
                      :data object)))
 
+(defparameter *use-tk-for-decoding-png* nil
+  "Set this variable to non null to force decoding the PNGs with TK and
+repscts the alpha channnel" )
+
 (defmethod make-image ((object vector) &optional (w nil) (h nil) (channels 3))
   (flet ((make-image-in-tcl ()
            (with-read-data (nil)
@@ -121,7 +125,10 @@ GIF are supported but if tjimg is used more format are available!"
        (make-instance 'photo-image
                       :data (nodgui.base64:encode object)))
       ((pngp object)
-       (make-image (load-from-vector (make-instance 'png) object)))
+       (if *use-tk-for-decoding-png*
+           (make-instance 'photo-image
+                          :data (nodgui.base64:encode object))
+           (make-image (load-from-vector (make-instance 'png) object))))
       ((jpgp object)
        (make-image (load-from-vector (make-instance 'jpeg) object)))
       (t
