@@ -767,10 +767,10 @@ from file: 'file'"
   (when path
     (pixmap-load object path)))
 
-(defun fill-bits-pixmap (jpeg uncompressed-data image-w image-h)
+(defun fill-bits-rgb (pixmap uncompressed-data image-w image-h)
   (with-accessors ((data   data)
                    (width  width)
-                   (height height)) jpeg
+                   (height height)) pixmap
     (let ((new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
           (loop
             for i from 0 below (length uncompressed-data) by 3
@@ -782,8 +782,8 @@ from file: 'file'"
           (setf data   new-data
                 width  image-w
                 height image-h)
-      (sync-data-to-bits jpeg)
-      jpeg)))
+      (sync-data-to-bits pixmap)
+      pixmap)))
 
 (defmethod pixmap-load ((object jpeg) (file string))
   (with-accessors ((data   data)
@@ -793,7 +793,7 @@ from file: 'file'"
       (multiple-value-bind (image-w image-h)
           (jpeg-turbo:decompress-header jpeg-handle file)
         (let ((uncompressed-data (jpeg-turbo:decompress jpeg-handle file)))
-          (fill-bits-pixmap object uncompressed-data image-w image-h))))))
+          (fill-bits-rgb object uncompressed-data image-w image-h))))))
 
 (defmethod load-from-stream ((object jpeg) (stream stream))
   (with-accessors ((data   data)
@@ -810,7 +810,7 @@ from file: 'file'"
       (multiple-value-bind (image-w image-h)
           (jpeg-turbo:decompress-header-from-octets jpeg-handle stream)
         (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle stream)))
-          (fill-bits-pixmap object uncompressed-data image-w image-h))))))
+          (fill-bits-jpeg object uncompressed-data image-w image-h))))))
 
 (defclass png (pixmap-file)
   ()
@@ -827,6 +827,25 @@ from file: 'file'"
     (with-open-file (stream file :direction :input :element-type '(unsigned-byte 8))
       (load-from-stream object stream))))
 
+(defun fill-bits-rgba (pixmap uncompressed-data image-w image-h)
+  (with-accessors ((data   data)
+                   (width  width)
+                   (height height)) pixmap
+    (let ((new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
+      (loop
+        for i from 0 below (length uncompressed-data) by 4
+        for j from 0 below (length new-data) by 1 do
+          (setf (elt new-data j)
+                (ubvec4 (elt uncompressed-data    i)
+                        (elt uncompressed-data (+ i 1))
+                        (elt uncompressed-data (+ i 2))
+                        (elt uncompressed-data (+ i 3)))))
+      (setf data   new-data
+            width  image-w
+            height image-h)
+      (sync-data-to-bits pixmap)
+      pixmap)))
+
 (defmethod load-from-stream ((object png) (stream stream))
   (with-accessors ((data   data)
                    (width  width)
@@ -835,7 +854,14 @@ from file: 'file'"
            (image-width  (pngload:width png-decoded))
            (image-height (pngload:height png-decoded))
            (data         (pngload:data png-decoded)))
-      (fill-bits-pixmap object data image-width image-height))))
+      (cond
+        ((eq (pngload:color-type png-decoded) :truecolour)
+         (fill-bits-rgb object data image-width image-height))
+        ((or (eq (pngload:color-type png-decoded) :truecolour-alpha)
+             (eq (pngload:color-type png-decoded) :indexed-colour))
+         (fill-bits-rgba object data image-width image-height))
+        (t
+         (error "Unsupported color space ~s" (pngload:color-type png-decoded)))))))
 
 (defmethod load-from-vector ((object png) (data vector))
   (flexi-streams:with-input-from-sequence (stream data)
