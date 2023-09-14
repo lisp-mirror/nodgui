@@ -810,7 +810,7 @@ from file: 'file'"
       (multiple-value-bind (image-w image-h)
           (jpeg-turbo:decompress-header-from-octets jpeg-handle stream)
         (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle stream)))
-          (fill-bits-jpeg object uncompressed-data image-w image-h))))))
+          (fill-bits-rgb object uncompressed-data image-w image-h))))))
 
 (defclass png (pixmap-file)
   ()
