@@ -838,11 +838,8 @@ from file: 'file'"
       (fill-bits-pixmap object data image-width image-height))))
 
 (defmethod load-from-vector ((object png) (data vector))
-  (with-accessors ((data   data)
-                   (width  width)
-                   (height height)) object
-    (flexi-streams:with-input-from-sequence (stream data)
-      (load-from-stream object stream))))
+  (flexi-streams:with-input-from-sequence (stream data)
+    (load-from-stream object stream)))
 
 (alexandria:define-constant +file-matrix-buff-size+    2048               :test '=)
 
