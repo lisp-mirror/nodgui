@@ -1,12 +1,35 @@
+2023-09-14 cage
+
+        * src/package.lisp,
+        * src/photo-image.lisp,
+        * src/pixmap.lisp:
+
+        - remove shadowing parameter 'data' in
+        'nodgui.pixmap:load-from-vector', specialized on PNG.
+        - supported a few different PNG color types.
+        - added *use-tk-for-decoding-png* (default to nil)
+        TK 8.6 only support alpha channel for PNG and GIF only if the bitmap
+        is passed as  base64 encoded data.  Setting the variable  to non nil
+        ensures that, otherwise the bitmap will  be decoded by lisp and then
+        passed to  wish, but the  alpha channel  information is lost  in the
+        process in this case.
+        - fixed function name.
+
 2023-09-11 cage
 
+        * Changelog,
+        * README.org,
         * nodgui.asd,
+        * src/demo-tests.lisp,
         * src/package.lisp,
         * src/photo-image.lisp,
         * src/pixmap.lisp:
 
         - added PNG file support even without tk-image loaded.
         - increased version number.
+        - updated demo-image to use just the bitmap formats supported by lisp;
+        - updated README;
+        - updated Changelog.
 
 2023-09-10 cage
 
