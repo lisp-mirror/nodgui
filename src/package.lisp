@@ -1579,6 +1579,8 @@
            #:resizable
            #:sash-coord
            #:sash-place
+           #:panes
+           #:paned-widget-p
            #:save-text
            #:scale
            #:screen-height

@@ -52,3 +52,14 @@
 
 (defmethod sash-place ((pw paned-window) index pos)
   (format-wish "~a sashpos {~a} {~a}" (widget-path pw) index pos))
+
+(defgeneric panes (object))
+
+(defmethod panes ((object paned-window))
+  (with-read-data ()
+    (format-wish "senddatastrings [~a panes]" (widget-path object))))
+
+(defgeneric paned-widget-p (object widget))
+
+(defmethod paned-widget-p ((object paned-window) (widget widget))
+  (member (widget-path widget) (panes object) :test #'string=))
