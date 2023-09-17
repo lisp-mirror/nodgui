@@ -1449,6 +1449,7 @@
            #:force-focus
            #:forget-pane
            #:format-wish
+           #:format-for-wish
            #:send-wish-line
            #:flush-wish
            #:*accept-garbage-as-event-p*
@@ -1615,6 +1616,7 @@
            #:send-lazy
            #:with-flush
            #:with-lazy
+           #:with-send-wish-atomic
            #:with-accept-garbage-as-event
            #:*with-read-data-no-lock*
            #:with-read-data
@@ -1656,7 +1658,7 @@
            #:window-transient
            #:make-nodgui-connection
            #:widget-class-name
-           #:with-atomic
+           #:with-send-batch
            #:graphical-condition-handler
            #:with-nodgui
            #:call-with-nodgui

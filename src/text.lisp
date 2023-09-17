@@ -511,7 +511,13 @@
                             (tag-matching-region nil))
   (with-read-data (nil)
     (let ((count-variable-name (create-name "rect")))
-      (format-wish (tclize `(,(format nil "global ~a; set ~a {};"
+      (with-send-wish-atomic (stream)
+        (format-for-wish stream
+                         "global ~a; set ~a {};"
+                         count-variable-name
+                         count-variable-name)
+        (format-for-wish stream
+                         (tclize `(,(format nil "global ~a; set ~a {};"
                                           count-variable-name count-variable-name)
                                  senddatastring [ ,(widget-path object) " "
                                         search
@@ -528,7 +534,7 @@
                                         {+ ,(parse-indices start-index) }
                                         {+ ,(parse-indices end-index) }
                                         ])
-                             :sanitize nil))
+                                 :sanitize nil)))
       (let ((indices (read-data)))
         (when (not (string-empty-p indices))
           (format-wish "global ~a; senddata $~a"

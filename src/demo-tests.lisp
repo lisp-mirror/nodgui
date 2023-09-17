@@ -599,7 +599,7 @@
 (defun demo-packtest2 (&key theme)
   (with-nodgui (:debug-tcl t
                 :theme theme)
-    (with-atomic
+    (with-send-batch
         (dotimes (i 10)
           (pack (make-instance 'button :text (format nil "Button Nr. ~a" i)))))))
 

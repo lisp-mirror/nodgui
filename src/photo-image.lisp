@@ -111,7 +111,7 @@ repscts the alpha channnel" )
                                                h
                                                channels
                                                :column-offset channels)))
-               (with-atomic
+               (with-send-batch
                    (format-wish (tclize `(senddatastring [ ,(sanitize (name res)) " "
                                                          put
                                                          ,data-bits
@@ -145,7 +145,7 @@ repscts the alpha channnel" )
                                         (height object)
                                         3
                                         :column-offset 4)))
-        (with-atomic
+        (with-send-batch
             (format-wish (tclize `(senddatastring [ ,(sanitize (name res)) " "
                                                   put
                                                   ,data-bits

@@ -162,10 +162,17 @@
     (format *trace-output* "~%")
     (finish-output *trace-output*)))
 
-(defmacro with-atomic (&rest body)
+(defmacro with-send-batch (&rest body)
   `(let ((*buffer-for-atomic-output* t))
      ,@body
      (flush-wish)))
+
+(defmacro with-send-wish-atomic ((stream) &body body)
+  (a:with-gensyms (results)
+    `(bt:with-lock-held ((wish-lock *wish*))
+       (let ((,results (with-output-to-string (,stream) ,@body)))
+         (push ,results (wish-output-buffer *wish*))
+         (flush-wish)))))
 
 (defmacro with-flush (&rest body)
   `(progn
@@ -304,7 +311,7 @@
       (flush-wish))))
 
 (defun send-wish-line (data)
-  "Send data  to wish  shell. data  are not processed  so thy  must be
+  "Send data  to wish  shell. data  are not processed  so they  must be
 coupled with a 'gets' from the TCL side, for example.
 
 Note also that this function  blocks the communication until wish read
@@ -368,9 +375,15 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
   (ignore-errors (close stream))
   (exit-wish))
 
+(defun format-for-wish (stream control &rest args)
+  "sanitize and format  `args' using 'control as control  string for wish
+process"
+  (apply #'format stream control (mapcar #'sanitize args)))
+
 (defun format-wish (control &rest args)
-  "format 'args using 'control as control string to wish"
-  (send-wish (apply #'format nil control (mapcar #'sanitize args))))
+  "sanitize and format  `args' using 'control as control  string and send
+to wish process"
+  (send-wish (apply #'format-for-wish nil control args)))
 
 ;; differences:
 ;; cmucl/sbcl READ expressions only if there is one more character in the stream, if
@@ -581,7 +594,7 @@ error-strings) are ignored."
 ;;   (let (event)
 ;;     (loop
 ;;      while (setf event (read-event))
-;;      do (with-atomic (process-one-event event)))))
+;;      do (with-send-batch (process-one-event event)))))
 
 (defparameter *inside-mainloop* ())
 
