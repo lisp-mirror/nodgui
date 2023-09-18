@@ -1,5 +1,22 @@
 * News
 
+** 2023-09-18 Version 0.4.9.3
+   - fixed 'search-regexp';
+   - added functions 'panes' and 'paned-widget-p';
+   - supported PNG and JPG bitmap file formats without using a TCl/TK library;
+   - added 'calculate-milliseconds-elapsed' and 'glob';
+   - fixed reader macro so that the library works with ECL;
+   - added timestamp slot to event struct;
+   - added 'image-scale' for photo-image;
+   - fixed wrong 'type' slot specification that prevented the library to compile on SBCL;
+   - changed macro 'with-busy' to return the value of the last form of 'body' argument;
+   - fixed various bugs in 'autocomplete-entry'
+   - bundled a theme (yaru)
+
+   Please see the changelog file for details.
+
+   Thanks to all the people that helped me with this release!
+
 ** 2023-05-17 Version 0.4.2
    - removed function that does not works with ttk::paned-window.
    - improved 'lambda-debounce'.

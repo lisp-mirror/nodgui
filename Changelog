@@ -1,19 +1,46 @@
+2023-09-17 cage
+
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/text.lisp,
+	* src/wish-communication.lisp:
+
+	- renamed macro 'with-atomic' to 'with-send-batch';
+	- added macro 'with-send-wish-atomic' and function 'format-for-wish'.
+
+2023-09-16 cage
+
+	* src/text.lisp:
+
+	- sent commands to  search for regular expression in a  single call of
+	'format-wish'.
+
+2023-09-15 cage
+
+	* Changelog,
+	* src/package.lisp,
+	* src/panedwindow.lisp:
+
+	- updated changelog.
+	- added functions 'panes' and 'paned-widget-p'.
+
 2023-09-14 cage
 
-        * src/package.lisp,
-        * src/photo-image.lisp,
-        * src/pixmap.lisp:
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/pixmap.lisp:
 
-        - remove shadowing parameter 'data' in
-        'nodgui.pixmap:load-from-vector', specialized on PNG.
-        - supported a few different PNG color types.
-        - added *use-tk-for-decoding-png* (default to nil)
-        TK 8.6 only support alpha channel for PNG and GIF only if the bitmap
-        is passed as  base64 encoded data.  Setting the variable  to non nil
-        ensures that, otherwise the bitmap will  be decoded by lisp and then
-        passed to  wish, but the  alpha channel  information is lost  in the
-        process in this case.
-        - fixed function name.
+	- remove shadowing parameter 'data' in
+	'nodgui.pixmap:load-from-vector', specialized on PNG.
+	- supported a few different PNG color types.
+	- added *use-tk-for-decoding-png* (default to nil)
+	TK 8.6 only support alpha channel for PNG and GIF only if the bitmap
+	is passed as  base64 encoded data.  Setting the variable  to non nil
+	ensures that, otherwise the bitmap will  be decoded by lisp and then
+	passed to  wish, but the  alpha channel  information is lost  in the
+	process in this case.
+	- fixed function name.
 
 2023-09-11 cage
 
