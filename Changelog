@@ -204,7 +204,7 @@
         * nodgui.asd,
         * src/styles.lisp:
 
-        - fixed wrong 'type'slot specification.
+        - fixed wrong 'type' slot specification.
         Thanks to the person that reported this issue!
         https://codeberg.org/cage/nodgui/issues/1
         - increased version number;

@@ -164,6 +164,10 @@
                                                      :text "(mw) multifont listbox"
                                                      :command (lambda ()
                                                                 (demo-multifont-listbox))))
+           (demo-paned-window         (make-instance 'button
+                                                     :text "Paned windows"
+                                                     :command (lambda ()
+                                                                (demo-paned-window))))
            (b-quit                   (make-instance  'button
                                                      :text    "quit lisp :)"
                                                      :command (lambda ()
@@ -206,6 +210,7 @@
       (grid demo-style               11 2 :sticky :nswe)
       (grid demo-autocomplete-entry  12 0 :sticky :nswe)
       (grid demo-multifont-listbox   12 1 :sticky :nswe)
+      (grid demo-paned-window        12 2 :sticky :nswe)
       (grid b-quit                   13 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
@@ -1476,5 +1481,23 @@
       (add-pane paned-frame text-left)
       (add-pane paned-frame listbox)
       (grid paned-frame 0 0 :sticky :news)
-      (append-line text-left "a text widget")
-      (listbox-append listbox '("a listbox")))))
+      (append-line text-left "drag me! ———————⮞")
+      (let ((tag (tag-create text-left
+                             (create-tag-name)
+                             (make-indices-start)
+                             (make-indices-end))))
+        (tag-configure text-left tag :justify :right))
+      (listbox-append listbox '("a listbox"))
+      (listbox-append listbox '("click me"))
+      (bind listbox
+            #$<<ListboxSelect>>$
+            (lambda (e)
+              (declare (ignore e))
+              (message-box (format nil
+                                   "the paned window contains ~a panes: ~s"
+                                   (length (panes paned-frame))
+                                   (panes paned-frame))
+                           "info"
+                           :ok
+                           "info"
+                           :parent (root-toplevel)))))))
