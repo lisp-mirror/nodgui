@@ -909,6 +909,11 @@
           (declare (ignore e))
           (scroll-text-read-only-go-end-text text-widget))
         :exclusive t)
+  (bind (inner-text text-widget) #$<<PasteSelection>>$
+        (lambda (e)
+          (declare (ignore e))  t)
+        :exclusive t
+        :append nil)
   (bind (inner-text text-widget) #$<KeyPress>$
         (lambda (e)
           (declare (ignore e)) t)
