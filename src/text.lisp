@@ -153,7 +153,9 @@
                                     over-callback
                                     leave-callback
                                     cursor-over
-                                    cursor-outside))
+                                    cursor-outside
+                                    other-bindings))
+
 (defgeneric make-link-button (object
                               from
                               to
@@ -168,7 +170,8 @@
                                 over-callback
                                 leave-callback
                                 cursor-over
-                                cursor-outside))
+                                cursor-outside
+                                other-bindings))
 
 (defgeneric move-cursor-to (object index))
 
@@ -697,12 +700,14 @@
                                    (cursor-over :hand2)
                                    (over-callback nil)
                                    (leave-callback nil)
-                                   (cursor-outside (cget object :cursor)))
-
+                                   (cursor-outside (cget object :cursor))
+                                   other-bindings)
   (let ((actual-cursor-outside (or (find-cursor cursor-outside)
                                    +standard-cursor+))
         (actual-cursor-over    (or (find-cursor cursor-over)
                                    +standard-cursor+)))
+    (loop for (event . callback) in other-bindings do
+      (tag-bind object tag-name event callback))
     (tag-bind object
               tag-name
               #$<ButtonPress-1>$
@@ -753,7 +758,8 @@
                                leave-callback
                                over-callback
                                (cursor-over :hand2)
-                               (cursor-outside (cget object :cursor)))
+                               (cursor-outside (cget object :cursor))
+                               other-bindings)
   (let ((tag-link (tag-create object (create-name tag-prefix) from to)))
     (tag-configure object tag-link :font font :foreground foreground :background background)
     (make-text-tag-button object
@@ -764,7 +770,8 @@
                           :over-callback     over-callback
                           :leave-callback    leave-callback
                           :cursor-over       cursor-over
-                          :cursor-outside    cursor-outside)
+                          :cursor-outside    cursor-outside
+                          :other-bindings    other-bindings)
     tag-link))
 
 (defmethod text ((text text))
@@ -1159,7 +1166,8 @@
                                    (over-callback nil)
                                    (leave-callback nil)
                                    (cursor-over :hand2)
-                                   (cursor-outside (cget object :cursor)))
+                                   (cursor-outside (cget object :cursor))
+                                   other-bindings)
   (with-inner-text (text-widget object)
     (make-text-tag-button text-widget
                           tag-name
@@ -1169,7 +1177,8 @@
                           :over-callback     over-callback
                           :leave-callback    leave-callback
                           :cursor-over       cursor-over
-                          :cursor-outside    cursor-outside)))
+                          :cursor-outside    cursor-outside
+                          :other-bindings    other-bindings)))
 
 (defmethod make-link-button ((object scrolled-text)
                              from
@@ -1185,7 +1194,8 @@
                                over-callback
                                leave-callback
                                (cursor-over :hand2)
-                               (cursor-outside (cget object :cursor)))
+                               (cursor-outside (cget object :cursor))
+                               other-bindings)
   (with-inner-text (text-widget object)
     (make-link-button text-widget
                       from
@@ -1200,7 +1210,8 @@
                       :cursor-over       cursor-over
                       :cursor-outside    cursor-outside
                       :over-callback     over-callback
-                      :leave-callback    leave-callback)))
+                      :leave-callback    leave-callback
+                      :other-bindings    other-bindings)))
 
 (defmethod highlight-text ((object scrolled-text) start-index
                            &key
