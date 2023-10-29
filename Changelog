@@ -1,3 +1,21 @@
+2023-10-29 cage
+
+	* src/text.lisp:
+
+	- added parameter 'other-bindings' in functions that create tag
+	buttons for text widgets.
+	- prevented pasting of text in read only text widget.
+
+2023-09-18 cage
+
+	* Changelog,
+	* NEWS.org,
+	* src/demo-tests.lisp:
+
+	- updated changelog and NEWS files.
+	- added demo for paned window;
+	- fixed changelog.
+
 2023-09-17 cage
 
 	* src/demo-tests.lisp,
