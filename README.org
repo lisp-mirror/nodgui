@@ -11,7 +11,7 @@
 ** important note:
 
    Version ~0.4.0~ broke the user API, see
-   [[https://www.autistici.org/interzona/nodgui.html#orgb470f4b][here]] for more information about how your code is affected and how to fix it.
+   [[https://www.autistici.org/interzona/nodgui.html#orgb574adf][here]] for more information about how your code is affected and how to fix it.
 
 ** Features
 
