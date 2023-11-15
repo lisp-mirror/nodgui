@@ -88,6 +88,11 @@ be fixed with the release of an upcoming Tcl/Tk version.
 
 All of the above libraries are available on quicklisp.
 
+** C Libraries
+
+- libjpeg-turbo
+  https://www.libjpeg-turbo.org/
+
 ** TCL/TK libraries (optional)
 
 - TKlib
