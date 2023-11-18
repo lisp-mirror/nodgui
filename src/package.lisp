@@ -1601,6 +1601,8 @@
            #:rooty
            #:window-width
            #:window-height
+           #:window-class
+           #:window-id
            #:children-pathname
            #:scrollbar
            #:scrolled-canvas

@@ -125,3 +125,13 @@
       (if (string= h "")
           nil
           (parse-integer h)))))
+
+(defun window-class (widget)
+  (with-read-data ()
+    (format-wish (tclize `(senddatastring [winfo class ,(widget-path widget) ])))))
+
+(defun window-id (widget)
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [winfo id ,(widget-path widget) ])))
+    (let ((id (read-data)))
+      (parse-integer id :radix 16 :start 2))))
