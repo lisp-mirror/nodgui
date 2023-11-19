@@ -1,3 +1,115 @@
+2023-11-19 cage
+
+	* themes/forest-light/LICENSE.org,
+	* themes/forest-light/forest-light.tcl,
+	* themes/forest-light/forest-light/border-accent-hover.png,
+	* themes/forest-light/forest-light/border-accent.png,
+	* themes/forest-light/forest-light/border-basic.png,
+	* themes/forest-light/forest-light/border-hover.png,
+	* themes/forest-light/forest-light/border-invalid.png,
+	* themes/forest-light/forest-light/card.png,
+	* themes/forest-light/forest-light/check-accent.png,
+	* themes/forest-light/forest-light/check-basic.png,
+	* themes/forest-light/forest-light/check-hover.png,
+	* themes/forest-light/forest-light/check-tri-accent.png,
+	* themes/forest-light/forest-light/check-tri-basic.png,
+	* themes/forest-light/forest-light/check-tri-hover.png,
+	* themes/forest-light/forest-light/check-unsel-accent.png,
+	* themes/forest-light/forest-light/check-unsel-basic.png,
+	* themes/forest-light/forest-light/check-unsel-hover.png,
+	* themes/forest-light/forest-light/check-unsel-pressed.png,
+	* themes/forest-light/forest-light/combo-button-basic.png,
+	* themes/forest-light/forest-light/combo-button-focus.png,
+	* themes/forest-light/forest-light/combo-button-hover.png,
+	* themes/forest-light/forest-light/down-focus.png,
+	* themes/forest-light/forest-light/down.png,
+	* themes/forest-light/forest-light/empty.png,
+	* themes/forest-light/forest-light/hor-accent.png,
+	* themes/forest-light/forest-light/hor-basic.png,
+	* themes/forest-light/forest-light/hor-hover.png,
+	* themes/forest-light/forest-light/notebook.png,
+	* themes/forest-light/forest-light/off-accent.png,
+	* themes/forest-light/forest-light/off-basic.png,
+	* themes/forest-light/forest-light/off-hover.png,
+	* themes/forest-light/forest-light/on-accent.png,
+	* themes/forest-light/forest-light/on-basic.png,
+	* themes/forest-light/forest-light/on-hover.png,
+	* themes/forest-light/forest-light/radio-accent.png,
+	* themes/forest-light/forest-light/radio-basic.png,
+	* themes/forest-light/forest-light/radio-hover.png,
+	* themes/forest-light/forest-light/radio-tri-accent.png,
+	* themes/forest-light/forest-light/radio-tri-basic.png,
+	* themes/forest-light/forest-light/radio-tri-hover.png,
+	* themes/forest-light/forest-light/radio-unsel-accent.png,
+	* themes/forest-light/forest-light/radio-unsel-basic.png,
+	* themes/forest-light/forest-light/radio-unsel-hover.png,
+	* themes/forest-light/forest-light/radio-unsel-pressed.png,
+	* themes/forest-light/forest-light/rect-accent-hover.png,
+	* themes/forest-light/forest-light/rect-accent.png,
+	* themes/forest-light/forest-light/rect-basic.png,
+	* themes/forest-light/forest-light/rect-hover.png,
+	* themes/forest-light/forest-light/right-focus.png,
+	* themes/forest-light/forest-light/right.png,
+	* themes/forest-light/forest-light/scale-hor.png,
+	* themes/forest-light/forest-light/scale-vert.png,
+	* themes/forest-light/forest-light/separator.png,
+	* themes/forest-light/forest-light/sizegrip.png,
+	* themes/forest-light/forest-light/spin-button-down-basic.png,
+	* themes/forest-light/forest-light/spin-button-down-focus.png,
+	* themes/forest-light/forest-light/spin-button-up.png,
+	* themes/forest-light/forest-light/tab-accent.png,
+	* themes/forest-light/forest-light/tab-basic.png,
+	* themes/forest-light/forest-light/tab-hover.png,
+	* themes/forest-light/forest-light/thumb-hor-accent.png,
+	* themes/forest-light/forest-light/thumb-hor-basic.png,
+	* themes/forest-light/forest-light/thumb-hor-hover.png,
+	* themes/forest-light/forest-light/thumb-vert-accent.png,
+	* themes/forest-light/forest-light/thumb-vert-basic.png,
+	* themes/forest-light/forest-light/thumb-vert-hover.png,
+	* themes/forest-light/forest-light/tree-basic.png,
+	* themes/forest-light/forest-light/tree-pressed.png,
+	* themes/forest-light/forest-light/up.png,
+	* themes/forest-light/forest-light/vert-accent.png,
+	* themes/forest-light/forest-light/vert-basic.png,
+	* themes/forest-light/forest-light/vert-hover.png:
+
+	- added theme 'forest light'.
+
+2023-11-18 cage
+
+	* nodgui.asd,
+	* src/package.lisp,
+	* src/winfo.lisp:
+
+	- added 'window-class' and 'window-id'.
+	- increased version number.
+
+2023-11-15 cage
+
+	* README.org,
+	* nodgui.asd:
+
+	- increased version number;
+	- updated documentation.
+
+2023-11-04 cage
+
+	* README.org:
+
+	- fixed URL to documentation related to new API.
+
+2023-10-29 cage
+
+	* Changelog,
+	* nodgui.asd,
+	* src/text.lisp:
+
+	- added parameter 'other-bindings' in functions that create tag
+	buttons for text widgets.
+	- prevented pasting of text in read only text widget.
+	- increased version number;
+	- updated changelog.
+
 2023-10-29 cage
 
 	* src/text.lisp:

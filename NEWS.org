@@ -1,5 +1,12 @@
 * News
 
+** 2023-11-19 Version 0.4.9.6
+   - added parameter 'other-bindings' in functions that create tag
+     buttons for text widgets;
+   - prevented pasting of text in read only text widget;
+   - added 'window-class' and 'window-id';
+   - added theme 'forest light'.
+
 ** 2023-09-18 Version 0.4.9.3
    - fixed 'search-regexp';
    - added functions 'panes' and 'paned-widget-p';
