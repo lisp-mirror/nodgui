@@ -1455,6 +1455,7 @@
            #:*accept-garbage-as-event-p*
            #:read-data
            #:frame
+           #:classic-frame
            #:geometry
            #:get-open-file
            #:get-save-file
