@@ -1,3 +1,17 @@
+2023-11-25 cage
+
+        * nodgui.asd,
+        * src/pixmap.lisp:
+
+        - increased version number;
+        - added code to save JPG files.
+
+2023-11-20 cage
+
+        * src/package.lisp:
+
+        - exported 'classic-frame'.
+
 2023-11-19 cage
 
 	* themes/forest-light/LICENSE.org,
