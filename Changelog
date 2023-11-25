@@ -1,10 +1,21 @@
-2023-11-25 cage
+2023-11-25 cage <cage@invalid>
 
+        * Changelog,
+        * NEWS.org,
         * nodgui.asd,
+        * src/package.lisp,
         * src/pixmap.lisp:
 
         - increased version number;
         - added code to save JPG files.
+        - updated changelog.
+        - updated news file.
+        exporting 'save-pixmap'.
+        - fixed saving of JPG.
+        - change  class of  return type  of methods  that transform  pixmap to
+        match the arguments passed to function
+        for example 'scale-nearest' would returns an istance of 'pixmap' even
+        if a 'jpeg' was passed; now it returns a 'jpeg' instance.
 
 2023-11-20 cage
 
