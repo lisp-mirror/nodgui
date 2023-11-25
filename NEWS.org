@@ -1,5 +1,9 @@
 * News
 
+** 2023-11-25 Version 0.5.0.0
+
+   This version adds a couple of functions to save pixmaps in JPG format.
+
 ** 2023-11-19 Version 0.4.9.6
    - added parameter 'other-bindings' in functions that create tag
      buttons for text widgets;
