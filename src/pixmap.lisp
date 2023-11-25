@@ -228,6 +228,7 @@ range (0-1.0]), scaling use bilinear filtering"
               (inter-x2 (interpolate wx b c))
               (inter-y  (interpolate wy inter-x1 inter-x2)))
          (setf (pixel@ res x y) (round-all inter-y))))
+    (change-class res (class-of object))
     res))
 
 (defmethod scale-nearest ((object pixmap) scale-x scale-y)
@@ -245,6 +246,7 @@ range (0-1.0]), scaling use nearest-neighbor."
               (floor-y   (floor fy))
               (a         (pixel@ object floor-x floor-y)))
          (setf (pixel@ res x y) a)))
+    (change-class res (class-of object))
     res))
 
 (defmethod rotate-pixmap-180-degree ((object pixmap) fill-value pivot)
@@ -262,6 +264,7 @@ range (0-1.0]), scaling use nearest-neighbor."
              (rev-y  (floor (elt rev 1))))
         (with-check-matrix-borders (res rev-x rev-y)
           (setf (pixel@ res rev-x rev-y) (pixel@ object x y)))))
+    (change-class res (class-of object))
     res))
 
 (defmethod rotate-pixmap-90-degree-ccw ((object pixmap) fill-value pivot)
@@ -278,7 +281,8 @@ range (0-1.0]), scaling use nearest-neighbor."
               (rev-y  (floor (+ (elt vpivot 1)    (elt rev 0)))))
          (with-check-matrix-borders (res rev-x rev-y)
            (setf (pixel@ res x y) (pixel@ object rev-x rev-y)))))
-      res))
+    (change-class res (class-of object))
+    res))
 
 (defmethod rotate-pixmap-90-degree-cw ((object pixmap) fill-value pivot)
   "Rotate a pixmap 90° clockwise"
@@ -294,7 +298,8 @@ range (0-1.0]), scaling use nearest-neighbor."
               (rev-y  (floor (+ (elt vpivot 1) -1 (elt rev 0)))))
          (with-check-matrix-borders (res rev-x rev-y)
            (setf (pixel@ res x y) (pixel@ object rev-x rev-y)))))
-      res))
+    (change-class res (class-of object))
+    res))
 
 (defun repeat-periodic-coord (val max)
   (let ((fract  (- (abs val)
@@ -383,7 +388,8 @@ range (0-1.0]), scaling use nearest-neighbor."
                        (if rounding-fn
                            (round-all px :rounding-function rounding-fn)
                            px)))))))
-         res))))
+       (change-class res (class-of object))
+       res))))
 
 (defmethod rotate-pixmap-w-repeat ((object pixmap) angle
                                    &key (fill-value 0)
@@ -408,6 +414,7 @@ range (0-1.0]), scaling use nearest-neighbor."
                  (if rounding-fn
                      (round-all px :rounding-function rounding-fn)
                      px)))))
+    (change-class res (class-of object))
     res))
 
 
