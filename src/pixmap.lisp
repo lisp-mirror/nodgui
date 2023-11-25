@@ -835,7 +835,12 @@ from file: 'file'"
                    (width  width)
                    (height height)) object
     (jpeg-turbo:with-compressor (jpeg-handle)
-      (jpeg-turbo:compress-to-octets  jpeg-handle bits width height :rgba))
+      (let ((jpg-as-vector (jpeg-turbo:compress-to-octets jpeg-handle
+                                                          bits
+                                                          width
+                                                          height
+                                                          :rgba)))
+        (write-sequence jpg-as-vector path)))
     object))
 
 (defclass png (pixmap-file)
