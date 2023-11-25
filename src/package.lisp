@@ -212,6 +212,7 @@
    #:slurp-pixmap
    #:load-from-stream
    #:load-from-vector
+   #:save-pixmap
    #:pixmap->tga-file
    #:file-tga-p
    #:h-mirror
