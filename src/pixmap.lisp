@@ -29,7 +29,7 @@
 (define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
 
 (defun make-bits-array (size)
-  (make-fresh-array size 0 '(unsigned-byte 8) nil))
+  (make-fresh-array size 0 '(unsigned-byte 8) t))
 
 (defclass pixmap ()
   ((data
@@ -454,6 +454,14 @@ range (0-1.0]), scaling use nearest-neighbor."
     (write-sequence (pixmap->tga-file object) stream))
   object)
 
+(defmethod save-pixmap ((object pixmap) (path stream))
+  "Save bitmap in TARGA bitmap format"
+  (with-accessors ((bits bits)
+                   (width  width)
+                   (height height)) object
+    (write-sequence (pixmap->tga-file object) path)
+    object))
+
 (defmethod pixel@ ((object pixmap) x y)
   "Get the color of pixel at specified coordinate from 'data' slot"
   (declare (pixmap object))
@@ -811,6 +819,24 @@ from file: 'file'"
           (jpeg-turbo:decompress-header-from-octets jpeg-handle stream)
         (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle stream)))
           (fill-bits-rgb object uncompressed-data image-w image-h))))))
+
+(defmethod save-pixmap ((object jpeg) path)
+  "Save bitmap in JPG bitmap format"
+  (with-accessors ((bits bits)
+                   (width  width)
+                   (height height)) object
+    (jpeg-turbo:with-compressor (jpeg-handle)
+      (jpeg-turbo:compress jpeg-handle path bits width height :rgba))
+    object))
+
+(defmethod save-pixmap ((object jpeg) (path stream))
+  "Save bitmap in JPG bitmap format"
+  (with-accessors ((bits bits)
+                   (width  width)
+                   (height height)) object
+    (jpeg-turbo:with-compressor (jpeg-handle)
+      (jpeg-turbo:compress-to-octets  jpeg-handle bits width height :rgba))
+    object))
 
 (defclass png (pixmap-file)
   ()
