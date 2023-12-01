@@ -122,6 +122,18 @@
     #:push-unblock
     #:emptyp))
 
+(defpackage :nodgui.non-blocking-queue
+  (:use :cl)
+  (:local-nicknames (:a :alexandria))
+  (:shadow :push :pop)
+  (:export
+   #:*container-extend-size*
+   #:queue
+   #:pop
+   #:push
+   #:emptyp
+   #:make-queue))
+
 (defpackage :nodgui.base64
   (:use :cl
         :alexandria

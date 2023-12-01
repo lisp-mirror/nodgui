@@ -18,6 +18,14 @@
    :all-suite
    :run-all-tests))
 
+(defpackage :test-non-blocking-queue
+  (:use :cl
+        :clunit
+        :all-tests
+        :nodgui.non-blocking-queue)
+  (:shadowing-import-from :nodgui.non-blocking-queue :pop :push)
+  (:export :non-blocking-queue-suite))
+
 (defpackage :test-event-parser
   (:use :cl
         :alexandria

@@ -43,6 +43,7 @@
                (:file "constants")
                (:file "utils")
                (:file "synchronized-queue")
+               (:file "non-blocking-queue")
                (:file "base64")
                (:file "ubvec4")
                (:file "vec2")
@@ -108,6 +109,7 @@
                (:module tests
                         :components ((:file "package")
                                      (:file "all-tests")
+                                     (:file "non-blocking-queue")
                                      (:file "test-tcl-emitter")
                                      (:file "test-event-parser")
                                      (:file "test-styles")
