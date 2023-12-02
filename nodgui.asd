@@ -109,7 +109,7 @@
                (:module tests
                         :components ((:file "package")
                                      (:file "all-tests")
-                                     (:file "non-blocking-queue")
+                                     (:file "test-non-blocking-queue")
                                      (:file "test-tcl-emitter")
                                      (:file "test-event-parser")
                                      (:file "test-styles")

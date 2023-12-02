@@ -132,6 +132,12 @@
    #:pop
    #:push
    #:emptyp
+   #:queue-data
+   #:queue-next
+   #:queue-previous
+   #:queue-last
+   #:queue-first
+   #:queue-lock
    #:make-queue))
 
 (defpackage :nodgui.base64
