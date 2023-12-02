@@ -111,10 +111,20 @@
            #:up-arrow
            #:down-arrow
            #:big-dot
-           #:bullet))
+           #:bullet
+           #:*thread-default-special-bindings*
+           #:make-thread
+           #:make-lock
+           #:with-lock-held
+           #:make-condition-variable
+           #:condition-wait
+           #:condition-notify
+           #:join-thread
+           #:destroy-thread))
 
 (defpackage :syncronized-queue
-  (:use :cl)
+  (:use :cl
+        :nodgui.utils)
   (:local-nicknames (:a :alexandria))
   (:export
     #:synchronized-queue
@@ -123,7 +133,8 @@
     #:emptyp))
 
 (defpackage :nodgui.non-blocking-queue
-  (:use :cl)
+  (:use :cl
+        :nodgui.utils)
   (:local-nicknames (:a :alexandria))
   (:shadow :push :pop)
   (:export
@@ -1622,7 +1633,6 @@
            #:window-width
            #:window-height
            #:window-class
-           #:window-id
            #:children-pathname
            #:scrollbar
            #:scrolled-canvas

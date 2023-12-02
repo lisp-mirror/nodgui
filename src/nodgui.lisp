@@ -85,11 +85,11 @@ can be passed to AFTER-CANCEL"
 
 ;; tool functions used by the objects
 
-(defparameter *generate-name-lock* (bt:make-lock))
+(defparameter *generate-name-lock* (make-lock))
 
 (defun get-counter()
   "incremental counter to create unique numbers"
-  (bt:with-lock-held (*generate-name-lock*)
+  (with-lock-held (*generate-name-lock*)
     (incf (wish-counter *wish*))))
 
 (defun create-name (&optional (prefix nil))
@@ -803,7 +803,7 @@ The function THEME-NAMES will return both the default and the custom themes.")
   (send-wish ". configure -menu .menubar"))
 
 (defstruct modal-toplevel
-  (lock    (bt:make-lock))
+  (lock    (make-lock))
   (close-condition nil)
   (root-widget nil)
   (results     nil)
@@ -815,7 +815,7 @@ The function THEME-NAMES will return both the default and the custom themes.")
 (defgeneric exit-from-modal-toplevel (object))
 
 (defmethod exit-from-modal-toplevel ((object modal-toplevel))
-  (bt:with-lock-held ((modal-toplevel-lock object))
+  (with-lock-held ((modal-toplevel-lock object))
     (grab-release (modal-toplevel-root-widget object))
     (withdraw (modal-toplevel-root-widget object))
     (flush-wish)
@@ -828,7 +828,7 @@ The function THEME-NAMES will return both the default and the custom themes.")
             (,toplevel-struct (make-modal-toplevel :parent-mainloop-coordination-data
                                                    (wish-main-loop-coordination-data ,wish-process)))
             (,parent-mainloop-coordination-data (modal-toplevel-parent-mainloop-coordination-data ,toplevel-struct))
-            (,modal-widget-thread (bt:make-thread
+            (,modal-widget-thread (make-thread
                                    (lambda ()
                                      (let* ((*wish*    ,wish-process)
                                             (,toplevel (make-instance 'toplevel
@@ -840,7 +840,7 @@ The function THEME-NAMES will return both the default and the custom themes.")
                                                  (lambda ()
                                                    (exit-from-modal-toplevel ,toplevel-struct)))
                                        (grab ,toplevel)
-                                       (bt:with-lock-held ((mainloop-coordination-pause-lock ,parent-mainloop-coordination-data))
+                                       (with-lock-held ((mainloop-coordination-pause-lock ,parent-mainloop-coordination-data))
                                          (setf (mainloop-coordination-pause ,parent-mainloop-coordination-data) t))
                                        (push-mainloop-thread)
                                        (start-main-loop :thread-special-bindings
@@ -849,19 +849,19 @@ The function THEME-NAMES will return both the default and the custom themes.")
                                        (setf (modal-toplevel-results ,toplevel-struct)
                                              (progn ,@body))
                                        (flush-wish)
-                                       (bt:join-thread (wish-main-loop-thread *wish*))
+                                       (join-thread (wish-main-loop-thread *wish*))
                                        (pop-mainloop-coordination-data)
                                        (pop-mainloop-thread)
-                                       (bt:with-lock-held ((mainloop-coordination-pause-lock ,parent-mainloop-coordination-data))
+                                       (with-lock-held ((mainloop-coordination-pause-lock ,parent-mainloop-coordination-data))
                                          (setf (mainloop-coordination-pause ,parent-mainloop-coordination-data) nil)
-                                         (bt:condition-notify (mainloop-coordination-pause-condvar ,parent-mainloop-coordination-data)))
+                                         (condition-notify (mainloop-coordination-pause-condvar ,parent-mainloop-coordination-data)))
                                        (modal-toplevel-results ,toplevel-struct)))
                                    :initial-bindings
                                    ,(or (getf toplevel-initargs
                                               :modal-toplevel-thread-special-bindings)
                                         (getf toplevel-initargs
                                               :main-loop-thread-special-bindings)))))
-       (bt:join-thread ,modal-widget-thread)
+       (join-thread ,modal-widget-thread)
        (modal-toplevel-results ,toplevel-struct))))
 
 (defun exit-from-toplevel (toplevel)

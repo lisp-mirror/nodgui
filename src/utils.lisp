@@ -522,3 +522,36 @@
 
 (defun bullet ()
   (string (try-unicode "BULLET" "*")))
+
+(defparameter *thread-default-special-bindings* bt:*default-special-bindings*)
+
+(defmacro definline (name arg &rest body)
+  (let* ((function-name (alexandria:format-symbol t "~:@(~a~)" name)))
+    `(progn
+       (declaim (inline ,function-name))
+       (defun ,function-name (,@arg) ,@body))))
+
+(definline make-thread (function &key (name nil) (initial-bindings *thread-default-special-bindings*))
+  (bt:make-thread function :name name :initial-bindings initial-bindings))
+
+(definline make-lock (&optional name)
+  (bt:make-lock name))
+
+(defmacro with-lock-held ((lock) &body body)
+  `(bt:with-lock-held (,lock)
+     ,@body))
+
+(definline make-condition-variable (&key (name nil))
+  (bt:make-condition-variable :name name))
+
+(definline condition-wait (condition-variable lock &key (timeout nil))
+  (bt:condition-wait condition-variable lock :timeout timeout))
+
+(definline condition-notify (condition-variable)
+  (bt:condition-notify condition-variable))
+
+(definline join-thread (thread)
+  (bt:join-thread thread))
+
+(definline destroy-thread (thread)
+  (bt:destroy-thread thread))

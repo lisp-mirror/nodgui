@@ -1229,13 +1229,13 @@
            (button           (make-instance 'button :text "start"))
            (wish-subprocess  *wish*))
       (flet ((start-write-thread (name)
-               (bt:make-thread (lambda ()
+               (make-thread (lambda ()
                                  (let ((*wish* wish-subprocess))
                                    (loop repeat 20 do
                                      (append-line text-area name))))
                                :name "read thread"))
              (start-read-thread ()
-               (bt:make-thread (lambda ()
+               (make-thread (lambda ()
                                  (let ((*wish* wish-subprocess))
                                    (loop for i from 0 below 100 do
                                      (format t
@@ -1257,14 +1257,14 @@
                                              (start-write-thread (format nil "thread-~a " i))))
                       (more-read-threads (loop repeat 2000
                                                collect
-                                               (bt:make-thread
+                                               (make-thread
                                                 (lambda ()
                                                   (let ((*wish* wish-subprocess))
                                                     (maximum-lines-number text-area)))))))
-                  (loop for i in more-read-threads do (bt:join-thread i))
-                  (loop for i in write-threads do (bt:join-thread i))
+                  (loop for i in more-read-threads do (join-thread i))
+                  (loop for i in write-threads do (join-thread i))
                   (format t "end write threads~%")
-                  (bt:join-thread read-thread)
+                  (join-thread read-thread)
                   (format t "end read thread~%"))))))))
 
 
@@ -1355,7 +1355,7 @@
                                        :text "start"
                                        :command
                                        (lambda ()
-                                         (bt:make-thread
+                                         (make-thread
                                           (lambda ()
                                             (setf *wish* wish-subprocess)
                                             (format t "ww ~a~%" (screen-width)))
@@ -1376,43 +1376,43 @@
 
 (defparameter *queue* '())
 
-(defparameter *queue-lock* (bt:make-lock "queue lock"))
+(defparameter *queue-lock* (make-lock "queue lock"))
 
-(defparameter *queue-cond* (bt:make-condition-variable))
+(defparameter *queue-cond* (make-condition-variable))
 
 (defun pop-event-block ()
-  (bt:with-lock-held (*queue-lock*)
+  (with-lock-held (*queue-lock*)
     (loop while (null *queue*)
           do
-             (bt:condition-wait *queue-cond* *queue-lock*))
+             (condition-wait *queue-cond* *queue-lock*))
     (pop *queue*)))
 
 (defun push-event-unblock (value)
-  (bt:with-lock-held (*queue-lock*)
+  (with-lock-held (*queue-lock*)
     (push value *queue*)
-    (bt:condition-notify *queue-cond*)))
+    (condition-notify *queue-cond*)))
 
 (defparameter *stop-events-loop* t)
 
-(defparameter *events-loop-lock* (bt:make-lock "events-loop-lock"))
+(defparameter *events-loop-lock* (make-lock "events-loop-lock"))
 
 (defparameter *events-loop-thread* nil)
 
 (defparameter *gui-server* nil)
 
 (defun events-loop-running-p ()
-  (bt:with-lock-held (*events-loop-lock*)
+  (with-lock-held (*events-loop-lock*)
     (not *stop-events-loop*)))
 
 (defun stop-events-loop ()
-  (bt:with-lock-held (*events-loop-lock*)
+  (with-lock-held (*events-loop-lock*)
     (setf *stop-events-loop* t)))
 
 (defun start-events-loop ()
-  (bt:with-lock-held (*events-loop-lock*)
+  (with-lock-held (*events-loop-lock*)
     (setf *stop-events-loop* nil))
   (setf *events-loop-thread*
-        (bt:make-thread (lambda ()
+        (make-thread (lambda ()
                           (let ((*wish* *gui-server*))
                             (format  t "start~%")
                             (loop while (events-loop-running-p) do

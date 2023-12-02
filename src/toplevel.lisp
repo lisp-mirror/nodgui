@@ -49,11 +49,6 @@
 (defun make-toplevel (master)
   (make-instance 'toplevel :master master))
 
-(defun window-id (tl)
-  "get the window id of the toplevel"
-  (with-read-data ()
-    (format-wish "senddatastring [winfo id ~a]" (widget-path tl))))
-
 (defun window-x (tl)
   "give the x position of the toplevel in pixels"
   (root-x tl))

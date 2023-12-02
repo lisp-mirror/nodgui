@@ -131,6 +131,7 @@
     (format-wish (tclize `(senddatastring [winfo class ,(widget-path widget) ])))))
 
 (defun window-id (widget)
+  "get the window id of the widget"
   (with-read-data (nil)
     (format-wish (tclize `(senddatastring [winfo id ,(widget-path widget) ])))
     (let ((id (read-data)))

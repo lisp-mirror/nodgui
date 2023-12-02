@@ -63,10 +63,10 @@
 (defstruct mainloop-coordination
   (mainloop-name -1)
   (pause         nil)
-  (pause-lock    (bt:make-lock "lock"))
-  (pause-condvar (bt:make-condition-variable))
+  (pause-lock    (make-lock "lock"))
+  (pause-condvar (make-condition-variable))
   (stop          nil)
-  (stop-lock     (bt:make-lock "lock")))
+  (stop-lock     (make-lock "lock")))
 
 ;;; global var for holding the communication stream
 (defstruct (nodgui-connection
@@ -79,10 +79,10 @@
   (after-counter            1)
   (data-queue               (make-instance 'q:synchronized-queue))
   (event-queue              (make-instance 'q:synchronized-queue))
-  (lock                     (bt:make-lock "lock"))
-  (read-data-lock           (bt:make-lock "read-data"))
-  (flush-lock               (bt:make-lock "flush"))
-  (read-lock                (bt:make-lock "read"))
+  (lock                     (make-lock "lock"))
+  (read-data-lock           (make-lock "read-data"))
+  (flush-lock               (make-lock "flush"))
+  (read-lock                (make-lock "read"))
   (accept-garbage-for-next-event  nil)
   ;; This is should be a function that takes a thunk, and calls it in
   ;; an environment with some condition handling in place.  It is what
@@ -169,7 +169,7 @@
 
 (defmacro with-send-wish-atomic ((stream) &body body)
   (a:with-gensyms (results)
-    `(bt:with-lock-held ((wish-lock *wish*))
+    `(with-lock-held ((wish-lock *wish*))
        (let ((,results (with-output-to-string (,stream) ,@body)))
          (push ,results (wish-output-buffer *wish*))
          (flush-wish)))))
@@ -188,7 +188,7 @@
      ,@body))
 
 (defun call-with-read-data (fn)
-  (bt:with-lock-held ((wish-read-data-lock *wish*))
+  (with-lock-held ((wish-read-data-lock *wish*))
     (funcall fn)))
 
 (defmacro with-read-data ((&optional (read-data-fn 'read-data)) &body body)
@@ -200,7 +200,7 @@
           `(call-with-read-data (lambda () (progn ,@body))))))
 
 (defmacro with-main-loop-lock (() &body body)
-  `(bt:with-lock-held ((wish-main-loop-lock *wish*))
+  `(with-lock-held ((wish-main-loop-lock *wish*))
      ,@body))
 
 (defun require-tcl-package (name)
@@ -239,7 +239,7 @@
     (format (wish-stream *wish*) (tcl-init-code) debug-tcl translation)))
 
 (defun make-error-collecting-thread (error-stream)
-  (bt:make-thread (lambda ()
+  (make-thread (lambda ()
                     (ignore-errors
                       (let ((ch (read-char error-stream)))
                         (unread-char ch error-stream)
@@ -292,7 +292,7 @@
   (with-nodgui-handlers ()
     (a:when-let ((stream (wish-stream *wish*)))
       (break-mainloop)
-      (bt:destroy-thread (wish-error-collecting-thread *wish*))
+      (destroy-thread (wish-error-collecting-thread *wish*))
       (setf (nodgui::wish-accept-garbage-for-next-event *wish*) t)
       (indicate-stop-mainloop-threads)
       (send-wish "exit")
@@ -305,7 +305,7 @@
   (exit-wish))
 
 (defun send-wish (text)
-  (bt:with-lock-held ((wish-lock *wish*))
+  (with-lock-held ((wish-lock *wish*))
     (push text (wish-output-buffer *wish*))
     (unless *buffer-for-atomic-output*
       (flush-wish))))
@@ -316,7 +316,7 @@ coupled with a 'gets' from the TCL side, for example.
 
 Note also that this function  blocks the communication until wish read
 the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
-  (bt:with-lock-held ((wish-lock *wish*))
+  (with-lock-held ((wish-lock *wish*))
     (let ((*print-pretty* nil)
           (stream         (wish-stream *wish*))
           (line           (format nil "~a~%" data)))
@@ -329,7 +329,7 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
 (defparameter *max-line-length* 1000)
 
 (defun flush-wish ()
-  (bt:with-lock-held ((wish-flush-lock *wish*))
+  (with-lock-held ((wish-flush-lock *wish*))
     (let ((buffer (nreverse (wish-output-buffer *wish*))))
       (when buffer
         (let ((len (loop for s in buffer summing (length s)))
@@ -425,7 +425,7 @@ to wish process"
   "Reads from wish. If the next thing in the stream is looks like a lisp-list
   read it as such, otherwise read one line as a string."
   (flush-wish)
-  (bt:with-lock-held ((wish-read-lock *wish*))
+  (with-lock-held ((wish-read-lock *wish*))
     (let ((*read-eval* nil)
           (*package* (find-package :nodgui))
           (stream (wish-stream *wish*)))
@@ -474,7 +474,7 @@ to wish process"
 event to read and blocking is set to nil"
   (handler-case
       (let ((wstream (wish-stream *wish*)))
-        (bt:with-lock-held ((wish-read-lock *wish*))
+        (with-lock-held ((wish-read-lock *wish*))
           (dbg "queue ~a" (q::container (wish-data-queue *wish*)))
           (let ((event (read-preserving-whitespace wstream t nil)))
             (dbg "raw event ~a" event)
@@ -550,13 +550,13 @@ error-strings) are ignored."
 
 (defun break-mainloop ()
   (let ((lock (mainloop-coordination-stop-lock (wish-main-loop-coordination-data *wish*))))
-    (bt:with-lock-held (lock)
+    (with-lock-held (lock)
       (setf (mainloop-coordination-stop (wish-main-loop-coordination-data *wish*))
             t))))
 
 (defun break-mainloop-p ()
   (let ((lock (mainloop-coordination-stop-lock (wish-main-loop-coordination-data *wish*))))
-    (bt:with-lock-held (lock)
+    (with-lock-held (lock)
       (mainloop-coordination-stop (wish-main-loop-coordination-data *wish*)))))
 
 (defgeneric handle-output (key params))
@@ -614,7 +614,7 @@ error-strings) are ignored."
      (push-enqueued-event event))))
 
 (let ((mainloop-name -1))
-  (defun start-main-loop (&key (thread-special-bindings bt:*default-special-bindings*))
+  (defun start-main-loop (&key (thread-special-bindings *thread-default-special-bindings*))
     (dbg "start mainloop")
     (incf mainloop-name)
     (let ((wish-process *wish*)
@@ -622,13 +622,13 @@ error-strings) are ignored."
       (push-mainloop-coordination-data)
       (setf (wish-main-loop-coordination-data *wish*) coordination-data)
       (flet ((maybe-wait-for-other-mainloops ()
-               (bt:with-lock-held ((mainloop-coordination-pause-lock coordination-data))
+               (with-lock-held ((mainloop-coordination-pause-lock coordination-data))
                  (loop while (mainloop-coordination-pause coordination-data)
-                       do (bt:condition-wait (mainloop-coordination-pause-condvar coordination-data)
+                       do (condition-wait (mainloop-coordination-pause-condvar coordination-data)
                                              (mainloop-coordination-pause-lock coordination-data)))
                  nil)))
         (setf (wish-main-loop-thread *wish*)
-              (bt:make-thread (lambda ()
+              (make-thread (lambda ()
                                 (let ((*wish*       wish-process)
                                       (current-name (mainloop-coordination-mainloop-name coordination-data)))
                                   (loop while (not (or (break-mainloop-p)
@@ -649,11 +649,11 @@ error-strings) are ignored."
   (loop for (key val) on keyword-arguments by #'cddr
         when (find key desired-keys) nconc (list key val)))
 
-(defun start-reading-loop (&key (thread-special-bindings bt:*default-special-bindings*))
+(defun start-reading-loop (&key (thread-special-bindings *thread-default-special-bindings*))
   (dbg "inizio reading loop")
   (let ((wish-process *wish*))
     (setf (wish-input-collecting-thread *wish*)
-          (bt:make-thread (lambda ()
+          (make-thread (lambda ()
                             (let ((*wish* wish-process))
                               (loop while (not (break-mainloop-p))
                                     do
@@ -671,7 +671,7 @@ error-strings) are ignored."
                         &key
                           (title   "")
                           (debug    2)
-                          (main-loop-thread-special-bindings bt:*default-special-bindings*)
+                          (main-loop-thread-special-bindings *thread-default-special-bindings*)
                           (stream nil)
                         &allow-other-keys)
                     &body body)
@@ -692,8 +692,8 @@ error-strings) are ignored."
   `(call-with-nodgui (lambda () ,@body) ,@keys))
 
 (defun wait-mainloop-threads ()
-  (bt:join-thread (wish-main-loop-thread *wish*))
-  (bt:join-thread (wish-input-collecting-thread *wish*)))
+  (join-thread (wish-main-loop-thread *wish*))
+  (join-thread (wish-input-collecting-thread *wish*)))
 
 (defun call-with-nodgui (thunk
                          &rest keys

@@ -54,7 +54,7 @@
     :initform nil
     :accessor container)
    (lock
-    :initform (bt:make-lock)
+    :initform (make-lock)
     :reader lock)))
 
 (defmethod print-object ((object queue) stream)
@@ -63,7 +63,7 @@
 (defmethod push ((object queue) data)
   (with-accessors ((container container)
                    (lock      lock)) object
-    (bt:with-lock-held (lock)
+    (with-lock-held (lock)
       (if (null container)
           (setf container (initialize-queue-container data))
           (container-push container data))
@@ -72,13 +72,13 @@
 (defmethod emptyp ((object queue))
   (with-accessors ((container container)
                    (lock      lock)) object
-    (bt:with-lock-held (lock)
+    (with-lock-held (lock)
       (container-empty-p container))))
 
 (defmethod pop ((object queue))
   (with-accessors ((container container)
                    (lock      lock)) object
-    (bt:with-lock-held (lock)
+    (with-lock-held (lock)
       (multiple-value-bind (data rest-container)
           (container-pop container)
         (setf container rest-container)

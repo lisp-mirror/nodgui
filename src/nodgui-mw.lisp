@@ -1539,7 +1539,7 @@
                             (/ w 2))
                          (- (+ y-parent (/ h-parent 2))
                             (/ h 2)))))
-    (bt:make-thread (lambda ()
+    (make-thread (lambda ()
                       (let ((*wish* wish-subprocess))
                         (loop for i from 0 below timeout do
                              (sleep 1)
