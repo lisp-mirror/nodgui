@@ -30,7 +30,6 @@
                :cl-ppcre-unicode
                :esrap
                :parse-number
-               :clunit2
                :cl-colors2
                :named-readtables
                :jpeg-turbo
@@ -105,15 +104,22 @@
                                      (:file "plot")
                                      (:file "swaplist")
                                      (:file "misc-widget")))
-               (:file "demo-tests")
-               (:module tests
-                        :components ((:file "package")
-                                     (:file "all-tests")
-                                     (:file "test-non-blocking-queue")
-                                     (:file "test-tcl-emitter")
-                                     (:file "test-event-parser")
-                                     (:file "test-styles")
-                                     (:file "test-text-indices")
-                                     (:file "test-nodgui")))))
+               (:file "demo-tests")))
+
+(defsystem nodgui/test
+  :encoding         :utf-8
+  :pathname         "test"
+  :serial           t
+  :depends-on (:nodgui
+               :clunit2)
+  :components ((:file "package")
+               (:file "all-tests")
+               (:file "test-non-blocking-queue")
+               (:file "test-tcl-emitter")
+               (:file "test-event-parser")
+               (:file "test-styles")
+               (:file "test-text-indices")
+               (:file "test-nodgui")))
+
 
 (pushnew :nodgui *features*)
