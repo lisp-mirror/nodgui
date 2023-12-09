@@ -29,6 +29,59 @@
            #:+wish-to-lisp-event-reply+
            #:+2pi+))
 
+(defpackage :nodgui.typed-operations
+  (:use :cl)
+  (:export  #:desired
+            #:d
+            #:d+
+            #:d*
+            #:d-
+            #:d/
+            #:dsqrt
+            #:daref
+            #:dmin
+            #:dmax
+            #:d>
+            #:d<
+            #:d>=
+            #:d<=
+            #:d=
+            #:drandom
+            #:dslot-value
+            #:dsetf
+            #:dabs
+            #:dplusp
+            #:dminusp
+            #:dzerop
+            #:dcos
+            #:dsin
+            #:dtan
+            #:dcosh
+            #:dsinh
+            #:dtanh
+            #:dacos
+            #:dasin
+            #:datan
+            #:dexp
+            #:dexpt
+            #:dlog
+            #:dfloor
+            #:dlerp
+            #:secure-dacos
+            #:+2pi+
+            #:parse-number->desired
+            #:f
+            #:f*
+            #:f/
+            #:f+
+            #:f-
+            #:faref
+            #:f<
+            #:f>
+            #:f<=
+            #:f>=
+            #:frem))
+
 (defpackage :nodgui.utils
   (:use :cl
         :alexandria
@@ -120,7 +173,8 @@
            #:condition-wait
            #:condition-notify
            #:join-thread
-           #:destroy-thread))
+           #:destroy-thread
+           #:threadp))
 
 (defpackage :syncronized-queue
   (:use :cl
@@ -1268,6 +1322,40 @@
   (:export
    #:nodgui-syntax))
 
+(defpackage nodgui.sdl-window
+  (:use :cl)
+  (:import-from :alexandria :define-constant)
+  (:local-nicknames (:a :alexandria)
+                    (:p :esrap)
+                    (:bq :syncronized-queue)
+                    (:q  :nodgui.non-blocking-queue)
+                    (:to :nodgui.typed-operations))
+  (:export
+   #:context
+   #:width
+   #:height
+   #:rendering-thread
+   #:queue
+   #:buffer
+   #:event-polling-p
+   #:window
+   #:quit-sdl
+   #:push-for-rendering
+   #:pop-for-rendering
+   #:rendering-must-wait-p
+   #:pixel@
+   #:set-pixel@
+   #:assemble-color
+   #:sum-pixels
+   #:extract-red-component
+   #:extract-green-component
+   #:extract-blue-component
+   #:extract-alpha-component
+   #:blit
+   #:clear-buffer
+   #:make-sdl-frame
+   #:sync))
+
 (defpackage :nodgui
   (:use :cl
         #+(or :cmu :scl) :ext
@@ -1900,6 +1988,10 @@
         :nodgui.shapes
         :nodgui.mw)
   (:shadow :alexandria :rotate)
+  (:local-nicknames (:a :alexandria)
+                    (:q  :nodgui.non-blocking-queue)
+                    (:to :nodgui.typed-operations)
+                    (:sdlw :nodgui.sdl-window))
   (:export
    #:demo))
 

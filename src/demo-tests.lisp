@@ -168,8 +168,12 @@
                                                      :text "Paned windows"
                                                      :command (lambda ()
                                                                 (demo-paned-window))))
+           (demo-sdl                  (make-instance 'button
+                                                     :text "Animations window"
+                                                     :command (lambda ()
+                                                                (demo-sdl))))
            (b-quit                   (make-instance  'button
-                                                     :text    "quit lisp :)"
+                                                     :text    "quit lisp 🙂"
                                                      :command (lambda ()
                                                                 (exit-nodgui)))))
       (grid widget                   0 0  :sticky :nswe)
@@ -211,7 +215,8 @@
       (grid demo-autocomplete-entry  12 0 :sticky :nswe)
       (grid demo-multifont-listbox   12 1 :sticky :nswe)
       (grid demo-paned-window        12 2 :sticky :nswe)
-      (grid b-quit                   13 0 :sticky :nswe :columnspan 3)
+      (grid demo-sdl                 13 0 :sticky :nswe)
+      (grid b-quit                   14 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
 
@@ -233,7 +238,6 @@
   (setf *debug-tk* t)
   (with-nodgui (:debug-tcl nil
                 :theme theme)
-    ;; (use-theme "yaru")
     (flet ((write-postscript (canvas)
              #'(lambda ()
                  (let ((file (get-save-file :file-types '(("Encapsulated Postscript" "*.ps")))))

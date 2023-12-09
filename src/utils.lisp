@@ -555,3 +555,6 @@
 
 (definline destroy-thread (thread)
   (bt:destroy-thread thread))
+
+(definline threadp (maybe-thread)
+  (bt:threadp maybe-thread))

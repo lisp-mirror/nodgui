@@ -24,8 +24,8 @@
       (values res (queue-container-next queue)))))
 
 (defun initialize-queue-container (data)
-  (let ((queue (make-queue-container :data data)))
-    (setf (queue-container-next queue) queue)
+  (let ((queue (make-queue-container :data data
+                                     :next nil)))
     (setf (queue-container-last queue) queue)
     queue))
 

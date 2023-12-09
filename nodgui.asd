@@ -36,10 +36,14 @@
                :pngload
                :flexi-streams
                :bordeaux-threads
+               :sdl2
+               :static-vectors
+               :trivial-garbage
                #-asdf3 :uiop)
   :components ((:file "package")
                (:file "config")
                (:file "constants")
+               (:file "typed-operations")
                (:file "utils")
                (:file "synchronized-queue")
                (:file "non-blocking-queue")
@@ -97,6 +101,7 @@
                (:file "winfo")
                (:file "trivial-debugger")
                (:file "nodgui-mw")
+               (:file "sdl")
                (:module tklib
                         :components ((:file "package")
                                      (:file "calendar")
@@ -104,7 +109,8 @@
                                      (:file "plot")
                                      (:file "swaplist")
                                      (:file "misc-widget")))
-               (:file "demo-tests")))
+               (:file "demo-tests")
+               (:file "demo-sdl")))
 
 (defsystem nodgui/test
   :encoding         :utf-8

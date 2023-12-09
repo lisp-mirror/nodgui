@@ -147,6 +147,12 @@ All of the above libraries are available on quicklisp.
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
+ - src/typed-operations.lisp
+   Copyright (c) 2013 Masataro Asai
+
+   Licensed under the [[LLGPL][http://opensource.franz.com/preamble.html]] License (according to this [[repository][https://github.com/guicho271828/guicho-utilities]]).
+
+
 ** Themes
 
 The themes definitions found in the ~themes/~ subdirectory are
