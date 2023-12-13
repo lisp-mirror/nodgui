@@ -192,7 +192,6 @@
                                    ;;(declare (optimize (speed 3) (debug 0)))
                                    (draw-plasma buffer width height tick)
                                    (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
-
       (format t "STOP!~%"))))
 
 (defun draw-fire-thread ()
