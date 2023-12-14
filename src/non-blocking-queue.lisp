@@ -55,18 +55,30 @@
     :accessor container)
    (lock
     :initform (make-lock)
-    :reader lock)))
+    :reader lock)
+   (container-count
+    :initform 0
+    :initarg  :container-count
+    :accessor container-count)
+   (maximum-size
+    :initform 8192
+    :initarg  :maximum-size
+    :accessor maximum-size)))
 
 (defmethod print-object ((object queue) stream)
   (format stream "~a" (container object)))
 
 (defmethod push ((object queue) data)
-  (with-accessors ((container container)
-                   (lock      lock)) object
+  (with-accessors ((container       container)
+                   (lock            lock)
+                   (container-count container-count)
+                   (maximum-size    maximum-size)) object
     (with-lock-held (lock)
-      (if (null container)
-          (setf container (initialize-queue-container data))
-          (container-push container data))
+      (when (< container-count maximum-size)
+        (if (null container)
+            (setf container (initialize-queue-container data))
+            (container-push container data))
+        (incf container-count))
       object)))
 
 (defmethod emptyp ((object queue))
@@ -76,13 +88,16 @@
       (container-empty-p container))))
 
 (defmethod pop ((object queue))
-  (with-accessors ((container container)
-                   (lock      lock)) object
+  (with-accessors ((container       container)
+                   (lock            lock)
+                   (container-count container-count)) object
     (with-lock-held (lock)
       (multiple-value-bind (data rest-container)
           (container-pop container)
         (setf container rest-container)
+        (when (> container-count 0)
+          (decf container-count))
         data))))
 
-(defun make-queue ()
-  (make-instance 'queue))
+(defun make-queue (&key (maximum-size 8192))
+  (make-instance 'queue :maximum-size maximum-size))
