@@ -185,6 +185,7 @@
                    (height sdlw:height)) *sdl-context*
     (let ((tick (to:d 0.0)))
       (loop while (not (stop-drawing-thread-p *animation*)) do
+        (sdlw:sync *sdl-context*)
         (sdlw:push-for-rendering *sdl-context*
                                  (lambda (dt)
                                    (declare (fixnum dt))
@@ -208,6 +209,7 @@
                                  (declare (ignore dt))
                                  (sdlw:clear-buffer buffer width height 0 0 0)))
       (loop while (not (stop-drawing-thread-p *animation*)) do
+        (sdlw:sync *sdl-context*)
         (sdlw:push-for-rendering *sdl-context*
                                  (lambda (dt)
                                    (declare (fixnum dt))
