@@ -68,18 +68,36 @@
 (defmethod print-object ((object queue) stream)
   (format stream "~a" (container object)))
 
-(defmethod push ((object queue) data)
+(defgeneric push (object data))
+
+(defgeneric push-forced (object data))
+
+(defgeneric emptyp (object))
+
+(defgeneric pop (object))
+
+(defun %push (queue data)
   (with-accessors ((container       container)
                    (lock            lock)
+                   (container-count container-count)
+                   (maximum-size    maximum-size)) queue
+    (if (null container)
+        (setf container (initialize-queue-container data))
+        (container-push container data))
+    (incf container-count)
+    queue))
+
+(defmethod push ((object queue) data)
+  (with-accessors ((lock            lock)
                    (container-count container-count)
                    (maximum-size    maximum-size)) object
     (with-lock-held (lock)
       (when (< container-count maximum-size)
-        (if (null container)
-            (setf container (initialize-queue-container data))
-            (container-push container data))
-        (incf container-count))
-      object)))
+        (%push object data)))))
+
+(defmethod push-forced ((object queue) data)
+  (with-lock-held ((lock object))
+    (%push object data)))
 
 (defmethod emptyp ((object queue))
   (with-accessors ((container container)

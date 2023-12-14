@@ -196,6 +196,7 @@
    #:queue
    #:pop
    #:push
+   #:push-forced
    #:emptyp
    #:queue-data
    #:queue-next

@@ -70,27 +70,27 @@
 
 (defun extract-red-component (color)
   (declare (fixnum color))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logand (ash color -24) #xff))
 
 (defun extract-blue-component (color)
   (declare (fixnum color))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logand (ash color -8) #xff))
 
 (defun extract-green-component (color)
   (declare (fixnum color))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logand (ash color -16) #xff))
 
 (defun extract-alpha-component (color)
   (declare (fixnum color))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logand color #xff))
 
 (defun assemble-color (r g b &optional (a 255))
   (declare (fixnum r g b a))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logior (logand a #xff)
           (the fixnum (ash b 8))
           (the fixnum (ash g 16))
@@ -99,7 +99,7 @@
 (defun set-pixel@ (buffer width x y r g b &optional (a 255))
   (declare (fixnum x y width r g b a))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((value (assemble-color r g b a)))
     (setf (aref buffer (to:f+ x (to:f* y width)))
           value)))
@@ -107,7 +107,7 @@
 (defun pixel@ (buffer width x y)
   (declare (fixnum x y width))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (optimize (speed 3) (debug 3) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 3) (safety 0)))
   (to:faref buffer (to:f+ x (the fixnum (to:f* y width)))))
 
 (defun blit (buffer-source
@@ -123,10 +123,10 @@
                    source-row source-column
                    source-last-column
                    destination-row))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (flet ((copy-row (source-row destination-row)
            (declare (fixnum source-row destination-row))
-           (declare (optimize (speed 3) (debug 0) (safety 0)))
+           ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
            (loop for column fixnum from source-column below source-last-column do
              (setf (to:faref buffer-source (to:f+ (to:f* destination-row buffer-source-width)
                                                   column))
@@ -175,7 +175,7 @@
 
 (defun buffer-sizes->static-vector-size (width height)
   (declare (fixnum width height))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:f* width height))
 
 (defun make-buffer (width height)
@@ -188,6 +188,7 @@
                                          (classic-frame nil)
                                          (buffer-width  nil)
                                          (buffer-height nil)
+                                         (non-blocking-queue-maximum-size 8192)
                                        &allow-other-keys)
   (when classic-frame
     (with-accessors ((width           width)
@@ -200,7 +201,7 @@
                      (queue           queue)) object
       (setf window-id (nodgui:window-id classic-frame)
             queue     (if (events-polling-p object)
-                          (q:make-queue)
+                          (q:make-queue :maximum-size non-blocking-queue-maximum-size)
                           (make-instance 'bq:synchronized-queue))
             width     (or buffer-width
                           (nodgui:window-width  classic-frame))
@@ -216,7 +217,7 @@
 
 (defgeneric events-polling-p (object))
 
-(defgeneric push-for-rendering (object function))
+(defgeneric push-for-rendering (object function &key force-push))
 
 (defgeneric pop-for-rendering (object))
 
@@ -225,31 +226,34 @@
 (defgeneric sync (object))
 
 (defmethod events-polling-p ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (eq (event-loop-type object) :polling))
 
 (defmethod quit-sdl ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (push-for-rendering object
                       (lambda (dt)
                         (declare (ignore dt))
-                        (sdl2:push-event :quit)))
+                        (sdl2:push-event :quit))
+                      :force-push t)
   (bt:join-thread (rendering-thread object)))
 
-(defmethod push-for-rendering ((object context) (function function))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+(defmethod push-for-rendering ((object context) (function function) &key (force-push nil))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (if (events-polling-p object)
-      (q:push (queue object) function)
+      (if force-push
+          (q:push-forced (queue object) function)
+          (q:push (queue object) function))
       (bq:push-unblock (queue object) function)))
 
 (defmethod pop-for-rendering ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (if (events-polling-p object)
       (q:pop (queue object))
       (bq:pop-block (queue object))))
 
 (defmethod rendering-must-wait-p ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (if (events-polling-p object)
       (q:emptyp (queue object))
       (bq:emptyp (queue object))))
@@ -266,7 +270,7 @@
 (defun sum-pixels (pixel-a pixel-b)
   (flet ((sum (a b)
            (min (to:f+ a b) #xff)))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((red-a   (extract-red-component pixel-a))
         (green-a (extract-green-component pixel-a))
         (blue-a  (extract-blue-component pixel-a))
@@ -283,7 +287,7 @@
 (defun clear-buffer (buffer width height r g b &optional (alpha 255))
   (declare (fixnum width height r g b alpha))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((color (assemble-color r g b alpha)))
     (loop for i from 0 below (to:f* width height) do
       (setf (aref buffer i) color))))
