@@ -128,9 +128,9 @@
 (defun blending-function-combine (pixel-source pixel-destination)
   (declare (fixnum pixel-source pixel-destination))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (with-displace-pixel (r-source b-source g-source alpha-source)
+  (with-displace-pixel (r-source g-source b-source alpha-source)
                        pixel-source
-    (with-displace-pixel (r-destination b-destination g-destination alpha-destination)
+    (with-displace-pixel (r-destination g-destination b-destination alpha-destination)
                          pixel-destination
       (declare (ignore alpha-destination))
       (assemble-color (color-channel-lerp r-source r-destination alpha-source)
@@ -151,9 +151,9 @@
 (defun blending-function-add (pixel-source pixel-destination)
   (declare (fixnum pixel-source pixel-destination))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (with-displace-pixel (r-source b-source g-source alpha-source)
+  (with-displace-pixel (r-source g-source b-source alpha-source)
                        pixel-source
-    (with-displace-pixel (r-destination b-destination g-destination alpha-destination)
+    (with-displace-pixel (r-destination g-destination b-destination alpha-destination)
                          pixel-destination
       (assemble-color (saturate-byte (to:f+ r-source r-destination))
                       (saturate-byte (to:f+ g-source g-destination))

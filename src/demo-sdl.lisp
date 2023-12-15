@@ -174,7 +174,7 @@
                        rectangle-height
                        255
                        50
-                       0
+                       20
                        10)
     (values rectangle
             rectangle-width
@@ -260,7 +260,7 @@
                                (lambda (dt)
                                  (declare (ignore dt))
                                  (sdlw:clear-buffer buffer width height 0 0 0)))
-      (let ((rectangles (loop repeat 100 collect
+      (let ((rectangles (loop repeat 1000 collect
                                          (multiple-value-list (make-blitting-rectangle width height)))))
         (loop for rectangle in rectangles do
           (sdlw:sync *sdl-context*)
