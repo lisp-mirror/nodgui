@@ -51,7 +51,7 @@
     :initarg :buffer
     :accessor buffer)
    (minimum-delta-t
-    :initform (fps->delta-t 30)
+    :initform (fps->delta-t 60)
     :initarg :minimum-delta-t
     :accessor minimum-delta-t)
    (time-spent
@@ -89,7 +89,7 @@
   (logand color #xff))
 
 (defun assemble-color (r g b &optional (a 255))
-  (declare (fixnum r g b a))
+  (declare ((unsigned-byte 8) r g b a))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logior (logand a #xff)
           (the fixnum (ash b 8))
@@ -110,32 +110,97 @@
   ;; (declare (optimize (speed 3) (debug 3) (safety 0)))
   (to:faref buffer (to:f+ x (the fixnum (to:f* y width)))))
 
+(defmacro with-displace-pixel ((r g b a) pixel &body body)
+  `(let ((,r (extract-red-component   ,pixel))
+         (,g (extract-green-component ,pixel))
+         (,b (extract-blue-component  ,pixel))
+         (,a (extract-alpha-component ,pixel)))
+     (declare ((unsigned-byte 8) ,r ,g ,b ,a))
+     ,@body))
+
+(defun color-channel-lerp (a b w)
+  (declare ((unsigned-byte 8) a b w))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (ash (+ (* a w)
+          (* b (- 256 w)))
+       -8))
+
+(defun blending-function-combine (pixel-source pixel-destination)
+  (declare (fixnum pixel-source pixel-destination))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (with-displace-pixel (r-source b-source g-source alpha-source)
+                       pixel-source
+    (with-displace-pixel (r-destination b-destination g-destination alpha-destination)
+                         pixel-destination
+      (declare (ignore alpha-destination))
+      (assemble-color (color-channel-lerp r-source r-destination alpha-source)
+                      (color-channel-lerp g-source g-destination alpha-source)
+                      (color-channel-lerp b-source b-destination alpha-source)
+                      255))))
+
+(defun blending-function-replace (pixel-source pixel-destination)
+  (declare (fixnum pixel-source pixel-destination))
+  (declare (ignore pixel-destination))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  pixel-source)
+
+(defun saturate-byte (a)
+  (declare (fixnum a))
+  (min a #xfe))
+
+(defun blending-function-add (pixel-source pixel-destination)
+  (declare (fixnum pixel-source pixel-destination))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (with-displace-pixel (r-source b-source g-source alpha-source)
+                       pixel-source
+    (with-displace-pixel (r-destination b-destination g-destination alpha-destination)
+                         pixel-destination
+      (assemble-color (saturate-byte (to:f+ r-source r-destination))
+                      (saturate-byte (to:f+ g-source g-destination))
+                      (saturate-byte (to:f+ b-source b-destination))
+                      (saturate-byte (to:f+ alpha-source alpha-destination))))))
+
+(defparameter *blending-function* #'blending-function-replace)
+
 (defun blit (buffer-source
              buffer-source-width
              buffer-destination
              buffer-destination-width
-             source-row source-column
-             source-last-column
-             destination-row)
+             source-row
+             source-column
+             destination-row
+             destination-column
+             source-last-row
+             source-last-column)
   (declare ((simple-array (unsigned-byte 32)) buffer-source buffer-destination))
   (declare (fixnum buffer-source-width
                    buffer-destination-width
-                   source-row source-column
-                   source-last-column
-                   destination-row))
+                   source-row
+                   source-column
+                   destination-row
+                   destination-column
+                   source-last-row
+                   source-last-column))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (flet ((copy-row (source-row destination-row)
-           (declare (fixnum source-row destination-row))
+  (flet ((copy-row (row-source row-destination)
+           (declare (fixnum row-source row-destination))
            ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
            (loop for column fixnum from source-column below source-last-column do
-             (setf (to:faref buffer-source (to:f+ (to:f* destination-row buffer-source-width)
-                                                  column))
-                   (to:faref buffer-destination (to:f+ (to:f* source-row
-                                                              buffer-destination-width)
-                                                       column))))))
-    (loop for from-row fixnum from source-row below destination-row
+             (let* ((color-destination (to:faref buffer-destination
+                                                 (to:f+ (to:f* row-destination
+                                                               buffer-destination-width)
+                                                        (to:f+ destination-column column))))
+                    (color-source      (to:faref buffer-source
+                                                 (to:f+ (to:f* row-source buffer-source-width)
+                                                               column)))
+                    (color (funcall *blending-function* color-source color-destination)))
+               (setf (to:faref buffer-destination (to:f+ (to:f* row-destination
+                                                                buffer-destination-width)
+                                                         (to:f+ destination-column column)))
+                     color)))))
+    (loop for from-row fixnum from source-row below source-last-row
           for to-row fixnum from destination-row do
-      (copy-row from-row destination-row))
+            (copy-row from-row to-row))
     buffer-destination))
 
 (defun make-rendering-thread (context)
@@ -183,6 +248,15 @@
                                      :element-type '(unsigned-byte 32)
                                      :initial-element #x000000ff))
 
+(defun free-buffer-memory (buffer)
+  (static-vectors:free-static-vector buffer))
+
+(defmacro with-buffer ((buffer width height) &body body)
+  `(unwind-protect
+        (let ((,buffer (nake-buffer ,width ,height)))
+          ,@body)
+     (free-buffer-memory ,buffer)))
+
 (defmethod initialize-instance :after ((object context)
                                        &key
                                          (classic-frame nil)
@@ -209,8 +283,7 @@
                           (nodgui:window-height classic-frame))
             buffer    (make-buffer width height))
       (tg:finalize object
-                   #'(lambda ()
-                       (static-vectors:free-static-vector buffer)))
+                   (lambda () (free-buffer-memory buffer)))
       (setf thread (make-rendering-thread object)))))
 
 (defgeneric quit-sdl (object))

@@ -134,6 +134,7 @@
 
 (defun reinforce-fire (buffer width height howmany)
   (declare (fixnum width height howmany))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (loop repeat howmany do
     (let* ((x         (random  width))
@@ -154,6 +155,34 @@
   (blur buffer width height time))
 
 ;;;; end fire ;;;
+
+;;;; blit ;;;;
+
+(defun make-blitting-rectangle (width height)
+  (declare (fixnum width height))
+  (let* ((rectangle-width  (+ 20 (random (truncate (- (* width  1/4) 40)))))
+         (rectangle-height (+ 20 (random (truncate (- (* height 1/4) 40)))))
+         (rectangle        (sdlw:make-buffer rectangle-width rectangle-height))
+         (destination-x    (+ (truncate (* 3/4
+                                           (random width)))
+                              20))
+         (destination-y     (+ (truncate (* 3/4
+                                            (random height)))
+                               20)))
+    (sdlw:clear-buffer rectangle
+                       rectangle-width
+                       rectangle-height
+                       255
+                       50
+                       0
+                       10)
+    (values rectangle
+            rectangle-width
+            rectangle-height
+            destination-x
+            destination-y)))
+
+;;;; end blit ;;;;
 
 (defstruct animation
   (thread)
@@ -217,6 +246,51 @@
                                    (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
       (format t "STOP FIRE!~%"))))
 
+(defun draw-rectangles-thread ()
+  (with-accessors ((buffer sdlw:buffer)
+                   (width  sdlw:width)
+                   (height sdlw:height)) *sdl-context*
+    (let ((tick (to:d 0.0)))
+      ;; I should  use :force-push t  in this function call  to ensure
+      ;; the  event  of clearing  the  buffer  is not  discarded,  but
+      ;; instead i prefer to leav the  key parameter as nil because it
+      ;; could  give a  nice transition,  if  the queue  is filled  by
+      ;; leftover of plasma rendering events
+      (sdlw:push-for-rendering *sdl-context*
+                               (lambda (dt)
+                                 (declare (ignore dt))
+                                 (sdlw:clear-buffer buffer width height 0 0 0)))
+      (let ((rectangles (loop repeat 100 collect
+                                         (multiple-value-list (make-blitting-rectangle width height)))))
+        (loop for rectangle in rectangles do
+          (sdlw:sync *sdl-context*)
+          (sdlw:push-for-rendering *sdl-context*
+                                   (lambda (dt)
+                                     (declare (fixnum dt))
+                                     (let ((rectangle-buffer (first  rectangle))
+                                           (rectangle-width  (second rectangle))
+                                           (rectangle-height (third  rectangle))
+                                           (x                (fourth rectangle))
+                                           (y                (fifth  rectangle)))
+                                       ;; (assert (< (+ rectangle-width x)
+                                       ;;            width))
+                                       ;; (assert (< (+ rectangle-height y)
+                                       ;;            height))
+                                       (let ((sdlw:*blending-function* #'sdlw:blending-function-add))
+                                         (sdlw:blit rectangle-buffer
+                                                    rectangle-width
+                                                    buffer
+                                                    width
+                                                    0
+                                                    0
+                                                    y
+                                                    x
+                                                    rectangle-height
+                                                    rectangle-width))
+                                       (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt))))))
+                                   :force-push t))
+        (format t "STOP RECTANGLES!~%")))))
+
 (defun stop-animation ()
   (when (and *animation*
              (bt:threadp (animation-thread *animation*)))
@@ -268,6 +342,19 @@
                                                  (make-animation :thread
                                                                  (make-thread #'draw-fire-thread)))
                                            (format t "tk event returned~%"))))
+           (radio-rectangles (make-instance 'radio-button
+                                         :master   buttons-frame
+                                         :value    :rectangles
+                                         :variable "dummy"
+                                         :text     "Rectangles"
+                                         :command
+                                         (lambda (value)
+                                           (format t "button ~a pressed~%" value)
+                                           (stop-animation)
+                                           (setf *animation*
+                                                 (make-animation :thread
+                                                                 (make-thread #'draw-rectangles-thread)))
+                                           (format t "tk event returned~%"))))
            (button-quit  (make-instance 'button
                                         :master buttons-frame
                                         :text "quit"
@@ -275,14 +362,15 @@
                                                    (stop-animation)
                                                    (sdlw:quit-sdl *sdl-context*)
                                                    (exit-nodgui)))))
-      (grid warning-label 0 0)
-      (grid sdl-frame     1 0)
-      (grid buttons-frame 2 0 :sticky :sew)
-      (grid buttons-label 0 0)
-      (grid radio-plasma  0 1)
-      (grid radio-fire    0 2)
-      (grid button-quit   0 3)
-      (grid notice-label  0 4)
+      (grid warning-label    0 0)
+      (grid sdl-frame        1 0)
+      (grid buttons-frame    2 0 :sticky :sew)
+      (grid buttons-label    0 0)
+      (grid radio-plasma     0 1)
+      (grid radio-fire       0 2)
+      (grid radio-rectangles 0 3)
+      (grid button-quit      0 4)
+      (grid notice-label     0 5)
       (grid-columnconfigure *tk* 0 :weight 1)
       (grid-rowconfigure *tk* 0 :weight 1)
       (bind sdl-frame "<1>" (lambda (e) (format t "pressed mouse on frame, event ~a~%" e)))

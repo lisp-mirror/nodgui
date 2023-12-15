@@ -1347,12 +1347,21 @@
    #:pixel@
    #:set-pixel@
    #:assemble-color
+   #:with-displace-pixel
+   #:color-channel-lerp
+   #:blending-function-combine
+   #:blending-function-replace
+   #:blending-function-add
+   #:*blending-function*
    #:sum-pixels
    #:extract-red-component
    #:extract-green-component
    #:extract-blue-component
    #:extract-alpha-component
    #:blit
+   #:make-buffer
+   #:free-buffer-memory
+   #:with-buffer
    #:clear-buffer
    #:make-sdl-frame
    #:sync))
