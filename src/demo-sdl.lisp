@@ -268,9 +268,8 @@
       (clear-sdl-window)
       (let ((rectangles (loop repeat 1000 collect
                                          (multiple-value-list (make-blitting-rectangle width height)))))
-        (loop for rectangle in rectangles do
-          (sdlw:sync *sdl-context*)
-          (sdlw:push-for-rendering *sdl-context*
+        (mapcar (lambda (rectangle)
+                  (sdlw:push-for-rendering *sdl-context*
                                    (lambda (dt)
                                      (declare (fixnum dt))
                                      (let ((rectangle-buffer (first  rectangle))
@@ -295,6 +294,7 @@
                                                     rectangle-width))
                                        (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt))))))
                                    :force-push t))
+                rectangles)
         (format t "STOP RECTANGLES!~%")))))
 
 (defun load-bell-sprite ()

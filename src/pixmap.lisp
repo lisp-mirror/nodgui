@@ -360,8 +360,8 @@ range (0-1.0]), scaling use nearest-neighbor."
   "Rotate a  pixmap about an  arbitrary angle and around  an arbitrary
   pivot (the center  of the image by default), The  'void' part of the
   image  vill be  filled with  'fill-value' (a  'nodgui.ubvec4:ubvec4'
-  vector) or  with repeated parial clone  clones of the same  image if
-  'repeat' is non nil"
+  vector) or with repeated parial clone  of the same image if `repeat'
+  is non nil"
   (cond
     ;; using  the next tree functions because  the  usual  approach below  for
     ;; rotating did not worked for me
