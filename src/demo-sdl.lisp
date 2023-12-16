@@ -1,5 +1,7 @@
 (in-package :nodgui.demo)
 
+(named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
+
 (defparameter *sdl-context* nil)
 
 ;; plasma
@@ -223,6 +225,16 @@
                                    (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
       (format t "STOP!~%"))))
 
+(defun clear-sdl-window (&key (force nil))
+  (with-accessors ((buffer sdlw:buffer)
+                   (width  sdlw:width)
+                   (height sdlw:height)) *sdl-context*
+    (sdlw:push-for-rendering *sdl-context*
+                             (lambda (dt)
+                               (declare (ignore dt))
+                               (sdlw:clear-buffer buffer width height 0 0 0))
+                             :force-push force)))
+
 (defun draw-fire-thread ()
   (with-accessors ((buffer sdlw:buffer)
                    (width  sdlw:width)
@@ -233,10 +245,7 @@
       ;; instead i prefer to leav the  key parameter as nil because it
       ;; could  give a  nice transition,  if  the queue  is filled  by
       ;; leftover of plasma rendering events
-      (sdlw:push-for-rendering *sdl-context*
-                               (lambda (dt)
-                                 (declare (ignore dt))
-                                 (sdlw:clear-buffer buffer width height 0 0 0)))
+      (clear-sdl-window)
       (loop while (not (stop-drawing-thread-p *animation*)) do
         (sdlw:sync *sdl-context*)
         (sdlw:push-for-rendering *sdl-context*
@@ -256,10 +265,7 @@
       ;; instead i prefer to leav the  key parameter as nil because it
       ;; could  give a  nice transition,  if  the queue  is filled  by
       ;; leftover of plasma rendering events
-      (sdlw:push-for-rendering *sdl-context*
-                               (lambda (dt)
-                                 (declare (ignore dt))
-                                 (sdlw:clear-buffer buffer width height 0 0 0)))
+      (clear-sdl-window)
       (let ((rectangles (loop repeat 1000 collect
                                          (multiple-value-list (make-blitting-rectangle width height)))))
         (loop for rectangle in rectangles do
@@ -291,6 +297,29 @@
                                    :force-push t))
         (format t "STOP RECTANGLES!~%")))))
 
+(defun load-bell-sprite ()
+  (let ((px (make-instance 'nodgui.pixmap:png)))
+    (nodgui.pixmap:load-from-vector px (nodgui.base64:decode nodgui.demo::+bell-icon+))
+    px))
+
+(defparameter *bell-sprite* (load-bell-sprite))
+
+(defun draw-bell-sprite (buffer width x y)
+  (sdlw:push-for-rendering *sdl-context*
+                           (lambda (dt)
+                             (declare (ignore dt))
+                             (sdlw:blit (nodgui.pixmap:bits *bell-sprite*)
+                                        (nodgui.pixmap:width *bell-sprite*)
+                                        buffer
+                                        width
+                                        0
+                                        0
+                                        y
+                                        x
+                                        (nodgui.pixmap:height *bell-sprite*)
+                                        (nodgui.pixmap:width *bell-sprite*)))
+                           :force-push t))
+
 (defun stop-animation ()
   (when (and *animation*
              (bt:threadp (animation-thread *animation*)))
@@ -315,6 +344,9 @@
            (notice-label  (make-instance 'label
                                          :master buttons-frame
                                          :text "Please note that the button will responds with a delay because we need to wait the rendering queue to be empty"))
+           (interaction-label (make-instance 'label
+                                             :master nil
+                                             :text "Click on the sdl window to draw a sprite"))
            (radio-plasma  (make-instance 'radio-button
                                          :master   buttons-frame
                                          :text     "Plasma"
@@ -362,21 +394,30 @@
                                                    (stop-animation)
                                                    (sdlw:quit-sdl *sdl-context*)
                                                    (exit-nodgui)))))
-      (grid warning-label    0 0)
-      (grid sdl-frame        1 0)
-      (grid buttons-frame    2 0 :sticky :sew)
-      (grid buttons-label    0 0)
-      (grid radio-plasma     0 1)
-      (grid radio-fire       0 2)
-      (grid radio-rectangles 0 3)
-      (grid button-quit      0 4)
-      (grid notice-label     0 5)
+      (grid warning-label     0 0)
+      (grid interaction-label 1 0)
+      (grid sdl-frame         2 0)
+      (grid buttons-frame     3 0 :sticky :sew)
+      (grid buttons-label     0 0)
+      (grid radio-plasma      0 1)
+      (grid radio-fire        0 2)
+      (grid radio-rectangles  0 3)
+      (grid button-quit       0 4)
+      (grid notice-label      0 5)
       (grid-columnconfigure *tk* 0 :weight 1)
       (grid-rowconfigure *tk* 0 :weight 1)
-      (bind sdl-frame "<1>" (lambda (e) (format t "pressed mouse on frame, event ~a~%" e)))
+      (bind sdl-frame
+            #$<1>$
+            (lambda (event)
+              (with-accessors ((buffer sdlw:buffer)
+                               (width  sdlw:width)
+                               (height sdlw:height)) *sdl-context*
+                (format t "pressed mouse on frame, event ~a~%" event)
+                (draw-bell-sprite buffer width (event-x event) (event-y event)))))
       (wait-complete-redraw)
       (setf *sdl-context* (make-instance 'sdlw:context
                                          :non-blocking-queue-maximum-size 16
                                          :classic-frame sdl-frame
                                          :buffer-width  800
-                                         :buffer-height 600)))))
+                                         :buffer-height 600))
+      (clear-sdl-window :force t))))

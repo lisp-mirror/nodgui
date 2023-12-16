@@ -244,7 +244,10 @@
   (to:f* width height))
 
 (defun make-buffer (width height)
-  (static-vectors:make-static-vector (buffer-sizes->static-vector-size width height)
+  (make-buffer-elements (buffer-sizes->static-vector-size width height)))
+
+(defun make-buffer-elements (element-count)
+  (static-vectors:make-static-vector element-count
                                      :element-type '(unsigned-byte 32)
                                      :initial-element #x000000ff))
 

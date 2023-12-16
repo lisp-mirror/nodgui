@@ -28,8 +28,17 @@
 
 (define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
 
-(defun make-bits-array (size)
-  (make-fresh-array size 0 '(unsigned-byte 8) t))
+(defun make-bits-array (pixmap width height)
+  (let ((buffer (nodgui.sdl-window:make-buffer width height)))
+    (setf (slot-value pixmap 'bits) buffer)
+    (tg:finalize pixmap
+                 (lambda () (nodgui.sdl-window:free-buffer-memory buffer)))))
+
+(defun make-bits-array-elements (pixmap size)
+  (let ((buffer (nodgui.sdl-window:make-buffer-elements size)))
+    (setf (slot-value pixmap 'bits) buffer)
+    (tg:finalize pixmap
+                 (lambda () (nodgui.sdl-window:free-buffer-memory buffer)))))
 
 (defclass pixmap ()
   ((data
@@ -60,7 +69,7 @@
     responsibility that this  value's slot matches the  length of each
     element of the slot 'data'")
    (bits
-    :initform (make-bits-array 0)
+    :initform nil
     :accessor bits
     :initarg :bits
     :documentation "This  is the same  of 'data'  slots but as  a flat
@@ -420,13 +429,20 @@ range (0-1.0]), scaling use nearest-neighbor."
 
 (defmethod sync-data-to-bits ((object pixmap))
   "Fill 'bits' slot of this pixmap  with the contents of 'data' slots"
-  (with-accessors ((data data) (bits bits) (depth depth)) object
-    (when (/= (length data) (* depth (length bits)))
-      (setf bits (make-bits-array (* (length data) depth))))
+  (with-accessors ((data data)
+                   (bits bits)
+                   (depth depth)
+                   (width width)
+                   (height height)) object
+    (when (/= (length data)
+              (length bits))
+      (make-bits-array object width height))
     (loop for pixel-count from 0 below (length data) do
-         (loop for channel-count from 0 below depth do
-              (setf (elt bits (+ (* pixel-count depth) channel-count))
-                    (elt (elt data pixel-count) channel-count))))
+      (let* ((color-list (loop for channel-count from 0 below depth
+                               collect
+                               (elt (elt data pixel-count) channel-count)))
+             (pixel (apply #'nodgui.sdl-window:assemble-color color-list)))
+        (setf (elt bits pixel-count) pixel)))
     object))
 
 (defmethod sync-bits-to-data ((object pixmap))
@@ -436,20 +452,17 @@ range (0-1.0]), scaling use nearest-neighbor."
                    (depth  depth)
                    (width  width)
                    (height height)) object
-    (let ((pixel (make-fresh-ubvec4))
-          (data-size (* width height)))
-      (if (/= (length data) (* depth (length bits)))
-          (progn
-            (setf data (make-array-frame data-size +ubvec4-zero+ 'ubvec4 t))
-            (loop for i from 0 below (length bits) by depth do
-                 (loop for channel-count from 0 below depth do
-                      (setf (elt pixel channel-count) (elt bits (+ i channel-count))))
-                 (setf (elt data (truncate (/ i depth))) (alexandria:copy-array pixel))))
-          (loop for i from 0 below (length bits) by depth do
-               (loop for channel-count from 0 below depth do
-                    (setf (elt pixel channel-count)
-                          (elt bits (+ i channel-count))))
-               (setf (elt data (truncate (/ i depth))) (alexandria:copy-array pixel)))))
+    (let ((data-size (* width height)))
+      (when (/= (length data)
+                (length bits))
+        (setf data (make-array-frame data-size +ubvec4-zero+ 'ubvec4 t)))
+      (loop for i from 0 below (length bits) do
+        (let* ((pixel (elt bits i))
+               (r     (nodgui.sdl-window:extract-red-component   pixel))
+               (g     (nodgui.sdl-window:extract-green-component pixel))
+               (b     (nodgui.sdl-window:extract-blue-component  pixel))
+               (a     (nodgui.sdl-window:extract-alpha-component pixel)))
+          (setf (elt data i) (ubvec4 r g b a)))))
     object))
 
 (defmethod save-pixmap ((object pixmap) path)
@@ -907,7 +920,7 @@ from file: 'file'"
 
 (alexandria:define-constant +file-matrix-buff-size+    2048               :test '=)
 
-(alexandria:define-constant +file-matrix-element-type+ '(unsigned-byte 8) :test 'equalp)
+(alexandria:define-constant +file-matrix-element-type+ '(unsigned-byte 32) :test 'equalp)
 
 (defclass file-matrix (pixmap)
   ((file-path
@@ -933,16 +946,16 @@ from file: 'file'"
     (print-unreadable-object (object stream :type t :identity nil)
       (format stream "~aX~a bs: ~a stream: ~a" width height block-size stream-handle))))
 
-(defun calc-file-matrix-size (fm)
+(defun calc-file-matrix-size-elements (fm)
   (with-accessors ((block-size    block-size)
                    (stream-handle stream-handle)
                    (width         width)
                    (height        height)) fm
-    (let ((size  (* width height block-size)))
+    (let ((size (* width height block-size)))
       (multiple-value-bind (block-num remainder)
           (floor (/ size +file-matrix-buff-size+))
         (values block-num ;; number of +file-matrix-buff-size+
-                (* remainder +file-matrix-buff-size+)))))) ; number of bytes!
+                (* remainder +file-matrix-buff-size+)))))) ; number of elements (32 bits)!
 
 (defun fm-vector-type-fn (fm)
   (with-accessors ((block-size block-size)) fm
@@ -961,15 +974,15 @@ from file: 'file'"
                    (stream-handle stream-handle)
                    (width         width)
                    (height        height)) fm
-      (multiple-value-bind (block-counts bytes-left)
-          (calc-file-matrix-size fm)
+      (multiple-value-bind (block-counts elements-left)
+          (calc-file-matrix-size-elements fm)
         (let ((buff (make-array-frame +file-matrix-buff-size+
                                       0
                                       +file-matrix-element-type+
                                       t)))
           (loop repeat block-counts do
                (write-sequence buff stream-handle))
-          (loop repeat bytes-left do
+          (loop repeat elements-left do
                (write-byte 0 stream-handle))))
       (finish-output stream-handle)
       (file-position stream-handle 0))
@@ -1040,15 +1053,16 @@ from file: 'file'"
 
 (defmethod sync-data-to-bits ((object file-matrix))
   "Fill 'bits' slot of this pixmap  with the contents of 'data' slots"
-  (multiple-value-bind (x byte-sizes)
-      (calc-file-matrix-size object)
-    (declare (ignore x))
-    (with-accessors ((data          data)
-                     (bits          bits)
+  (multiple-value-bind (block-count elements-left)
+      (calc-file-matrix-size-elements object)
+    (with-accessors ((bits          bits)
                      (stream-handle stream-handle)) object
-      (setf bits (make-bits-array byte-sizes))
+      (make-bits-array-elements object
+                                (+ (* block-count
+                                      +file-matrix-buff-size+)
+                                   elements-left))
       (file-position stream-handle 0)
-      (loop for bytes-offset from 0 below byte-sizes do
+      (loop for bytes-offset from 0 below elements-left do
         (setf (elt bits bytes-offset)
               (read-byte stream-handle)))
       object)))

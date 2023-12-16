@@ -1360,6 +1360,7 @@
    #:extract-alpha-component
    #:blit
    #:make-buffer
+   #:make-buffer-elements
    #:free-buffer-memory
    #:with-buffer
    #:clear-buffer
