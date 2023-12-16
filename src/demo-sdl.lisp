@@ -346,7 +346,7 @@
                                          :text "Please note that the button will responds with a delay because we need to wait the rendering queue to be empty"))
            (interaction-label (make-instance 'label
                                              :master nil
-                                             :text "Click on the sdl window to draw a sprite"))
+                                             :text "Click on the sdl window to draw a sprite, be aware that no bounds checking is done."))
            (radio-plasma  (make-instance 'radio-button
                                          :master   buttons-frame
                                          :text     "Plasma"

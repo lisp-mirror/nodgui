@@ -97,6 +97,7 @@
           (the fixnum (ash r 24))))
 
 (defun set-pixel@ (buffer width x y r g b &optional (a 255))
+  "Note: no bounds checking is done"
   (declare (fixnum x y width r g b a))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
@@ -105,6 +106,7 @@
           value)))
 
 (defun pixel@ (buffer width x y)
+  "Note: no bounds checking is done"
   (declare (fixnum x y width))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   ;; (declare (optimize (speed 3) (debug 3) (safety 0)))
@@ -172,6 +174,7 @@
              destination-column
              source-last-row
              source-last-column)
+  "Note: no bounds checking is done"
   (declare ((simple-array (unsigned-byte 32)) buffer-source buffer-destination))
   (declare (fixnum buffer-source-width
                    buffer-destination-width
