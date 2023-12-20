@@ -320,6 +320,29 @@
                                         (nodgui.pixmap:width *bell-sprite*)))
                            :force-push t))
 
+(defun draw-lines (buffer width x y)
+  (loop for degree from 0 below 360 by 2
+        for color  from 0 by (truncate (* 255 (/ 2 360)))
+        do
+           (let ((radius 50.0))
+             (sdlw:push-for-rendering *sdl-context*
+                                      (let* ((current-color color)
+                                             (actual-degree degree)
+                                             (radians   (to:d/ (to:d* (to:d pi)
+                                                                      (to:d actual-degree))
+                                                               180.0))
+                                             (current-x (to:f+ x
+                                                               (truncate (to:d* radius (to:dcos radians)))))
+                                             (current-y (to:f+ y
+                                                               (truncate (* radius (sin radians))))))
+                                        (lambda (dt)
+                                          (declare (ignore dt))
+                                          (sdlw:draw-line buffer width
+                                                          x y
+                                                          current-x current-y
+                                                          255 0 current-color  255)))
+                                      :force-push t))))
+
 (defun stop-animation ()
   (when (and *animation*
              (bt:threadp (animation-thread *animation*)))
@@ -408,12 +431,17 @@
       (grid-rowconfigure *tk* 0 :weight 1)
       (bind sdl-frame
             #$<1>$
-            (lambda (event)
-              (with-accessors ((buffer sdlw:buffer)
-                               (width  sdlw:width)
-                               (height sdlw:height)) *sdl-context*
-                (format t "pressed mouse on frame, event ~a~%" event)
-                (draw-bell-sprite buffer width (event-x event) (event-y event)))))
+            (let ((what-to-draw 1))
+              (lambda (event)
+                (incf what-to-draw)
+                (with-accessors ((buffer sdlw:buffer)
+                                 (width  sdlw:width)
+                                 (height sdlw:height)) *sdl-context*
+                  (cond
+                    ((= (rem what-to-draw 2) 0)
+                     (draw-bell-sprite buffer width (event-x event) (event-y event)))
+                    (t
+                     (draw-lines  buffer width (event-x event) (event-y event))))))))
       (wait-complete-redraw)
       (setf *sdl-context* (make-instance 'sdlw:context
                                          :non-blocking-queue-maximum-size 16

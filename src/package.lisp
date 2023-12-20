@@ -80,7 +80,8 @@
             #:f>
             #:f<=
             #:f>=
-            #:frem))
+            #:frem
+            #:fabs))
 
 (defpackage :nodgui.utils
   (:use :cl
@@ -165,6 +166,7 @@
            #:down-arrow
            #:big-dot
            #:bullet
+           #:definline
            #:*thread-default-special-bindings*
            #:make-thread
            #:make-lock
@@ -1330,7 +1332,8 @@
                     (:p :esrap)
                     (:bq :syncronized-queue)
                     (:q  :nodgui.non-blocking-queue)
-                    (:to :nodgui.typed-operations))
+                    (:to :nodgui.typed-operations)
+                    (:u  :nodgui.utils))
   (:export
    #:context
    #:width
@@ -1364,6 +1367,10 @@
    #:free-buffer-memory
    #:with-buffer
    #:clear-buffer
+   #:fill-rectangle
+   #:fill-circle
+   #:draw-circle
+   #:draw-line
    #:make-sdl-frame
    #:sync))
 

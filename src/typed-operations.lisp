@@ -157,3 +157,6 @@
 
 (defmacro frem (&body body)
   `(the fixnum (rem ,@body)))
+
+(defmacro fabs (&body body)
+  `(the fixnum (abs ,@body)))

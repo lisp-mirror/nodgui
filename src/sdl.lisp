@@ -96,14 +96,22 @@
           (the fixnum (ash g 16))
           (the fixnum (ash r 24))))
 
+(u:definline set-pixel-color@ (buffer width x y color)
+  "Note: no bounds checking is done"
+  (declare (fixnum x y width))
+  (declare ((unsigned-byte 32) color))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (setf (aref buffer (to:f+ x (to:f* y width)))
+        color))
+
 (defun set-pixel@ (buffer width x y r g b &optional (a 255))
   "Note: no bounds checking is done"
-  (declare (fixnum x y width r g b a))
+  (declare (fixnum x y width))
+  (declare ((unsigned-byte 8) r g b a))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let ((value (assemble-color r g b a)))
-    (setf (aref buffer (to:f+ x (to:f* y width)))
-          value)))
+  (let ((color (assemble-color r g b a)))
+    (set-pixel-color@ buffer width x y color)))
 
 (defun pixel@ (buffer width x y)
   "Note: no bounds checking is done"
@@ -364,9 +372,248 @@
                     (sum alpha-a alpha-b)))))
 
 (defun clear-buffer (buffer width height r g b &optional (alpha 255))
-  (declare (fixnum width height r g b alpha))
+  (declare (fixnum width height))
+  (declare ((unsigned-byte 8) r g b alpha))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((color (assemble-color r g b alpha)))
     (loop for i from 0 below (to:f* width height) do
       (setf (aref buffer i) color))))
+
+(defun fill-rectangle (buffer buffer-width
+                       top-left-x top-left-y
+                       bottom-right-x bottom-right-y
+                       r g b
+                       &optional (a 255))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum buffer-width top-left-x top-left-y bottom-right-x bottom-right-y))
+  (declare ((unsigned-byte 8) r g b a))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let* ((width  (to:f- bottom-right-x top-left-x))
+         (height (to:f- bottom-right-y top-left-y))
+         (w/2    (ash width  -1))
+         (h/2    (ash height -1))
+         (color  (assemble-color r g b a)))
+    (loop for column from top-left-x below (to:f+ top-left-x w/2) do
+      (loop for row from top-left-y below (to:f+ top-left-y h/2) do
+        (set-pixel@ buffer buffer-width column             row r g b a)
+        (set-pixel-color@ buffer buffer-width (to:f+ column w/2) row color)
+        (set-pixel-color@ buffer buffer-width column             (to:f+ row h/2) color)
+        (set-pixel-color@ buffer buffer-width column             (to:f+ row h/2) color)
+        (set-pixel-color@ buffer buffer-width (to:f+ column w/2) (to:f+ row h/2) color)))
+    buffer))
+
+(defun fill-circle (buffer buffer-width x-center y-center radius r g b &optional (a 255))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum x-center y-center radius))
+  (declare ((unsigned-byte 8) r g b a))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let ((r-square  (to:f* radius radius))
+        (color     (assemble-color r g b a)))
+    (loop for x from 0 below radius do
+      (let ((x-square (to:f* x x)))
+        (loop named inner for y from 0 below radius do
+          (let ((condition (to:f<= (to:f+ (to:f* y y)
+                                          x-square)
+                                   r-square)))
+            (if condition
+                (progn
+                  (set-pixel-color@ buffer buffer-width
+                                    (to:f+ x-center x)
+                                    (to:f+ y-center y)
+                                    color)
+                  (set-pixel-color@ buffer buffer-width
+                                    (to:f+ x-center x)
+                                    (to:f+ y-center (to:f- y))
+                                    color)
+                  (set-pixel-color@ buffer buffer-width
+                                    (to:f+ x-center (to:f- x))
+                                    (to:f+ y-center (to:f- y))
+                                    color)
+                  (set-pixel-color@ buffer buffer-width
+                                    (to:f+ x-center (to:f- x))
+                                    (to:f+ y-center        y)
+                                    color))
+                (return-from inner t))))))
+    buffer))
+
+(a:define-constant +cos-45-degree+ (to:d (cos (/ pi 4))) :test #'=)
+
+(defun draw-circle (buffer buffer-width x-center y-center radius r g b &optional (a 255))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum buffer-width x-center y-center radius))
+  (declare ((unsigned-byte 8) r g b a))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let ((x-end     (ash (to:f* radius 185364) -18))
+        (color     (assemble-color r g b a)))
+    (loop for x fixnum from 0 to x-end
+          with y fixnum          = radius
+          with threshold fixnum  = 0
+          do
+             (if (< threshold 0)
+                 (incf threshold (to:f+ (to:f* 2 x)
+                                        1))
+                 (progn
+                   (incf threshold (to:f* 2 (to:f+ (to:f- x y)
+                                                   1)))
+                   (decf y)))
+             (set-pixel-color@ buffer buffer-width
+                               (to:f+ x-center x)
+                               (to:f+ y-center y)
+                               color)
+             (set-pixel-color@ buffer buffer-width
+                               (to:f+ x-center y)
+                               (to:f+ y-center x)
+                               color)
+             (set-pixel-color@ buffer buffer-width
+                               (to:f+ x-center (to:f- x))
+                               (to:f+ y-center y)
+                               color)
+             (set-pixel-color@ buffer buffer-width
+                               (to:f+ x-center y)
+                               (to:f+ y-center (to:f- x))
+                               color)
+             (set-pixel-color@ buffer buffer-width
+                               (to:f+ x-center (to:f- x))
+                               (to:f+ y-center (to:f- y))
+                               color)
+             (set-pixel-color@ buffer buffer-width
+                               (to:f+ x-center (to:f- y))
+                               (to:f+ y-center (to:f- x))
+                               color)
+             (set-pixel-color@ buffer buffer-width
+                               (to:f+ x-center        x)
+                               (to:f+ y-center (to:f- y))
+                               color)
+             (set-pixel-color@ buffer buffer-width
+                               (to:f+ x-center (to:f- y))
+                               (to:f+ y-center        x)
+                               color))))
+
+(defun calc-octant (x y)
+  (declare (fixnum x y))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let* ((dx-positive (to:f> x 0))
+         (dy-positive (to:f> y 0))
+         (dx-negative (not dx-positive))
+         (dy-negative (not dy-positive))
+         (abs-dy>dx   (to:f> (abs y)
+                             (abs x))))
+    (cond
+      ;; second octant
+      ((and dx-positive
+            dy-positive
+            (to:f> y x))
+       :2)
+      ;; third octant
+      ((and dx-negative
+            dy-positive
+            abs-dy>dx)
+       :3)
+      ;; fourth octant
+      ((and dx-negative
+            dy-positive
+            (not abs-dy>dx))
+       :4)
+      ;; fifth octant
+      ((and dx-negative
+            dy-negative
+            (not abs-dy>dx))
+       :5)
+      ;; sixth octant
+      ((and dx-negative
+            dy-negative
+            abs-dy>dx)
+       :6)
+      ;; seventh octant
+      ((and dx-positive
+            dy-negative
+            abs-dy>dx)
+       :7)
+      ;; eight octant
+      ((and dx-positive
+            dy-negative
+            (not abs-dy>dx)
+            (not (= y 0)))
+       :8)
+      ;; first octant
+      (t :1))))
+
+(defun to-first-octant (octant x y)
+  (declare (symbol octant))
+  (declare (fixnum x y))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (case octant
+    (:1
+     (values x y))
+    (:2
+     (values y x))
+    (:3
+     (values y (to:f- x)))
+    (:4
+     (values (to:f- x) y))
+    (:5
+     (values (to:f- x) (to:f- y)))
+    (:6
+     (values (to:f- y) (to:f- x)))
+    (:7
+     (values (to:f- y) x))
+    (:8
+     (values x (to:f- y)))))
+
+(defun from-first-octant (new-octant x y)
+  (declare (symbol new-octant))
+  (declare (fixnum x y))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (case new-octant
+    (:1
+     (values x y))
+    (:2
+     (values y x))
+    (:3
+     (values (to:f- y) x))
+    (:4
+     (values (to:f- x) y))
+    (:5
+     (values (to:f- x) (to:f- y)))
+    (:6
+     (values (to:f- y) (to:f- x)))
+    (:7
+     (values y (to:f- x)))
+    (:8
+     (values x (to:f- y)))))
+
+(defun draw-line (buffer buffer-width x0 y0 x1 y1 r g b &optional (a 255))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum buffer-width x0 y0 x1 y1))
+  (declare ((unsigned-byte 8) r g b a))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let ((octant (calc-octant (to:f- x1 x0)
+                             (to:f- y1 y0))))
+    (multiple-value-bind (first-octant-x first-octant-y)
+        (to-first-octant octant
+                         (to:f- x1 x0)
+                         (to:f- y1 y0))
+      (let* ((delta-x   (the fixnum first-octant-x))
+             (delta-y   (the fixnum first-octant-y))
+             (2dx       (ash delta-x 1))
+             (2dy       (ash delta-y 1))
+             (threshold (to:f- 2dy delta-x))
+             (color     (assemble-color r g b a)))
+        (loop with x fixnum = 0
+              with y fixnum = 0
+              while (to:f< x delta-x)
+              do
+                 (multiple-value-bind (actual-x actual-y)
+                     (from-first-octant octant x y)
+                   (set-pixel-color@ buffer
+                                     buffer-width
+                                     (to:f+ (the fixnum actual-x) x0)
+                                     (to:f+ (the fixnum actual-y) y0)
+                                     color))
+                 (when (to:f>= (the fixnum threshold) 0)
+                   (incf (the fixnum threshold) (to:f- 2dx))
+                   (incf y))
+                 (incf (the fixnum threshold) 2dy)
+                 (incf x)))))
+    buffer)
