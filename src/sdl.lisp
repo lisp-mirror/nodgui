@@ -3,7 +3,7 @@
 (a:define-constant +channels-number+ 4 :test #'=)
 
 (defun fps->delta-t (fps)
-  (truncate (* 1000 (/ 1 fps))))
+  (truncate (/ 1000 fps)))
 
 (defun get-milliseconds ()
   (sdl2:get-ticks))
@@ -229,7 +229,7 @@
                           (minimum-delta-t minimum-delta-t)) context
            (sdl2:with-init (:everything)
              (setf window (create-window-from-pointer (window-id->pointer window-id)))
-             (sdl2:with-renderer (renderer window :flags '(:accelerated :presentvsync))
+             (sdl2:with-renderer (renderer window :flags '(:accelerated))
                (setf texture (make-texture renderer width height))
                (sdl2:with-event-loop (:method :poll)
                  (:idle
@@ -237,8 +237,8 @@
                   (let* ((millis  (get-milliseconds))
                          (dt      (- millis time-spent)))
                     (when (>= dt minimum-delta-t)
-                      (setf time-spent millis)
                       (when (not (rendering-must-wait-p context))
+                        (setf time-spent millis)
                         (let ((fn (pop-for-rendering context)))
                           (funcall fn dt)
                           (sdl2:update-texture texture
