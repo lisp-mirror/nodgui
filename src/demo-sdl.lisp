@@ -322,7 +322,7 @@
 
 (defun draw-lines (buffer width x y)
   (loop for degree from 0 below 360 by 2
-        for color  from 0 by (truncate (* 255 (/ 2 360)))
+        for color = 0 then (truncate (abs (* 255 (sin (* 12 (/ degree 360))))))
         do
            (let ((radius 50.0))
              (sdlw:push-for-rendering *sdl-context*
