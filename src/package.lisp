@@ -1362,6 +1362,7 @@
    #:extract-blue-component
    #:extract-alpha-component
    #:blit
+   #:blit*
    #:make-buffer
    #:make-buffer-elements
    #:free-buffer-memory

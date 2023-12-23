@@ -304,20 +304,38 @@
 
 (defparameter *bell-sprite* (load-bell-sprite))
 
-(defun draw-bell-sprite (buffer width x y)
+(a:define-constant +test-sprite+
+    "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAIUlEQVQY02P8z4ACGFH5TAx4AU2lGRkYUByzatXqweI0ABCcBRCKObYxAAAAAElFTkSuQmCC"
+  :test #'string=)
+
+(defun load-test-sprite ()
+  (let ((px (make-instance 'nodgui.pixmap:png)))
+    (nodgui.pixmap:load-from-vector px (nodgui.base64:decode +test-sprite+))
+    px))
+
+(defparameter *test-sprite* (load-test-sprite))
+
+(defun draw-bell-sprite (buffer width height x y)
   (sdlw:push-for-rendering *sdl-context*
                            (lambda (dt)
                              (declare (ignore dt))
-                             (sdlw:blit (nodgui.pixmap:bits *bell-sprite*)
-                                        (nodgui.pixmap:width *bell-sprite*)
-                                        buffer
-                                        width
-                                        0
-                                        0
-                                        y
-                                        x
-                                        (nodgui.pixmap:height *bell-sprite*)
-                                        (nodgui.pixmap:width *bell-sprite*)))
+                             (sdlw:blit* (nodgui.pixmap:bits   *bell-sprite*)
+                                         (nodgui.pixmap:width  *bell-sprite*)
+                                         (nodgui.pixmap:height *bell-sprite*)
+                                         buffer
+                                         width
+                                         height
+                                         0
+                                         0
+                                         y
+                                         x
+                                         (nodgui.pixmap:height *bell-sprite*)
+                                         (nodgui.pixmap:width  *bell-sprite*)
+                                         (to:d (random 360.0))
+                                         (to:d+ 0.2 (to:d (random 1.8)))
+                                         (to:d+ 0.2 (to:d (random 1.8)))
+                                         0
+                                         0))
                            :force-push t))
 
 (defun draw-lines (buffer width x y)
@@ -439,7 +457,7 @@
                                  (height sdlw:height)) *sdl-context*
                   (cond
                     ((= (rem what-to-draw 2) 0)
-                     (draw-bell-sprite buffer width (event-x event) (event-y event)))
+                     (draw-bell-sprite buffer width height (event-x event) (event-y event)))
                     (t
                      (draw-lines  buffer width (event-x event) (event-y event))))))))
       (wait-complete-redraw)
