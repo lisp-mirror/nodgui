@@ -366,11 +366,13 @@
 (defmethod sync ((object context))
   (sdl2:delay (minimum-delta-t object)))
 
-(defun make-sdl-frame (width height)
-  (make-instance 'nodgui:classic-frame
-                 :width  width
-                 :height height
-                 :background ""))
+(defun make-sdl-frame (width height &rest args)
+  (apply #'make-instance
+         (append (list 'nodgui:classic-frame
+                       :width  width
+                       :height height
+                       :background "")
+                 args)))
 
 (defun sum-pixels (pixel-a pixel-b)
   (flet ((sum (a b)

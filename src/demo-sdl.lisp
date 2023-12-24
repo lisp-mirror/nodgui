@@ -437,16 +437,17 @@
                                          :wraplength 800
                                          :text "WARNING: This animation may potentially trigger seizures for people with photosensitive epilepsy. Viewer discretion is advised."
                                          :font (font-create "serif" :size 20 :weight :bold)))
-           (sdl-frame     (make-instance 'nodgui:classic-frame
-                                         :width  800
-                                         :height 600
-                                         :background ""))
-           (buttons-frame (make-instance 'nodgui:frame))
+           (sdl-frame     (sdlw:make-sdl-frame 800 600))
+           (buttons-frame (make-instance 'nodgui:frame
+                                         :borderwidth 2
+                                         :relief :groove))
+           (quit-frame    (make-instance 'nodgui:frame
+                                         :master buttons-frame))
            (buttons-label (make-instance 'label
                                          :master buttons-frame
                                          :text "Select animation:"))
            (notice-label  (make-instance 'label
-                                         :master buttons-frame
+                                         :master quit-frame
                                          :text "Please note that the button will responds with a delay because we need to wait the rendering queue to be empty"))
            (interaction-label (make-instance 'label
                                              :master nil
@@ -492,24 +493,27 @@
                                                                  (make-thread #'draw-rectangles-thread)))
                                            (format t "tk event returned~%"))))
            (button-quit  (make-instance 'button
-                                        :master buttons-frame
-                                        :text "quit"
+                                        :master  quit-frame
+                                        :text    "quit"
                                         :command (lambda ()
                                                    (stop-animation)
                                                    (sdlw:quit-sdl *sdl-context*)
                                                    (exit-nodgui)))))
-      (grid warning-label     0 0)
-      (grid interaction-label 1 0)
+      (grid warning-label     0 0 :columnspan 2)
+      (grid interaction-label 1 0 :columnspan 2)
       (grid sdl-frame         2 0)
-      (grid buttons-frame     3 0 :sticky :sew)
-      (grid buttons-label     0 0)
-      (grid radio-plasma      0 1)
-      (grid radio-fire        0 2)
-      (grid radio-rectangles  0 3)
-      (grid button-quit       0 4)
-      (grid notice-label      0 5)
-      (grid-columnconfigure *tk* 0 :weight 1)
-      (grid-rowconfigure *tk* 0 :weight 1)
+      (grid buttons-frame     2 1 :sticky :nws)
+      (grid buttons-label     1 0 :sticky :nw :padx 5 :pady 10)
+      (grid radio-plasma      2 0 :sticky :nw :padx 5)
+      (grid radio-fire        3 0 :sticky :nw :padx 5)
+      (grid radio-rectangles  4 0 :sticky :nw :padx 5)
+      (grid quit-frame        5 0 :sticky :wes)
+      (grid button-quit       0 0 :sticky :s)
+      (grid notice-label      1 0 :sticky :sw)
+      (grid-columnconfigure (root-toplevel) :all :weight 1)
+      (grid-rowconfigure    (root-toplevel) :all :weight 1)
+      (grid-rowconfigure    buttons-frame 5 :weight 1)
+      (grid-columnconfigure buttons-frame :all :weight 1)
       (bind sdl-frame
             #$<1>$
             (let ((what-to-draw 0))
