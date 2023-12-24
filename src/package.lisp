@@ -68,6 +68,7 @@
             #:dfloor
             #:dlerp
             #:secure-dacos
+            #:degree->radians
             #:+2pi+
             #:parse-number->desired
             #:f
@@ -1362,7 +1363,7 @@
    #:extract-blue-component
    #:extract-alpha-component
    #:blit
-   #:blit*
+   #:blit-transform
    #:make-buffer
    #:make-buffer-elements
    #:free-buffer-memory

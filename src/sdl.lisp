@@ -209,19 +209,21 @@
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (flet ((copy-row (row-source row-destination)
            (declare (fixnum row-source row-destination))
+           (declare (function *blending-function*))
            ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-           (loop for column fixnum from source-column below source-last-column do
-             (let* ((color-destination (to:faref buffer-destination
+           (loop for from-column fixnum from source-column below source-last-column
+                 for to-column fixnum from 0 do
+                   (let* ((color-destination (to:faref buffer-destination
                                                  (to:f+ (to:f* row-destination
                                                                buffer-destination-width)
-                                                        (to:f+ destination-column column))))
+                                                        (to:f+ destination-column to-column))))
                     (color-source      (to:faref buffer-source
                                                  (to:f+ (to:f* row-source buffer-source-width)
-                                                               column)))
+                                                        from-column)))
                     (color (funcall *blending-function* color-source color-destination)))
                (setf (to:faref buffer-destination (to:f+ (to:f* row-destination
                                                                 buffer-destination-width)
-                                                         (to:f+ destination-column column)))
+                                                         (to:f+ destination-column to-column)))
                      color)))))
     (loop for from-row fixnum from source-row below source-last-row
           for to-row fixnum from destination-row do
@@ -280,10 +282,12 @@
   (static-vectors:free-static-vector buffer))
 
 (defmacro with-buffer ((buffer width height) &body body)
-  `(unwind-protect
-        (let ((,buffer (nake-buffer ,width ,height)))
-          ,@body)
-     (free-buffer-memory ,buffer)))
+  `(let ((,buffer nil))
+     (unwind-protect
+          (progn
+            (setf ,buffer (make-buffer ,width ,height))
+            ,@body)
+       (free-buffer-memory ,buffer))))
 
 (defmethod initialize-instance :after ((object context)
                                        &key
@@ -673,7 +677,7 @@
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:f+ coordinate delta))
 
-(u:definline translate-float (coordinate delta)
+(u:definline float-translate (coordinate delta)
   (declare (to::desired-type coordinate delta))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:d+ coordinate delta))
@@ -730,23 +734,23 @@
   ;;(declare (optimize (speed 3) (debug 0) (safety 0)))
   (truncate (the to::desired-type (float-coordinate-scale (to:d coordinate) factor))))
 
-(defun blit* (buffer-source
-              buffer-source-width
-              buffer-source-height
-              buffer-destination
-              buffer-destination-width
-              buffer-destination-height
-              source-row
-              source-column
-              destination-row
-              destination-column
-              source-last-row
-              source-last-column
-              rotation
-              scaling-row
-              scaling-column
-              pivot-row
-              pivot-column)
+(defun blit-transform (buffer-source
+                       buffer-source-width
+                       buffer-source-height
+                       buffer-destination
+                       buffer-destination-width
+                       buffer-destination-height
+                       source-row
+                       source-column
+                       destination-row
+                       destination-column
+                       source-last-row
+                       source-last-column
+                       rotation
+                       scaling-row
+                       scaling-column
+                       pivot-row
+                       pivot-column)
   (declare ((simple-array (unsigned-byte 32)) buffer-source buffer-destination))
   (declare (nodgui.typed-operations::desired-type rotation scaling-row scaling-column))
   (declare (fixnum buffer-source-width
@@ -763,100 +767,143 @@
                    pivot-column))
   (declare (function *blending-function*))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let* ((angle (to:d/ (to:d* (to:d pi)
-                             rotation)
-                      (to:d 180.0)))
-         (cos-reverse-angle      (to:dcos (to:d- angle)))
-         (sin-reverse-angle      (to:dsin (to:d- angle)))
-         (reverse-scaling-column (to:d/ (to:d 1.0)
-                                         scaling-column))
-         (reverse-scaling-row    (to:d/ (to:d 1.0)
-                                         scaling-row)))
-    (flet ((calc-aabb-vertex (x y)
-             (let ((to-origin-x (coordinate-scale (translate (translate x (to:f- pivot-column))
-                                                             (to:f- destination-column))
-                                                  scaling-column))
-                   (to-origin-y (coordinate-scale (translate (translate y (to:f- pivot-row))
-                                                             (to:f- destination-row))
-                                                  scaling-row)))
-               (multiple-value-bind (rotated-x rotated-y)
-                   (rotate to-origin-x to-origin-y angle)
-                 (values (translate (translate rotated-x pivot-column)
-                                    destination-column)
-                         (translate (translate rotated-y pivot-row)
-                                    destination-row))))))
-      (multiple-value-bind (aabb-1-column aabb-1-row)
-          (calc-aabb-vertex destination-column destination-row)
-        (multiple-value-bind (aabb-2-column aabb-2-row)
-            (calc-aabb-vertex (to:f+ destination-column source-last-column)
-                              destination-row)
-          (multiple-value-bind (aabb-3-column aabb-3-row)
-              (calc-aabb-vertex (to:f+ destination-column source-last-column)
-                                (to:f+ destination-row source-last-row))
-            (multiple-value-bind (aabb-4-column aabb-4-row)
-                (calc-aabb-vertex destination-column
-                                  (to:f+ destination-row source-last-row))
-              (let ((aabb-min-column (min aabb-1-column
-                                          aabb-2-column
-                                          aabb-3-column
-                                          aabb-4-column))
-                    (aabb-max-column (max aabb-1-column
-                                          aabb-2-column
-                                          aabb-3-column
-                                          aabb-4-column))
-                    (aabb-min-row    (min aabb-1-row
-                                          aabb-2-row
-                                          aabb-3-row
-                                          aabb-4-row))
-                    (aabb-max-row    (max aabb-1-row
-                                          aabb-2-row
-                                          aabb-3-row
-                                          aabb-4-row)))
-                (loop for to-row fixnum from aabb-min-row below aabb-max-row do
-                  (loop for to-column fixnum from aabb-min-column below aabb-max-column do
-                      (when (and (to:f>= to-row 0)
-                                 (to:f>= to-column 0)
-                                 (to:f< to-row buffer-destination-height)
-                                 (to:f< to-column buffer-destination-width))
-                        (multiple-value-bind (reverse-rotated-destination-column
-                                              reverse-rotated-destination-row)
-                            (float-rotate-sin-cos (to:d (translate (translate (translate to-column
-                                                                                         (to:f- destination-column))
-                                                                              (to:f- pivot-column))
-                                                                   source-column))
-                                                  (to:d (translate (translate (translate to-row
-                                                                                         (to:f- destination-row))
-                                                                              (to:f- pivot-row))
-                                                                   source-row))
-                                                  sin-reverse-angle
-                                                  cos-reverse-angle)
-                          (let* ((unscaled-source-column
-                                   (float-coordinate-scale reverse-rotated-destination-column
-                                                           reverse-scaling-column))
-                                 (unscaled-source-row
-                                   (float-coordinate-scale reverse-rotated-destination-row
-                                                           reverse-scaling-row)))
-                            (when (and (to:d>= unscaled-source-row 0.0)
-                                       (to:d>= unscaled-source-column 0.0)
-                                       (to:d< unscaled-source-row (to:d buffer-source-height))
-                                       (to:d< unscaled-source-column (to:d buffer-source-width)))
-                              (let* ((color-source      (bilinear-interpolation buffer-source
-                                                                                buffer-source-width
-                                                                                buffer-source-height
-                                                                                (translate-float unscaled-source-column
-                                                                                                 (to:d pivot-column))
-                                                                                (translate-float unscaled-source-row
-                                                                                                 (to:d pivot-row))))
-                                     (color-destination (pixel@ buffer-destination
-                                                                buffer-destination-width
-                                                                to-column
-                                                                to-row))
-                                     (color             (funcall *blending-function*
-                                                                 color-source
-                                                                 color-destination)))
-                                (set-pixel-color@ buffer-destination
-                                                  buffer-destination-width
-                                                  to-column
-                                                  to-row
-                                                  color)))))))))))))))
+  (if (and (/= rotation 0.0)
+           (or (/= source-column 0)
+               (/= source-row 0)
+               (/= source-last-column buffer-source-width)
+               (/= source-last-row buffer-source-height)))
+      (let ((copy-width  (to:f- source-last-column source-column))
+            (copy-height (to:f- source-last-row source-row)))
+        (with-buffer (copy copy-width copy-height)
+          (blit buffer-source
+                buffer-source-width
+                copy
+                copy-width
+                source-row
+                source-column
+                0
+                0
+                source-last-row
+                source-last-column)
+          (blit-transform copy
+                          copy-width
+                          copy-height
+                          buffer-destination
+                          buffer-destination-width
+                          buffer-destination-height
+                          0
+                          0
+                          destination-row
+                          destination-column
+                          copy-height
+                          copy-width
+                          rotation
+                          scaling-row
+                          scaling-column
+                          pivot-row
+                          pivot-column)))
+      (let* ((angle              (to:degree->radians rotation))
+             (cos-reverse-angle      (to:dcos (to:d- angle)))
+             (sin-reverse-angle      (to:dsin (to:d- angle)))
+             (reverse-scaling-column (to:d/ (to:d 1.0)
+                                            scaling-column))
+             (reverse-scaling-row    (to:d/ (to:d 1.0)
+                                            scaling-row))
+             (scaled-pivot-row               (float-coordinate-scale (to:d pivot-row) scaling-row))
+             (scaled-pivot-column            (float-coordinate-scale (to:d pivot-column) scaling-column))
+             (width-source-rectangle         (to:f- source-last-column source-column))
+             (height-source-rectangle        (to:f- source-last-row source-row))
+             (scaled-origin-column-offset    (the fixnum (coordinate-scale source-column scaling-column)))
+             (scaled-origin-row-offset       (the fixnum (coordinate-scale source-row scaling-row))))
+        (flet ((calc-aabb-vertex (x y)
+                 ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+                 (let ((to-origin-x (coordinate-scale (translate (translate x (- pivot-column))
+                                                                 (to:f- destination-column))
+                                                      scaling-column))
+                       (to-origin-y (coordinate-scale (translate (translate y (- pivot-row))
+                                                                 (to:f- destination-row))
+                                                      scaling-row)))
+                   (multiple-value-bind (rotated-x rotated-y)
+                       (rotate to-origin-x to-origin-y angle)
+                     (values (translate rotated-x (to:f+ destination-column
+                                                    (the fixnum (truncate (the to::desired-type
+                                                                               scaled-pivot-column)))))
+                             (translate rotated-y (to:f+ destination-row
+                                                    (the fixnum (truncate (the to::desired-type
+                                                                               scaled-pivot-row))))))))))
+          (multiple-value-bind (aabb-1-column aabb-1-row)
+              (calc-aabb-vertex destination-column destination-row)
+            (multiple-value-bind (aabb-2-column aabb-2-row)
+                (calc-aabb-vertex (to:f+ destination-column width-source-rectangle)
+                                  destination-row)
+              (multiple-value-bind (aabb-3-column aabb-3-row)
+                  (calc-aabb-vertex (to:f+ destination-column width-source-rectangle)
+                                    (to:f+ destination-row height-source-rectangle))
+                (multiple-value-bind (aabb-4-column aabb-4-row)
+                    (calc-aabb-vertex destination-column
+                                      (to:f+ destination-row height-source-rectangle))
+                  (let* ((aabb-min-column (min aabb-1-column
+                                               aabb-2-column
+                                               aabb-3-column
+                                               aabb-4-column))
+                         (aabb-max-column (max aabb-1-column
+                                               aabb-2-column
+                                               aabb-3-column
+                                               aabb-4-column))
+                         (aabb-min-row    (min aabb-1-row
+                                               aabb-2-row
+                                               aabb-3-row
+                                               aabb-4-row))
+                         (aabb-max-row    (max aabb-1-row
+                                               aabb-2-row
+                                               aabb-3-row
+                                               aabb-4-row)))
+                    (loop for to-row fixnum from (to:f+ aabb-min-row scaled-origin-row-offset)
+                            below (to:f+ aabb-max-row scaled-origin-row-offset) do
+                              (loop for to-column fixnum from (to:f+ aabb-min-column scaled-origin-column-offset)
+                                      below (to:f+ aabb-max-column scaled-origin-column-offset) do
+                                        (when (and (to:f>= to-row 0)
+                                                   (to:f>= to-column 0)
+                                                   (to:f< to-row buffer-destination-height)
+                                                   (to:f< to-column buffer-destination-width))
+                                          (multiple-value-bind (reverse-rotated-destination-column
+                                                                reverse-rotated-destination-row)
+                                              (float-rotate-sin-cos (to:d (float-translate (float-translate (to:d to-column)
+                                                                                                            (to:d- (to:d destination-column)))
+                                                                                           (to:d- scaled-pivot-column)))
+                                                                    (to:d (float-translate (float-translate (to:d to-row)
+                                                                                                            (to:d- (to:d destination-row)))
+                                                                                           (to:d- scaled-pivot-row)))
+                                                                    sin-reverse-angle
+                                                                    cos-reverse-angle)
+                                            (let* ((unscaled-source-column
+                                                     (float-coordinate-scale (float-translate reverse-rotated-destination-column
+                                                                                              (to:d scaled-pivot-column))
+                                                                             reverse-scaling-column))
+                                                   (unscaled-source-row
+                                                     (float-coordinate-scale (float-translate reverse-rotated-destination-row
+                                                                                              (to:d scaled-pivot-row))
+                                                                             reverse-scaling-row)))
+                                              (when (and (to:d>= unscaled-source-row 0.0)
+                                                         (to:d>= unscaled-source-column 0.0)
+                                                         (to:d< unscaled-source-row (to:d buffer-source-height))
+                                                         (to:d< unscaled-source-column (to:d buffer-source-width)))
+                                                (let* ((color-source      (bilinear-interpolation buffer-source
+                                                                                                  buffer-source-width
+                                                                                                  buffer-source-height
+                                                                                                  unscaled-source-column
+                                                                                                  unscaled-source-row))
+
+                                                       (color-destination (pixel@ buffer-destination
+                                                                                  buffer-destination-width
+                                                                                  to-column
+                                                                                  to-row))
+                                                       (color             (funcall *blending-function*
+                                                                                   color-source
+                                                                                   color-destination)))
+                                                  (set-pixel-color@ buffer-destination
+                                                                    buffer-destination-width
+                                                                    to-column
+                                                                    to-row
+                                                                    color))))))))))))))))
   buffer-destination)

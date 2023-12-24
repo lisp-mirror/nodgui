@@ -113,6 +113,13 @@
   (declare (desired-type a))
   (dacos (dmin 1.0 a)))
 
+(alexandria:define-constant +degree->radians-factor+ (d (/ pi 180)) :test #'=)
+
+(defun degree->radians (degree)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (desired-type degree))
+  (d* degree +degree->radians-factor+))
+
 ;;;; constants
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

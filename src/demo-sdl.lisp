@@ -304,9 +304,15 @@
 
 (defparameter *bell-sprite* (load-bell-sprite))
 
+;; 10px
 (a:define-constant +test-sprite+
-    "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAIUlEQVQY02P8z4ACGFH5TAx4AU2lGRkYUByzatXqweI0ABCcBRCKObYxAAAAAElFTkSuQmCC"
+   "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAIUlEQVQY02P8z4ACGFH5TAx4AU2lGRkYUByzatXqweI0ABCcBRCKObYxAAAAAElFTkSuQmCC"
   :test #'string=)
+
+;; 2px
+;; (a:define-constant +test-sprite+
+;;   "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVQI12P4z8DA8J+BkYHh/6pVqwEd+AT+DoCjJQAAAABJRU5ErkJggg=="
+;;   :test #'string=)
 
 (defun load-test-sprite ()
   (let ((px (make-instance 'nodgui.pixmap:png)))
@@ -315,27 +321,84 @@
 
 (defparameter *test-sprite* (load-test-sprite))
 
+(defun draw-test-sprite (buffer width height x y)
+  (sdlw:push-for-rendering *sdl-context*
+                           (lambda (dt)
+                             (declare (ignore dt))
+                             (sdlw:blit-transform (nodgui.pixmap:bits   *test-sprite*)
+                                                  (nodgui.pixmap:width  *test-sprite*)
+                                                  (nodgui.pixmap:height *test-sprite*)
+                                                  buffer
+                                                  width
+                                                  height
+                                                  0
+                                                  0
+                                                  y
+                                                  x
+                                                  (nodgui.pixmap:height *test-sprite*)
+                                                  (nodgui.pixmap:width  *test-sprite*)
+                                                  0.0
+                                                  10.0
+                                                  10.0
+                                                  0
+                                                  0)
+                             (sdlw:blit-transform (nodgui.pixmap:bits   *test-sprite*)
+                                                  (nodgui.pixmap:width  *test-sprite*)
+                                                  (nodgui.pixmap:height *test-sprite*)
+                                                  buffer
+                                                  width
+                                                  height
+                                                  0
+                                                  0
+                                                  y
+                                                  x
+                                                  (nodgui.pixmap:height *test-sprite*)
+                                                  (nodgui.pixmap:width  *test-sprite*)
+                                                  45.0
+                                                  10.0
+                                                  10.0
+                                                  0
+                                                  0)
+                             (sdlw:blit-transform (nodgui.pixmap:bits   *test-sprite*)
+                                                  (nodgui.pixmap:width  *test-sprite*)
+                                                  (nodgui.pixmap:height *test-sprite*)
+                                                  buffer
+                                                  width
+                                                  height
+                                                  5
+                                                  5
+                                                  y
+                                                  x
+                                                  (nodgui.pixmap:height *test-sprite*)
+                                                  (nodgui.pixmap:width  *test-sprite*)
+                                                  45.0
+                                                  10.0
+                                                  10.0
+                                                  5
+                                                  5))
+                           :force-push t))
+
 (defun draw-bell-sprite (buffer width height x y)
   (sdlw:push-for-rendering *sdl-context*
                            (lambda (dt)
                              (declare (ignore dt))
-                             (sdlw:blit* (nodgui.pixmap:bits   *bell-sprite*)
-                                         (nodgui.pixmap:width  *bell-sprite*)
-                                         (nodgui.pixmap:height *bell-sprite*)
-                                         buffer
-                                         width
-                                         height
-                                         0
-                                         0
-                                         y
-                                         x
-                                         (nodgui.pixmap:height *bell-sprite*)
-                                         (nodgui.pixmap:width  *bell-sprite*)
-                                         (to:d (random 360.0))
-                                         (to:d+ 0.2 (to:d (random 1.8)))
-                                         (to:d+ 0.2 (to:d (random 1.8)))
-                                         0
-                                         0))
+                             (sdlw:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
+                                                  (nodgui.pixmap:width  *bell-sprite*)
+                                                  (nodgui.pixmap:height *bell-sprite*)
+                                                  buffer
+                                                  width
+                                                  height
+                                                  0
+                                                  0
+                                                  y
+                                                  x
+                                                  (nodgui.pixmap:height *bell-sprite*)
+                                                  (nodgui.pixmap:width  *bell-sprite*)
+                                                  (to:d (random 360.0))
+                                                  (to:d+ 0.2 (to:d (random 1.8)))
+                                                  (to:d+ 0.2 (to:d (random 1.8)))
+                                                  0
+                                                  0))
                            :force-push t))
 
 (defun draw-lines (buffer width x y)
@@ -449,15 +512,17 @@
       (grid-rowconfigure *tk* 0 :weight 1)
       (bind sdl-frame
             #$<1>$
-            (let ((what-to-draw 1))
+            (let ((what-to-draw 0))
               (lambda (event)
                 (incf what-to-draw)
                 (with-accessors ((buffer sdlw:buffer)
                                  (width  sdlw:width)
                                  (height sdlw:height)) *sdl-context*
                   (cond
-                    ((= (rem what-to-draw 2) 0)
+                    ((= (rem what-to-draw 3) 0)
                      (draw-bell-sprite buffer width height (event-x event) (event-y event)))
+                    ((= (rem what-to-draw 3) 1)
+                     (draw-test-sprite buffer width height (event-x event) (event-y event)))
                     (t
                      (draw-lines  buffer width (event-x event) (event-y event))))))))
       (wait-complete-redraw)
