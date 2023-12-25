@@ -793,10 +793,11 @@ from file: 'file'"
               (setf (elt new-data j)
                     (ubvec4 (elt uncompressed-data    i)
                             (elt uncompressed-data (+ i 1))
-                            (elt uncompressed-data (+ i 2)))))
-          (setf data   new-data
-                width  image-w
-                height image-h)
+                            (elt uncompressed-data (+ i 2))
+                            255)))
+      (setf data   new-data
+            width  image-w
+            height image-h)
       (sync-data-to-bits pixmap)
       pixmap)))
 
@@ -904,6 +905,35 @@ from file: 'file'"
 (defmethod load-from-vector ((object png) (data vector))
   (flexi-streams:with-input-from-sequence (stream data)
     (load-from-stream object stream)))
+
+(defmethod save-pixmap ((object png) path)
+  "Save bitmap in PNG bitmap format"
+  (with-accessors ((bits bits)
+                   (width  width)
+                   (height height)) object
+    (with-open-file (stream
+                     path
+		     :direction :output
+		     :if-exists :supersede
+		     :if-does-not-exist :create
+		     :element-type '(unsigned-byte 8))
+      (save-pixmap object stream)
+      object)))
+
+(defmethod save-pixmap ((object png) (path stream))
+  "Save bitmap in PNG bitmap format"
+  (with-accessors ((data   data)
+                   (width  width)
+                   (height height)) object
+    (let ((png (make-instance 'zpng:pixel-streamed-png
+                              :color-type :truecolor-alpha
+                              :width      width
+                              :height     height)))
+      (zpng:start-png png path)
+      (loop for pixel across data do
+        (zpng:write-pixel pixel png))
+      (zpng:finish-png png)
+      object)))
 
 (alexandria:define-constant +file-matrix-buff-size+    2048               :test '=)
 

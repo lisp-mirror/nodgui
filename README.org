@@ -84,7 +84,8 @@ be fixed with the release of an upcoming Tcl/Tk version.
 - jpeg-turbo;
 - named-readtables;
 - parse-number;
-- pngload.
+- pngload;
+- zpng.
 
 All of the above libraries are available on quicklisp.
 

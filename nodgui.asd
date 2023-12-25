@@ -34,6 +34,7 @@
                :named-readtables
                :jpeg-turbo
                :pngload
+               :zpng
                :flexi-streams
                :bordeaux-threads
                #-asdf3 :uiop)
