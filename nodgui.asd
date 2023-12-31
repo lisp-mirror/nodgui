@@ -101,7 +101,7 @@
                (:file "winfo")
                (:file "trivial-debugger")
                (:file "nodgui-mw")
-               (:file "sdl")
+               (:file "pixels-buffer")
                (:module tklib
                         :components ((:file "package")
                                      (:file "calendar")
@@ -110,7 +110,7 @@
                                      (:file "swaplist")
                                      (:file "misc-widget")))
                (:file "demo-tests")
-               (:file "demo-sdl")))
+               (:file "demo-pixels-buffer")))
 
 (defsystem nodgui/test
   :encoding         :utf-8

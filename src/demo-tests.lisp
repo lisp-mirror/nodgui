@@ -169,7 +169,7 @@
                                                      :command (lambda ()
                                                                 (demo-paned-window))))
            (demo-sdl                  (make-instance 'button
-                                                     :text "Animations window"
+                                                     :text "Pixels buffer window"
                                                      :command (lambda ()
                                                                 (demo-sdl))))
            (b-quit                   (make-instance  'button
