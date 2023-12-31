@@ -1326,7 +1326,7 @@
   (:export
    #:nodgui-syntax))
 
-(defpackage nodgui.sdl-window
+(defpackage nodgui.pixels-canvas
   (:use :cl)
   (:import-from :alexandria :define-constant)
   (:local-nicknames (:a :alexandria)
@@ -2011,7 +2011,7 @@
   (:local-nicknames (:a :alexandria)
                     (:q  :nodgui.non-blocking-queue)
                     (:to :nodgui.typed-operations)
-                    (:sdlw :nodgui.sdl-window))
+                    (:px :nodgui.pixels-canvas))
   (:export
    #:demo))
 

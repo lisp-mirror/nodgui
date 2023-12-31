@@ -139,9 +139,9 @@ repscts the alpha channnel" )
     (loop for pixmap-index from 0 below (* width height)
           for octet-index from 0 by channels do
       (let* ((pixel (elt bits-pixmap pixmap-index))
-             (r     (nodgui.sdl-window:extract-red-component   pixel))
-             (g     (nodgui.sdl-window:extract-green-component pixel))
-             (b     (nodgui.sdl-window:extract-blue-component  pixel)))
+             (r     (nodgui.pixels-canvas:extract-red-component   pixel))
+             (g     (nodgui.pixels-canvas:extract-green-component pixel))
+             (b     (nodgui.pixels-canvas:extract-blue-component  pixel)))
         (setf (elt bytes    octet-index)    r
               (elt bytes (+ octet-index 1)) g
               (elt bytes (+ octet-index 2)) b)))

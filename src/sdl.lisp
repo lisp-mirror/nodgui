@@ -1,4 +1,4 @@
-(in-package :nodgui.sdl-window)
+(in-package :nodgui.pixels-canvas)
 
 (a:define-constant +channels-number+ 4 :test #'=)
 

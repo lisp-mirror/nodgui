@@ -29,16 +29,16 @@
 (define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
 
 (defun make-bits-array (pixmap width height)
-  (let ((buffer (nodgui.sdl-window:make-buffer width height)))
+  (let ((buffer (nodgui.pixels-canvas:make-buffer width height)))
     (setf (slot-value pixmap 'bits) buffer)
     (tg:finalize pixmap
-                 (lambda () (nodgui.sdl-window:free-buffer-memory buffer)))))
+                 (lambda () (nodgui.pixels-canvas:free-buffer-memory buffer)))))
 
 (defun make-bits-array-elements (pixmap size)
-  (let ((buffer (nodgui.sdl-window:make-buffer-elements size)))
+  (let ((buffer (nodgui.pixels-canvas:make-buffer-elements size)))
     (setf (slot-value pixmap 'bits) buffer)
     (tg:finalize pixmap
-                 (lambda () (nodgui.sdl-window:free-buffer-memory buffer)))))
+                 (lambda () (nodgui.pixels-canvas:free-buffer-memory buffer)))))
 
 (defclass pixmap ()
   ((data
@@ -441,7 +441,7 @@ range (0-1.0]), scaling use nearest-neighbor."
       (let* ((color-list (loop for channel-count from 0 below depth
                                collect
                                (elt (elt data pixel-count) channel-count)))
-             (pixel (apply #'nodgui.sdl-window:assemble-color color-list)))
+             (pixel (apply #'nodgui.pixels-canvas:assemble-color color-list)))
         (setf (elt bits pixel-count) pixel)))
     object))
 
@@ -458,10 +458,10 @@ range (0-1.0]), scaling use nearest-neighbor."
         (setf data (make-array-frame data-size +ubvec4-zero+ 'ubvec4 t)))
       (loop for i from 0 below (length bits) do
         (let* ((pixel (elt bits i))
-               (r     (nodgui.sdl-window:extract-red-component   pixel))
-               (g     (nodgui.sdl-window:extract-green-component pixel))
-               (b     (nodgui.sdl-window:extract-blue-component  pixel))
-               (a     (nodgui.sdl-window:extract-alpha-component pixel)))
+               (r     (nodgui.pixels-canvas:extract-red-component   pixel))
+               (g     (nodgui.pixels-canvas:extract-green-component pixel))
+               (b     (nodgui.pixels-canvas:extract-blue-component  pixel))
+               (a     (nodgui.pixels-canvas:extract-alpha-component pixel)))
           (setf (elt data i) (ubvec4 r g b a)))))
     object))
 

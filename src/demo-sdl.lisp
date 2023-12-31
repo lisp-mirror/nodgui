@@ -60,7 +60,7 @@
                                               8.0
                                               0.0
                                               tick))))
-        (sdlw:set-pixel@ buffer width i j color color color)))))
+        (px:set-pixel@ buffer width i j color color color)))))
 ;;; end plasma ;;;
 
 ;; fire
@@ -75,18 +75,18 @@
                     (1- width)
                     (to:f- kernel-x 1)))
          (right (to:frem (to:f+ kernel-x 1) width))
-         (sum-red (to:f+ (sdlw:extract-red-component (sdlw:pixel@ buffer width kernel-x up))
-                         (sdlw:extract-red-component (sdlw:pixel@ buffer width kernel-x down))
-                         (sdlw:extract-red-component (sdlw:pixel@ buffer width left kernel-y))
-                         (sdlw:extract-red-component (sdlw:pixel@ buffer width right kernel-y))))
-         (sum-green (to:f+ (sdlw:extract-green-component (sdlw:pixel@ buffer width kernel-x up))
-                           (sdlw:extract-green-component (sdlw:pixel@ buffer width kernel-x down))
-                           (sdlw:extract-green-component (sdlw:pixel@ buffer width left kernel-y))
-                           (sdlw:extract-green-component (sdlw:pixel@ buffer width right kernel-y))))
-         (sum-blue (to:f+ (sdlw:extract-blue-component (sdlw:pixel@ buffer width kernel-x up))
-                          (sdlw:extract-blue-component (sdlw:pixel@ buffer width kernel-x down))
-                          (sdlw:extract-blue-component (sdlw:pixel@ buffer width left kernel-y))
-                          (sdlw:extract-blue-component (sdlw:pixel@ buffer width right kernel-y))))
+         (sum-red (to:f+ (px:extract-red-component (px:pixel@ buffer width kernel-x up))
+                         (px:extract-red-component (px:pixel@ buffer width kernel-x down))
+                         (px:extract-red-component (px:pixel@ buffer width left kernel-y))
+                         (px:extract-red-component (px:pixel@ buffer width right kernel-y))))
+         (sum-green (to:f+ (px:extract-green-component (px:pixel@ buffer width kernel-x up))
+                           (px:extract-green-component (px:pixel@ buffer width kernel-x down))
+                           (px:extract-green-component (px:pixel@ buffer width left kernel-y))
+                           (px:extract-green-component (px:pixel@ buffer width right kernel-y))))
+         (sum-blue (to:f+ (px:extract-blue-component (px:pixel@ buffer width kernel-x up))
+                          (px:extract-blue-component (px:pixel@ buffer width kernel-x down))
+                          (px:extract-blue-component (px:pixel@ buffer width left kernel-y))
+                          (px:extract-blue-component (px:pixel@ buffer width right kernel-y))))
          (r-average (ash sum-red -2))
          (g-average (ash sum-green -2))
          (b-average (ash sum-blue -2)))
@@ -95,7 +95,7 @@
               (or (and (< r-average 80)
                        (= (random 60) 0))
                   (= (random 500) 0)))
-        (sdlw:set-pixel@ buffer
+        (px:set-pixel@ buffer
                          width
                          (cond
                            ((= (random 2) 0)
@@ -110,7 +110,7 @@
                          20
                          0
                          255)
-        (sdlw:set-pixel@ buffer
+        (px:set-pixel@ buffer
                          width
                          (cond
                            ((= (rem (random 2) 2) 0)
@@ -141,16 +141,16 @@
   (loop repeat howmany do
     (let* ((x         (random  width))
            (y         (1- (to:f- height (random 10))))
-           (pixel     (sdlw:pixel@ buffer width x y))
-           (new-pixel (sdlw:sum-pixels (sdlw:assemble-color 255 50 0 255)
+           (pixel     (px:pixel@ buffer width x y))
+           (new-pixel (px:sum-pixels (px:assemble-color 255 50 0 255)
                                        pixel)))
-      (sdlw:set-pixel@ buffer
+      (px:set-pixel@ buffer
                        width
                        x
                        y
-                       (sdlw:extract-red-component new-pixel)
-                       (sdlw:extract-green-component new-pixel)
-                       (sdlw:extract-blue-component new-pixel)))))
+                       (px:extract-red-component new-pixel)
+                       (px:extract-green-component new-pixel)
+                       (px:extract-blue-component new-pixel)))))
 
 (defun draw-fire (buffer width height howmany-seed time)
   (reinforce-fire buffer width height howmany-seed)
@@ -164,14 +164,14 @@
   (declare (fixnum width height))
   (let* ((rectangle-width  (+ 20 (random (truncate (- (* width  1/4) 40)))))
          (rectangle-height (+ 20 (random (truncate (- (* height 1/4) 40)))))
-         (rectangle        (sdlw:make-buffer rectangle-width rectangle-height))
+         (rectangle        (px:make-buffer rectangle-width rectangle-height))
          (destination-x    (+ (truncate (* 3/4
                                            (random width)))
                               20))
          (destination-y     (+ (truncate (* 3/4
                                             (random height)))
                                20)))
-    (sdlw:clear-buffer rectangle
+    (px:clear-buffer rectangle
                        rectangle-width
                        rectangle-height
                        255
@@ -211,13 +211,13 @@
 (defparameter *animation* nil)
 
 (defun draw-plasma-thread ()
-  (with-accessors ((buffer sdlw:buffer)
-                   (width  sdlw:width)
-                   (height sdlw:height)) *sdl-context*
+  (with-accessors ((buffer px:buffer)
+                   (width  px:width)
+                   (height px:height)) *sdl-context*
     (let ((tick (to:d 0.0)))
       (loop while (not (stop-drawing-thread-p *animation*)) do
-        (sdlw:sync *sdl-context*)
-        (sdlw:push-for-rendering *sdl-context*
+        (px:sync *sdl-context*)
+        (px:push-for-rendering *sdl-context*
                                  (lambda (dt)
                                    (declare (fixnum dt))
                                    ;;;; (declare (optimize (speed 3) (debug 0)))
@@ -226,19 +226,19 @@
       (format t "STOP!~%"))))
 
 (defun clear-sdl-window (&key (force nil))
-  (with-accessors ((buffer sdlw:buffer)
-                   (width  sdlw:width)
-                   (height sdlw:height)) *sdl-context*
-    (sdlw:push-for-rendering *sdl-context*
+  (with-accessors ((buffer px:buffer)
+                   (width  px:width)
+                   (height px:height)) *sdl-context*
+    (px:push-for-rendering *sdl-context*
                              (lambda (dt)
                                (declare (ignore dt))
-                               (sdlw:clear-buffer buffer width height 0 0 0))
+                               (px:clear-buffer buffer width height 0 0 0))
                              :force-push force)))
 
 (defun draw-fire-thread ()
-  (with-accessors ((buffer sdlw:buffer)
-                   (width  sdlw:width)
-                   (height sdlw:height)) *sdl-context*
+  (with-accessors ((buffer px:buffer)
+                   (width  px:width)
+                   (height px:height)) *sdl-context*
     (let ((tick (to:d 0.0)))
       ;; I should  use :force-push t  in this function call  to ensure
       ;; the  event  of clearing  the  buffer  is not  discarded,  but
@@ -247,8 +247,8 @@
       ;; leftover of plasma rendering events
       (clear-sdl-window)
       (loop while (not (stop-drawing-thread-p *animation*)) do
-        (sdlw:sync *sdl-context*)
-        (sdlw:push-for-rendering *sdl-context*
+        (px:sync *sdl-context*)
+        (px:push-for-rendering *sdl-context*
                                  (lambda (dt)
                                    (declare (fixnum dt))
                                    (draw-fire buffer width height 500 tick)
@@ -256,9 +256,9 @@
       (format t "STOP FIRE!~%"))))
 
 (defun draw-rectangles-thread ()
-  (with-accessors ((buffer sdlw:buffer)
-                   (width  sdlw:width)
-                   (height sdlw:height)) *sdl-context*
+  (with-accessors ((buffer px:buffer)
+                   (width  px:width)
+                   (height px:height)) *sdl-context*
     (let ((tick (to:d 0.0)))
       ;; I should  use :force-push t  in this function call  to ensure
       ;; the  event  of clearing  the  buffer  is not  discarded,  but
@@ -269,7 +269,7 @@
       (let ((rectangles (loop repeat 1000 collect
                                          (multiple-value-list (make-blitting-rectangle width height)))))
         (mapcar (lambda (rectangle)
-                  (sdlw:push-for-rendering *sdl-context*
+                  (px:push-for-rendering *sdl-context*
                                    (lambda (dt)
                                      (declare (fixnum dt))
                                      (let ((rectangle-buffer (first  rectangle))
@@ -281,8 +281,8 @@
                                        ;;            width))
                                        ;; (assert (< (+ rectangle-height y)
                                        ;;            height))
-                                       (let ((sdlw:*blending-function* #'sdlw:blending-function-add))
-                                         (sdlw:blit rectangle-buffer
+                                       (let ((px:*blending-function* #'px:blending-function-add))
+                                         (px:blit rectangle-buffer
                                                     rectangle-width
                                                     buffer
                                                     width
@@ -322,10 +322,10 @@
 (defparameter *test-sprite* (load-test-sprite))
 
 (defun draw-test-sprite (buffer width height x y)
-  (sdlw:push-for-rendering *sdl-context*
+  (px:push-for-rendering *sdl-context*
                            (lambda (dt)
                              (declare (ignore dt))
-                             (sdlw:blit-transform (nodgui.pixmap:bits   *test-sprite*)
+                             (px:blit-transform (nodgui.pixmap:bits   *test-sprite*)
                                                   (nodgui.pixmap:width  *test-sprite*)
                                                   (nodgui.pixmap:height *test-sprite*)
                                                   buffer
@@ -342,7 +342,7 @@
                                                   10.0
                                                   0
                                                   0)
-                             (sdlw:blit-transform (nodgui.pixmap:bits   *test-sprite*)
+                             (px:blit-transform (nodgui.pixmap:bits   *test-sprite*)
                                                   (nodgui.pixmap:width  *test-sprite*)
                                                   (nodgui.pixmap:height *test-sprite*)
                                                   buffer
@@ -359,7 +359,7 @@
                                                   10.0
                                                   0
                                                   0)
-                             (sdlw:blit-transform (nodgui.pixmap:bits   *test-sprite*)
+                             (px:blit-transform (nodgui.pixmap:bits   *test-sprite*)
                                                   (nodgui.pixmap:width  *test-sprite*)
                                                   (nodgui.pixmap:height *test-sprite*)
                                                   buffer
@@ -379,10 +379,10 @@
                            :force-push t))
 
 (defun draw-bell-sprite (buffer width height x y)
-  (sdlw:push-for-rendering *sdl-context*
+  (px:push-for-rendering *sdl-context*
                            (lambda (dt)
                              (declare (ignore dt))
-                             (sdlw:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
+                             (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
                                                   (nodgui.pixmap:width  *bell-sprite*)
                                                   (nodgui.pixmap:height *bell-sprite*)
                                                   buffer
@@ -406,7 +406,7 @@
         for color = 0 then (truncate (abs (* 255 (sin (* 12 (/ degree 360))))))
         do
            (let ((radius 50.0))
-             (sdlw:push-for-rendering *sdl-context*
+             (px:push-for-rendering *sdl-context*
                                       (let* ((current-color color)
                                              (actual-degree degree)
                                              (radians   (to:d/ (to:d* (to:d pi)
@@ -418,7 +418,7 @@
                                                                (truncate (* radius (sin radians))))))
                                         (lambda (dt)
                                           (declare (ignore dt))
-                                          (sdlw:draw-line buffer width
+                                          (px:draw-line buffer width
                                                           x y
                                                           current-x current-y
                                                           255 0 current-color  255)))
@@ -429,7 +429,7 @@
              (bt:threadp (animation-thread *animation*)))
     (stop-drawing-thread *animation*)
     (wait-thread *animation*)
-    (format t "anim ~a queue ~a~%" *animation* (sdlw::queue *sdl-context*))))
+    (format t "anim ~a queue ~a~%" *animation* (px::queue *sdl-context*))))
 
 (defun demo-sdl ()
   (with-nodgui ()
@@ -437,7 +437,7 @@
                                          :wraplength 800
                                          :text "WARNING: This animation may potentially trigger seizures for people with photosensitive epilepsy. Viewer discretion is advised."
                                          :font (font-create "serif" :size 20 :weight :bold)))
-           (sdl-frame     (sdlw:make-sdl-frame 800 600))
+           (sdl-frame     (px:make-sdl-frame 800 600))
            (buttons-frame (make-instance 'nodgui:frame
                                          :borderwidth 2
                                          :relief :groove))
@@ -497,7 +497,7 @@
                                         :text    "quit"
                                         :command (lambda ()
                                                    (stop-animation)
-                                                   (sdlw:quit-sdl *sdl-context*)
+                                                   (px:quit-sdl *sdl-context*)
                                                    (exit-nodgui)))))
       (grid warning-label     0 0 :columnspan 2)
       (grid interaction-label 1 0 :columnspan 2)
@@ -519,9 +519,9 @@
             (let ((what-to-draw 0))
               (lambda (event)
                 (incf what-to-draw)
-                (with-accessors ((buffer sdlw:buffer)
-                                 (width  sdlw:width)
-                                 (height sdlw:height)) *sdl-context*
+                (with-accessors ((buffer px:buffer)
+                                 (width  px:width)
+                                 (height px:height)) *sdl-context*
                   (cond
                     ((= (rem what-to-draw 3) 0)
                      (draw-bell-sprite buffer width height (event-x event) (event-y event)))
@@ -530,7 +530,7 @@
                     (t
                      (draw-lines  buffer width (event-x event) (event-y event))))))))
       (wait-complete-redraw)
-      (setf *sdl-context* (make-instance 'sdlw:context
+      (setf *sdl-context* (make-instance 'px:context
                                          :non-blocking-queue-maximum-size 16
                                          :classic-frame sdl-frame
                                          :buffer-width  800
