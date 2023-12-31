@@ -283,6 +283,15 @@
         :nodgui.ubvec4
         :nodgui.vec2)
   (:export
+   #:extract-red-component
+   #:extract-green-component
+   #:extract-blue-component
+   #:extract-alpha-component
+   #:assemble-color
+   #:make-buffer
+   #:make-buffer-elements
+   #:free-buffer-memory
+   #:with-buffer
    #:make-bits-array
    #:pixmap
    #:width
@@ -1329,12 +1338,13 @@
 (defpackage nodgui.pixels-canvas
   (:use :cl)
   (:import-from :alexandria :define-constant)
-  (:local-nicknames (:a :alexandria)
-                    (:p :esrap)
-                    (:bq :syncronized-queue)
-                    (:q  :nodgui.non-blocking-queue)
-                    (:to :nodgui.typed-operations)
-                    (:u  :nodgui.utils))
+  (:local-nicknames (:a   :alexandria)
+                    (:p   :esrap)
+                    (:bq  :syncronized-queue)
+                    (:q   :nodgui.non-blocking-queue)
+                    (:to  :nodgui.typed-operations)
+                    (:u   :nodgui.utils)
+                    (:pix :nodgui.pixmap))
   (:export
    #:context
    #:width
@@ -1350,7 +1360,6 @@
    #:rendering-must-wait-p
    #:pixel@
    #:set-pixel@
-   #:assemble-color
    #:with-displace-pixel
    #:color-channel-lerp
    #:blending-function-combine
@@ -1358,16 +1367,8 @@
    #:blending-function-add
    #:*blending-function*
    #:sum-pixels
-   #:extract-red-component
-   #:extract-green-component
-   #:extract-blue-component
-   #:extract-alpha-component
    #:blit
    #:blit-transform
-   #:make-buffer
-   #:make-buffer-elements
-   #:free-buffer-memory
-   #:with-buffer
    #:clear-buffer
    #:fill-rectangle
    #:fill-circle
@@ -2008,10 +2009,11 @@
         :nodgui.shapes
         :nodgui.mw)
   (:shadow :alexandria :rotate)
-  (:local-nicknames (:a :alexandria)
-                    (:q  :nodgui.non-blocking-queue)
-                    (:to :nodgui.typed-operations)
-                    (:px :nodgui.pixels-canvas))
+  (:local-nicknames (:a      :alexandria)
+                    (:q      :nodgui.non-blocking-queue)
+                    (:to     :nodgui.typed-operations)
+                    (:px     :nodgui.pixels-canvas)
+                    (:pixmap :nodgui.pixmap))
   (:export
    #:demo))
 

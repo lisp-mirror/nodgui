@@ -28,17 +28,69 @@
 
 (define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
 
+(defun buffer-sizes->static-vector-size (width height)
+  (declare (fixnum width height))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (nodgui.typed-operations:f* width height))
+
+(defun make-buffer (width height)
+  (make-buffer-elements (buffer-sizes->static-vector-size width height)))
+
+(defun make-buffer-elements (element-count)
+  (static-vectors:make-static-vector element-count
+                                     :element-type '(unsigned-byte 32)
+                                     :initial-element #x000000ff))
+
+(defun free-buffer-memory (buffer)
+  (static-vectors:free-static-vector buffer))
+
+(defmacro with-buffer ((buffer width height) &body body)
+  `(let ((,buffer nil))
+     (unwind-protect
+          (progn
+            (setf ,buffer (make-buffer ,width ,height))
+            ,@body)
+       (free-buffer-memory ,buffer))))
+
+(defun extract-red-component (color)
+  (declare (fixnum color))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (logand (ash color -24) #xff))
+
+(defun extract-blue-component (color)
+  (declare (fixnum color))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (logand (ash color -8) #xff))
+
+(defun extract-green-component (color)
+  (declare (fixnum color))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (logand (ash color -16) #xff))
+
+(defun extract-alpha-component (color)
+  (declare (fixnum color))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (logand color #xff))
+
+(defun assemble-color (r g b &optional (a 255))
+  (declare ((unsigned-byte 8) r g b a))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (logior (logand a #xff)
+          (the fixnum (ash b 8))
+          (the fixnum (ash g 16))
+          (the fixnum (ash r 24))))
+
 (defun make-bits-array (pixmap width height)
-  (let ((buffer (nodgui.pixels-canvas:make-buffer width height)))
+  (let ((buffer (make-buffer width height)))
     (setf (slot-value pixmap 'bits) buffer)
     (tg:finalize pixmap
-                 (lambda () (nodgui.pixels-canvas:free-buffer-memory buffer)))))
+                 (lambda () (free-buffer-memory buffer)))))
 
 (defun make-bits-array-elements (pixmap size)
-  (let ((buffer (nodgui.pixels-canvas:make-buffer-elements size)))
+  (let ((buffer (make-buffer-elements size)))
     (setf (slot-value pixmap 'bits) buffer)
     (tg:finalize pixmap
-                 (lambda () (nodgui.pixels-canvas:free-buffer-memory buffer)))))
+                 (lambda () (free-buffer-memory buffer)))))
 
 (defclass pixmap ()
   ((data
@@ -441,7 +493,7 @@ range (0-1.0]), scaling use nearest-neighbor."
       (let* ((color-list (loop for channel-count from 0 below depth
                                collect
                                (elt (elt data pixel-count) channel-count)))
-             (pixel (apply #'nodgui.pixels-canvas:assemble-color color-list)))
+             (pixel (apply #'assemble-color color-list)))
         (setf (elt bits pixel-count) pixel)))
     object))
 
@@ -458,10 +510,10 @@ range (0-1.0]), scaling use nearest-neighbor."
         (setf data (make-array-frame data-size +ubvec4-zero+ 'ubvec4 t)))
       (loop for i from 0 below (length bits) do
         (let* ((pixel (elt bits i))
-               (r     (nodgui.pixels-canvas:extract-red-component   pixel))
-               (g     (nodgui.pixels-canvas:extract-green-component pixel))
-               (b     (nodgui.pixels-canvas:extract-blue-component  pixel))
-               (a     (nodgui.pixels-canvas:extract-alpha-component pixel)))
+               (r     (extract-red-component   pixel))
+               (g     (extract-green-component pixel))
+               (b     (extract-blue-component  pixel))
+               (a     (extract-alpha-component pixel)))
           (setf (elt data i) (ubvec4 r g b a)))))
     object))
 

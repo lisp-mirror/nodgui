@@ -68,34 +68,6 @@
 (defun make-texture (renderer width height)
   (sdl2:create-texture renderer :rgba8888 :streaming width height))
 
-(defun extract-red-component (color)
-  (declare (fixnum color))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (logand (ash color -24) #xff))
-
-(defun extract-blue-component (color)
-  (declare (fixnum color))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (logand (ash color -8) #xff))
-
-(defun extract-green-component (color)
-  (declare (fixnum color))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (logand (ash color -16) #xff))
-
-(defun extract-alpha-component (color)
-  (declare (fixnum color))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (logand color #xff))
-
-(defun assemble-color (r g b &optional (a 255))
-  (declare ((unsigned-byte 8) r g b a))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (logior (logand a #xff)
-          (the fixnum (ash b 8))
-          (the fixnum (ash g 16))
-          (the fixnum (ash r 24))))
-
 (u:definline set-pixel-color@ (buffer width x y color)
   "Note: no bounds checking is done"
   (declare (fixnum x y width))
@@ -110,7 +82,7 @@
   (declare ((unsigned-byte 8) r g b a))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let ((color (assemble-color r g b a)))
+  (let ((color (pix:assemble-color r g b a)))
     (set-pixel-color@ buffer width x y color)))
 
 (defun pixel@ (buffer width x y)
@@ -121,10 +93,10 @@
   (to:faref buffer (to:f+ x (the fixnum (to:f* y width)))))
 
 (defmacro with-displace-pixel ((r g b a) pixel &body body)
-  `(let ((,r (extract-red-component   ,pixel))
-         (,g (extract-green-component ,pixel))
-         (,b (extract-blue-component  ,pixel))
-         (,a (extract-alpha-component ,pixel)))
+  `(let ((,r (pix:extract-red-component   ,pixel))
+         (,g (pix:extract-green-component ,pixel))
+         (,b (pix:extract-blue-component  ,pixel))
+         (,a (pix:extract-alpha-component ,pixel)))
      (declare ((unsigned-byte 8) ,r ,g ,b ,a))
      ,@body))
 
@@ -136,18 +108,18 @@
        -8))
 
 (defun color-lerp (a b w)
-  (assemble-color (color-channel-lerp (extract-red-component a)
-                                      (extract-red-component b)
-                                      w)
-                  (color-channel-lerp (extract-green-component a)
-                                      (extract-green-component b)
-                                      w)
-                  (color-channel-lerp (extract-blue-component a)
-                                      (extract-blue-component b)
-                                      w)
-                  (color-channel-lerp (extract-alpha-component a)
-                                      (extract-alpha-component b)
-                                      w)))
+  (pix:assemble-color (color-channel-lerp (pix:extract-red-component a)
+                                          (pix:extract-red-component b)
+                                          w)
+                      (color-channel-lerp (pix:extract-green-component a)
+                                          (pix:extract-green-component b)
+                                          w)
+                      (color-channel-lerp (pix:extract-blue-component a)
+                                          (pix:extract-blue-component b)
+                                          w)
+                      (color-channel-lerp (pix:extract-alpha-component a)
+                                          (pix:extract-alpha-component b)
+                                          w)))
 
 (defun blending-function-combine (pixel-source pixel-destination)
   (declare (fixnum pixel-source pixel-destination))
@@ -157,10 +129,10 @@
     (with-displace-pixel (r-destination g-destination b-destination alpha-destination)
                          pixel-destination
       (declare (ignore alpha-destination))
-      (assemble-color (color-channel-lerp r-source r-destination alpha-source)
-                      (color-channel-lerp g-source g-destination alpha-source)
-                      (color-channel-lerp b-source b-destination alpha-source)
-                      255))))
+      (pix:assemble-color (color-channel-lerp r-source r-destination alpha-source)
+                          (color-channel-lerp g-source g-destination alpha-source)
+                          (color-channel-lerp b-source b-destination alpha-source)
+                          255))))
 
 (defun blending-function-replace (pixel-source pixel-destination)
   (declare (fixnum pixel-source pixel-destination))
@@ -179,10 +151,10 @@
                        pixel-source
     (with-displace-pixel (r-destination g-destination b-destination alpha-destination)
                          pixel-destination
-      (assemble-color (saturate-byte (to:f+ r-source r-destination))
-                      (saturate-byte (to:f+ g-source g-destination))
-                      (saturate-byte (to:f+ b-source b-destination))
-                      (saturate-byte (to:f+ alpha-source alpha-destination))))))
+      (pix:assemble-color (saturate-byte (to:f+ r-source r-destination))
+                          (saturate-byte (to:f+ g-source g-destination))
+                          (saturate-byte (to:f+ b-source b-destination))
+                          (saturate-byte (to:f+ alpha-source alpha-destination))))))
 
 (defparameter *blending-function* #'blending-function-replace)
 
@@ -265,30 +237,6 @@
                           (sdl2:render-present renderer))))))
                  (:quit () t))))))))))
 
-(defun buffer-sizes->static-vector-size (width height)
-  (declare (fixnum width height))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (to:f* width height))
-
-(defun make-buffer (width height)
-  (make-buffer-elements (buffer-sizes->static-vector-size width height)))
-
-(defun make-buffer-elements (element-count)
-  (static-vectors:make-static-vector element-count
-                                     :element-type '(unsigned-byte 32)
-                                     :initial-element #x000000ff))
-
-(defun free-buffer-memory (buffer)
-  (static-vectors:free-static-vector buffer))
-
-(defmacro with-buffer ((buffer width height) &body body)
-  `(let ((,buffer nil))
-     (unwind-protect
-          (progn
-            (setf ,buffer (make-buffer ,width ,height))
-            ,@body)
-       (free-buffer-memory ,buffer))))
-
 (defmethod initialize-instance :after ((object context)
                                        &key
                                          (classic-frame nil)
@@ -313,9 +261,9 @@
                           (nodgui:window-width  classic-frame))
             height    (or buffer-height
                           (nodgui:window-height classic-frame))
-            buffer    (make-buffer width height))
+            buffer    (pix:make-buffer width height))
       (tg:finalize object
-                   (lambda () (free-buffer-memory buffer)))
+                   (lambda () (pix:free-buffer-memory buffer)))
       (setf thread (make-rendering-thread object)))))
 
 (defgeneric quit-sdl (object))
@@ -378,25 +326,25 @@
   (flet ((sum (a b)
            (min (to:f+ a b) #xff)))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let ((red-a   (extract-red-component pixel-a))
-        (green-a (extract-green-component pixel-a))
-        (blue-a  (extract-blue-component pixel-a))
-        (alpha-a (extract-blue-component pixel-a))
-        (red-b   (extract-red-component pixel-b))
-        (green-b (extract-green-component pixel-b))
-        (blue-b  (extract-blue-component pixel-b))
-        (alpha-b (extract-blue-component pixel-b)))
-    (assemble-color (sum red-a red-b)
-                    (sum green-a green-b)
-                    (sum blue-a blue-b)
-                    (sum alpha-a alpha-b)))))
+  (let ((red-a   (pix:extract-red-component pixel-a))
+        (green-a (pix:extract-green-component pixel-a))
+        (blue-a  (pix:extract-blue-component pixel-a))
+        (alpha-a (pix:extract-blue-component pixel-a))
+        (red-b   (pix:extract-red-component pixel-b))
+        (green-b (pix:extract-green-component pixel-b))
+        (blue-b  (pix:extract-blue-component pixel-b))
+        (alpha-b (pix:extract-blue-component pixel-b)))
+    (pix:assemble-color (sum red-a red-b)
+                        (sum green-a green-b)
+                        (sum blue-a blue-b)
+                        (sum alpha-a alpha-b)))))
 
 (defun clear-buffer (buffer width height r g b &optional (alpha 255))
   (declare (fixnum width height))
   (declare ((unsigned-byte 8) r g b alpha))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let ((color (assemble-color r g b alpha)))
+  (let ((color (pix:assemble-color r g b alpha)))
     (loop for i from 0 below (to:f* width height) do
       (setf (aref buffer i) color))))
 
@@ -413,7 +361,7 @@
          (height (to:f- bottom-right-y top-left-y))
          (w/2    (ash width  -1))
          (h/2    (ash height -1))
-         (color  (assemble-color r g b a)))
+         (color  (pix:assemble-color r g b a)))
     (loop for column from top-left-x below (to:f+ top-left-x w/2) do
       (loop for row from top-left-y below (to:f+ top-left-y h/2) do
         (set-pixel@ buffer buffer-width column             row r g b a)
@@ -429,7 +377,7 @@
   (declare ((unsigned-byte 8) r g b a))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((r-square  (to:f* radius radius))
-        (color     (assemble-color r g b a)))
+        (color     (pix:assemble-color r g b a)))
     (loop for x from 0 below radius do
       (let ((x-square (to:f* x x)))
         (loop named inner for y from 0 below radius do
@@ -465,7 +413,7 @@
   (declare ((unsigned-byte 8) r g b a))
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((x-end     (ash (to:f* radius 185364) -18))
-        (color     (assemble-color r g b a)))
+        (color     (pix:assemble-color r g b a)))
     (loop for x fixnum from 0 to x-end
           with y fixnum          = radius
           with threshold fixnum  = 0
@@ -619,7 +567,7 @@
              (2dx       (ash delta-x 1))
              (2dy       (ash delta-y 1))
              (threshold (to:f- 2dy delta-x))
-             (color     (assemble-color r g b a)))
+             (color     (pix:assemble-color r g b a)))
         (loop with x fixnum = 0
               with y fixnum = 0
               while (to:f< x delta-x)
@@ -776,7 +724,7 @@
                (/= source-last-row buffer-source-height)))
       (let ((copy-width  (to:f- source-last-column source-column))
             (copy-height (to:f- source-last-row source-row)))
-        (with-buffer (copy copy-width copy-height)
+        (pix:with-buffer (copy copy-width copy-height)
           (blit buffer-source
                 buffer-source-width
                 copy
