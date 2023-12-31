@@ -586,12 +586,11 @@
                  (incf x)))))
     buffer)
 
-
 (defun bilinear-interpolation (buffer buffer-width buffer-height x y)
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width buffer-height))
   (declare (to::desired-type x y))
-  ;(declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   ;; a          b
   ;; +----------+
   ;; |          |
@@ -614,11 +613,11 @@
              (dx        (truncate (to:d* 255.0 (to:d- x (to:d (floor x))))))
              (dy        (truncate (to:d* 255.0 (to:d- y (to:d (floor y))))))
              (a         (pixel@ buffer buffer-width floor-x floor-y))
-             (b         (pixel@ buffer buffer-width floor-x ceiling-y))
+             (b         (pixel@ buffer buffer-width ceiling-x floor-y))
              (c         (pixel@ buffer buffer-width ceiling-x ceiling-y))
-             (d         (pixel@ buffer buffer-width ceiling-x floor-y))
-             (inter-x1  (color-lerp c b dx))
-             (inter-x2  (color-lerp d a dx))
+             (d         (pixel@ buffer buffer-width floor-x ceiling-y))
+             (inter-x1  (color-lerp c d dx))
+             (inter-x2  (color-lerp b a dx))
              (inter-y   (color-lerp inter-x1 inter-x2 dy)))
         inter-y)))
 
