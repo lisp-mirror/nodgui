@@ -8,20 +8,20 @@
 
 (defun wave->color (v)
   (declare (to::desired-type v))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (truncate (to:d* (to:d/ (to:d+ 1.0 (to:dsin (to:d* 5.0 v 3.141))) 2.0)
                    255.0)))
 
 (defun horizontal-wave (x frequency phase tick)
   (declare (to::desired-type frequency x))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:dsin (to:d+ phase
                   (to:d* frequency
                          (to:d+ x tick)))))
 
 (defun rotating-wave (x y frequency phase tick)
   (declare (to::desired-type frequency x phase tick))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((cosine    (to:dcos (to:d* 8.0 tick)))
          (sinus     (to:dsin (to:d* 8.0 tick)))
          (rotated-x (to:d- (to:d* x cosine)
@@ -32,7 +32,7 @@
                                  rotated-x)))))
 
 (defun circular-wave (x y frequency phase tick)
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((translated-x (to:d+ (to:dsin (to:d* 6.0 tick))
                               (to:d- x 0.5)))
          (translated-y (to:d+ (to:dsin (to:d* 2.0 tick))
@@ -43,11 +43,11 @@
 
 (defun normalize-coordinate (v max)
   (declare (fixnum v max))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:d/ (to:d v) (to:d max)))
 
 (defun plasma-value (x y frequency phase tick)
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:d+ (circular-wave x y frequency phase tick)
          (horizontal-wave x frequency phase tick)
          (rotating-wave x y frequency phase tick)))
@@ -68,7 +68,7 @@
 (defun blur-kernel (buffer width height kernel-x kernel-y time)
   (declare (fixnum kernel-x kernel-y width height))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((up    (to:frem (to:f+ kernel-y 1) height))
          (down  (max     (to:f- kernel-y 1) 0))
          (left  (if (= kernel-x 0)
@@ -129,7 +129,7 @@
 (defun blur (buffer width height time)
   (declare (fixnum width height))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (loop for i from 1 below (1- width) do
     (loop for j from 1 below height do
       (blur-kernel buffer width height i j time))))
@@ -137,7 +137,7 @@
 (defun reinforce-fire (buffer width height howmany)
   (declare (fixnum width height howmany))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (loop repeat howmany do
     (let* ((x         (random  width))
            (y         (1- (to:f- height (random 10))))
@@ -220,7 +220,7 @@
         (px:push-for-rendering *sdl-context*
                                  (lambda (dt)
                                    (declare (fixnum dt))
-                                   ;;;; (declare (optimize (speed 3) (debug 0)))
+                                   (declare (optimize (speed 3) (debug 0)))
                                    (draw-plasma buffer width height tick)
                                    (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
       (format t "STOP!~%"))))

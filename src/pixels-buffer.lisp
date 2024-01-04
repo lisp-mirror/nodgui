@@ -81,7 +81,7 @@
   (declare (fixnum x y width))
   (declare ((unsigned-byte 8) r g b a))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((color (pix:assemble-color r g b a)))
     (set-pixel-color@ buffer width x y color)))
 
@@ -89,7 +89,7 @@
   "Note: no bounds checking is done"
   (declare (fixnum x y width))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  ;; (declare (optimize (speed 3) (debug 3) (safety 0)))
+  (declare (optimize (speed 3) (debug 3) (safety 0)))
   (to:faref buffer (to:f+ x (the fixnum (to:f* y width)))))
 
 (defmacro with-displace-pixel ((r g b a) pixel &body body)
@@ -102,7 +102,7 @@
 
 (u:definline color-channel-lerp (a b w)
   (declare ((unsigned-byte 8) a b w))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (ash (+ (* a w)
           (* b (- 256 w)))
        -8))
@@ -123,7 +123,7 @@
 
 (defun blending-function-combine (pixel-source pixel-destination)
   (declare (fixnum pixel-source pixel-destination))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (with-displace-pixel (r-source g-source b-source alpha-source)
                        pixel-source
     (with-displace-pixel (r-destination g-destination b-destination alpha-destination)
@@ -146,7 +146,7 @@
 
 (defun blending-function-add (pixel-source pixel-destination)
   (declare (fixnum pixel-source pixel-destination))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (with-displace-pixel (r-source g-source b-source alpha-source)
                        pixel-source
     (with-displace-pixel (r-destination g-destination b-destination alpha-destination)
@@ -178,11 +178,11 @@
                    destination-column
                    source-last-row
                    source-last-column))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (flet ((copy-row (row-source row-destination)
            (declare (fixnum row-source row-destination))
            (declare (function *blending-function*))
-           ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+           (declare (optimize (speed 3) (debug 0) (safety 0)))
            (loop for from-column fixnum from source-column below source-last-column
                  for to-column fixnum from 0 do
                    (let* ((color-destination (to:faref buffer-destination
@@ -279,11 +279,11 @@
 (defgeneric sync (object))
 
 (defmethod events-polling-p ((object context))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (eq (event-loop-type object) :polling))
 
 (defmethod quit-sdl ((object context))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (push-for-rendering object
                       (lambda (dt)
                         (declare (ignore dt))
@@ -292,7 +292,7 @@
   (bt:join-thread (rendering-thread object)))
 
 (defmethod push-for-rendering ((object context) (function function) &key (force-push nil))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (if (events-polling-p object)
       (if force-push
           (q:push-forced (queue object) function)
@@ -300,13 +300,13 @@
       (bq:push-unblock (queue object) function)))
 
 (defmethod pop-for-rendering ((object context))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (if (events-polling-p object)
       (q:pop (queue object))
       (bq:pop-block (queue object))))
 
 (defmethod rendering-must-wait-p ((object context))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (if (events-polling-p object)
       (q:emptyp (queue object))
       (bq:emptyp (queue object))))
@@ -325,7 +325,7 @@
 (defun sum-pixels (pixel-a pixel-b)
   (flet ((sum (a b)
            (min (to:f+ a b) #xff)))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((red-a   (pix:extract-red-component pixel-a))
         (green-a (pix:extract-green-component pixel-a))
         (blue-a  (pix:extract-blue-component pixel-a))
@@ -343,7 +343,7 @@
   (declare (fixnum width height))
   (declare ((unsigned-byte 8) r g b alpha))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((color (pix:assemble-color r g b alpha)))
     (loop for i from 0 below (to:f* width height) do
       (setf (aref buffer i) color))))
@@ -356,7 +356,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width top-left-x top-left-y bottom-right-x bottom-right-y))
   (declare ((unsigned-byte 8) r g b a))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((width  (to:f- bottom-right-x top-left-x))
          (height (to:f- bottom-right-y top-left-y))
          (w/2    (ash width  -1))
@@ -375,7 +375,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum x-center y-center radius))
   (declare ((unsigned-byte 8) r g b a))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((r-square  (to:f* radius radius))
         (color     (pix:assemble-color r g b a)))
     (loop for x from 0 below radius do
@@ -411,7 +411,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width x-center y-center radius))
   (declare ((unsigned-byte 8) r g b a))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((x-end     (ash (to:f* radius 185364) -18))
         (color     (pix:assemble-color r g b a)))
     (loop for x fixnum from 0 to x-end
@@ -460,7 +460,7 @@
 
 (defun calc-octant (x y)
   (declare (fixnum x y))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((dx-positive (to:f> x 0))
          (dy-positive (to:f> y 0))
          (dx-negative (not dx-positive))
@@ -510,7 +510,7 @@
 (defun to-first-octant (octant x y)
   (declare (symbol octant))
   (declare (fixnum x y))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (case octant
     (:1
      (values x y))
@@ -532,7 +532,7 @@
 (defun from-first-octant (new-octant x y)
   (declare (symbol new-octant))
   (declare (fixnum x y))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (case new-octant
     (:1
      (values x y))
@@ -590,7 +590,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width buffer-height))
   (declare (to::desired-type x y))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   ;; a          b
   ;; +----------+
   ;; |          |
@@ -623,18 +623,18 @@
 
 (u:definline translate (coordinate delta)
   (declare (fixnum coordinate delta))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:f+ coordinate delta))
 
 (u:definline float-translate (coordinate delta)
   (declare (to::desired-type coordinate delta))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:d+ coordinate delta))
 
 (u:definline rotate-sin-cos (x y sin-angle cosin-angle)
   (declare (fixnum x y))
   (declare (to::desired-type sin-angle cosin-angle))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (values (truncate (to:d- (to:d* (to:d x)
                                   cosin-angle)
                            (to:d* (to:d y)
@@ -647,14 +647,14 @@
 (defun rotate (x y angle)
   (declare (fixnum x y))
   (declare (to::desired-type angle))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((sin-angle   (to:dsin angle))
         (cosin-angle (to:dcos angle)))
     (rotate-sin-cos x y sin-angle cosin-angle)))
 
 (u:definline float-rotate-sin-cos (x y sin-angle cosin-angle)
   (declare (to::desired-type x y sin-angle cosin-angle))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (values (to:d- (to:d* (to:d x)
                         cosin-angle)
                  (to:d* (to:d y)
@@ -667,20 +667,20 @@
 (defun float-rotate (x y angle)
   (declare (to::desired-type angle))
   (declare (fixnum x y))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((sin-angle   (to:dsin angle))
         (cosin-angle (to:dcos angle)))
     (float-rotate-sin-cos (to:d x) (to:d y) sin-angle cosin-angle)))
 
 (defun float-coordinate-scale (coordinate factor)
   (declare (to::desired-type coordinate factor))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:d* coordinate factor))
 
 (defun coordinate-scale (coordinate factor)
   (declare (fixnum coordinate))
   (declare (to::desired-type factor))
-  ;;(declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (truncate (the to::desired-type (float-coordinate-scale (to:d coordinate) factor))))
 
 (defun blit-transform (buffer-source
@@ -715,7 +715,7 @@
                    pivot-row
                    pivot-column))
   (declare (function *blending-function*))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (if (and (/= rotation 0.0)
            (or (/= source-column 0)
                (/= source-row 0)
@@ -765,7 +765,7 @@
              (scaled-origin-column-offset    (the fixnum (coordinate-scale source-column scaling-column)))
              (scaled-origin-row-offset       (the fixnum (coordinate-scale source-row scaling-row))))
         (flet ((calc-aabb-vertex (x y)
-                 ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+                 (declare (optimize (speed 3) (debug 0) (safety 0)))
                  (let ((to-origin-x (coordinate-scale (translate (translate x (- pivot-column))
                                                                  (to:f- destination-column))
                                                       scaling-column))
