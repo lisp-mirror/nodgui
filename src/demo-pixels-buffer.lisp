@@ -26,6 +26,7 @@
          (sinus     (to:dsin (to:d* 8.0 tick)))
          (rotated-x (to:d- (to:d* x cosine)
                            (to:d* y sinus))))
+    (declare (dynamic-extent cosine sinus rotated-x))
     (to:dsin (to:d+ phase (to:d* 2.0
                                  (to:dabs (to:dsin (to:d* 30.0 tick)))
                                  frequency
@@ -39,6 +40,7 @@
                               (to:d- y 0.5)))
          (dist         (to:dsqrt (to:d+ (to:dexpt translated-x 2.0)
                                         (to:dexpt translated-y 2.0)))))
+    (declare (dynamic-extent translated-x translated-y dist))
     (to:dsin (to:d+ (to:d+ phase (to:d* -200.0 tick)) (to:d* frequency dist)))))
 
 (defun normalize-coordinate (v max)
@@ -102,41 +104,42 @@
          (r-average (ash sum-red -2))
          (g-average (ash sum-green -2))
          (b-average (ash sum-blue -2)))
+    (declare (dynamic-extent up down left right sum-red sum-green sum-blue))
     (if  (and (to:d> time .012)
               (to:f> kernel-y (truncate (* height 0.66)))
               (or (and (< r-average 80)
                        (= (random 60) 0))
                   (= (random 500) 0)))
         (px:set-pixel@ buffer
-                         width
-                         (cond
-                           ((= (random 2) 0)
-                            (to:f- kernel-x 1))
-                           ((= (random 2) 0)
-                            (to:f+ kernel-x 1))
-                           (t kernel-x))
-                         (if (= (random 3) 0)
-                             (1- kernel-y)
-                             kernel-y)
-                         20
-                         20
-                         0
-                         255)
+                       width
+                       (cond
+                         ((= (random 2) 0)
+                          (to:f- kernel-x 1))
+                         ((= (random 2) 0)
+                          (to:f+ kernel-x 1))
+                         (t kernel-x))
+                       (if (= (random 3) 0)
+                           (1- kernel-y)
+                           kernel-y)
+                       20
+                       20
+                       0
+                       255)
         (px:set-pixel@ buffer
-                         width
-                         (cond
-                           ((= (rem (random 2) 2) 0)
-                            (to:f- kernel-x 1))
-                           ((= (rem (random 2) 2) 0)
-                            (to:f+ kernel-x 1))
-                           (t kernel-x))
-                         (if (= (rem (random 3) 2) 0)
-                             (1- kernel-y)
-                             kernel-y)
-                         r-average
-                         g-average
-                         b-average
-                         255))))
+                       width
+                       (cond
+                         ((= (rem (random 2) 2) 0)
+                          (to:f- kernel-x 1))
+                         ((= (rem (random 2) 2) 0)
+                          (to:f+ kernel-x 1))
+                         (t kernel-x))
+                       (if (= (rem (random 3) 2) 0)
+                           (1- kernel-y)
+                           kernel-y)
+                       r-average
+                       g-average
+                       b-average
+                       255))))
 
 (defun blur (buffer width height time)
   (declare (fixnum width height))
@@ -156,6 +159,7 @@
            (pixel     (px:pixel@ buffer width x y))
            (new-pixel (px:sum-pixels (pixmap:assemble-color 255 50 0 255)
                                      pixel)))
+      (declare (dynamic-extent x y pixel new-pixel))
       (px:set-pixel@ buffer
                        width
                        x

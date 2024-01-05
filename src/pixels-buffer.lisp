@@ -186,14 +186,15 @@
            (loop for from-column fixnum from source-column below source-last-column
                  for to-column fixnum from 0 do
                    (let* ((color-destination (to:faref buffer-destination
-                                                 (to:f+ (to:f* row-destination
-                                                               buffer-destination-width)
-                                                        (to:f+ destination-column to-column))))
-                    (color-source      (to:faref buffer-source
-                                                 (to:f+ (to:f* row-source buffer-source-width)
-                                                        from-column)))
-                    (color (funcall *blending-function* color-source color-destination)))
-               (setf (to:faref buffer-destination (to:f+ (to:f* row-destination
+                                               (to:f+ (to:f* row-destination
+                                                        buffer-destination-width)
+                                                 (to:f+ destination-column to-column))))
+                          (color-source      (to:faref buffer-source
+                                               (to:f+ (to:f* row-source buffer-source-width)
+                                                 from-column)))
+                          (color (funcall *blending-function* color-source color-destination)))
+                     (declare (dynamic-extent color-destination color-source))
+                     (setf (to:faref buffer-destination (to:f+ (to:f* row-destination
                                                                 buffer-destination-width)
                                                          (to:f+ destination-column to-column)))
                      color)))))
@@ -378,8 +379,10 @@
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((r-square  (to:f* radius radius))
         (color     (pix:assemble-color r g b a)))
+    (declare (dynamic-extent r-square))
     (loop for x from 0 below radius do
       (let ((x-square (to:f* x x)))
+        (declare (dynamic-extent x-square))
         (loop named inner for y from 0 below radius do
           (let ((condition (to:f<= (to:f+ (to:f* y y)
                                           x-square)
@@ -414,6 +417,7 @@
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((x-end     (ash (to:f* radius 185364) -18))
         (color     (pix:assemble-color r g b a)))
+    (declare (dynamic-extent x-end))
     (loop for x fixnum from 0 to x-end
           with y fixnum          = radius
           with threshold fixnum  = 0
@@ -467,6 +471,7 @@
          (dy-negative (not dy-positive))
          (abs-dy>dx   (to:f> (abs y)
                              (abs x))))
+    (declare (dynamic-extent dx-positive dx-negative dy-positive dy-negative abs-dy>dx))
     (cond
       ;; second octant
       ((and dx-positive
@@ -558,6 +563,7 @@
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((octant (calc-octant (to:f- x1 x0)
                              (to:f- y1 y0))))
+    (declare (dynamic-extent octant))
     (multiple-value-bind (first-octant-x first-octant-y)
         (to-first-octant octant
                          (to:f- x1 x0)
@@ -568,12 +574,18 @@
              (2dy       (ash delta-y 1))
              (threshold (to:f- 2dy delta-x))
              (color     (pix:assemble-color r g b a)))
+        (declare (dynamic-extent delta-x
+                                 delta-y
+                                 2dx
+                                 2dy
+                                 threshold))
         (loop with x fixnum = 0
               with y fixnum = 0
               while (to:f< x delta-x)
               do
                  (multiple-value-bind (actual-x actual-y)
                      (from-first-octant octant x y)
+                   (declare (dynamic-extent actual-x actual-y))
                    (set-pixel-color@ buffer
                                      buffer-width
                                      (to:f+ (the fixnum actual-x) x0)
@@ -599,6 +611,7 @@
   ;; d          c
   (flet ((clamp-coordinate (coord max-value)
            (declare (to::desired-type max-value coord))
+           (declare (optimize (speed 3) (debug 0) (safety 0)))
            (cond
              ((< coord 0.0)
               0.0)
@@ -610,8 +623,8 @@
              (floor-y   (floor (clamp-coordinate y (to:d buffer-height))))
              (ceiling-x (ceiling (clamp-coordinate x (to:d buffer-width))))
              (ceiling-y (ceiling (clamp-coordinate y (to:d buffer-height))))
-             (dx        (truncate (to:d* 255.0 (to:d- x (to:d (floor x))))))
-             (dy        (truncate (to:d* 255.0 (to:d- y (to:d (floor y))))))
+             (dx        (truncate (to:d* 255.0 (to:d- x (to:d (the fixnum (floor x)))))))
+             (dy        (truncate (to:d* 255.0 (to:d- y (to:d (the fixnum (floor y)))))))
              (a         (pixel@ buffer buffer-width floor-x floor-y))
              (b         (pixel@ buffer buffer-width ceiling-x floor-y))
              (c         (pixel@ buffer buffer-width ceiling-x ceiling-y))
