@@ -457,7 +457,6 @@
 
 (a:define-constant +sdl-frame-height+ 600 :test #'=)
 
-
 (defun demo-sdl ()
   (with-nodgui ()
     (let* ((warning-label (make-instance 'label
