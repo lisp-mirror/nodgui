@@ -105,24 +105,18 @@
          (g-average (ash sum-green -2))
          (b-average (ash sum-blue -2)))
     (declare (dynamic-extent up down left right sum-red sum-green sum-blue))
-    (if  (and (to:d> time .012)
-              (to:f> kernel-y (truncate (* height 0.66)))
-              (or (and (< r-average 80)
-                       (= (random 60) 0))
-                  (= (random 500) 0)))
+    (if  (and (to:d> time .0050)
+              (to:f> kernel-y
+                     (truncate (* 0.66 height)))
+              (or (and (< r-average 160)
+                       (= (random 100) 0))
+                  (= (random 3000) 0)))
         (px:set-pixel@ buffer
                        width
-                       (cond
-                         ((= (random 2) 0)
-                          (to:f- kernel-x 1))
-                         ((= (random 2) 0)
-                          (to:f+ kernel-x 1))
-                         (t kernel-x))
-                       (if (= (random 3) 0)
-                           (1- kernel-y)
-                           kernel-y)
-                       20
-                       20
+                       kernel-x
+                       kernel-y
+                       0
+                       0
                        0
                        255)
         (px:set-pixel@ buffer
@@ -133,7 +127,7 @@
                          ((= (rem (random 2) 2) 0)
                           (to:f+ kernel-x 1))
                          (t kernel-x))
-                       (if (= (rem (random 3) 2) 0)
+                       (if (= (random 4) 0)
                            (1- kernel-y)
                            kernel-y)
                        r-average
@@ -154,12 +148,22 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (loop repeat howmany do
-    (let* ((x         (random  width))
-           (y         (1- (to:f- height (random 10))))
-           (pixel     (px:pixel@ buffer width x y))
-           (new-pixel (px:sum-pixels (pixmap:assemble-color 255 50 0 255)
-                                     pixel)))
-      (declare (dynamic-extent x y pixel new-pixel))
+    (let* ((x              (random  width))
+           (minimum-seed-y (random (truncate (/ height 50))))
+           (y              (1- (to:f- height minimum-seed-y)))
+           (pixel          (px:pixel@ buffer width x y))
+           (seed-color     (if (= (random 3) 0)
+                               (pixmap:assemble-color 255
+                                                      0
+                                                      0
+                                                      255)
+                               (pixmap:assemble-color 255
+                                                      25
+                                                      0
+                                                      255)))
+           (new-pixel      (px:sum-pixels seed-color
+                                          pixel)))
+      (declare (dynamic-extent x y minimum-seed-y pixel new-pixel))
       (px:set-pixel@ buffer
                        width
                        x
@@ -188,12 +192,12 @@
                                             (random height)))
                                20)))
     (px:clear-buffer rectangle
-                       rectangle-width
-                       rectangle-height
-                       255
-                       50
-                       20
-                       10)
+                     rectangle-width
+                     rectangle-height
+                     255
+                     50
+                     20
+                     10)
     (values rectangle
             rectangle-width
             rectangle-height
@@ -256,12 +260,6 @@
                    (width  px:width)
                    (height px:height)) *sdl-context*
     (let ((tick (to:d 0.0)))
-      ;; I should  use :force-push t  in this function call  to ensure
-      ;; the  event  of clearing  the  buffer  is not  discarded,  but
-      ;; instead i prefer to leav the  key parameter as nil because it
-      ;; could  give a  nice transition,  if  the queue  is filled  by
-      ;; leftover of plasma rendering events
-      (clear-sdl-window)
       (loop while (not (stop-drawing-thread-p *animation*)) do
         (px:sync *sdl-context*)
         (px:push-for-rendering *sdl-context*
@@ -417,11 +415,15 @@
                                                   0))
                            :force-push t))
 
-(defun draw-lines (buffer width x y)
+(defun draw-lines (buffer width height x y)
   (loop for degree from 0 below 360 by 2
         for color = 0 then (truncate (abs (* 255 (sin (* 12 (/ degree 360))))))
         do
-           (let ((radius 50.0))
+           (let ((radius (min (to:d x)
+                              (to:d y)
+                              (to:d (- width x))
+                              (to:d (- height y))
+                              50.0)))
              (px:push-for-rendering *sdl-context*
                                       (let* ((current-color color)
                                              (actual-degree degree)
@@ -447,13 +449,22 @@
     (wait-thread *animation*)
     (format t "anim ~a queue ~a~%" *animation* (px::queue *sdl-context*))))
 
+(a:define-constant +context-width+ 320 :test #'=)
+
+(a:define-constant +context-height+ 240 :test #'=)
+
+(a:define-constant +sdl-frame-width+ 800 :test #'=)
+
+(a:define-constant +sdl-frame-height+ 600 :test #'=)
+
+
 (defun demo-sdl ()
   (with-nodgui ()
     (let* ((warning-label (make-instance 'label
                                          :wraplength 800
                                          :text "WARNING: This animation may potentially trigger seizures for people with photosensitive epilepsy. Viewer discretion is advised."
                                          :font (font-create "serif" :size 20 :weight :bold)))
-           (sdl-frame     (px:make-sdl-frame 800 600))
+           (sdl-frame     (px:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
            (buttons-frame (make-instance 'nodgui:frame
                                          :borderwidth 2
                                          :relief :groove))
@@ -467,7 +478,7 @@
                                          :text "Please note that the button will responds with a delay because we need to wait the rendering queue to be empty"))
            (interaction-label (make-instance 'label
                                              :master nil
-                                             :text "Click on the sdl window to draw a sprite, be aware that no bounds checking is done."))
+                                             :text "Click on the sdl window to draw a sprite, be aware that many drawing functions does not bounds checking, check the docstrings."))
            (radio-plasma  (make-instance 'radio-button
                                          :master   buttons-frame
                                          :text     "Plasma"
@@ -538,17 +549,23 @@
                 (with-accessors ((buffer px:buffer)
                                  (width  px:width)
                                  (height px:height)) *sdl-context*
-                  (cond
-                    ((= (rem what-to-draw 3) 0)
-                     (draw-bell-sprite buffer width height (event-x event) (event-y event)))
-                    ((= (rem what-to-draw 3) 1)
-                     (draw-test-sprite buffer width height (event-x event) (event-y event)))
-                    (t
-                     (draw-lines  buffer width (event-x event) (event-y event))))))))
+                  (let ((scaled-x (truncate (* (event-x event)
+                                               (/ +context-width+
+                                                  +sdl-frame-width+))))
+                        (scaled-y (truncate (* (event-y event)
+                                               (/ +context-height+
+                                                  +sdl-frame-height+)))))
+                    (cond
+                      ((= (rem what-to-draw 3) 0)
+                       (draw-bell-sprite buffer width height scaled-x scaled-y))
+                      ((= (rem what-to-draw 3) 1)
+                       (draw-test-sprite buffer width height scaled-x scaled-y))
+                      (t
+                       (draw-lines buffer width height scaled-x scaled-y))))))))
       (wait-complete-redraw)
       (setf *sdl-context* (make-instance 'px:context
                                          :non-blocking-queue-maximum-size 16
                                          :classic-frame sdl-frame
-                                         :buffer-width  800
-                                         :buffer-height 600))
+                                         :buffer-width  +context-width+
+                                         :buffer-height +context-height+))
       (clear-sdl-window :force t))))
