@@ -279,15 +279,15 @@
                                    (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
       (format t "STOP!~%"))))
 
-(defun clear-sdl-window (&key (force nil))
+(defun clear-sdl-window (&key (context *sdl-context*) (force nil))
   (with-accessors ((buffer px:buffer)
                    (width  px:width)
-                   (height px:height)) *sdl-context*
-    (px:push-for-rendering *sdl-context*
-                             (lambda (dt)
-                               (declare (ignore dt))
-                               (px:clear-buffer buffer width height 0 0 0))
-                             :force-push force)))
+                   (height px:height)) context
+    (px:push-for-rendering context
+                           (lambda (dt)
+                             (declare (ignore dt))
+                             (px:clear-buffer buffer width height 0 0 0))
+                           :force-push force)))
 
 (defun draw-fire-thread ()
   (with-accessors ((buffer px:buffer)
@@ -428,26 +428,26 @@
 
 (defun draw-bell-sprite (buffer width height x y)
   (px:push-for-rendering *sdl-context*
-                           (lambda (dt)
-                             (declare (ignore dt))
-                             (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
-                                                  (nodgui.pixmap:width  *bell-sprite*)
-                                                  (nodgui.pixmap:height *bell-sprite*)
-                                                  buffer
-                                                  width
-                                                  height
-                                                  0
-                                                  0
-                                                  y
-                                                  x
-                                                  (nodgui.pixmap:height *bell-sprite*)
-                                                  (nodgui.pixmap:width  *bell-sprite*)
-                                                  (to:d (random 360.0))
-                                                  (to:d+ 0.2 (to:d (random 1.8)))
-                                                  (to:d+ 0.2 (to:d (random 1.8)))
-                                                  0
-                                                  0))
-                           :force-push t))
+                         (lambda (dt)
+                           (declare (ignore dt))
+                           (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
+                                              (nodgui.pixmap:width  *bell-sprite*)
+                                              (nodgui.pixmap:height *bell-sprite*)
+                                              buffer
+                                              width
+                                              height
+                                              0
+                                              0
+                                              y
+                                              x
+                                              (nodgui.pixmap:height *bell-sprite*)
+                                              (nodgui.pixmap:width  *bell-sprite*)
+                                              (to:d (random 360.0))
+                                              (to:d+ 0.2 (to:d (random 1.8)))
+                                              (to:d+ 0.2 (to:d (random 1.8)))
+                                              0
+                                              0))
+                         :force-push t))
 
 (defun draw-lines (buffer width height x y)
   (loop for degree from 0 below 360 by 2
@@ -491,7 +491,7 @@
 
 (a:define-constant +sdl-frame-height+ 600 :test #'=)
 
-(defun demo-sdl ()
+(defun demo-pixel-buffer-animation ()
   (with-nodgui ()
     (let* ((warning-label (make-instance 'label
                                          :wraplength 800
@@ -602,3 +602,109 @@
                                          :buffer-width  +context-width+
                                          :buffer-height +context-height+))
       (clear-sdl-window :force t))))
+
+(defun demo-pixel-buffer ()
+  (let ((sdl-context nil)
+        (scaling        1.0)
+        (rotation       0.0)
+        (context-buffer nil)
+        (context-width   nil)
+        (context-height  nil))
+    (flet ((make-button (master label callback)
+             (make-instance 'button
+                            :master  master
+                            :text    label
+                            :command callback))
+           (update-info (label)
+             (setf (text label)
+                   (format nil "rotation: ~,1f° scaling: ~a" rotation scaling)))
+           (draw ()
+             (px:push-for-rendering sdl-context
+                                    (lambda (dt)
+                                      (declare (ignore dt))
+                                      (px:clear-buffer context-buffer
+                                                       context-width
+                                                       context-height
+                                                       0 0 0)
+                                      (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
+                                                         (nodgui.pixmap:width  *bell-sprite*)
+                                                         (nodgui.pixmap:height *bell-sprite*)
+                                                         context-buffer
+                                                         context-width
+                                                         context-height
+                                                         0
+                                                         0
+                                                         (truncate (/ context-height 2))
+                                                         (truncate (/ context-width 2))
+                                                         (nodgui.pixmap:height *bell-sprite*)
+                                                         (nodgui.pixmap:width  *bell-sprite*)
+                                                         rotation
+                                                         scaling
+                                                         scaling
+                                                         (truncate (/ (nodgui.pixmap:width *bell-sprite*)
+                                                                      2))
+                                                         (truncate (/ (nodgui.pixmap:height *bell-sprite*)
+                                                                      2)))))))
+      (with-nodgui ()
+        (let* ((sdl-frame         (px:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
+               (info              (make-instance 'label))
+               (buttons-frame     (make-instance 'nodgui:frame
+                                                 :borderwidth 2
+                                                 :relief :groove))
+               (quit-frame        (make-instance 'nodgui:frame
+                                                 :master buttons-frame))
+               (button-rotate-cw  (make-button buttons-frame
+                                               "rotate clockwise"
+                                               (lambda ()
+                                                 (incf rotation 10.0)
+                                                 (update-info info)
+                                                 (draw))))
+               (button-rotate-ccw (make-button buttons-frame
+                                               "rotate counterclockwise"
+                                               (lambda ()
+                                                 (incf rotation -10.0)
+                                                 (update-info info)
+                                                 (draw))))
+               (button-enlarge    (make-button buttons-frame
+                                               "enlarge"
+                                               (lambda ()
+                                                 (incf scaling 0.5)
+                                                 (update-info info)
+                                                 (draw))))
+               (button-shrink    (make-button buttons-frame
+                                              "shrink"
+                                              (lambda ()
+                                                (incf scaling -0.5)
+                                                (update-info info)
+                                                (draw))))
+               (button-quit      (make-instance 'button
+                                                :master  quit-frame
+                                                :text    "quit"
+                                                :command (lambda ()
+                                                           (stop-animation)
+                                                           (px:quit-sdl sdl-context)
+                                                           (exit-nodgui)))))
+          (grid info               0 0)
+          (grid sdl-frame          1 0)
+          (grid buttons-frame      1 1 :sticky :news)
+          (grid button-rotate-cw   0 0 :sticky :w)
+          (grid button-rotate-ccw  1 0 :sticky :w)
+          (grid button-enlarge     2 0 :sticky :w)
+          (grid button-shrink      3 0 :sticky :w)
+          (grid quit-frame         5 0 :sticky :wes)
+          (grid button-quit        0 0 :sticky :s)
+          (grid-columnconfigure (root-toplevel) :all :weight 1)
+          (grid-rowconfigure    (root-toplevel) :all :weight 1)
+          (grid-rowconfigure    buttons-frame 5 :weight 1)
+          (grid-columnconfigure buttons-frame :all :weight 1)
+          (update-info info)
+          (wait-complete-redraw)
+          (setf sdl-context (make-instance 'px:context
+                                           :event-loop-type :serving
+                                           :classic-frame   sdl-frame
+                                           :buffer-width    +sdl-frame-width+
+                                           :buffer-height   +sdl-frame-height+))
+          (setf context-buffer (px:buffer sdl-context))
+          (setf context-width  (px:width  sdl-context))
+          (setf context-height (px:height sdl-context))
+          (draw))))))

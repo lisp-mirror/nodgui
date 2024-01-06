@@ -238,6 +238,39 @@
                           (sdl2:render-present renderer))))))
                  (:quit () t))))))))))
 
+(defun make-rendering-thread-blocking (context)
+  (nodgui.utils:make-thread
+   (let ((sdl-context  context))
+     (lambda ()
+       (let ((context  sdl-context))
+         (with-accessors ((width           width)
+                          (height          height)
+                          (window          window)
+                          (window-id       window-id)
+                          (buffer          buffer)
+                          (texture         texture)
+                          (time-spent      time-spent)
+                          (minimum-delta-t minimum-delta-t)) context
+           (sdl2:with-init (:everything)
+             (setf window (create-window-from-pointer (window-id->pointer window-id)))
+             (sdl2:with-renderer (renderer window :flags '(:accelerated))
+               (setf texture (make-texture renderer width height))
+               (sdl2:with-event-loop (:method :poll)
+                 (:idle
+                  ()
+                  (let* ((millis  (get-milliseconds))
+                         (dt      (- millis time-spent)))
+                    (setf time-spent millis)
+                    (let ((fn (pop-for-rendering context)))
+                      (funcall fn dt)
+                      (sdl2:update-texture texture
+                                           nil
+                                           (static-vectors:static-vector-pointer buffer)
+                                           (to:f* +channels-number+ width)) ; pitch
+                      (sdl2:render-copy renderer texture)
+                      (sdl2:render-present renderer))))
+                 (:quit () t))))))))))
+
 (defmethod initialize-instance :after ((object context)
                                        &key
                                          (classic-frame nil)
@@ -265,7 +298,14 @@
             buffer    (pix:make-buffer width height))
       (tg:finalize object
                    (lambda () (pix:free-buffer-memory buffer)))
-      (setf thread (make-rendering-thread object)))))
+      (assert (or (eq event-loop-type :polling)
+                  (eq event-loop-type :serving))
+              (event-loop-type)
+              "value of event-loop-type slot can be only :polling or serving, not ~a")
+      (setf thread
+            (if (events-polling-p object)
+                (make-rendering-thread object)
+                (make-rendering-thread-blocking object))))))
 
 (defgeneric quit-sdl (object))
 

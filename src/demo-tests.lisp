@@ -168,12 +168,16 @@
                                                      :text "Paned windows"
                                                      :command (lambda ()
                                                                 (demo-paned-window))))
-           (demo-sdl                  (make-instance 'button
-                                                     :text "Pixels buffer window"
+           (demo-animation            (make-instance 'button
+                                                     :text "Pixels buffer window (animations)"
                                                      :command (lambda ()
-                                                                (demo-sdl))))
-           (b-quit                   (make-instance  'button
-                                                     :text    "quit lisp 🙂"
+                                                                (demo-pixel-buffer-animation))))
+           (demo-pixel-buffer         (make-instance 'button
+                                                     :text "Pixels buffer window (blocking)"
+                                                     :command (lambda ()
+                                                                (demo-pixel-buffer))))
+           (b-quit                    (make-instance 'button
+                                                     :text    "Quit lisp 🙂"
                                                      :command (lambda ()
                                                                 (exit-nodgui)))))
       (grid widget                   0 0  :sticky :nswe)
@@ -215,7 +219,8 @@
       (grid demo-autocomplete-entry  12 0 :sticky :nswe)
       (grid demo-multifont-listbox   12 1 :sticky :nswe)
       (grid demo-paned-window        12 2 :sticky :nswe)
-      (grid demo-sdl                 13 0 :sticky :nswe)
+      (grid demo-animation           13 0 :sticky :nswe)
+      (grid demo-pixel-buffer        13 1 :sticky :nswe)
       (grid b-quit                   14 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))
