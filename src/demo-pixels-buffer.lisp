@@ -607,6 +607,8 @@
   (let ((sdl-context nil)
         (scaling        1.0)
         (rotation       0.0)
+        (translating-x  0)
+        (translating-y  0)
         (context-buffer nil)
         (context-width   nil)
         (context-height  nil))
@@ -617,7 +619,9 @@
                             :command callback))
            (update-info (label)
              (setf (text label)
-                   (format nil "rotation: ~,1f° scaling: ~a" rotation scaling)))
+                   (format nil
+                           "rotation: ~,1f° scaling: ~a translate x: ~a translate y: ~a"
+                           rotation scaling translating-x translating-y)))
            (draw ()
              (px:push-for-rendering sdl-context
                                     (lambda (dt)
@@ -644,7 +648,9 @@
                                                          (truncate (/ (nodgui.pixmap:width *bell-sprite*)
                                                                       2))
                                                          (truncate (/ (nodgui.pixmap:height *bell-sprite*)
-                                                                      2)))))))
+                                                                      2))
+                                                         translating-x
+                                                         translating-y)))))
       (with-nodgui ()
         (let* ((sdl-frame         (px:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
                (info              (make-instance 'label))
@@ -677,6 +683,30 @@
                                                 (incf scaling -0.5)
                                                 (update-info info)
                                                 (draw))))
+               (button-move-left  (make-button buttons-frame
+                                              "move left"
+                                              (lambda ()
+                                                (incf translating-x -5)
+                                                (update-info info)
+                                                (draw))))
+               (button-move-right (make-button buttons-frame
+                                               "move right"
+                                               (lambda ()
+                                                 (incf translating-x 5)
+                                                (update-info info)
+                                                (draw))))
+               (button-move-up    (make-button buttons-frame
+                                               "move up"
+                                               (lambda ()
+                                                 (incf translating-y -5)
+                                                 (update-info info)
+                                                 (draw))))
+               (button-move-down  (make-button buttons-frame
+                                               "move down"
+                                               (lambda ()
+                                                 (incf translating-y 5)
+                                                 (update-info info)
+                                                 (draw))))
                (button-quit      (make-instance 'button
                                                 :master  quit-frame
                                                 :text    "quit"
@@ -687,15 +717,19 @@
           (grid info               0 0)
           (grid sdl-frame          1 0)
           (grid buttons-frame      1 1 :sticky :news)
-          (grid button-rotate-cw   0 0 :sticky :w)
-          (grid button-rotate-ccw  1 0 :sticky :w)
-          (grid button-enlarge     2 0 :sticky :w)
-          (grid button-shrink      3 0 :sticky :w)
-          (grid quit-frame         5 0 :sticky :wes)
+          (grid button-rotate-cw   0 0 :sticky :nw)
+          (grid button-rotate-ccw  1 0 :sticky :nw)
+          (grid button-enlarge     2 0 :sticky :nw)
+          (grid button-shrink      3 0 :sticky :nw)
+          (grid button-move-up     4 0 :sticky :nw)
+          (grid button-move-down   5 0 :sticky :nw)
+          (grid button-move-left   6 0 :sticky :nw)
+          (grid button-move-right  7 0 :sticky :nw)
+          (grid quit-frame         8 0 :sticky :s)
           (grid button-quit        0 0 :sticky :s)
           (grid-columnconfigure (root-toplevel) :all :weight 1)
           (grid-rowconfigure    (root-toplevel) :all :weight 1)
-          (grid-rowconfigure    buttons-frame 5 :weight 1)
+          (grid-rowconfigure    buttons-frame 8 :weight 1)
           (grid-columnconfigure buttons-frame :all :weight 1)
           (update-info info)
           (wait-complete-redraw)
