@@ -76,7 +76,7 @@
   (setf (aref buffer (to:f+ x (to:f* y width)))
         color))
 
-(defun set-pixel@ (buffer width x y r g b &optional (a 255))
+(u:definline set-pixel@ (buffer width x y r g b &optional (a 255))
   "Note: no bounds checking is done"
   (declare (fixnum x y width))
   (declare ((unsigned-byte 8) r g b a))
@@ -85,7 +85,7 @@
   (let ((color (pix:assemble-color r g b a)))
     (set-pixel-color@ buffer width x y color)))
 
-(defun pixel@ (buffer width x y)
+(u:definline pixel@ (buffer width x y)
   "Note: no bounds checking is done"
   (declare (fixnum x y width))
   (declare ((simple-array (unsigned-byte 32)) buffer))

@@ -67,16 +67,33 @@
 
 ;; fire
 
+(let ((cache '()))
+  (defun random-0-2 ()
+    (declare (optimize (speed 3) (debug 0) (safety 0)))
+    (if cache
+        (pop cache)
+        (progn
+          (loop repeat 100 collect (random 2))
+          (random-0-2)))))
+
+(defun 1-of-2-passes ()
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (= (rem (the (unsigned-byte 8)
+               (random-0-2))
+          2)
+     0))
+
 (defun blur-kernel (buffer width height kernel-x kernel-y time shift-spike)
   (declare (fixnum shift-spike kernel-x kernel-y width height))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let* ((up    (to:frem (to:f+ kernel-y 1) height))
-         (down  (max     (to:f- kernel-y 1) 0))
-         (left  (if (= kernel-x 0)
-                    (1- width)
-                    (to:f- kernel-x 1)))
-         (right (to:frem (to:f+ kernel-x 1) width))
+  (let* ((up            (to:f+ kernel-y 1))
+         (down          (to:f- kernel-y 1))
+         (shift-down-2  (to:f- kernel-y 2))
+         (left          (to:f- kernel-x 1))
+         (shift-left-2  (to:f- kernel-x 2))
+         (right         (to:f+ kernel-x 1))
+         (shift-right-2 (to:f+ kernel-x 2))
          (sum-red (to:f+ (the (unsigned-byte 8)
                               (pixmap:extract-red-component (px:pixel@ buffer width kernel-x up)))
                          (the (unsigned-byte 8)
@@ -113,14 +130,14 @@
        (px:set-pixel@ buffer
                       width
 		      (cond
-                        ((= (rem (random 2) 2) 0)
-                         (to:f- kernel-x 2))
-                        ((= (rem (random 2) 2) 0)
-                         (to:f+ kernel-x 2))
+                        ((1-of-2-passes)
+                         shift-left-2)
+                        ((1-of-2-passes)
+                         shift-right-2)
                         (t kernel-x))
 		      (if (= (random 3) 0)
                           kernel-y
-                          (1- kernel-y))
+                          down)
                       r-average
                       g-average
                       b-average
@@ -133,7 +150,7 @@
        (px:set-pixel@ buffer
                       width
                       kernel-x
-                      (- kernel-y 2)
+                      shift-down-2
                       10
                       10
                       10
@@ -142,13 +159,13 @@
        (px:set-pixel@ buffer
                       width
                       (cond
-                        ((= (rem (random 2) 2) 0)
-                         (to:f- kernel-x 1))
-                        ((= (rem (random 2) 2) 0)
-                         (to:f+ kernel-x 1))
+                        ((1-of-2-passes)
+                         left)
+                        ((1-of-2-passes)
+                         right)
                         (t kernel-x))
                       (if (= (random 3) 0)
-                          (1- kernel-y)
+                          down
                           kernel-y)
                       r-average
                       g-average
@@ -165,8 +182,8 @@
                                                   (to:dsin (to:d* 1000000.0
                                                                   (to:d+ 10.0 time)))))))))
     (declare (dynamic-extent shift-spike))
-    (loop for i from 1 below (1- width) do
-	  (loop for j from 1 below height do
+    (loop for i fixnum from 1 below (1- width) do
+	  (loop for j fixnum from 1 below (1- height) do
 		(blur-kernel buffer width height i j time shift-spike)))))
 
 (defun reinforce-fire (buffer width height howmany)
@@ -176,15 +193,15 @@
   (loop repeat howmany do
     (let* ((x              (random  width))
            (minimum-seed-y (random (truncate (/ height 50))))
-           (y              (1- (to:f- height minimum-seed-y)))
+           (y              (- (to:f- height minimum-seed-y) 2))
            (pixel          (px:pixel@ buffer width x y))
            (seed-color     (cond
-			     ((= (random 10) 0)
+			     ((= (random 8) 0)
                               (pixmap:assemble-color 255
-                                                     0
+                                                     2
                                                      0
                                                      255))
-			     ((= (random 20)
+			     ((= (random 10)
 				 0)
 			      (pixmap:assemble-color 255
 						     200

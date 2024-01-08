@@ -30,7 +30,7 @@
 
 (defun buffer-sizes->static-vector-size (width height)
   (declare (fixnum width height))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (nodgui.typed-operations:f* width height))
 
 (defun make-buffer (width height)
@@ -52,29 +52,29 @@
             ,@body)
        (free-buffer-memory ,buffer))))
 
-(defun extract-red-component (color)
+(u:definline extract-red-component (color)
   (declare (fixnum color))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logand (ash color -24) #xff))
 
-(defun extract-blue-component (color)
+(u:definline extract-blue-component (color)
   (declare (fixnum color))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logand (ash color -8) #xff))
 
-(defun extract-green-component (color)
+(u:definline extract-green-component (color)
   (declare (fixnum color))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logand (ash color -16) #xff))
 
-(defun extract-alpha-component (color)
+(u:definline extract-alpha-component (color)
   (declare (fixnum color))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logand color #xff))
 
-(defun assemble-color (r g b &optional (a 255))
+(u:definline assemble-color (r g b &optional (a 255))
   (declare ((unsigned-byte 8) r g b a))
-  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (logior (logand a #xff)
           (the fixnum (ash b 8))
           (the fixnum (ash g 16))

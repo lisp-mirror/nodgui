@@ -282,6 +282,9 @@
         :nodgui.utils
         :nodgui.ubvec4
         :nodgui.vec2)
+  (:local-nicknames (:a  :alexandria)
+                    (:to :nodgui.typed-operations)
+                    (:u  :nodgui.utils))
   (:export
    #:extract-red-component
    #:extract-green-component
