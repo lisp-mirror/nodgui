@@ -73,7 +73,7 @@
     (if cache
         (pop cache)
         (progn
-          (loop repeat 100 collect (random 2))
+          (setf cache (loop repeat 100000 collect (random 2)))
           (random-0-2)))))
 
 (defun 1-of-2-passes ()
@@ -87,13 +87,14 @@
   (declare (fixnum shift-spike kernel-x kernel-y width height))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let* ((up            (to:f+ kernel-y 1))
-         (down          (to:f- kernel-y 1))
-         (shift-down-2  (to:f- kernel-y 2))
-         (left          (to:f- kernel-x 1))
-         (shift-left-2  (to:f- kernel-x 2))
-         (right         (to:f+ kernel-x 1))
-         (shift-right-2 (to:f+ kernel-x 2))
+  (let* ((up                   (to:f+ kernel-y 1))
+         (down                 (to:f- kernel-y 1))
+         (shift-down-2         (to:f- kernel-y 2))
+         (left                 (to:f- kernel-x 1))
+         (shift-left-2         (to:f- kernel-x 2))
+         (right                (to:f+ kernel-x 1))
+         (shift-right-2        (to:f+ kernel-x 2))
+         (black-dots-threshold (truncate (* 0.70 height)))
          (sum-red (to:f+ (the (unsigned-byte 8)
                               (pixmap:extract-red-component (px:pixel@ buffer width kernel-x up)))
                          (the (unsigned-byte 8)
@@ -121,7 +122,15 @@
          (r-average (ash sum-red -2))
          (g-average (ash sum-green -2))
          (b-average (ash sum-blue -2)))
-    (declare (dynamic-extent up down left right sum-red sum-green sum-blue))
+    (declare (dynamic-extent up
+                             down
+                             shift-down-2
+                             left
+                             shift-left-2
+                             right
+                             shift-right-2
+                             black-dots-threshold
+                             sum-red sum-green sum-blue))
     (cond
       ((and (not (< 0.0
 		    (to:dabs (to:d* 10.0 (to:dsin (to:d* 500.0 time))))
@@ -142,8 +151,7 @@
                       g-average
                       b-average
                       255))
-      ((and (to:f> kernel-y
-                   (truncate (* 0.70 height)))
+      ((and (to:f> kernel-y black-dots-threshold)
             (or (and (< r-average 200)
                      (= (random 50) 0))
                 (= (random 1000) 0)))
