@@ -596,13 +596,13 @@
     (wait-thread *animation*)
     (format t "anim ~a queue ~a~%" *animation* (px::queue *sdl-context*))))
 
-(a:define-constant +context-width+ 1024 :test #'=)
+(a:define-constant +context-width+ 320 :test #'=)
 
-(a:define-constant +context-height+ 768 :test #'=)
+(a:define-constant +context-height+ 240 :test #'=)
 
-(a:define-constant +sdl-frame-width+ 1024 :test #'=)
+(a:define-constant +sdl-frame-width+ 800 :test #'=)
 
-(a:define-constant +sdl-frame-height+ 768 :test #'=)
+(a:define-constant +sdl-frame-height+ 600 :test #'=)
 
 (defun demo-pixel-buffer-animation (&optional (start-fire-demo nil))
   (with-nodgui ()
