@@ -115,10 +115,21 @@
 
 (alexandria:define-constant +degree->radians-factor+ (d (/ pi 180)) :test #'=)
 
+(declaim (inline degree->radians))
+
 (defun degree->radians (degree)
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (desired-type degree))
   (d* degree +degree->radians-factor+))
+
+(alexandria:define-constant +radians->degree-factor+ (d (/ 180 pi)) :test #'=)
+
+(declaim (inline radians->degree))
+
+(defun radians->degree (radians)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (desired-type radians))
+  (d* radians +radians->degree-factor+))
 
 ;;;; constants
 

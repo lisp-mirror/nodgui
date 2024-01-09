@@ -69,6 +69,7 @@
             #:dlerp
             #:secure-dacos
             #:degree->radians
+            #:radians->degree
             #:+2pi+
             #:parse-number->desired
             #:f

@@ -4,84 +4,171 @@
 
 (defparameter *sdl-context* nil)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+  (a:define-constant +sin-lut-step-per-degrees+ 20 :test #'=)
+
+  (a:define-constant +float-sin-lut-step-per-degrees+ (to:d +sin-lut-step-per-degrees+)
+    :test #'=)
+
+  (defun populate-sin-lut ()
+    (let ((lut (make-fresh-array (* +sin-lut-step-per-degrees+ 360)
+                                 0.01
+                                 'to::desired-type
+                                 t)))
+      (loop for angle from 0.0 below 359.9 by (/ 1.0 +sin-lut-step-per-degrees+)
+            for i from 0
+            do
+               (setf (aref lut i) (to:dsin (to:degree->radians angle))))
+      lut))
+
+  (a:define-constant +sin-lut+ (populate-sin-lut) :test #'equalp))
+
+(a:define-constant +1/2pi+ (to:d (/ 1 to:+2pi+)) :test #'=)
+
+(definline sin-lut (angle)
+  (declare (to::desired-type angle))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let* ((normalized-angle (to:d* to:+2pi+ (nth-value 1 (truncate (to:d* angle +1/2pi+)))))
+         (actual-angle     (if (< normalized-angle 0)
+                               (to:d+ normalized-angle to:+2pi+)
+                               normalized-angle))
+         (index            (truncate (to:d* +float-sin-lut-step-per-degrees+
+                                            (to:radians->degree actual-angle)))))
+    (declare (dynamic-extent normalized-angle actual-angle index))
+    (aref +sin-lut+ index)))
+
+(definline sin-lut-fire (angle)
+  (declare (to::desired-type angle))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let* ((normalized-angle (to:d* to:+2pi+ (nth-value 1 (truncate (to:d* angle +1/2pi+)))))
+         (index            (to:f* +sin-lut-step-per-degrees+
+                                  (the fixnum (truncate (to:radians->degree normalized-angle))))))
+    (declare (dynamic-extent normalized-angle index))
+    (aref +sin-lut+ index)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+  (a:define-constant +cos-lut-step-per-degrees+ 20 :test #'=)
+
+  (a:define-constant +float-cos-lut-step-per-degrees+ (to:d +cos-lut-step-per-degrees+)
+    :test #'=)
+
+  (defun populate-cos-lut ()
+    (let ((lut (make-fresh-array (* +cos-lut-step-per-degrees+ 360)
+                                 0.01
+                                 'to::desired-type
+                                 t)))
+      (loop for angle from 0.0 below 359.9 by (/ 1.0 +cos-lut-step-per-degrees+)
+            for i from 0
+            do
+               (setf (aref lut i) (to:dcos (to:degree->radians angle))))
+      lut))
+
+  (a:define-constant +cos-lut+ (populate-cos-lut) :test #'equalp))
+
+(a:define-constant +1/2pi+ (to:d (/ 1 to:+2pi+)) :test #'=)
+
+(definline cos-lut-positive-angle (angle)
+  (declare (to::desired-type angle))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let* ((normalized-angle (to:d* to:+2pi+ (nth-value 1 (truncate (to:d* angle +1/2pi+)))))
+         (index            (truncate (to:d* +float-cos-lut-step-per-degrees+
+                                            (to:radians->degree normalized-angle)))))
+    (declare (dynamic-extent normalized-angle normalized-angle index))
+    (aref +cos-lut+ index)))
+
 ;; plasma
 
-(defun wave->color (v)
+(definline wave->color (v)
   (declare (to::desired-type v))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (truncate (to:d* (to:d/ (to:d+ 1.0 (to:dsin (to:d* 5.0 v 3.141))) 2.0)
+  (truncate (to:d* (to:d/ (to:d+ 1.0 (sin-lut (to:d* 5.0 v 3.141))) 2.0)
                    255.0)))
 
 (defun horizontal-wave (x frequency phase tick)
   (declare (to::desired-type frequency x))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (to:dsin (to:d+ phase
+  (sin-lut (to:d+ phase
                   (to:d* frequency
                          (to:d+ x tick)))))
 
-(defun rotating-wave (x y frequency phase tick)
+(definline rotating-wave (x y frequency phase tick)
   (declare (to::desired-type frequency x phase tick))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let* ((cosine    (to:dcos (to:d* 8.0 tick)))
-         (sinus     (to:dsin (to:d* 8.0 tick)))
+  (let* ((cosine    (cos-lut-positive-angle (to:d* 8.0 tick)))
+         (sinus     (sin-lut (to:d* 8.0 tick)))
          (rotated-x (to:d- (to:d* x cosine)
                            (to:d* y sinus))))
     (declare (dynamic-extent cosine sinus rotated-x))
-    (to:dsin (to:d+ phase (to:d* 2.0
-                                 (to:dabs (to:dsin (to:d* 30.0 tick)))
+    (sin-lut (to:d+ phase (to:d* 2.0
+                                 (to:dabs (sin-lut (to:d* 30.0 tick)))
                                  frequency
                                  rotated-x)))))
 
-(defun circular-wave (x y frequency phase tick)
+(definline circular-wave (x y frequency phase tick)
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let* ((translated-x (to:d+ (to:dsin (to:d* 6.0 tick))
+  (let* ((translated-x (to:d+ (sin-lut (to:d* 6.0 tick))
                               (to:d- x 0.5)))
-         (translated-y (to:d+ (to:dsin (to:d* 2.0 tick))
+         (translated-y (to:d+ (sin-lut (to:d* 2.0 tick))
                               (to:d- y 0.5)))
          (dist         (to:dsqrt (to:d+ (to:dexpt translated-x 2.0)
                                         (to:dexpt translated-y 2.0)))))
     (declare (dynamic-extent translated-x translated-y dist))
-    (to:dsin (to:d+ (to:d+ phase (to:d* -200.0 tick)) (to:d* frequency dist)))))
+    (sin-lut (to:d+ (to:d+ phase (to:d* -200.0 tick)) (to:d* frequency dist)))))
 
-(defun normalize-coordinate (v max)
+(definline normalize-coordinate (v max)
   (declare (fixnum v max))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:d/ (to:d v) (to:d max)))
 
-(defun plasma-value (x y frequency phase tick)
+(definline plasma-value (x y frequency phase tick)
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:d+ (circular-wave x y frequency phase tick)
          (horizontal-wave x frequency phase tick)
          (rotating-wave x y frequency phase tick)))
 
 (defun draw-plasma (buffer width height tick)
-  (loop for i from 0 below width do
-    (loop for j from 0 below height do
+  (loop for i fixnum from 0 below width do
+    (loop for j fixnum from 0 below height do
       (let ((color (wave->color (plasma-value (normalize-coordinate i width)
                                               (normalize-coordinate j height)
                                               8.0
                                               0.0
                                               tick))))
+        (declare (dynamic-extent color))
         (px:set-pixel@ buffer width i j color color color)))))
+
 ;;; end plasma ;;;
 
 ;; fire
 
-(let ((cache '()))
-  (defun random-0-2 ()
-    (declare (optimize (speed 3) (debug 0) (safety 0)))
-    (if cache
-        (pop cache)
-        (progn
-          (setf cache (loop repeat 100000 collect (random 2)))
-          (random-0-2)))))
+(defmacro generate-cached-random (max)
+  (a:with-gensyms (cache)
+    (let ((random-function-name (format-fn-symbol t "random-0-~a" max)))
+      `(progn
+         (let ((,cache '()))
+           (defun ,random-function-name ()
+             (declare (optimize (speed 3) (debug 0) (safety 0)))
+             (if ,cache
+                 (pop ,cache)
+                 (progn
+                   (setf ,cache (loop repeat 100000 collect (random ,max)))
+                   (,random-function-name)))))
+         (defun ,(format-fn-symbol t "1-of-~a-passes" max) ()
+           (declare (optimize (speed 3) (debug 0) (safety 0)))
+           (= (rem (the fixnum
+                        (,random-function-name))
+                   ,max)
+              0))))))
 
-(defun 1-of-2-passes ()
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (= (rem (the (unsigned-byte 8)
-               (random-0-2))
-          2)
-     0))
+(generate-cached-random 2)
+
+(generate-cached-random 3)
+
+(generate-cached-random 50)
+
+(generate-cached-random 1000)
 
 (defun blur-kernel (buffer width height kernel-x kernel-y time shift-spike)
   (declare (fixnum shift-spike kernel-x kernel-y width height))
@@ -133,7 +220,7 @@
                              sum-red sum-green sum-blue))
     (cond
       ((and (not (< 0.0
-		    (to:dabs (to:d* 10.0 (to:dsin (to:d* 500.0 time))))
+		    (to:dabs (to:d* 10.0 (sin-lut-fire (to:d* 500.0 time))))
 		    9.995))
 	    (< (rem kernel-x shift-spike) 10))
        (px:set-pixel@ buffer
@@ -144,7 +231,7 @@
                         ((1-of-2-passes)
                          shift-right-2)
                         (t kernel-x))
-		      (if (= (random 3) 0)
+		      (if (1-of-2-passes)
                           kernel-y
                           down)
                       r-average
@@ -153,8 +240,8 @@
                       255))
       ((and (to:f> kernel-y black-dots-threshold)
             (or (and (< r-average 200)
-                     (= (random 50) 0))
-                (= (random 1000) 0)))
+                     (1-of-50-passes))
+                (1-of-1000-passes)))
        (px:set-pixel@ buffer
                       width
                       kernel-x
@@ -172,7 +259,7 @@
                         ((1-of-2-passes)
                          right)
                         (t kernel-x))
-                      (if (= (random 3) 0)
+                      (if (1-of-3-passes)
                           down
                           kernel-y)
                       r-average
@@ -187,12 +274,13 @@
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((shift-spike (truncate (abs (to:d+ 20.0
                                            (to:d* 10.0
-                                                  (to:dsin (to:d* 1000000.0
-                                                                  (to:d+ 10.0 time)))))))))
+                                                  (sin-lut-fire (to:d* 1000000.0
+                                                                       (to:d+ 10.0
+                                                                              time)))))))))
     (declare (dynamic-extent shift-spike))
     (loop for i fixnum from 1 below (1- width) do
-	  (loop for j fixnum from 1 below (1- height) do
-		(blur-kernel buffer width height i j time shift-spike)))))
+      (loop for j fixnum from 1 below (1- height) do
+	(blur-kernel buffer width height i j time shift-spike)))))
 
 (defun reinforce-fire (buffer width height howmany)
   (declare (fixnum width height howmany))
@@ -508,15 +596,15 @@
     (wait-thread *animation*)
     (format t "anim ~a queue ~a~%" *animation* (px::queue *sdl-context*))))
 
-(a:define-constant +context-width+ 320 :test #'=)
+(a:define-constant +context-width+ 1024 :test #'=)
 
-(a:define-constant +context-height+ 240 :test #'=)
+(a:define-constant +context-height+ 768 :test #'=)
 
-(a:define-constant +sdl-frame-width+ 800 :test #'=)
+(a:define-constant +sdl-frame-width+ 1024 :test #'=)
 
-(a:define-constant +sdl-frame-height+ 600 :test #'=)
+(a:define-constant +sdl-frame-height+ 768 :test #'=)
 
-(defun demo-pixel-buffer-animation ()
+(defun demo-pixel-buffer-animation (&optional (start-fire-demo nil))
   (with-nodgui ()
     (let* ((warning-label (make-instance 'label
                                          :wraplength 800
@@ -626,7 +714,12 @@
                                          :classic-frame sdl-frame
                                          :buffer-width  +context-width+
                                          :buffer-height +context-height+))
-      (clear-sdl-window :force t))))
+      (clear-sdl-window :force t)
+      (when start-fire-demo
+        (stop-animation)
+        (setf *animation*
+              (make-animation :thread
+                              (make-thread #'draw-fire-thread)))))))
 
 (defun demo-pixel-buffer ()
   (let ((sdl-context nil)
