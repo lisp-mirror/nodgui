@@ -427,8 +427,10 @@
       ;; could  give a  nice transition,  if  the queue  is filled  by
       ;; leftover of plasma rendering events
       (clear-sdl-window)
-      (let ((rectangles (loop repeat 1000 collect
-                                         (multiple-value-list (make-blitting-rectangle width height)))))
+      (let ((rectangles (loop repeat 1000
+                              collect
+                              (multiple-value-list (make-blitting-rectangle width
+                                                                            height)))))
         (mapcar (lambda (rectangle)
                   (px:push-for-rendering *sdl-context*
                                    (lambda (dt)

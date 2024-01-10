@@ -207,6 +207,7 @@
   (nodgui.utils:make-thread
    (let ((sdl-context  context))
      (lambda ()
+       (declare (optimize (speed 3) (debug 0) (safety 0)))
        (let ((context  sdl-context))
          (with-accessors ((width           width)
                           (height          height)
@@ -216,6 +217,8 @@
                           (texture         texture)
                           (time-spent      time-spent)
                           (minimum-delta-t minimum-delta-t)) context
+           (declare ((simple-array (unsigned-byte 32)) buffer))
+           (declare (fixnum width height))
            (sdl2:with-init (:everything)
              (setf window (create-window-from-pointer (window-id->pointer window-id)))
              (sdl2:with-renderer (renderer window :flags '(:accelerated))
@@ -224,18 +227,22 @@
                  (:idle
                   ()
                   (let* ((millis  (get-milliseconds))
-                         (dt      (- millis time-spent)))
-                    (when (>= dt minimum-delta-t)
+                         (dt      (to:f- (the fixnum millis)
+                                         (the fixnum time-spent))))
                       (when (not (rendering-must-wait-p context))
                         (setf time-spent millis)
                         (let ((fn (pop-for-rendering context)))
-                          (funcall fn dt)
-                          (sdl2:update-texture texture
-                                               nil
-                                               (static-vectors:static-vector-pointer buffer)
-                                               (to:f* +channels-number+ width)) ; pitch
-                          (sdl2:render-copy renderer texture)
-                          (sdl2:render-present renderer))))))
+                          (declare (function fn))
+                          (if (eq fn #'quit-sentinel)
+                              (funcall fn dt)
+                              (when (>= dt minimum-delta-t)
+                                (funcall fn dt)
+                                (sdl2:update-texture texture
+                                                     nil
+                                                     (static-vectors:static-vector-pointer buffer)
+                                                     (to:f* +channels-number+ width)) ; pitch
+                                (sdl2:render-copy renderer texture)
+                                (sdl2:render-present renderer)))))))
                  (:quit () t))))))))))
 
 (defun make-rendering-thread-blocking (context)
@@ -323,12 +330,14 @@
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (eq (event-loop-type object) :polling))
 
+(defun quit-sentinel (dt)
+  (declare (ignore dt))
+  (sdl2:push-event :quit))
+
 (defmethod quit-sdl ((object context))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (push-for-rendering object
-                      (lambda (dt)
-                        (declare (ignore dt))
-                        (sdl2:push-event :quit))
+                      #'quit-sentinel
                       :force-push t)
   (bt:join-thread (rendering-thread object)))
 
