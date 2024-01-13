@@ -423,7 +423,7 @@
     (let ((tick (to:d 0.0)))
       ;; I should  use :force-push t  in this function call  to ensure
       ;; the  event  of clearing  the  buffer  is not  discarded,  but
-      ;; instead i prefer to leav the  key parameter as nil because it
+      ;; instead i prefer to leave the  key parameter as nil because it
       ;; could  give a  nice transition,  if  the queue  is filled  by
       ;; leftover of plasma rendering events
       (clear-sdl-window)
