@@ -170,104 +170,99 @@
 
 (generate-cached-random 1000)
 
-(defun blur-kernel (buffer width height kernel-x kernel-y time shift-spike)
-  (declare (fixnum shift-spike kernel-x kernel-y width height))
+(a:define-constant +smoke-color+ (pixmap:assemble-color 10 10 10 255) :test #'=)
+
+(defun blur-kernel (buffer width height index x y time shift-spike smoke-threshold shift-down-2)
+  (declare (fixnum shift-spike index x y width height smoke-threshold shift-down-2))
   (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (to::desired-type time))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let* ((up                   (to:f+ kernel-y 1))
-         (down                 (to:f- kernel-y 1))
-         (shift-down-2         (to:f- kernel-y 2))
-         (left                 (to:f- kernel-x 1))
-         (shift-left-2         (to:f- kernel-x 2))
-         (right                (to:f+ kernel-x 1))
-         (shift-right-2        (to:f+ kernel-x 2))
-         (black-dots-threshold (truncate (* 0.70 height)))
+  (let* ((shift-up             width)
+         (shift-down           (to:f- height))
+         (shift-left           -1)
+         (shift-left-2         -2)
+         (shift-right-2        2)
+         (shift-right          1)
+         (pixel-up             (aref buffer (to:f+ index shift-up)))
+         (pixel-down           (aref buffer (to:f+ index shift-down)))
+         (pixel-left           (aref buffer (to:f+ index shift-left)))
+         (pixel-right          (aref buffer (to:f+ index shift-right)))
          (sum-red (to:f+ (the (unsigned-byte 8)
-                              (pixmap:extract-red-component (px:pixel@ buffer width kernel-x up)))
+                              (pixmap:extract-red-component pixel-up))
                          (the (unsigned-byte 8)
-                              (pixmap:extract-red-component (px:pixel@ buffer width kernel-x down)))
+                              (pixmap:extract-red-component pixel-down))
                          (the (unsigned-byte 8)
-                              (pixmap:extract-red-component (px:pixel@ buffer width left kernel-y)))
+                              (pixmap:extract-red-component pixel-left))
                          (the (unsigned-byte 8)
-                              (pixmap:extract-red-component (px:pixel@ buffer width right kernel-y)))))
+                              (pixmap:extract-red-component pixel-right))))
          (sum-green (to:f+ (the (unsigned-byte 8)
-                                (pixmap:extract-green-component (px:pixel@ buffer width kernel-x up)))
+                                (pixmap:extract-green-component pixel-up))
                            (the (unsigned-byte 8)
-                                (pixmap:extract-green-component (px:pixel@ buffer width kernel-x down)))
+                                (pixmap:extract-green-component pixel-down))
                            (the (unsigned-byte 8)
-                                (pixmap:extract-green-component (px:pixel@ buffer width left kernel-y)))
+                                (pixmap:extract-green-component pixel-left))
                            (the (unsigned-byte 8)
-                                (pixmap:extract-green-component (px:pixel@ buffer width right kernel-y)))))
+                                (pixmap:extract-green-component pixel-right))))
          (sum-blue (to:f+ (the (unsigned-byte 8)
-                               (pixmap:extract-blue-component (px:pixel@ buffer width kernel-x up)))
+                               (pixmap:extract-blue-component pixel-up))
                           (the (unsigned-byte 8)
-                               (pixmap:extract-blue-component (px:pixel@ buffer width kernel-x down)))
+                               (pixmap:extract-blue-component pixel-down))
                           (the (unsigned-byte 8)
-                               (pixmap:extract-blue-component (px:pixel@ buffer width left kernel-y)))
+                               (pixmap:extract-blue-component pixel-left))
                           (the (unsigned-byte 8)
-                               (pixmap:extract-blue-component (px:pixel@ buffer width right kernel-y)))))
-         (r-average (ash sum-red -2))
-         (g-average (ash sum-green -2))
-         (b-average (ash sum-blue -2)))
-    (declare (dynamic-extent up
-                             down
-                             shift-down-2
-                             left
+                               (pixmap:extract-blue-component pixel-right))))
+         (r-average   (ash sum-red -2))
+         (g-average   (ash sum-green -2))
+         (b-average   (ash sum-blue -2))
+         (new-color   (pixmap:assemble-color r-average g-average b-average)))
+    (declare (dynamic-extent sum-red sum-green sum-blue r-average g-average b-average
+                             shift-up
+                             shift-down
+                             shift-left
                              shift-left-2
-                             right
                              shift-right-2
-                             black-dots-threshold
-                             sum-red sum-green sum-blue))
+                             shift-right
+                             pixel-up
+                             pixel-down
+                             pixel-left
+                             pixel-right))
     (cond
       ((and (not (< 0.0
 		    (to:dabs (to:d* 10.0 (sin-lut-fire (to:d* 500.0 time))))
 		    9.995))
-	    (< (rem kernel-x shift-spike) 10))
-       (px:set-pixel@ buffer
-                      width
-		      (cond
-                        ((1-of-2-passes)
-                         shift-left-2)
-                        ((1-of-2-passes)
-                         shift-right-2)
-                        (t kernel-x))
-		      (if (1-of-2-passes)
-                          kernel-y
-                          down)
-                      r-average
-                      g-average
-                      b-average
-                      255))
-      ((and (to:f> kernel-y black-dots-threshold)
+	    (< (rem x shift-spike) 10))
+       (setf (aref buffer
+                   (to:f+ index
+                          (cond
+                            ((1-of-2-passes)
+                             shift-left-2)
+                            ((1-of-2-passes)
+                             shift-right-2)
+                            (t 0))
+                          (if (1-of-2-passes)
+                              0
+                              shift-down)))
+             new-color))
+      ((and (to:f> y smoke-threshold)
             (or (and (< r-average 200)
                      (1-of-50-passes))
                 (1-of-1000-passes)))
-       (px:set-pixel@ buffer
-                      width
-                      kernel-x
-                      shift-down-2
-                      10
-                      10
-                      10
-                      255))
+       (setf (aref buffer (to:f+ index shift-down-2))
+             +smoke-color+))
       (t
-       (px:set-pixel@ buffer
-                      width
-                      (cond
-                        ((1-of-2-passes)
-                         left)
-                        ((1-of-2-passes)
-                         right)
-                        (t kernel-x))
-                      (if (1-of-3-passes)
-                          down
-                          kernel-y)
-                      r-average
-                      g-average
-                      b-average
-                      255)))))
+       (setf (aref buffer (to:f+ index
+                                 (cond
+                                   ((1-of-2-passes)
+                                    shift-left)
+                                   ((1-of-2-passes)
+                                    shift-right)
+                                   (t 0))
+                                 (if (1-of-3-passes)
+                                     shift-down
+                                     0)))
+             new-color)))))
 
-(defun blur (buffer width height time)
+(defun blur (buffer width height time float-width smoke-threshold shift-down-2)
   (declare (fixnum width height))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (to::desired-type time))
@@ -278,9 +273,18 @@
                                                                        (to:d+ 10.0
                                                                               time)))))))))
     (declare (dynamic-extent shift-spike))
-    (loop for i fixnum from 1 below (1- width) do
-      (loop for j fixnum from 1 below (1- height) do
-	(blur-kernel buffer width height i j time shift-spike)))))
+    (loop for i fixnum from (* width 2)
+             below (to:f- (to:f* width height)
+                     width)
+           do
+              (multiple-value-bind (y fraction-row)
+                  (truncate (to:d/ (to:d i) float-width))
+                (let ((x (truncate (to:d* (to:d fraction-row) float-width))))
+                  (declare (dynamic-extent x))
+                  (blur-kernel buffer width height i x y time
+                               shift-spike
+                               smoke-threshold
+                               shift-down-2))))))
 
 (defun reinforce-fire (buffer width height howmany)
   (declare (fixnum width height howmany))
@@ -319,9 +323,9 @@
                        (pixmap:extract-green-component new-pixel)
                        (pixmap:extract-blue-component new-pixel)))))
 
-(defun draw-fire (buffer width height howmany-seed time)
+(defun draw-fire (buffer width height howmany-seed time float-width smoke-threshold shift-down-2)
   (reinforce-fire buffer width height howmany-seed)
-  (blur buffer width height time))
+  (blur buffer width height time float-width smoke-threshold shift-down-2))
 
 ;;;; end fire ;;;
 
@@ -406,13 +410,21 @@
   (with-accessors ((buffer px:buffer)
                    (width  px:width)
                    (height px:height)) *sdl-context*
-    (let ((tick (to:d 0.0)))
+    (let ((tick (to:d 0.0))
+          (float-width     (to:d width))
+          (smoke-threshold (truncate (to:d* 0.70 (to:d height))))
+          (shift-down-2    (to:f* -2 width)))
+      (declare (dynamic-extent float-width smoke-threshold shift-down-2))
       (loop while (not (stop-drawing-thread-p *animation*)) do
         (px:sync *sdl-context*)
         (px:push-for-rendering *sdl-context*
                                  (lambda (dt)
                                    (declare (fixnum dt))
-                                   (draw-fire buffer width height 500 tick)
+                                   (draw-fire buffer
+                                              width height
+                                              500
+                                              tick
+                                              float-width smoke-threshold shift-down-2)
                                    (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
       (format t "STOP FIRE!~%"))))
 
