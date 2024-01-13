@@ -172,13 +172,13 @@
 
 (a:define-constant +smoke-color+ (pixmap:assemble-color 10 10 10 255) :test #'=)
 
-(defun blur-kernel (buffer width height index x y time shift-spike smoke-threshold shift-down-2)
-  (declare (fixnum shift-spike index x y width height smoke-threshold shift-down-2))
+(defun blur-kernel (buffer width index x y time shift-spike smoke-threshold shift-down-2)
+  (declare (fixnum shift-spike index x y width smoke-threshold shift-down-2))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (to::desired-type time))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((shift-up             width)
-         (shift-down           (to:f- height))
+         (shift-down           (to:f- width))
          (shift-left           -1)
          (shift-left-2         -2)
          (shift-right-2        2)
@@ -273,15 +273,15 @@
                                                                        (to:d+ 10.0
                                                                               time)))))))))
     (declare (dynamic-extent shift-spike))
-    (loop for i fixnum from (* width 2)
+    (loop for i fixnum from (to:f* width 2)
              below (to:f- (to:f* width height)
-                     width)
-           do
+                          width)
+          do
               (multiple-value-bind (y fraction-row)
                   (truncate (to:d/ (to:d i) float-width))
                 (let ((x (truncate (to:d* (to:d fraction-row) float-width))))
                   (declare (dynamic-extent x))
-                  (blur-kernel buffer width height i x y time
+                  (blur-kernel buffer width i x y time
                                shift-spike
                                smoke-threshold
                                shift-down-2))))))
