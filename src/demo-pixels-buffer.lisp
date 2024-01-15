@@ -172,7 +172,7 @@
 
 (a:define-constant +smoke-color+ (pixmap:assemble-color 10 10 10 255) :test #'=)
 
-(defun blur-kernel (buffer width index x y time shift-spike smoke-threshold shift-down-2)
+(definline blur-kernel (buffer width index x y time shift-spike smoke-threshold shift-down-2)
   (declare (fixnum shift-spike index x y width smoke-threshold shift-down-2))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (to::desired-type time))
