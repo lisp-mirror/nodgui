@@ -218,7 +218,7 @@
                           (time-spent      time-spent)
                           (minimum-delta-t minimum-delta-t)) context
            (declare ((simple-array (unsigned-byte 32)) buffer))
-           (declare (fixnum width height))
+           (declare (fixnum width height minimum-delta-t))
            (sdl2:with-init (:everything)
              (setf window (create-window-from-pointer (window-id->pointer window-id)))
              (sdl2:with-renderer (renderer window :flags '(:accelerated))
@@ -229,20 +229,23 @@
                   (let* ((millis  (get-milliseconds))
                          (dt      (to:f- (the fixnum millis)
                                          (the fixnum time-spent))))
-                      (when (not (rendering-must-wait-p context))
+                    (when (not (rendering-must-wait-p context))
+                      (let ((fn (pop-for-rendering context)))
+                        (declare (function fn))
                         (setf time-spent millis)
-                        (let ((fn (pop-for-rendering context)))
-                          (declare (function fn))
-                          (if (eq fn #'quit-sentinel)
-                              (funcall fn dt)
-                              (when (>= dt minimum-delta-t)
-                                (funcall fn dt)
-                                (sdl2:update-texture texture
-                                                     nil
-                                                     (static-vectors:static-vector-pointer buffer)
-                                                     (to:f* +channels-number+ width)) ; pitch
-                                (sdl2:render-copy renderer texture)
-                                (sdl2:render-present renderer)))))))
+                        (cond
+                          ((eq fn #'quit-sentinel)
+                           (funcall fn dt))
+                          ((>= dt minimum-delta-t)
+                           (funcall fn dt)
+                           (sdl2:update-texture texture
+                                                nil
+                                                (static-vectors:static-vector-pointer buffer)
+                                                (to:f* +channels-number+ width)) ; pitch
+                           (sdl2:render-copy renderer texture)
+                           (sdl2:render-present renderer))
+                          (t
+                           (sdl2:delay (to:f- minimum-delta-t dt))))))))
                  (:quit () t))))))))))
 
 (defun make-rendering-thread-blocking (context)
@@ -265,8 +268,8 @@
                (sdl2:with-event-loop (:method :poll)
                  (:idle
                   ()
-                  (let* ((millis  (get-milliseconds))
-                         (dt      (- millis time-spent)))
+                  (let* ((millis (get-milliseconds))
+                         (dt     (- millis time-spent)))
                     (setf time-spent millis)
                     (let ((fn (pop-for-rendering context)))
                       (funcall fn dt)

@@ -444,6 +444,7 @@
                               (multiple-value-list (make-blitting-rectangle width
                                                                             height)))))
         (mapcar (lambda (rectangle)
+                  (sdl2:delay 16) ; simulate calculation
                   (px:push-for-rendering *sdl-context*
                                    (lambda (dt)
                                      (declare (fixnum dt))
@@ -585,6 +586,7 @@
                               (to:d (- width x))
                               (to:d (- height y))
                               50.0)))
+             (sdl2:delay 16) ; simulate calculation
              (px:push-for-rendering *sdl-context*
                                       (let* ((current-color color)
                                              (actual-degree degree)
