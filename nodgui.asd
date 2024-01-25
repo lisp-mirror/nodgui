@@ -37,6 +37,7 @@
                :flexi-streams
                :bordeaux-threads
                :sdl2
+               :cl-opengl
                :static-vectors
                :trivial-garbage
                #-asdf3 :uiop)
@@ -50,6 +51,8 @@
                (:file "base64")
                (:file "ubvec4")
                (:file "vec2")
+               (:file "vec3")
+               (:file "matrix")
                (:file "fit-line")
                (:file "pixmap")
                (:file "sanitize")
@@ -110,7 +113,8 @@
                                      (:file "swaplist")
                                      (:file "misc-widget")))
                (:file "demo-tests")
-               (:file "demo-pixels-buffer")))
+               (:file "demo-pixels-buffer")
+               (:file "demo-3d-window")))
 
 (defsystem nodgui/test
   :encoding         :utf-8

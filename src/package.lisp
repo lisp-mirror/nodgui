@@ -178,7 +178,8 @@
            #:condition-notify
            #:join-thread
            #:destroy-thread
-           #:threadp))
+           #:threadp
+           #:define-compiler-macro*))
 
 (defpackage :syncronized-queue
   (:use :cl
@@ -246,7 +247,7 @@
         :nodgui.constants
         :nodgui.utils)
   (:export
-      #:vec2-type
+   #:vec2-type
    #:vec2
    #:+vec2-zero+
    #:sequence->vec2
@@ -268,6 +269,80 @@
    #:vec2-perpendicular
    #:vec2-perp-dot-product
    #:vec2-rotate))
+
+(defpackage :nodgui.vec3
+  (:use
+   :cl
+   :nodgui.constants
+   :nodgui.utils)
+  (:local-nicknames (:a  :alexandria)
+                    (:to :nodgui.typed-operations)
+                    (:u  :nodgui.utils))
+  (:export
+   #:vec3-type
+   #:vec3
+   #:+vec3-zero+
+   #:sequence->vec3
+   #:make-fresh-vec3
+   #:copy-vec3
+   #:vec3-x
+   #:vec3-y
+   #:vec3p
+   #:vec3*
+   #:vec3/
+   #:vec3~
+   #:vec3=
+   #:vec3+
+   #:vec3-
+   #:vec3-negate
+   #:vec3-length
+   #:vec3-normalize
+   #:vec3-safe-normalize
+   #:vec3-dot-product
+   #:vec3-perpendicular
+   #:vec3-perp-dot-product
+   #:vec3-rotate
+   #:vec3-cross-product))
+
+(defpackage :nodgui.matrix
+  (:use :cl
+        :nodgui.vec3)
+  (:local-nicknames (:a  :alexandria)
+                    (:to :nodgui.typed-operations)
+                    (:u  :nodgui.utils))
+  (:export
+   #:matrix
+   #:matrix~
+   #:matrix=
+   #:mref
+   #:matrixp
+   #:zero-matrix
+   #:identity-matrix
+   #:matrix*
+   #:translate
+   #:translate*
+   #:scale
+   #:rotate
+   #:rotate*
+   #:rotate-around
+   #:reorient
+   #:traspose-matrix
+   #:inverse-matrix
+   #:matrix-determinant
+   #:extract-translation-vec
+   #:extract-translation-mat
+   #:copy-matrix-element
+   #:clone-matrix
+   #:nremove-rotation
+   #:remove-rotation
+   #:ortho
+   #:ortho*
+   #:perspective
+   #:perspective-fov
+   #:infinite-perspective
+   #:frustum
+   #:look@
+   #:look@*))
 
 (defpackage :nodgui.fit-line
   (:use :cl
@@ -2017,7 +2092,9 @@
                     (:q      :nodgui.non-blocking-queue)
                     (:to     :nodgui.typed-operations)
                     (:px     :nodgui.pixels-canvas)
-                    (:pixmap :nodgui.pixmap))
+                    (:pixmap :nodgui.pixmap)
+                    (:matrix :nodgui.matrix)
+                    (:vec3   :nodgui.vec3))
   (:export
    #:demo))
 
