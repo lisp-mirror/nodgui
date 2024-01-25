@@ -28,7 +28,7 @@
     (typep a 'vec2))
 
   (defun vec2 (x y)
-    (let ((v (make-array-frame 2 0.0 'vec2-type t)))
+    (let ((v (make-array-frame 2 0f0 'vec2-type t)))
       (declare (vec2 v))
       (setf (elt v 0) (->f x)
             (elt v 1) (->f y))
