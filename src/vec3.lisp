@@ -45,7 +45,7 @@
     (typep a 'vec3))
 
   (defun vec3 (x y z)
-    (let ((res (make-array-frame 3 0.0 'vec3-type t)))
+    (let ((res (make-array-frame 3 (to:d 0.0) 'vec3-type t)))
       (setf (elt res 0) x
             (elt res 1) y
             (elt res 2) z)
@@ -59,14 +59,14 @@
 
 (u:define-compiler-macro* vec3= a b)
 
-(a:define-constant +vec3-zero+ (vec3 0.0 0.0 0.0)
+(a:define-constant +vec3-zero+ (vec3 (to:d 0.0) (to:d 0.0) (to:d 0.0))
   :test #'vec3=)
 
 (u:definline make-fresh-vec3 ()
-  (make-array-frame 3 0.0 'vec3-type t))
+  (make-array-frame 3 (to:d 0.0) 'vec3-type t))
 
 (defun copy-vec3 (old)
-  (let ((res (make-array-frame 4 0.0 'vec3-type t)))
+  (let ((res (make-array-frame 4 (to:d 0.0) 'vec3-type t)))
     (declare (vec3 res))
     (setf (elt res 0) (elt old 0)
           (elt res 1) (elt old 1)

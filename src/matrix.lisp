@@ -474,9 +474,9 @@ element of V is ignored."
 (u:definline nremove-rotation (m)
   (declare (matrix m))
   (declare (optimize (speed 3)))
-  (setf (mref m 0 0) 1.0)
-  (setf (mref m 1 1) 1.0)
-  (setf (mref m 2 2) 1.0))
+  (setf (mref m 0 0) 1f0)
+  (setf (mref m 1 1) 1f0)
+  (setf (mref m 2 2) 1f0))
 
 (defun remove-rotation (m)
   (declare (matrix m))
@@ -485,34 +485,34 @@ element of V is ignored."
 
 (u:definline ortho (left right bottom top near far)
   (declare (optimize (speed 3)))
-  (matrix (to:d/ 2.0 (to:d- right left)) 0.0 0.0 (to:d/ (to:d- (to:d+ right left)) (to:d- right left))
-          0.0 (to:d/ 2.0 (to:d- top  bottom)) 0.0 (to:d/ (to:d- (to:d+ top bottom)) (to:d- top bottom))
-          0.0 0.0 (to:d/ -2.0 (to:d- far near)) (to:d/ (to:d- (to:d+ far near)) (to:d- far near))
-          0.0 0.0 0.0 1.0))
+  (matrix (to:d/ 2f0 (to:d- right left)) 0f0 0f0 (to:d/ (to:d- (to:d+ right left)) (to:d- right left))
+          0f0 (to:d/ 2f0 (to:d- top  bottom)) 0f0 (to:d/ (to:d- (to:d+ top bottom)) (to:d- top bottom))
+          0f0 0f0 (to:d/ -2f0 (to:d- far near)) (to:d/ (to:d- (to:d+ far near)) (to:d- far near))
+          0f0 0f0 0f0 1f0))
 
 (u:define-compiler-macro* ortho left right bottom top near far)
 
 (u:definline ortho* (left right bottom top)
   (declare (optimize (speed 3)))
-  (matrix (to:d/ 2.0 (to:d- right left)) 0.0 0.0 (to:d/ (to:d- (to:d+ right left)) (to:d- right  left))
-          0.0 (to:d/ 2.0 (to:d- top bottom)) 0.0 (to:d/ (to:d+ top  bottom) (to:d- top  bottom))
-          0.0 0.0 -1.0 0.0
-          0.0 0.0 0.0 1.0))
+  (matrix (to:d/ 2f0 (to:d- right left)) 0f0 0f0 (to:d/ (to:d- (to:d+ right left)) (to:d- right  left))
+          0f0 (to:d/ 2f0 (to:d- top bottom)) 0f0 (to:d/ (to:d+ top  bottom) (to:d- top  bottom))
+          0f0 0f0 -1f0 0f0
+          0f0 0f0 0f0 1f0))
 
 (u:define-compiler-macro* ortho* left right bottom top)
 
 (u:definline perspective (fovy aspect near far)
   (declare (optimize (speed 3)))
   (let* ((rad (to:degree->radians fovy))
-         (tan-half-fovy (to:dtan (to:d/ rad 2.0)))
-         (el-0-0 (to:d/ 1.0 (to:d* aspect tan-half-fovy)))
-         (el-1-1 (to:d/ 1.0 tan-half-fovy))
+         (tan-half-fovy (to:dtan (to:d/ rad 2f0)))
+         (el-0-0 (to:d/ 1f0 (to:d* aspect tan-half-fovy)))
+         (el-1-1 (to:d/ 1f0 tan-half-fovy))
          (el-2-2 (to:d- (to:d/ (to:d+ near far) (to:d- far near))))
-         (el-3-2 (to:d- (/ (to:d* 2.0 near far) (to:d- far near)))))
-    (matrix el-0-0 0.0     0.0    0.0
-            0.0    el-1-1  0.0    0.0
-            0.0    0.0     el-2-2 el-3-2
-            0.0    0.0    -1.0    0.0   )))
+         (el-3-2 (to:d- (/ (to:d* 2f0 near far) (to:d- far near)))))
+    (matrix el-0-0 0f0     0f0    0f0
+            0f0    el-1-1  0f0    0f0
+            0f0    0f0     el-2-2 el-3-2
+            0f0    0f0    -1f0    0f0   )))
 
 (u:define-compiler-macro* perspective fovy aspect near far)
 
@@ -521,44 +521,44 @@ element of V is ignored."
   (let* ((rad (to:degree->radians fov))
          (h   (to:d/ (to:dcos (to:d* 0.5 rad)) (to:dsin (to:d* 0.5 rad))))
          (w   (to:d/ (to:d* h height) width))
-         (el-3-2 (to:d- (to:d/ (to:d* 2.0 far near) (to:d- far near))))
+         (el-3-2 (to:d- (to:d/ (to:d* 2f0 far near) (to:d- far near))))
          (el-2-2 (to:d- (to:d/ (to:d+ far near) (to:d- far near)))))
-    (matrix w   0.0  0.0    0.0
-            0.0 h    0.0    0.0
-            0.0 0.0  el-2-2 el-3-2
-            0.0 0.0 -1.0    0.0)))
+    (matrix w   0f0  0f0    0f0
+            0f0 h    0f0    0f0
+            0f0 0f0  el-2-2 el-3-2
+            0f0 0f0 -1f0    0f0)))
 
 (u:define-compiler-macro* perspective-fov fovy width height near far)
 
 (u:definline infinite-perspective (fovy aspect near)
   (declare (optimize (speed 3)))
-  (let* ((range (to:d* (tan (to:degree->radians (to:d/ fovy 2.0))) near))
+  (let* ((range (to:d* (tan (to:degree->radians (to:d/ fovy 2f0))) near))
          (left (to:d* (to:d- range) aspect))
          (right (to:d* range aspect))
          (bottom (to:d- range))
          (top range)
-         (el-0-0 (to:d/ (to:d* 2.0 near) (to:d- right left)))
-         (el-1-1 (to:d/ (to:d* 2.0 near) (to:d- top bottom)))
-         (el-3-2 (to:d* -2.0 near)))
-    (matrix el-0-0 0.0     0.0  0.0
-            0.0    el-1-1  0.0  0.0
-            0.0    0.0    -1.0  el-3-2
-            0.0    0.0    -1.0  0.0   )))
+         (el-0-0 (to:d/ (to:d* 2f0 near) (to:d- right left)))
+         (el-1-1 (to:d/ (to:d* 2f0 near) (to:d- top bottom)))
+         (el-3-2 (to:d* -2f0 near)))
+    (matrix el-0-0 0f0     0f0  0f0
+            0f0    el-1-1  0f0  0f0
+            0f0    0f0    -1f0  el-3-2
+            0f0    0f0    -1f0  0f0   )))
 
 (u:define-compiler-macro* infinite-perspective fovy aspect near)
 
 (u:definline frustum (left right bottom top near far)
   (declare (optimize (speed 3)))
-  (let ((el-0-0 (to:d/ (to:d* 2.0 near) (to:d- right left)))
-        (el-1-1 (to:d/ (to:d* 2.0 near) (to:d- top bottom)))
+  (let ((el-0-0 (to:d/ (to:d* 2f0 near) (to:d- right left)))
+        (el-1-1 (to:d/ (to:d* 2f0 near) (to:d- top bottom)))
         (el-2-0 (to:d/ (to:d+ right left) (to:d- right left)))
         (el-2-1 (to:d/ (to:d+ top bottom) (to:d- top bottom)))
         (el-2-2 (to:d/ (to:d- (to:d+ far  near)) (to:d- far - near)))
-        (el-3-2 (to:d/ (to:d- (to:d* 2.0  far near)) (to:d- far near))))
-    (matrix el-0-0 0.0     el-2-0 0.0
-            0.0    el-1-1  el-2-1 0.0
-            0.0    0.0     el-2-2 el-3-2
-            0.0    0.0    -1.0    0.0)))
+        (el-3-2 (to:d/ (to:d- (to:d* 2f0  far near)) (to:d- far near))))
+    (matrix el-0-0 0f0     el-2-0 0f0
+            0f0    el-1-1  el-2-1 0f0
+            0f0    0f0     el-2-2 el-3-2
+            0f0    0f0    -1f0    0f0)))
 
 (u:define-compiler-macro* frustum left right bottom top near far)
 
@@ -572,7 +572,7 @@ element of V is ignored."
     (matrix (elt s 0) (elt s 1) (elt s 2) (to:d- (vec3-dot-product s eye))
             (elt u 0) (elt u 1) (elt u 2) (to:d- (vec3-dot-product u eye))
             (to:d- (elt f 0)) (to:d- (elt f 1)) (to:d- (elt f 2)) (vec3-dot-product f eye)
-            0.0 0.0 0.0 1.0)))
+            0f0 0f0 0f0 1f0)))
 
 (u:definline look@* (eye-x eye-y eye-z center-x center-y center-z up-x up-y up-z)
   (declare (optimize (speed 3)))

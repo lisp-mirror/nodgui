@@ -42,7 +42,41 @@
     :initform 0
     :initarg :height
     :accessor height)
-   (texture
+   (minimum-delta-t
+    :initform (fps->delta-t 60)
+    :initarg :minimum-delta-t
+    :accessor minimum-delta-t)
+   (time-spent
+    :initform (get-milliseconds)
+    :initarg  :time-spent
+    :accessor time-spent)))
+
+(defmethod initialize-instance :after ((object context)
+                                       &key
+                                         (classic-frame nil)
+                                         (non-blocking-queue-maximum-size 8192)
+                                       &allow-other-keys)
+  (when classic-frame
+    (with-accessors ((width           width)
+                     (height          height)
+                     (thread          rendering-thread)
+                     (event-loop-type event-loop-type)
+                     (window          window)
+                     (window-id       window-id)
+                     (queue           queue)) object
+      (setf window-id (nodgui:window-id classic-frame)
+            queue     (if (events-polling-p object)
+                          (q:make-queue :maximum-size non-blocking-queue-maximum-size)
+                          (make-instance 'bq:synchronized-queue))
+            width     (nodgui:window-width classic-frame)
+            height    (nodgui:window-height classic-frame))
+      (assert (or (eq event-loop-type :polling)
+                  (eq event-loop-type :serving))
+              (event-loop-type)
+              "value of event-loop-type slot can be only :polling or serving, not ~a"))))
+
+(defclass pixel-buffer-context (context)
+  ((texture
     :initform nil
     :initarg :texture
     :accessor texture)
@@ -281,12 +315,11 @@
                       (sdl2:render-present renderer))))
                  (:quit () t))))))))))
 
-(defmethod initialize-instance :after ((object context)
+(defmethod initialize-instance :after ((object pixel-buffer-context)
                                        &key
                                          (classic-frame nil)
                                          (buffer-width  nil)
                                          (buffer-height nil)
-                                         (non-blocking-queue-maximum-size 8192)
                                        &allow-other-keys)
   (when classic-frame
     (with-accessors ((width           width)
@@ -297,21 +330,13 @@
                      (window          window)
                      (window-id       window-id)
                      (queue           queue)) object
-      (setf window-id (nodgui:window-id classic-frame)
-            queue     (if (events-polling-p object)
-                          (q:make-queue :maximum-size non-blocking-queue-maximum-size)
-                          (make-instance 'bq:synchronized-queue))
-            width     (or buffer-width
+      (setf width     (or buffer-width
                           (nodgui:window-width  classic-frame))
             height    (or buffer-height
                           (nodgui:window-height classic-frame))
-            buffer    (pix:make-buffer width height))
+            buffer (pix:make-buffer width height))
       (tg:finalize object
                    (lambda () (pix:free-buffer-memory buffer)))
-      (assert (or (eq event-loop-type :polling)
-                  (eq event-loop-type :serving))
-              (event-loop-type)
-              "value of event-loop-type slot can be only :polling or serving, not ~a")
       (setf thread
             (if (events-polling-p object)
                 (make-rendering-thread object)

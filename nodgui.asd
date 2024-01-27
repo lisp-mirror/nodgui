@@ -105,6 +105,7 @@
                (:file "trivial-debugger")
                (:file "nodgui-mw")
                (:file "pixels-buffer")
+               (:file "opengl-frame")
                (:module tklib
                         :components ((:file "package")
                                      (:file "calendar")

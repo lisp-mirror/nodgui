@@ -2,7 +2,7 @@
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
-(defparameter *sdl-context* nil)
+(defparameter *pixel-buffer-context* nil)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
@@ -384,11 +384,11 @@
 (defun draw-plasma-thread ()
   (with-accessors ((buffer px:buffer)
                    (width  px:width)
-                   (height px:height)) *sdl-context*
+                   (height px:height)) *pixel-buffer-context*
     (let ((tick (to:d 0.0)))
       (loop while (not (stop-drawing-thread-p *animation*)) do
-        (px:sync *sdl-context*)
-        (px:push-for-rendering *sdl-context*
+        (px:sync *pixel-buffer-context*)
+        (px:push-for-rendering *pixel-buffer-context*
                                  (lambda (dt)
                                    (declare (fixnum dt))
                                    (declare (optimize (speed 3) (debug 0)))
@@ -396,7 +396,7 @@
                                    (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
       (format t "STOP!~%"))))
 
-(defun clear-sdl-window (&key (context *sdl-context*) (force nil))
+(defun clear-sdl-window (&key (context *pixel-buffer-context*) (force nil))
   (with-accessors ((buffer px:buffer)
                    (width  px:width)
                    (height px:height)) context
@@ -409,15 +409,15 @@
 (defun draw-fire-thread ()
   (with-accessors ((buffer px:buffer)
                    (width  px:width)
-                   (height px:height)) *sdl-context*
+                   (height px:height)) *pixel-buffer-context*
     (let ((tick (to:d 0.0))
           (float-width     (to:d width))
           (smoke-threshold (truncate (to:d* 0.70 (to:d height))))
           (shift-down-2    (to:f* -2 width)))
       (declare (dynamic-extent float-width smoke-threshold shift-down-2))
       (loop while (not (stop-drawing-thread-p *animation*)) do
-        (px:sync *sdl-context*)
-        (px:push-for-rendering *sdl-context*
+        (px:sync *pixel-buffer-context*)
+        (px:push-for-rendering *pixel-buffer-context*
                                  (lambda (dt)
                                    (declare (fixnum dt))
                                    (draw-fire buffer
@@ -431,7 +431,7 @@
 (defun draw-rectangles-thread ()
   (with-accessors ((buffer px:buffer)
                    (width  px:width)
-                   (height px:height)) *sdl-context*
+                   (height px:height)) *pixel-buffer-context*
     (let ((tick (to:d 0.0)))
       ;; I should  use :force-push t  in this function call  to ensure
       ;; the  event  of clearing  the  buffer  is not  discarded,  but
@@ -444,7 +444,7 @@
                               (multiple-value-list (make-blitting-rectangle width
                                                                             height)))))
         (mapcar (lambda (rectangle)
-                  (px:push-for-rendering *sdl-context*
+                  (px:push-for-rendering *pixel-buffer-context*
                                    (lambda (dt)
                                      (declare (fixnum dt))
                                      (let ((rectangle-buffer (first  rectangle))
@@ -497,7 +497,7 @@
 (defparameter *test-sprite* (load-test-sprite))
 
 (defun draw-test-sprite (buffer width height x y)
-  (px:push-for-rendering *sdl-context*
+  (px:push-for-rendering *pixel-buffer-context*
                            (lambda (dt)
                              (declare (ignore dt))
                              (px:blit-transform (nodgui.pixmap:bits   *test-sprite*)
@@ -554,7 +554,7 @@
                            :force-push t))
 
 (defun draw-bell-sprite (buffer width height x y)
-  (px:push-for-rendering *sdl-context*
+  (px:push-for-rendering *pixel-buffer-context*
                          (lambda (dt)
                            (declare (ignore dt))
                            (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
@@ -585,7 +585,7 @@
                               (to:d (- width x))
                               (to:d (- height y))
                               50.0)))
-             (px:push-for-rendering *sdl-context*
+             (px:push-for-rendering *pixel-buffer-context*
                                       (let* ((current-color color)
                                              (actual-degree degree)
                                              (radians   (to:d/ (to:d* (to:d pi)
@@ -608,7 +608,7 @@
              (bt:threadp (animation-thread *animation*)))
     (stop-drawing-thread *animation*)
     (wait-thread *animation*)
-    (format t "anim ~a queue ~a~%" *animation* (px::queue *sdl-context*))))
+    (format t "anim ~a queue ~a~%" *animation* (px::queue *pixel-buffer-context*))))
 
 (a:define-constant +context-width+ 320 :test #'=)
 
@@ -684,7 +684,7 @@
                                         :text    "quit"
                                         :command (lambda ()
                                                    (stop-animation)
-                                                   (px:quit-sdl *sdl-context*)
+                                                   (px:quit-sdl *pixel-buffer-context*)
                                                    (exit-nodgui)))))
       (grid warning-label     0 0 :columnspan 2)
       (grid interaction-label 1 0 :columnspan 2)
@@ -708,7 +708,7 @@
                 (incf what-to-draw)
                 (with-accessors ((buffer px:buffer)
                                  (width  px:width)
-                                 (height px:height)) *sdl-context*
+                                 (height px:height)) *pixel-buffer-context*
                   (let ((scaled-x (truncate (* (event-x event)
                                                (/ +context-width+
                                                   +sdl-frame-width+))))
@@ -723,11 +723,11 @@
                       (t
                        (draw-lines buffer width height scaled-x scaled-y))))))))
       (wait-complete-redraw)
-      (setf *sdl-context* (make-instance 'px:context
-                                         :non-blocking-queue-maximum-size 16
-                                         :classic-frame sdl-frame
-                                         :buffer-width  +context-width+
-                                         :buffer-height +context-height+))
+      (setf *pixel-buffer-context* (make-instance 'px:pixel-buffer-context
+                                                  :non-blocking-queue-maximum-size 16
+                                                  :classic-frame sdl-frame
+                                                  :buffer-width  +context-width+
+                                                  :buffer-height +context-height+))
       (clear-sdl-window :force t)
       (when start-fire-demo
         (stop-animation)
@@ -865,7 +865,7 @@
           (grid-columnconfigure buttons-frame :all :weight 1)
           (update-info info)
           (wait-complete-redraw)
-          (setf sdl-context (make-instance 'px:context
+          (setf sdl-context (make-instance 'px:pixel-buffer-context
                                            :event-loop-type :serving
                                            :classic-frame   sdl-frame
                                            :buffer-width    +sdl-frame-width+

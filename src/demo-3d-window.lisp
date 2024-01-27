@@ -486,3 +486,24 @@ void main () {
                         nil)
         (gl:bind-vertex-array (vao-vertex-buffer-handle vao))
         (gl:draw-arrays :triangles 0 (to:f* vertices-count 3))))))
+
+(defun demo-terrain ()
+  (let ((sdl-context nil))
+    (with-nodgui ()
+        (let* ((sdl-frame         (px:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
+               (button-quit      (make-instance 'button
+                                                :master  nil
+                                                :text    "quit"
+                                                :command (lambda ()
+                                                           (px:quit-sdl sdl-context)
+                                                           (exit-nodgui)))))
+          (grid sdl-frame          0 0)
+          (grid button-quit        1 0 :sticky :nw)
+          (grid-columnconfigure (root-toplevel) :all :weight 1)
+          (grid-rowconfigure    (root-toplevel) :all :weight 1)
+          (wait-complete-redraw)
+          (setf sdl-context (make-instance '3d:opengl-context
+                                           :event-loop-type :polling
+                                           :classic-frame   sdl-frame
+                                           :buffer-width    +sdl-frame-width+
+                                           :buffer-height   +sdl-frame-height+))))))

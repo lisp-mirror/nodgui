@@ -1428,11 +1428,13 @@
    #:context
    #:width
    #:height
+   #:initialization-function
    #:rendering-thread
    #:queue
    #:buffer
    #:event-polling-p
    #:window
+   #:pixel-buffer-context
    #:quit-sdl
    #:push-for-rendering
    #:pop-for-rendering
@@ -1455,6 +1457,20 @@
    #:draw-line
    #:make-sdl-frame
    #:sync))
+
+(defpackage nodgui.opengl-frame
+  (:use :cl)
+  (:import-from :alexandria :define-constant)
+  (:local-nicknames (:a       :alexandria)
+                    (:bq      :syncronized-queue)
+                    (:q       :nodgui.non-blocking-queue)
+                    (:to      :nodgui.typed-operations)
+                    (:u       :nodgui.utils)
+                    (:pix     :nodgui.pixmap)
+                    (:pixbuff :nodgui.pixels-canvas))
+  (:export
+   #:opengl-context
+   #:initialize-opengl-rendering))
 
 (defpackage :nodgui
   (:use :cl
@@ -2094,7 +2110,8 @@
                     (:px     :nodgui.pixels-canvas)
                     (:pixmap :nodgui.pixmap)
                     (:matrix :nodgui.matrix)
-                    (:vec3   :nodgui.vec3))
+                    (:vec3   :nodgui.vec3)
+                    (:3d     :nodgui.opengl-frame))
   (:export
    #:demo))
 
