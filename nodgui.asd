@@ -104,6 +104,7 @@
                (:file "winfo")
                (:file "trivial-debugger")
                (:file "nodgui-mw")
+               (:file "rendering-buffer-context")
                (:file "pixels-buffer")
                (:file "opengl-frame")
                (:module tklib

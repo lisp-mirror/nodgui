@@ -1414,6 +1414,33 @@
   (:export
    #:nodgui-syntax))
 
+(defpackage nodgui.rendering-buffer-context
+  (:use :cl)
+  (:local-nicknames (:a   :alexandria)
+                    (:bq  :syncronized-queue)
+                    (:q   :nodgui.non-blocking-queue)
+                    (:u   :nodgui.utils))
+  (:export
+   #:fps->delta-t
+   #:get-milliseconds
+   #:context
+   #:width
+   #:height
+   #:initialization-function
+   #:rendering-thread
+   #:queue
+   #:time-spent
+   #:minimum-delta-t
+   #:events-polling-p
+   #:window
+   #:quit-sdl
+   #:push-for-rendering
+   #:pop-for-rendering
+   #:rendering-must-wait-p
+   #:make-sdl-frame
+   #:quit-sentinel
+   #:sync))
+
 (defpackage nodgui.pixels-canvas
   (:use :cl)
   (:import-from :alexandria :define-constant)
@@ -1423,22 +1450,11 @@
                     (:q   :nodgui.non-blocking-queue)
                     (:to  :nodgui.typed-operations)
                     (:u   :nodgui.utils)
+                    (:ctx :nodgui.rendering-buffer-context)
                     (:pix :nodgui.pixmap))
   (:export
-   #:context
-   #:width
-   #:height
-   #:initialization-function
-   #:rendering-thread
-   #:queue
    #:buffer
-   #:event-polling-p
-   #:window
    #:pixel-buffer-context
-   #:quit-sdl
-   #:push-for-rendering
-   #:pop-for-rendering
-   #:rendering-must-wait-p
    #:pixel@
    #:set-pixel@
    #:with-displace-pixel
@@ -1454,9 +1470,7 @@
    #:fill-rectangle
    #:fill-circle
    #:draw-circle
-   #:draw-line
-   #:make-sdl-frame
-   #:sync))
+   #:draw-line))
 
 (defpackage nodgui.opengl-frame
   (:use :cl)
@@ -1467,6 +1481,7 @@
                     (:to      :nodgui.typed-operations)
                     (:u       :nodgui.utils)
                     (:pix     :nodgui.pixmap)
+                    (:ctx     :nodgui.rendering-buffer-context)
                     (:pixbuff :nodgui.pixels-canvas))
   (:export
    #:opengl-context
@@ -2107,6 +2122,7 @@
   (:local-nicknames (:a      :alexandria)
                     (:q      :nodgui.non-blocking-queue)
                     (:to     :nodgui.typed-operations)
+                    (:ctx    :nodgui.rendering-buffer-context)
                     (:px     :nodgui.pixels-canvas)
                     (:pixmap :nodgui.pixmap)
                     (:matrix :nodgui.matrix)

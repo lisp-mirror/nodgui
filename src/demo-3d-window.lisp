@@ -490,15 +490,15 @@ void main () {
 (defun demo-terrain ()
   (let ((sdl-context nil))
     (with-nodgui ()
-        (let* ((sdl-frame         (px:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
+        (let* ((sdl-frame        (ctx:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
                (button-quit      (make-instance 'button
                                                 :master  nil
                                                 :text    "quit"
                                                 :command (lambda ()
-                                                           (px:quit-sdl sdl-context)
+                                                           (ctx:quit-sdl sdl-context)
                                                            (exit-nodgui)))))
-          (grid sdl-frame          0 0)
-          (grid button-quit        1 0 :sticky :nw)
+          (grid sdl-frame       0 0)
+          (grid button-quit     1 0 :sticky :nw)
           (grid-columnconfigure (root-toplevel) :all :weight 1)
           (grid-rowconfigure    (root-toplevel) :all :weight 1)
           (wait-complete-redraw)

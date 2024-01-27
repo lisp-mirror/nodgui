@@ -2,80 +2,7 @@
 
 (a:define-constant +channels-number+ 4 :test #'=)
 
-(defun fps->delta-t (fps)
-  (truncate (/ 1000 fps)))
-
-(defun get-milliseconds ()
-  (sdl2:get-ticks))
-
-(defclass context ()
-  ((window-id
-    :initform nil
-    :initarg :window-id
-    :accessor window-id)
-   (window
-    :initform nil
-    :initarg :window
-    :accessor window)
-   (initialization-function
-    :initform (lambda (window) window)
-    :initarg :initialization-function
-    :accessor initialization-function
-    :type function)
-   (queue
-    :initform nil
-    :initarg :queue
-    :accessor queue)
-   (rendering-thread
-    :initform nil
-    :initarg :rendering-thread
-    :accessor rendering-thread)
-   (event-loop-type
-    :initform :polling
-    :initarg :event-loop-type
-    :accessor event-loop-type)
-   (width
-    :initform 0
-    :initarg :width
-    :accessor width)
-   (height
-    :initform 0
-    :initarg :height
-    :accessor height)
-   (minimum-delta-t
-    :initform (fps->delta-t 60)
-    :initarg :minimum-delta-t
-    :accessor minimum-delta-t)
-   (time-spent
-    :initform (get-milliseconds)
-    :initarg  :time-spent
-    :accessor time-spent)))
-
-(defmethod initialize-instance :after ((object context)
-                                       &key
-                                         (classic-frame nil)
-                                         (non-blocking-queue-maximum-size 8192)
-                                       &allow-other-keys)
-  (when classic-frame
-    (with-accessors ((width           width)
-                     (height          height)
-                     (thread          rendering-thread)
-                     (event-loop-type event-loop-type)
-                     (window          window)
-                     (window-id       window-id)
-                     (queue           queue)) object
-      (setf window-id (nodgui:window-id classic-frame)
-            queue     (if (events-polling-p object)
-                          (q:make-queue :maximum-size non-blocking-queue-maximum-size)
-                          (make-instance 'bq:synchronized-queue))
-            width     (nodgui:window-width classic-frame)
-            height    (nodgui:window-height classic-frame))
-      (assert (or (eq event-loop-type :polling)
-                  (eq event-loop-type :serving))
-              (event-loop-type)
-              "value of event-loop-type slot can be only :polling or serving, not ~a"))))
-
-(defclass pixel-buffer-context (context)
+(defclass pixel-buffer-context (ctx:context)
   ((texture
     :initform nil
     :initarg :texture
@@ -85,19 +12,13 @@
     :initarg :buffer
     :accessor buffer)
    (minimum-delta-t
-    :initform (fps->delta-t 60)
+    :initform (ctx:fps->delta-t 60)
     :initarg :minimum-delta-t
     :accessor minimum-delta-t)
    (time-spent
-    :initform (get-milliseconds)
+    :initform (ctx:get-milliseconds)
     :initarg  :time-spent
     :accessor time-spent)))
-
-(defun create-window-from-pointer (pointer-id)
-  (sdl2::check-nullptr (sdl2::sdl-create-window-from pointer-id)))
-
-(defun window-id->pointer (frame-id)
-  (cffi:make-pointer frame-id))
 
 (defun make-texture (renderer width height)
   (sdl2:create-texture renderer :rgba8888 :streaming width height))
@@ -243,32 +164,33 @@
      (lambda ()
        (declare (optimize (speed 3) (debug 0) (safety 0)))
        (let ((context  sdl-context))
-         (with-accessors ((width           width)
-                          (height          height)
-                          (window          window)
-                          (window-id       window-id)
+         (with-accessors ((width           ctx:width)
+                          (height          ctx:height)
+                          (window          ctx:window)
+                          (window-id       ctx::window-id)
                           (buffer          buffer)
                           (texture         texture)
-                          (time-spent      time-spent)
-                          (minimum-delta-t minimum-delta-t)) context
+                          (time-spent      ctx:time-spent)
+                          (minimum-delta-t ctx:minimum-delta-t)) context
            (declare ((simple-array (unsigned-byte 32)) buffer))
            (declare (fixnum width height minimum-delta-t))
            (sdl2:with-init (:everything)
-             (setf window (create-window-from-pointer (window-id->pointer window-id)))
+             (setf window
+                   (ctx::create-window-from-pointer (ctx::window-id->pointer window-id)))
              (sdl2:with-renderer (renderer window :flags '(:accelerated))
                (setf texture (make-texture renderer width height))
                (sdl2:with-event-loop (:method :poll)
                  (:idle
                   ()
-                  (let* ((millis  (get-milliseconds))
+                  (let* ((millis  (ctx:get-milliseconds))
                          (dt      (to:f- (the fixnum millis)
                                     (the fixnum time-spent))))
-                    (if (not (rendering-must-wait-p context))
+                    (if (not (ctx:rendering-must-wait-p context))
                         (if (>= dt minimum-delta-t)
-                            (let ((fn (pop-for-rendering context)))
+                            (let ((fn (ctx:pop-for-rendering context)))
                               (declare (function fn))
                               (setf time-spent millis)
-                              (if (eq fn #'quit-sentinel)
+                              (if (eq fn #'ctx:quit-sentinel)
                                   (funcall fn dt)
                                   (progn
                                     (funcall fn dt)
@@ -287,25 +209,26 @@
    (let ((sdl-context  context))
      (lambda ()
        (let ((context  sdl-context))
-         (with-accessors ((width           width)
-                          (height          height)
-                          (window          window)
-                          (window-id       window-id)
+         (with-accessors ((width           ctx:width)
+                          (height          ctx:height)
+                          (window          ctx:window)
+                          (window-id       ctx::window-id)
                           (buffer          buffer)
                           (texture         texture)
-                          (time-spent      time-spent)
-                          (minimum-delta-t minimum-delta-t)) context
+                          (time-spent      ctx:time-spent)
+                          (minimum-delta-t ctx:minimum-delta-t)) context
            (sdl2:with-init (:everything)
-             (setf window (create-window-from-pointer (window-id->pointer window-id)))
+             (setf window
+                   (ctx::create-window-from-pointer (ctx::window-id->pointer window-id)))
              (sdl2:with-renderer (renderer window :flags '(:accelerated))
                (setf texture (make-texture renderer width height))
                (sdl2:with-event-loop (:method :poll)
                  (:idle
                   ()
-                  (let* ((millis (get-milliseconds))
+                  (let* ((millis (ctx:get-milliseconds))
                          (dt     (- millis time-spent)))
                     (setf time-spent millis)
-                    (let ((fn (pop-for-rendering context)))
+                    (let ((fn (ctx:pop-for-rendering context)))
                       (funcall fn dt)
                       (sdl2:update-texture texture
                                            nil
@@ -322,14 +245,14 @@
                                          (buffer-height nil)
                                        &allow-other-keys)
   (when classic-frame
-    (with-accessors ((width           width)
-                     (height          height)
+    (with-accessors ((width           ctx:width)
+                     (height          ctx:height)
                      (buffer          buffer)
-                     (thread          rendering-thread)
-                     (event-loop-type event-loop-type)
-                     (window          window)
-                     (window-id       window-id)
-                     (queue           queue)) object
+                     (thread          ctx:rendering-thread)
+                     (event-loop-type ctx::event-loop-type)
+                     (window          ctx:window)
+                     (window-id       ctx::window-id)
+                     (rendering-queue rendering-queue)) object
       (setf width     (or buffer-width
                           (nodgui:window-width  classic-frame))
             height    (or buffer-height
@@ -338,67 +261,9 @@
       (tg:finalize object
                    (lambda () (pix:free-buffer-memory buffer)))
       (setf thread
-            (if (events-polling-p object)
+            (if (ctx:events-polling-p object)
                 (make-rendering-thread object)
                 (make-rendering-thread-blocking object))))))
-
-(defgeneric quit-sdl (object))
-
-(defgeneric events-polling-p (object))
-
-(defgeneric push-for-rendering (object function &key force-push))
-
-(defgeneric pop-for-rendering (object))
-
-(defgeneric rendering-must-wait-p (object))
-
-(defgeneric sync (object))
-
-(defmethod events-polling-p ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (eq (event-loop-type object) :polling))
-
-(defun quit-sentinel (dt)
-  (declare (ignore dt))
-  (sdl2:push-event :quit))
-
-(defmethod quit-sdl ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (push-for-rendering object
-                      #'quit-sentinel
-                      :force-push t)
-  (bt:join-thread (rendering-thread object)))
-
-(defmethod push-for-rendering ((object context) (function function) &key (force-push nil))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (if (events-polling-p object)
-      (if force-push
-          (q:push-forced (queue object) function)
-          (q:push (queue object) function))
-      (bq:push-unblock (queue object) function)))
-
-(defmethod pop-for-rendering ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (if (events-polling-p object)
-      (q:pop (queue object))
-      (bq:pop-block (queue object))))
-
-(defmethod rendering-must-wait-p ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (if (events-polling-p object)
-      (q:emptyp (queue object))
-      (bq:emptyp (queue object))))
-
-(defmethod sync ((object context))
-  (sdl2:delay (minimum-delta-t object)))
-
-(defun make-sdl-frame (width height &rest args)
-  (apply #'make-instance
-         (append (list 'nodgui:classic-frame
-                       :width  width
-                       :height height
-                       :background "")
-                 args)))
 
 (defun sum-pixels (pixel-a pixel-b)
   (flet ((sum (a b)

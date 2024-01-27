@@ -43,7 +43,7 @@
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((normalized-angle (to:d* to:+2pi+ (nth-value 1 (truncate (to:d* angle +1/2pi+)))))
          (index            (to:f* +sin-lut-step-per-degrees+
-                                  (the fixnum (truncate (to:radians->degree normalized-angle))))))
+                             (the fixnum (truncate (to:radians->degree normalized-angle))))))
     (declare (dynamic-extent normalized-angle index))
     (aref +sin-lut+ index)))
 
@@ -189,28 +189,28 @@
          (pixel-right          (aref buffer (to:f+ index shift-right)))
          (sum-red (to:f+ (the (unsigned-byte 8)
                               (pixmap:extract-red-component pixel-up))
-                         (the (unsigned-byte 8)
-                              (pixmap:extract-red-component pixel-down))
-                         (the (unsigned-byte 8)
-                              (pixmap:extract-red-component pixel-left))
-                         (the (unsigned-byte 8)
-                              (pixmap:extract-red-component pixel-right))))
+                    (the (unsigned-byte 8)
+                         (pixmap:extract-red-component pixel-down))
+                    (the (unsigned-byte 8)
+                         (pixmap:extract-red-component pixel-left))
+                    (the (unsigned-byte 8)
+                         (pixmap:extract-red-component pixel-right))))
          (sum-green (to:f+ (the (unsigned-byte 8)
                                 (pixmap:extract-green-component pixel-up))
-                           (the (unsigned-byte 8)
-                                (pixmap:extract-green-component pixel-down))
-                           (the (unsigned-byte 8)
-                                (pixmap:extract-green-component pixel-left))
-                           (the (unsigned-byte 8)
-                                (pixmap:extract-green-component pixel-right))))
+                      (the (unsigned-byte 8)
+                           (pixmap:extract-green-component pixel-down))
+                      (the (unsigned-byte 8)
+                           (pixmap:extract-green-component pixel-left))
+                      (the (unsigned-byte 8)
+                           (pixmap:extract-green-component pixel-right))))
          (sum-blue (to:f+ (the (unsigned-byte 8)
                                (pixmap:extract-blue-component pixel-up))
-                          (the (unsigned-byte 8)
-                               (pixmap:extract-blue-component pixel-down))
-                          (the (unsigned-byte 8)
-                               (pixmap:extract-blue-component pixel-left))
-                          (the (unsigned-byte 8)
-                               (pixmap:extract-blue-component pixel-right))))
+                     (the (unsigned-byte 8)
+                          (pixmap:extract-blue-component pixel-down))
+                     (the (unsigned-byte 8)
+                          (pixmap:extract-blue-component pixel-left))
+                     (the (unsigned-byte 8)
+                          (pixmap:extract-blue-component pixel-right))))
          (r-average   (ash sum-red -2))
          (g-average   (ash sum-green -2))
          (b-average   (ash sum-blue -2))
@@ -233,15 +233,15 @@
 	    (< (rem x shift-spike) 10))
        (setf (aref buffer
                    (to:f+ index
-                          (cond
-                            ((1-of-2-passes)
-                             shift-left-2)
-                            ((1-of-2-passes)
-                             shift-right-2)
-                            (t 0))
-                          (if (1-of-2-passes)
-                              0
-                              shift-down)))
+                     (cond
+                       ((1-of-2-passes)
+                        shift-left-2)
+                       ((1-of-2-passes)
+                        shift-right-2)
+                       (t 0))
+                     (if (1-of-2-passes)
+                         0
+                         shift-down)))
              new-color))
       ((and (to:f> y smoke-threshold)
             (or (and (< r-average 200)
@@ -251,15 +251,15 @@
              +smoke-color+))
       (t
        (setf (aref buffer (to:f+ index
-                                 (cond
-                                   ((1-of-2-passes)
-                                    shift-left)
-                                   ((1-of-2-passes)
-                                    shift-right)
-                                   (t 0))
-                                 (if (1-of-3-passes)
-                                     shift-down
-                                     0)))
+                            (cond
+                              ((1-of-2-passes)
+                               shift-left)
+                              ((1-of-2-passes)
+                               shift-right)
+                              (t 0))
+                            (if (1-of-3-passes)
+                                shift-down
+                                0)))
              new-color)))))
 
 (defun blur (buffer width height time float-width smoke-threshold shift-down-2)
@@ -274,17 +274,17 @@
                                                                               time)))))))))
     (declare (dynamic-extent shift-spike))
     (loop for i fixnum from (to:f* width 2)
-             below (to:f- (to:f* width height)
-                          width)
+            below (to:f- (to:f* width height)
+                    width)
           do
-              (multiple-value-bind (y fraction-row)
-                  (truncate (to:d/ (to:d i) float-width))
-                (let ((x (truncate (to:d* (to:d fraction-row) float-width))))
-                  (declare (dynamic-extent x))
-                  (blur-kernel buffer width i x y time
-                               shift-spike
-                               smoke-threshold
-                               shift-down-2))))))
+             (multiple-value-bind (y fraction-row)
+                 (truncate (to:d/ (to:d i) float-width))
+               (let ((x (truncate (to:d* (to:d fraction-row) float-width))))
+                 (declare (dynamic-extent x))
+                 (blur-kernel buffer width i x y time
+                              shift-spike
+                              smoke-threshold
+                              shift-down-2))))))
 
 (defun reinforce-fire (buffer width height howmany)
   (declare (fixnum width height howmany))
@@ -316,12 +316,12 @@
                                           pixel)))
       (declare (dynamic-extent x y minimum-seed-y pixel new-pixel))
       (px:set-pixel@ buffer
-                       width
-                       x
-                       y
-                       (pixmap:extract-red-component new-pixel)
-                       (pixmap:extract-green-component new-pixel)
-                       (pixmap:extract-blue-component new-pixel)))))
+                     width
+                     x
+                     y
+                     (pixmap:extract-red-component new-pixel)
+                     (pixmap:extract-green-component new-pixel)
+                     (pixmap:extract-blue-component new-pixel)))))
 
 (defun draw-fire (buffer width height howmany-seed time float-width smoke-threshold shift-down-2)
   (reinforce-fire buffer width height howmany-seed)
@@ -383,55 +383,55 @@
 
 (defun draw-plasma-thread ()
   (with-accessors ((buffer px:buffer)
-                   (width  px:width)
-                   (height px:height)) *pixel-buffer-context*
+                   (width  ctx:width)
+                   (height ctx:height)) *pixel-buffer-context*
     (let ((tick (to:d 0.0)))
       (loop while (not (stop-drawing-thread-p *animation*)) do
-        (px:sync *pixel-buffer-context*)
-        (px:push-for-rendering *pixel-buffer-context*
-                                 (lambda (dt)
-                                   (declare (fixnum dt))
-                                   (declare (optimize (speed 3) (debug 0)))
-                                   (draw-plasma buffer width height tick)
-                                   (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
+        (ctx:sync *pixel-buffer-context*)
+        (ctx:push-for-rendering *pixel-buffer-context*
+                                (lambda (dt)
+                                  (declare (fixnum dt))
+                                  (declare (optimize (speed 3) (debug 0)))
+                                  (draw-plasma buffer width height tick)
+                                  (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
       (format t "STOP!~%"))))
 
 (defun clear-sdl-window (&key (context *pixel-buffer-context*) (force nil))
   (with-accessors ((buffer px:buffer)
-                   (width  px:width)
-                   (height px:height)) context
-    (px:push-for-rendering context
-                           (lambda (dt)
-                             (declare (ignore dt))
-                             (px:clear-buffer buffer width height 0 0 0))
-                           :force-push force)))
+                   (width  ctx:width)
+                   (height ctx:height)) context
+    (ctx:push-for-rendering context
+                            (lambda (dt)
+                              (declare (ignore dt))
+                              (px:clear-buffer buffer width height 0 0 0))
+                            :force-push force)))
 
 (defun draw-fire-thread ()
   (with-accessors ((buffer px:buffer)
-                   (width  px:width)
-                   (height px:height)) *pixel-buffer-context*
+                   (width  ctx:width)
+                   (height ctx:height)) *pixel-buffer-context*
     (let ((tick (to:d 0.0))
           (float-width     (to:d width))
           (smoke-threshold (truncate (to:d* 0.70 (to:d height))))
           (shift-down-2    (to:f* -2 width)))
       (declare (dynamic-extent float-width smoke-threshold shift-down-2))
       (loop while (not (stop-drawing-thread-p *animation*)) do
-        (px:sync *pixel-buffer-context*)
-        (px:push-for-rendering *pixel-buffer-context*
-                                 (lambda (dt)
-                                   (declare (fixnum dt))
-                                   (draw-fire buffer
-                                              width height
-                                              500
-                                              tick
-                                              float-width smoke-threshold shift-down-2)
-                                   (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
+        (ctx:sync *pixel-buffer-context*)
+        (ctx:push-for-rendering *pixel-buffer-context*
+                                (lambda (dt)
+                                  (declare (fixnum dt))
+                                  (draw-fire buffer
+                                             width height
+                                             500
+                                             tick
+                                             float-width smoke-threshold shift-down-2)
+                                  (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
       (format t "STOP FIRE!~%"))))
 
 (defun draw-rectangles-thread ()
   (with-accessors ((buffer px:buffer)
-                   (width  px:width)
-                   (height px:height)) *pixel-buffer-context*
+                   (width  ctx:width)
+                   (height ctx:height)) *pixel-buffer-context*
     (let ((tick (to:d 0.0)))
       ;; I should  use :force-push t  in this function call  to ensure
       ;; the  event  of clearing  the  buffer  is not  discarded,  but
@@ -444,31 +444,31 @@
                               (multiple-value-list (make-blitting-rectangle width
                                                                             height)))))
         (mapcar (lambda (rectangle)
-                  (px:push-for-rendering *pixel-buffer-context*
-                                   (lambda (dt)
-                                     (declare (fixnum dt))
-                                     (let ((rectangle-buffer (first  rectangle))
-                                           (rectangle-width  (second rectangle))
-                                           (rectangle-height (third  rectangle))
-                                           (x                (fourth rectangle))
-                                           (y                (fifth  rectangle)))
-                                       ;; (assert (< (+ rectangle-width x)
-                                       ;;            width))
-                                       ;; (assert (< (+ rectangle-height y)
-                                       ;;            height))
-                                       (let ((px:*blending-function* #'px:blending-function-add))
-                                         (px:blit rectangle-buffer
-                                                    rectangle-width
-                                                    buffer
-                                                    width
-                                                    0
-                                                    0
-                                                    y
-                                                    x
-                                                    rectangle-height
-                                                    rectangle-width))
-                                       (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt))))))
-                                   :force-push t))
+                  (ctx:push-for-rendering *pixel-buffer-context*
+                                          (lambda (dt)
+                                            (declare (fixnum dt))
+                                            (let ((rectangle-buffer (first  rectangle))
+                                                  (rectangle-width  (second rectangle))
+                                                  (rectangle-height (third  rectangle))
+                                                  (x                (fourth rectangle))
+                                                  (y                (fifth  rectangle)))
+                                              ;; (assert (< (+ rectangle-width x)
+                                              ;;            width))
+                                              ;; (assert (< (+ rectangle-height y)
+                                              ;;            height))
+                                              (let ((px:*blending-function* #'px:blending-function-add))
+                                                (px:blit rectangle-buffer
+                                                         rectangle-width
+                                                         buffer
+                                                         width
+                                                         0
+                                                         0
+                                                         y
+                                                         x
+                                                         rectangle-height
+                                                         rectangle-width))
+                                              (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt))))))
+                                          :force-push t))
                 rectangles)
         (format t "STOP RECTANGLES!~%")))))
 
@@ -481,7 +481,7 @@
 
 ;; 10px
 (a:define-constant +test-sprite+
-   "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAIUlEQVQY02P8z4ACGFH5TAx4AU2lGRkYUByzatXqweI0ABCcBRCKObYxAAAAAElFTkSuQmCC"
+  "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAIUlEQVQY02P8z4ACGFH5TAx4AU2lGRkYUByzatXqweI0ABCcBRCKObYxAAAAAElFTkSuQmCC"
   :test #'string=)
 
 ;; 2px
@@ -497,84 +497,84 @@
 (defparameter *test-sprite* (load-test-sprite))
 
 (defun draw-test-sprite (buffer width height x y)
-  (px:push-for-rendering *pixel-buffer-context*
-                           (lambda (dt)
-                             (declare (ignore dt))
-                             (px:blit-transform (nodgui.pixmap:bits   *test-sprite*)
-                                                  (nodgui.pixmap:width  *test-sprite*)
-                                                  (nodgui.pixmap:height *test-sprite*)
-                                                  buffer
-                                                  width
-                                                  height
-                                                  0
-                                                  0
-                                                  y
-                                                  x
-                                                  (nodgui.pixmap:height *test-sprite*)
-                                                  (nodgui.pixmap:width  *test-sprite*)
-                                                  0.0
-                                                  10.0
-                                                  10.0
-                                                  0
-                                                  0)
-                             (px:blit-transform (nodgui.pixmap:bits   *test-sprite*)
-                                                  (nodgui.pixmap:width  *test-sprite*)
-                                                  (nodgui.pixmap:height *test-sprite*)
-                                                  buffer
-                                                  width
-                                                  height
-                                                  0
-                                                  0
-                                                  y
-                                                  x
-                                                  (nodgui.pixmap:height *test-sprite*)
-                                                  (nodgui.pixmap:width  *test-sprite*)
-                                                  45.0
-                                                  10.0
-                                                  10.0
-                                                  0
-                                                  0)
-                             (px:blit-transform (nodgui.pixmap:bits   *test-sprite*)
-                                                  (nodgui.pixmap:width  *test-sprite*)
-                                                  (nodgui.pixmap:height *test-sprite*)
-                                                  buffer
-                                                  width
-                                                  height
-                                                  5
-                                                  5
-                                                  y
-                                                  x
-                                                  (nodgui.pixmap:height *test-sprite*)
-                                                  (nodgui.pixmap:width  *test-sprite*)
-                                                  45.0
-                                                  10.0
-                                                  10.0
-                                                  5
-                                                  5))
-                           :force-push t))
+  (ctx:push-for-rendering *pixel-buffer-context*
+                          (lambda (dt)
+                            (declare (ignore dt))
+                            (px:blit-transform (nodgui.pixmap:bits   *test-sprite*)
+                                               (nodgui.pixmap:width  *test-sprite*)
+                                               (nodgui.pixmap:height *test-sprite*)
+                                               buffer
+                                               width
+                                               height
+                                               0
+                                               0
+                                               y
+                                               x
+                                               (nodgui.pixmap:height *test-sprite*)
+                                               (nodgui.pixmap:width  *test-sprite*)
+                                               0.0
+                                               10.0
+                                               10.0
+                                               0
+                                               0)
+                            (px:blit-transform (nodgui.pixmap:bits   *test-sprite*)
+                                               (nodgui.pixmap:width  *test-sprite*)
+                                               (nodgui.pixmap:height *test-sprite*)
+                                               buffer
+                                               width
+                                               height
+                                               0
+                                               0
+                                               y
+                                               x
+                                               (nodgui.pixmap:height *test-sprite*)
+                                               (nodgui.pixmap:width  *test-sprite*)
+                                               45.0
+                                               10.0
+                                               10.0
+                                               0
+                                               0)
+                            (px:blit-transform (nodgui.pixmap:bits   *test-sprite*)
+                                               (nodgui.pixmap:width  *test-sprite*)
+                                               (nodgui.pixmap:height *test-sprite*)
+                                               buffer
+                                               width
+                                               height
+                                               5
+                                               5
+                                               y
+                                               x
+                                               (nodgui.pixmap:height *test-sprite*)
+                                               (nodgui.pixmap:width  *test-sprite*)
+                                               45.0
+                                               10.0
+                                               10.0
+                                               5
+                                               5))
+                          :force-push t))
 
 (defun draw-bell-sprite (buffer width height x y)
-  (px:push-for-rendering *pixel-buffer-context*
-                         (lambda (dt)
-                           (declare (ignore dt))
-                           (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
-                                              (nodgui.pixmap:width  *bell-sprite*)
-                                              (nodgui.pixmap:height *bell-sprite*)
-                                              buffer
-                                              width
-                                              height
-                                              0
-                                              0
-                                              y
-                                              x
-                                              (nodgui.pixmap:height *bell-sprite*)
-                                              (nodgui.pixmap:width  *bell-sprite*)
-                                              (to:d (random 360.0))
-                                              (to:d+ 0.2 (to:d (random 1.8)))
-                                              (to:d+ 0.2 (to:d (random 1.8)))
-                                              0
-                                              0))
-                         :force-push t))
+  (ctx:push-for-rendering *pixel-buffer-context*
+                          (lambda (dt)
+                            (declare (ignore dt))
+                            (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
+                                               (nodgui.pixmap:width  *bell-sprite*)
+                                               (nodgui.pixmap:height *bell-sprite*)
+                                               buffer
+                                               width
+                                               height
+                                               0
+                                               0
+                                               y
+                                               x
+                                               (nodgui.pixmap:height *bell-sprite*)
+                                               (nodgui.pixmap:width  *bell-sprite*)
+                                               (to:d (random 360.0))
+                                               (to:d+ 0.2 (to:d (random 1.8)))
+                                               (to:d+ 0.2 (to:d (random 1.8)))
+                                               0
+                                               0))
+                          :force-push t))
 
 (defun draw-lines (buffer width height x y)
   (loop for degree from 0 below 360 by 2
@@ -585,30 +585,30 @@
                               (to:d (- width x))
                               (to:d (- height y))
                               50.0)))
-             (px:push-for-rendering *pixel-buffer-context*
-                                      (let* ((current-color color)
-                                             (actual-degree degree)
-                                             (radians   (to:d/ (to:d* (to:d pi)
-                                                                      (to:d actual-degree))
-                                                               180.0))
-                                             (current-x (to:f+ x
-                                                               (truncate (to:d* radius (to:dcos radians)))))
-                                             (current-y (to:f+ y
-                                                               (truncate (* radius (sin radians))))))
-                                        (lambda (dt)
-                                          (declare (ignore dt))
-                                          (px:draw-line buffer width
-                                                          x y
-                                                          current-x current-y
-                                                          255 0 current-color  255)))
-                                      :force-push t))))
+             (ctx:push-for-rendering *pixel-buffer-context*
+                                     (let* ((current-color color)
+                                            (actual-degree degree)
+                                            (radians   (to:d/ (to:d* (to:d pi)
+                                                                     (to:d actual-degree))
+                                                              180.0))
+                                            (current-x (to:f+ x
+                                                         (truncate (to:d* radius (to:dcos radians)))))
+                                            (current-y (to:f+ y
+                                                         (truncate (* radius (sin radians))))))
+                                       (lambda (dt)
+                                         (declare (ignore dt))
+                                         (px:draw-line buffer width
+                                                       x y
+                                                       current-x current-y
+                                                       255 0 current-color  255)))
+                                     :force-push t))))
 
 (defun stop-animation ()
   (when (and *animation*
              (bt:threadp (animation-thread *animation*)))
     (stop-drawing-thread *animation*)
     (wait-thread *animation*)
-    (format t "anim ~a queue ~a~%" *animation* (px::queue *pixel-buffer-context*))))
+    (format t "anim ~a queue ~a~%" *animation* (ctx::rendering-queue *pixel-buffer-context*))))
 
 (a:define-constant +context-width+ 320 :test #'=)
 
@@ -624,7 +624,7 @@
                                          :wraplength 800
                                          :text "WARNING: This animation may potentially trigger seizures for people with photosensitive epilepsy. Viewer discretion is advised."
                                          :font (font-create "serif" :size 20 :weight :bold)))
-           (sdl-frame     (px:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
+           (sdl-frame     (ctx:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
            (buttons-frame (make-instance 'nodgui:frame
                                          :borderwidth 2
                                          :relief :groove))
@@ -667,33 +667,33 @@
                                                                  (make-thread #'draw-fire-thread)))
                                            (format t "tk event returned~%"))))
            (radio-rectangles (make-instance 'radio-button
-                                         :master   buttons-frame
-                                         :value    :rectangles
-                                         :variable "dummy"
-                                         :text     "Rectangles"
-                                         :command
-                                         (lambda (value)
-                                           (format t "button ~a pressed~%" value)
-                                           (stop-animation)
-                                           (setf *animation*
-                                                 (make-animation :thread
-                                                                 (make-thread #'draw-rectangles-thread)))
-                                           (format t "tk event returned~%"))))
+                                            :master   buttons-frame
+                                            :value    :rectangles
+                                            :variable "dummy"
+                                            :text     "Rectangles"
+                                            :command
+                                            (lambda (value)
+                                              (format t "button ~a pressed~%" value)
+                                              (stop-animation)
+                                              (setf *animation*
+                                                    (make-animation :thread
+                                                                    (make-thread #'draw-rectangles-thread)))
+                                              (format t "tk event returned~%"))))
            (button-quit  (make-instance 'button
                                         :master  quit-frame
                                         :text    "quit"
                                         :command (lambda ()
                                                    (stop-animation)
-                                                   (px:quit-sdl *pixel-buffer-context*)
+                                                   (ctx:quit-sdl *pixel-buffer-context*)
                                                    (exit-nodgui)))))
       (grid warning-label     0 0 :columnspan 2)
       (grid interaction-label 1 0 :columnspan 2)
       (grid sdl-frame         2 0)
       (grid buttons-frame     2 1 :sticky :nws)
       (grid buttons-label     1 0 :sticky :nw :padx 5 :pady 10)
-      (grid radio-plasma      2 0 :sticky :nw :padx 5)
+      (grid radio-rectangles  2 0 :sticky :nw :padx 5)
       (grid radio-fire        3 0 :sticky :nw :padx 5)
-      (grid radio-rectangles  4 0 :sticky :nw :padx 5)
+      (grid radio-plasma      4 0 :sticky :nw :padx 5)
       (grid quit-frame        5 0 :sticky :wes)
       (grid button-quit       0 0 :sticky :s)
       (grid notice-label      1 0 :sticky :sw)
@@ -707,8 +707,8 @@
               (lambda (event)
                 (incf what-to-draw)
                 (with-accessors ((buffer px:buffer)
-                                 (width  px:width)
-                                 (height px:height)) *pixel-buffer-context*
+                                 (width  ctx:width)
+                                 (height ctx:height)) *pixel-buffer-context*
                   (let ((scaled-x (truncate (* (event-x event)
                                                (/ +context-width+
                                                   +sdl-frame-width+))))
@@ -755,36 +755,36 @@
                            "rotation: ~,1f° scaling: ~a translate x: ~a translate y: ~a"
                            rotation scaling translating-x translating-y)))
            (draw ()
-             (px:push-for-rendering sdl-context
-                                    (lambda (dt)
-                                      (declare (ignore dt))
-                                      (px:clear-buffer context-buffer
-                                                       context-width
-                                                       context-height
-                                                       0 0 0)
-                                      (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
-                                                         (nodgui.pixmap:width  *bell-sprite*)
-                                                         (nodgui.pixmap:height *bell-sprite*)
-                                                         context-buffer
-                                                         context-width
-                                                         context-height
-                                                         0
-                                                         0
-                                                         (truncate (/ context-height 2))
-                                                         (truncate (/ context-width 2))
-                                                         (nodgui.pixmap:height *bell-sprite*)
-                                                         (nodgui.pixmap:width  *bell-sprite*)
-                                                         rotation
-                                                         scaling
-                                                         scaling
-                                                         (truncate (/ (nodgui.pixmap:width *bell-sprite*)
-                                                                      2))
-                                                         (truncate (/ (nodgui.pixmap:height *bell-sprite*)
-                                                                      2))
-                                                         translating-x
-                                                         translating-y)))))
+             (ctx:push-for-rendering sdl-context
+                                     (lambda (dt)
+                                       (declare (ignore dt))
+                                       (px:clear-buffer context-buffer
+                                                        context-width
+                                                        context-height
+                                                        0 0 0)
+                                       (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
+                                                          (nodgui.pixmap:width  *bell-sprite*)
+                                                          (nodgui.pixmap:height *bell-sprite*)
+                                                          context-buffer
+                                                          context-width
+                                                          context-height
+                                                          0
+                                                          0
+                                                          (truncate (/ context-height 2))
+                                                          (truncate (/ context-width 2))
+                                                          (nodgui.pixmap:height *bell-sprite*)
+                                                          (nodgui.pixmap:width  *bell-sprite*)
+                                                          rotation
+                                                          scaling
+                                                          scaling
+                                                          (truncate (/ (nodgui.pixmap:width *bell-sprite*)
+                                                                       2))
+                                                          (truncate (/ (nodgui.pixmap:height *bell-sprite*)
+                                                                       2))
+                                                          translating-x
+                                                          translating-y)))))
       (with-nodgui ()
-        (let* ((sdl-frame         (px:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
+        (let* ((sdl-frame         (ctx:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
                (info              (make-instance 'label))
                (buttons-frame     (make-instance 'nodgui:frame
                                                  :borderwidth 2
@@ -816,17 +816,17 @@
                                                 (update-info info)
                                                 (draw))))
                (button-move-left  (make-button buttons-frame
-                                              "move left"
-                                              (lambda ()
-                                                (incf translating-x -5)
-                                                (update-info info)
-                                                (draw))))
+                                               "move left"
+                                               (lambda ()
+                                                 (incf translating-x -5)
+                                                 (update-info info)
+                                                 (draw))))
                (button-move-right (make-button buttons-frame
                                                "move right"
                                                (lambda ()
                                                  (incf translating-x 5)
-                                                (update-info info)
-                                                (draw))))
+                                                 (update-info info)
+                                                 (draw))))
                (button-move-up    (make-button buttons-frame
                                                "move up"
                                                (lambda ()
@@ -844,7 +844,7 @@
                                                 :text    "quit"
                                                 :command (lambda ()
                                                            (stop-animation)
-                                                           (px:quit-sdl sdl-context)
+                                                           (ctx:quit-sdl sdl-context)
                                                            (exit-nodgui)))))
           (grid info               0 0)
           (grid sdl-frame          1 0)
@@ -871,6 +871,6 @@
                                            :buffer-width    +sdl-frame-width+
                                            :buffer-height   +sdl-frame-height+))
           (setf context-buffer (px:buffer sdl-context))
-          (setf context-width  (px:width  sdl-context))
-          (setf context-height (px:height sdl-context))
+          (setf context-width  (ctx:width  sdl-context))
+          (setf context-height (ctx:height sdl-context))
           (draw))))))
