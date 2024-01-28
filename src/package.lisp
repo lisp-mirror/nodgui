@@ -1437,6 +1437,9 @@
    #:push-for-rendering
    #:pop-for-rendering
    #:rendering-must-wait-p
+   #:push-for-updating
+   #:pop-for-updating
+   #:updating-must-wait-p
    #:make-sdl-frame
    #:quit-sentinel
    #:sync))

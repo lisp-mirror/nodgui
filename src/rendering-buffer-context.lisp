@@ -26,6 +26,10 @@
     :initform nil
     :initarg :rendering-queue
     :accessor rendering-queue)
+   (updating-queue
+    :initform nil
+    :initarg :updating-queue
+    :accessor updating-queue)
    (rendering-thread
     :initform nil
     :initarg :rendering-thread
@@ -63,9 +67,13 @@
                      (event-loop-type event-loop-type)
                      (window          window)
                      (window-id       window-id)
-                     (rendering-queue rendering-queue)) object
+                     (rendering-queue rendering-queue)
+                     (updating-queue  updating-queue)) object
       (setf window-id       (nodgui:window-id classic-frame)
             rendering-queue (if (events-polling-p object)
+                                (q:make-queue :maximum-size non-blocking-queue-maximum-size)
+                                (make-instance 'bq:synchronized-queue))
+            updating-queue  (if (events-polling-p object)
                                 (q:make-queue :maximum-size non-blocking-queue-maximum-size)
                                 (make-instance 'bq:synchronized-queue))
             width           (nodgui:window-width classic-frame)
@@ -91,6 +99,12 @@
 
 (defgeneric rendering-must-wait-p (object))
 
+(defgeneric push-for-updating (object function &key force-push))
+
+(defgeneric pop-for-updating (object))
+
+(defgeneric updating-must-wait-p (object))
+
 (defgeneric sync (object))
 
 (defmethod events-polling-p ((object context))
@@ -106,6 +120,9 @@
   (push-for-rendering object
                       #'quit-sentinel
                       :force-push t)
+  (push-for-updating object
+                     (lambda (dt) (declare (ignore dt)) t)
+                     :force-push t)
   (bt:join-thread (rendering-thread object)))
 
 (u:definline push-in-queue (context queue function force-push)
@@ -115,27 +132,39 @@
           (q:push queue function))
       (bq:push-unblock queue function)))
 
-(defmethod push-for-rendering ((object context) (function function) &key (force-push nil))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (push-in-queue object (rendering-queue object) function force-push))
-
 (u:definline pop-from-queue (context queue)
   (if (events-polling-p context)
       (q:pop queue)
       (bq:pop-block queue)))
-
-(defmethod pop-for-rendering ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (pop-from-queue object (rendering-queue object)))
 
 (u:definline queue-empty-p (context queue)
   (if (events-polling-p context)
       (q:emptyp queue)
       (bq:emptyp queue)))
 
+(defmethod push-for-rendering ((object context) (function function) &key (force-push nil))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (push-in-queue object (rendering-queue object) function force-push))
+
+(defmethod pop-for-rendering ((object context))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (pop-from-queue object (rendering-queue object)))
+
 (defmethod rendering-must-wait-p ((object context))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (queue-empty-p object (rendering-queue object)))
+
+(defmethod push-for-updating ((object context) (function function) &key (force-push nil))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (push-in-queue object (updating-queue object) function force-push))
+
+(defmethod pop-for-updating ((object context))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (pop-from-queue object (updating-queue object)))
+
+(defmethod updating-must-wait-p ((object context))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (queue-empty-p object (updating-queue object)))
 
 (defmethod sync ((object context))
   (sdl2:delay (minimum-delta-t object)))

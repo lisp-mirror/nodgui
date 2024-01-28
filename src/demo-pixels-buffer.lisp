@@ -228,8 +228,8 @@
                              pixel-right))
     (cond
       ((and (not (< 0.0
-		    (to:dabs (to:d* 10.0 (sin-lut-fire (to:d* 500.0 time))))
-		    9.995))
+	            (to:dabs (to:d* 10.0 (sin-lut-fire (to:d* 500.0 time))))
+	            9.95))
 	    (< (rem x shift-spike) 10))
        (setf (aref buffer
                    (to:f+ index
@@ -387,19 +387,30 @@
                    (height ctx:height)) *pixel-buffer-context*
     (let ((tick (to:d 0.0)))
       (loop while (not (stop-drawing-thread-p *animation*)) do
-        (ctx:sync *pixel-buffer-context*)
+        (ctx:push-for-updating *pixel-buffer-context*
+                               (lambda (dt)
+                                 (declare (fixnum dt))
+                                 (declare (optimize (speed 3) (debug 0)))
+                                 (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))
+                               :force-push nil)
         (ctx:push-for-rendering *pixel-buffer-context*
                                 (lambda (dt)
-                                  (declare (fixnum dt))
+                                  (declare (ignore dt))
                                   (declare (optimize (speed 3) (debug 0)))
-                                  (draw-plasma buffer width height tick)
-                                  (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
+                                  (draw-plasma buffer width height tick))
+                                :force-push nil))
       (format t "STOP!~%"))))
 
 (defun clear-sdl-window (&key (context *pixel-buffer-context*) (force nil))
   (with-accessors ((buffer px:buffer)
                    (width  ctx:width)
                    (height ctx:height)) context
+    (ctx:push-for-updating *pixel-buffer-context*
+                           (lambda (dt)
+                             (declare (ignore dt))
+                             (declare (optimize (speed 3) (debug 0)))
+                             t)
+                           :force-push force)
     (ctx:push-for-rendering context
                             (lambda (dt)
                               (declare (ignore dt))
@@ -412,65 +423,79 @@
                    (height ctx:height)) *pixel-buffer-context*
     (let ((tick (to:d 0.0))
           (float-width     (to:d width))
-          (smoke-threshold (truncate (to:d* 0.70 (to:d height))))
+          (smoke-threshold (truncate (to:d* 0.76 (to:d height))))
           (shift-down-2    (to:f* -2 width)))
       (declare (dynamic-extent float-width smoke-threshold shift-down-2))
       (loop while (not (stop-drawing-thread-p *animation*)) do
-        (ctx:sync *pixel-buffer-context*)
+        (ctx:push-for-updating *pixel-buffer-context*
+                               (lambda (dt)
+                                 (declare (fixnum dt))
+                                 (declare (optimize (speed 3) (debug 0)))
+                                 (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))
+                               :force-push nil)
         (ctx:push-for-rendering *pixel-buffer-context*
                                 (lambda (dt)
-                                  (declare (fixnum dt))
+                                  (declare (ignore dt))
+                                  (declare (optimize (speed 3) (debug 0)))
                                   (draw-fire buffer
                                              width height
                                              500
                                              tick
-                                             float-width smoke-threshold shift-down-2)
-                                  (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))))
+                                             float-width smoke-threshold shift-down-2))
+                                :force-push nil))
       (format t "STOP FIRE!~%"))))
 
 (defun draw-rectangles-thread ()
   (with-accessors ((buffer px:buffer)
                    (width  ctx:width)
                    (height ctx:height)) *pixel-buffer-context*
-    (let ((tick (to:d 0.0)))
-      ;; I should  use :force-push t  in this function call  to ensure
-      ;; the  event  of clearing  the  buffer  is not  discarded,  but
-      ;; instead i prefer to leave the  key parameter as nil because it
-      ;; could  give a  nice transition,  if  the queue  is filled  by
-      ;; leftover of plasma rendering events
-      (clear-sdl-window)
-      (let ((rectangles (loop repeat 1000
-                              collect
-                              (multiple-value-list (make-blitting-rectangle width
-                                                                            height)))))
-        (mapcar (lambda (rectangle)
-                  (ctx:push-for-rendering *pixel-buffer-context*
-                                          (lambda (dt)
-                                            (declare (fixnum dt))
-                                            (let ((rectangle-buffer (first  rectangle))
-                                                  (rectangle-width  (second rectangle))
-                                                  (rectangle-height (third  rectangle))
-                                                  (x                (fourth rectangle))
-                                                  (y                (fifth  rectangle)))
-                                              ;; (assert (< (+ rectangle-width x)
-                                              ;;            width))
-                                              ;; (assert (< (+ rectangle-height y)
-                                              ;;            height))
-                                              (let ((px:*blending-function* #'px:blending-function-add))
-                                                (px:blit rectangle-buffer
-                                                         rectangle-width
-                                                         buffer
-                                                         width
-                                                         0
-                                                         0
-                                                         y
-                                                         x
-                                                         rectangle-height
-                                                         rectangle-width))
-                                              (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt))))))
-                                          :force-push t))
+    ;; I should  use :force-push t  in this function call  to ensure
+    ;; the  event  of clearing  the  buffer  is not  discarded,  but
+    ;; instead i prefer to leave the  key parameter as nil because it
+    ;; could  give a  nice transition,  if  the queue  is filled  by
+    ;; leftover of plasma rendering events
+    (clear-sdl-window)
+    (format t "pushing clear~%")
+    (let ((rectangles (loop repeat 1000
+                            collect
+                            (multiple-value-list (make-blitting-rectangle width
+                                                                          height)))))
+      (mapcar (lambda (rectangle)
+                (format t "pushing~%")
+                (ctx:push-for-updating *pixel-buffer-context*
+                                       (lambda (dt)
+                                         (declare (ignore dt))
+                                         (declare (optimize (speed 3) (debug 0)))
+                                         (format t "pushing update~%")
+                                         t)
+                                       :force-push t)
+                (ctx:push-for-rendering *pixel-buffer-context*
+                                        (lambda (dt)
+                                          (declare (ignore dt))
+                                          (format t "pushing rendering~%")
+                                          (let ((rectangle-buffer (first  rectangle))
+                                                (rectangle-width  (second rectangle))
+                                                (rectangle-height (third  rectangle))
+                                                (x                (fourth rectangle))
+                                                (y                (fifth  rectangle)))
+                                            ;; (assert (< (+ rectangle-width x)
+                                            ;;            width))
+                                            ;; (assert (< (+ rectangle-height y)
+                                            ;;            height))
+                                            (let ((px:*blending-function* #'px:blending-function-add))
+                                              (px:blit rectangle-buffer
+                                                       rectangle-width
+                                                       buffer
+                                                       width
+                                                       0
+                                                       0
+                                                       y
+                                                       x
+                                                       rectangle-height
+                                                       rectangle-width))))
+                                        :force-push t))
                 rectangles)
-        (format t "STOP RECTANGLES!~%")))))
+      (format t "STOP RECTANGLES!~%"))))
 
 (defun load-bell-sprite ()
   (let ((px (make-instance 'nodgui.pixmap:png)))
@@ -497,6 +522,11 @@
 (defparameter *test-sprite* (load-test-sprite))
 
 (defun draw-test-sprite (buffer width height x y)
+  (ctx:push-for-updating *pixel-buffer-context*
+                          (lambda (dt)
+                            (declare (ignore dt))
+                            t)
+                          :force-push t)
   (ctx:push-for-rendering *pixel-buffer-context*
                           (lambda (dt)
                             (declare (ignore dt))
@@ -554,6 +584,11 @@
                           :force-push t))
 
 (defun draw-bell-sprite (buffer width height x y)
+  (ctx:push-for-updating *pixel-buffer-context*
+                          (lambda (dt)
+                            (declare (ignore dt))
+                            t)
+                          :force-push t)
   (ctx:push-for-rendering *pixel-buffer-context*
                           (lambda (dt)
                             (declare (ignore dt))
@@ -585,6 +620,11 @@
                               (to:d (- width x))
                               (to:d (- height y))
                               50.0)))
+             (ctx:push-for-updating *pixel-buffer-context*
+                                    (lambda (dt)
+                                      (declare (ignore dt))
+                                      t)
+                                    :force-push t)
              (ctx:push-for-rendering *pixel-buffer-context*
                                      (let* ((current-color color)
                                             (actual-degree degree)

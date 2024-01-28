@@ -10,15 +10,7 @@
    (buffer
     :initform nil
     :initarg :buffer
-    :accessor buffer)
-   (minimum-delta-t
-    :initform (ctx:fps->delta-t 60)
-    :initarg :minimum-delta-t
-    :accessor minimum-delta-t)
-   (time-spent
-    :initform (ctx:get-milliseconds)
-    :initarg  :time-spent
-    :accessor time-spent)))
+    :accessor buffer)))
 
 (defun make-texture (renderer width height)
   (sdl2:create-texture renderer :rgba8888 :streaming width height))
@@ -184,16 +176,23 @@
                   ()
                   (let* ((millis  (ctx:get-milliseconds))
                          (dt      (to:f- (the fixnum millis)
-                                    (the fixnum time-spent))))
-                    (if (not (ctx:rendering-must-wait-p context))
+                                         (the fixnum time-spent))))
+                    (declare (fixnum millis dt))
+                    (if (not (or (ctx:rendering-must-wait-p context)
+                                 (ctx:updating-must-wait-p context)))
                         (if (>= dt minimum-delta-t)
-                            (let ((fn (ctx:pop-for-rendering context)))
-                              (declare (function fn))
+                            (let ((updating-fn  (ctx:pop-for-updating context))
+                                  (rendering-fn (ctx:pop-for-rendering context)))
+                              (declare (function updating-fn rendering-fn))
                               (setf time-spent millis)
-                              (if (eq fn #'ctx:quit-sentinel)
-                                  (funcall fn dt)
+                              (if (eq rendering-fn #'ctx:quit-sentinel)
+                                  (funcall rendering-fn dt)
                                   (progn
-                                    (funcall fn dt)
+                                    (loop while (> dt minimum-delta-t) do
+                                      (funcall updating-fn dt)
+                                      (decf dt minimum-delta-t))
+                                    (funcall updating-fn dt)
+                                    (funcall rendering-fn dt)
                                     (sdl2:update-texture texture
                                                          nil
                                                          (static-vectors:static-vector-pointer buffer)
