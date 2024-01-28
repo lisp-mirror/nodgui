@@ -30,6 +30,10 @@
     :initform nil
     :initarg :updating-queue
     :accessor updating-queue)
+   (modifying-queue
+    :initform nil
+    :initarg  :modifying-queue
+    :accessor modifying-queue)
    (rendering-thread
     :initform nil
     :initarg :rendering-thread
@@ -60,28 +64,31 @@
                                          (classic-frame nil)
                                          (non-blocking-queue-maximum-size 8192)
                                        &allow-other-keys)
-  (when classic-frame
-    (with-accessors ((width           width)
-                     (height          height)
-                     (thread          rendering-thread)
-                     (event-loop-type event-loop-type)
-                     (window          window)
-                     (window-id       window-id)
-                     (rendering-queue rendering-queue)
-                     (updating-queue  updating-queue)) object
-      (setf window-id       (nodgui:window-id classic-frame)
-            rendering-queue (if (events-polling-p object)
-                                (q:make-queue :maximum-size non-blocking-queue-maximum-size)
-                                (make-instance 'bq:synchronized-queue))
-            updating-queue  (if (events-polling-p object)
-                                (q:make-queue :maximum-size non-blocking-queue-maximum-size)
-                                (make-instance 'bq:synchronized-queue))
-            width           (nodgui:window-width classic-frame)
-            height          (nodgui:window-height classic-frame))
-      (assert (or (eq event-loop-type :polling)
-                  (eq event-loop-type :serving))
-              (event-loop-type)
-              "value of event-loop-type slot can be only :polling or serving, not ~a"))))
+  (flet ((make-queue ()
+           (if (events-polling-p object)
+               (q:make-queue :maximum-size non-blocking-queue-maximum-size)
+               (make-instance 'bq:synchronized-queue))))
+    (when classic-frame
+      (with-accessors ((width           width)
+                       (height          height)
+                       (thread          rendering-thread)
+                       (event-loop-type event-loop-type)
+                       (window          window)
+                       (window-id       window-id)
+                       (rendering-queue rendering-queue)
+                       (updating-queue  updating-queue)
+                       (modifying-queue modifying-queue)) object
+        (setf window-id       (nodgui:window-id classic-frame)
+              rendering-queue (make-queue)
+              updating-queue  (make-queue)
+              modifying-queue (make-queue)
+              width           (nodgui:window-width  classic-frame)
+              height          (nodgui:window-height classic-frame))
+        (assert (or (eq event-loop-type :polling)
+                    (eq event-loop-type :serving))
+                (event-loop-type)
+                "value of event-loop-type slot can be only :polling or serving, not ~a"
+                event-loop-type)))))
 
 (defun create-window-from-pointer (pointer-id)
   (sdl2::check-nullptr (sdl2::sdl-create-window-from pointer-id)))
@@ -104,6 +111,12 @@
 (defgeneric pop-for-updating (object))
 
 (defgeneric updating-must-wait-p (object))
+
+(defgeneric push-for-modify (object function &key force-push))
+
+(defgeneric pop-for-modify (object))
+
+(defgeneric modify-must-wait-p (object))
 
 (defgeneric sync (object))
 
@@ -166,6 +179,18 @@
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (queue-empty-p object (updating-queue object)))
 
+(defmethod push-for-modify ((object context) (function function) &key (force-push nil))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (push-in-queue object (modifying-queue object) function force-push))
+
+(defmethod pop-for-modify ((object context))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (pop-from-queue object (modifying-queue object)))
+
+(defmethod modify-must-wait-p ((object context))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (queue-empty-p object (modifying-queue object)))
+
 (defmethod sync ((object context))
   (sdl2:delay (minimum-delta-t object)))
 
@@ -176,3 +201,10 @@
                        :height height
                        :background "")
                  args)))
+
+(defmacro in-renderer-thread ((context dt) declarations &body body)
+  `(push-for-modify ,context
+                    (lambda (,dt)
+                      ,declarations
+                      ,@body)
+                    :force-push t))

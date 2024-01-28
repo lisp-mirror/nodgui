@@ -152,6 +152,8 @@
          (coerce (length vecs) 'vec3-type)))
 
 (defun vec3-cross-product (a b)
+  "Apply transformation MATRIX to VEC, return result as a
+freshly allocated VEC."
   (let* ((result (vec3 (to:d 0) (to:d 0) (to:d 0)))
          (a1 (aref a 0))
          (a2 (aref a 1))
@@ -163,3 +165,44 @@
           (aref result 1) (to:d- (to:d* a3 b1) (to:d* a1 b3))
           (aref result 2) (to:d- (to:d* a1 b2) (to:d* a2 b1)))
     result))
+
+(defun transform-point (vec matrix)
+  "Apply transformation MATRIX to VEC, return result as a
+freshly allocated VEC."
+  (declare (vec3 vec))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let ((result (vec3 (to:d 0) (to:d 0) (to:d 0)))
+        (a      (aref vec 0))
+        (b      (aref vec 1))
+        (c      (aref vec 2)))
+    (declare (vec3 result))
+    (macrolet ((dim (n)
+                 `(setf (aref result ,n)
+                        (to:d+ (to:d* a (nodgui.matrix:mref matrix ,n 0))
+                               (to:d* b (nodgui.matrix:mref matrix ,n 1))
+                               (to:d* c (nodgui.matrix:mref matrix ,n 2))
+                               (nodgui.matrix:mref matrix ,n 3)))))
+      (dim 0)
+      (dim 1)
+      (dim 2)
+      result)))
+
+(defun transform-direction (vec matrix)
+  "Apply transformation MATRIX to VEC ignoring the translation component,
+return result as a freshly allocated VEC."
+  (declare (vec3 vec))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let ((result (vec3 (to:d 0) (to:d 0) (to:d 0)))
+        (a (aref vec 0))
+        (b (aref vec 1))
+        (c (aref vec 2)))
+    (declare (vec3 result))
+    (macrolet ((dim (n)
+                 `(setf (aref result ,n)
+                        (to:d+ (to:d* a (nodgui.matrix:mref matrix ,n 0))
+                               (to:d* b (nodgui.matrix:mref matrix ,n 1))
+                               (to:d* c (nodgui.matrix:mref matrix ,n 2))))))
+      (dim 0)
+      (dim 1)
+      (dim 2)
+      result)))

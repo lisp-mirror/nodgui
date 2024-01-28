@@ -176,6 +176,10 @@
                                                      :text "Pixels buffer window (blocking)"
                                                      :command (lambda ()
                                                                 (demo-pixel-buffer))))
+           (demo-3d                   (make-instance 'button
+                                                     :text "3D rendering demo"
+                                                     :command (lambda ()
+                                                                (demo-terrain))))
            (b-quit                    (make-instance 'button
                                                      :text    "Quit lisp 🙂"
                                                      :command (lambda ()
@@ -221,6 +225,7 @@
       (grid demo-paned-window        12 2 :sticky :nswe)
       (grid demo-animation           13 0 :sticky :nswe)
       (grid demo-pixel-buffer        13 1 :sticky :nswe)
+      (grid demo-3d                  13 2 :sticky :nswe)
       (grid b-quit                   14 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure *tk* :all :weight 1)
       (grid-rowconfigure    *tk* :all :weight 1))))

@@ -1,5 +1,7 @@
 (in-package :nodgui.demo)
 
+(named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
+
 (defun random-gaussian-distribution (sigma)
   (labels ((random-in-range ()
              (+ -1.0 (random 2.0)))
@@ -20,9 +22,21 @@
         (first (random-gaussian-distribution sigma)))
      mean))
 
-(a:define-constant +terrain-size+        32 :test #'=)
+(a:define-constant +terrain-size+        64 :test #'=)
 
-(a:define-constant +max-terrain-height+ 255 :test #'=)
+(a:define-constant +max-terrain-height+ 128 :test #'=)
+
+(defun pixmap-max-value (pixmap)
+  (let ((max-so-far -1))
+    (loop for x from 0 below +terrain-size+
+          do
+             (loop for y from 0 below +terrain-size+
+                   do
+                      (when (> (elt (pixmap:pixel@ pixmap x y) 0)
+                               max-so-far)
+                        (setf max-so-far
+                              (elt (pixmap:pixel@ pixmap x y) 0)))))
+    max-so-far))
 
 (defun make-terrain-pixmap (max-height
                             &optional (pixmap (pixmap::make-pixmap +terrain-size+
@@ -33,8 +47,8 @@
                                                                                          255))))
   (let* ((mean-x   (random +terrain-size+))
          (mean-y   (random +terrain-size+))
-         (sigma-x  (1+ (random (/ (to:d +terrain-size+) 3))))
-         (sigma-y  (1+ (random (/ (to:d +terrain-size+) 3)))))
+         (sigma-x  (1+ (random (/ (to:d +terrain-size+) (+ 4 (random 6))))))
+         (sigma-y  (1+ (random (/ (to:d +terrain-size+) (+ 4 (random 6)))))))
     (loop repeat 600 do
        (let* ((x     (truncate (gaussian-probability sigma-x mean-x)))
               (y     (truncate (gaussian-probability sigma-y mean-y))))
@@ -48,19 +62,64 @@
                                          (1+ (elt pixel 1))
                                          (1+ (elt pixel 2))
                                          255))))))
-    (let ((max (let ((max-so-far -1))
-                 (loop for x from 0 below +terrain-size+
-                       do
-                          (loop for y from 0 below +terrain-size+
-                                do
-                                   (when (> (elt (pixmap:pixel@ pixmap x y) 0)
-                                            max-so-far)
-                                     (setf max-so-far
-                                           (elt (pixmap:pixel@ pixmap x y) 0)))))
-                 max-so-far)))
-      (if (>= max max-height)
-          pixmap
+    (let ((max (pixmap-max-value pixmap)))
+      (if (>= max
+              (* 1.1 max-height))
+          (smooth-pixmap pixmap max-height)
           (make-terrain-pixmap max-height pixmap)))))
+
+(defun smooth-pixmap (pixmap max-value)
+  (flet ((smooth ()
+           (with-accessors ((width  pixmap:width)
+                            (height pixmap:height)) pixmap
+             (loop for x from 0 below height do
+               (loop for y from 0 below width do
+                 (let* ((right   (rem (1+ x) width))
+                        (left    (if (< (1- x) 0)
+                                     (1- width)
+                                     (1- x)))
+                        (top     (rem (1+ y) height))
+                        (bottom  (if (< (1- y) 0)
+                                     (1- height)
+                                     (1- y)))
+                        (a       (pixmap:pixel@ pixmap left bottom))
+                        (b       (pixmap:pixel@ pixmap left top))
+                        (c       (pixmap:pixel@ pixmap right bottom))
+                        (d       (pixmap:pixel@ pixmap right top))
+                        (e       (pixmap:pixel@ pixmap x     bottom))
+                        (f       (pixmap:pixel@ pixmap x      top))
+                        (g       (pixmap:pixel@ pixmap right y))
+                        (h       (pixmap:pixel@ pixmap left y))
+                        (average (truncate (/ (+ (elt a 0)
+                                                 (elt b 0)
+                                                 (elt c 0)
+                                                 (elt d 0)
+                                                 (elt e 0)
+                                                 (elt f 0)
+                                                 (elt g 0)
+                                                 (elt h 0))
+                                              8))))
+                   (setf (pixmap:pixel@ pixmap x y)
+                         (nodgui.ubvec4:ubvec4 average average average 255))))))))
+    (loop while (> (pixmap-max-value pixmap)
+                   max-value)
+          do
+             (format t "max value ~a~%" (pixmap-max-value pixmap))
+             (smooth))
+    pixmap))
+
+(defun make-flat-terrain-pixmap ()
+  (pixmap::make-pixmap +terrain-size+
+                       +terrain-size+
+                       (nodgui.ubvec4:ubvec4 0
+                                             0
+                                             0
+                                             255)))
+
+(defun debug-terrain-pixmap (pixmap)
+  (loop for x from 0 below (pixmap:width pixmap) do
+    (loop for y from 0 below (pixmap:height pixmap) do
+      (format *error-output* "~a ~a ~a~%" x y (pixmap:pixel@ pixmap x y)))))
 
 (definline fast-glaref (v offset)
   (cffi:mem-aref (gl::gl-array-pointer v) :float offset))
@@ -75,7 +134,11 @@
 
 (defsetf fast-glaref set-fast-glaref)
 
-(defgeneric seq->gl-array (seq))
+(defun debug-gl-array (array length)
+  (format *error-output* "debug gl array~%")
+  (loop for i from 0 below length do
+    (format *error-output* "~a~%" (fast-glaref array i)))
+  (format *error-output* "debug gl array end~%"))
 
 (defclass transformable ()
   ((projection-matrix
@@ -108,12 +171,12 @@
 
 (defclass camera (transformable)
   ((target
-    :initform (vec3:vec3 10.0 0.0 10.0)
+    :initform (vec3:vec3 0.0 100.0 0.0)
     :accessor target
     :initarg :target
     :documentation "position the camera is pointing to.")
    (pos
-    :initform vec3:+vec3-zero+
+    :initform (vec3:vec3 0.0 300.0 -100.0)
     :accessor pos
     :initarg :pos
     :documentation "position the camera.")
@@ -122,17 +185,43 @@
     :accessor up
     :initarg :up)))
 
+(defgeneric look-at (object))
+
+(defgeneric build-projection-matrix (object near far fov ratio))
+
+(defgeneric rotate-around-y-axe (object angle))
+
 (defmethod look-at ((object camera))
   (declare (optimize (safety 0) (speed 3) (debug 0)))
   (with-accessors ((up  up)
                    (pos pos)
-                   (dir dir)
                    (target target)
                    (fading-away-fn fading-away-fn)) object
     (declare (function fading-away-fn))
     (let ((standard-vw-matrix (matrix:look@ pos target up)))
       (declare (matrix:matrix standard-vw-matrix))
       (setf (view-matrix object) standard-vw-matrix))))
+
+(defparameter *far*  1800.0)
+
+(defparameter *near*    5.0)
+
+(defparameter *fov*    50.0)
+
+(defmethod build-projection-matrix ((object camera) near far fov ratio)
+  (setf (projection-matrix object)
+        (matrix:perspective fov ratio near far)))
+
+(defmethod rotate-around-y-axe ((object camera) angle)
+  (with-accessors ((pos pos)
+                   (target target)) object
+    (let* ((dir      (vec3:vec3- target pos))
+           (rotation (matrix:rotate-around (vec3:vec3 0f0 1f0 0f0)
+                                           (to:degree->radians angle))))
+      (setf target
+            (vec3:vec3+ pos
+                        (vec3:transform-point dir rotation)))
+      object)))
 
 (defparameter *camera* (make-instance 'camera))
 
@@ -157,11 +246,11 @@
 (defun init-vertices-slot (&optional (length 0))
   (make-array-frame length vec3:+vec3-zero+ 'vec3:vec3 nil))
 
-(defclass terrain-mesh ()
-  ((height-pixmap
+(defclass terrain-mesh (transformable)
+  ((pixmap-heightmap
     :initform (make-terrain-pixmap +max-terrain-height+)
-    :initarg  :height-pixmap
-    :accessor height-pixmap)
+    :initarg  :pixmap-heightmap
+    :accessor pixmap-heightmap)
    (renderer-data-vertices
     :initform nil
     :initarg :renderer-data-vertices
@@ -202,59 +291,25 @@
     :initform -1
     :accessor projection-matrix-uniform-location)))
 
-(defparameter *vertex-shader* "
-#version 330 core
+(defun get-shader-files ()
+  (mapcar (lambda (a) (uiop:native-namestring (asdf:component-pathname a)))
+          (remove-if-not (lambda (x) (typep x 'asdf:static-file))
+                         (asdf:component-children (asdf:find-system "nodgui")))))
 
-#version 330 core
+(defun get-shader (re)
+  (let ((shader-path (find-if (lambda (a) (cl-ppcre:scan re a))
+                              (get-shader-files))))
+    (a:read-file-into-string shader-path)))
 
-layout x(location = 0)  in vec4 position;
+(defun get-vertex-shader ()
+  (get-shader "vert$"))
 
-uniform mat4 modelview_matrix;
+(defun get-fragment-shader ()
+  (get-shader "frag$"))
 
-uniform mat4 projection_matrix;
+(defparameter *vertex-shader* (get-vertex-shader))
 
-out float height;
-
-mat3 normal_matrix = mat3(modelview_matrix);
-
-void main () {
-  height                 = position.y / 255.0;
-  eye_position           = modelview_matrix * position;
-  gl_Position            = proj_matrix * modelview_matrix * position;
-}
-")
-
-(defparameter *fragment-shader* "
-#version 330 core
-
-in float height;
-
-out vec4 color;
-
-float lerp (in float from, in float to, in float pos) {
-  float w = (pos - from) / (to - from);
-  return w;
-}
-
-vec4 col_empty  = vec4(0.0);
-
-vec4 terrain_color_by_height() {
-
-  if (height <= 10){
-    return vec4(255,0,0,255);
-  }else if (height >  10 &&
-	    height <= 30){
-    return mix(vec4(255,0,0,255), vec4(0,255,0,255), height));
-   } else {
-    return mix(vec4(0,255,0,255), vec4(0,0,255,255), height));
-  }
-
-}
-
-void main () {
-  color = terrain_color_by_height();
-}
-")
+(defparameter *fragment-shader* (get-fragment-shader))
 
 (defun compile-and-check-shader (shader source)
   (gl:shader-source shader source)
@@ -274,7 +329,9 @@ void main () {
             (gl:attach-shader program v-shader)
             (gl:attach-shader program f-shader)
             (gl:link-program program)
-            (format t "~A~%" (gl:get-program-info-log program))
+            (format *error-output*
+                    "shader compilation log:~%~a~%"
+                    (gl:get-program-info-log program))
             (gl:use-program program)))
       program)))
 
@@ -284,36 +341,40 @@ void main () {
                    (shader-program                     shader-program)
                    (modelview-matrix-uniform-location  modelview-matrix-uniform-location)
                    (projection-matrix-uniform-location projection-matrix-uniform-location)
-                   (height-pixmap                      height-pixmap)) mesh
+                   (pixmap-heightmap                      pixmap-heightmap)) mesh
     (with-accessors ((width  pixmap:width)
-                     (height pixmap:height)) height-pixmap
-      (loop for y from 0 below (1- height) do
-        (loop for x from 0 below (1- width) do
-          ;; (v4)  v1 +------------+ v6
-          ;;          | \-         |
-          ;;          |   \-       |
-          ;;          |     \-     |
-          ;;          |       \-   |
-          ;;          |         \- |
-          ;;       v2 +-----------\+ v3 (v5)
+                     (height pixmap:height)) pixmap-heightmap
+      (loop for x from 0 below (1- height) do
+        (loop for z from 0 below (1- width) do
+          ;;                                       Z
+          ;;   <-----------------------------------+
+          ;;    (v4)  v1               v6          |
+          ;;             +------------+ ···        |
+          ;;             | \-         |            |
+          ;;             |   \-       |            |
+          ;;             |     \-     |            |
+          ;;             |       \-   |            |
+          ;;             |         \- |            |
+          ;;             +-----------\+ ···
+          ;;          v2               v3 (v5)    V
           (flet ((get-height (pixmap x y)
                    (to:d (a:first-elt (pixmap:pixel@ pixmap x y)))))
             (let* ((x-float (to:d x))
-                   (y-float (to:d y))
+                   (z-float (to:d z))
                    (v1 (vec3:vec3 x-float
-                                  y-float
-                                  (get-height height-pixmap x y)))
-                   (v2 (vec3:vec3 x-float
-                                  (1+ y-float)
-                                  (get-height height-pixmap x (1+ y))))
+                                  (get-height pixmap-heightmap x z)
+                                  z-float))
+                   (v2 (vec3:vec3 (1+ x-float)
+                                  (get-height pixmap-heightmap (1+ x) z)
+                                  z-float))
                    (v3 (vec3:vec3 (1+ x-float)
-                                  (1+ y-float)
-                                  (get-height height-pixmap (1+ x) (1+ y))))
+                                  (get-height pixmap-heightmap (1+ x) (1+ z))
+                                  (1+ z-float)))
                    (v4 v1)
                    (v5 v3)
-                   (v6 (vec3:vec3 (1+ x-float)
-                                  y-float
-                                  (get-height height-pixmap (1+ x) y))))
+                   (v6 (vec3:vec3 x-float
+                                  (get-height pixmap-heightmap x (1+ z))
+                                  (1+ z-float))))
               (vector-push-extend v1 vertices)
               (vector-push-extend v2 vertices)
               (vector-push-extend v3 vertices)
@@ -327,10 +388,10 @@ void main () {
                    (shader-program                     shader-program)
                    (modelview-matrix-uniform-location  modelview-matrix-uniform-location)
                    (projection-matrix-uniform-location projection-matrix-uniform-location)
-                   (height-pixmap                      height-pixmap)) object
+                   (pixmap-heightmap                      pixmap-heightmap)) object
     (setf vertices-count
-          (to:f* 3             ; each triangle contains three vertices
-            (square-pixmap-count-triangles (height-pixmap object))))
+          (to:f* 3 ; each triangle contains three vertices
+                 (square-pixmap-count-triangles (pixmap-heightmap object))))
     (setf shader-program (init-shaders))
     (setf modelview-matrix-uniform-location
           (gl:get-uniform-location shader-program "modelview_matrix"))
@@ -338,11 +399,20 @@ void main () {
           (gl:get-uniform-location shader-program "projection_matrix"))
     (fill-terrain-vertices object)
     (assert (= (length vertices) vertices-count))
+    (format *error-output* "debug~%")
+    (format *error-output* "terrain~%")
+    (debug-terrain-pixmap pixmap-heightmap)
+    (format *error-output* "vertices~%")
+    (loop for i across vertices do
+      (format *error-output* "~a~%" i))
+    (format *error-output* "vertices end~%")
     object))
 
-(defgeneric prepare-for-rendering-phong (object))
+(defparameter *terrain* nil)
 
-(defgeneric render-phong (object renderer))
+(defgeneric prepare-for-rendering (object))
+
+(defgeneric render (object))
 
 (defgeneric make-data-for-opengl (object))
 
@@ -364,7 +434,7 @@ void main () {
       (to:f* 2 (to:f* one-less-width one-less-width)))))
 
 (defmethod make-data-for-opengl ((object terrain-mesh))
-  (with-accessors ((height-pixmap                height-pixmap)
+  (with-accessors ((pixmap-heightmap             pixmap-heightmap)
                    (vertices-count               vertices-count)
                    (renderer-data-count-vertices renderer-data-count-vertices)
                    (renderer-data-vertices       renderer-data-vertices)
@@ -372,27 +442,31 @@ void main () {
                    (vbo                          vbo)
                    (vao                          vao)) object
     (%reset-data-renderer-count object)
-    (labels ((get-vertices (results offset vertices-index)
-               (let* ((v (elt vertices vertices-index)))
-                 (declare (vec3:vec3 v))
-                 (declare (fixnum offset vertices-index))
-                 (setf (fast-glaref results offset)       (elt v 0))
-                 (setf (fast-glaref results (+ 1 offset)) (elt v 1))
-                 (setf (fast-glaref results (+ 2 offset)) (elt v 2)))))
+    (labels ((get-vertices (results offset vertex)
+               (declare (vec3:vec3 vertex))
+               (declare (fixnum offset))
+               (let ((scaled (vec3:vec3 (to:d* 10.0 (elt vertex 0))
+                                        (elt vertex 1)
+                                        (to:d* 10.0 (elt vertex 2)))))
+                 (setf (fast-glaref results offset)       (elt scaled 0))
+                 (setf (fast-glaref results (+ 1 offset)) (elt scaled 1))
+                 (setf (fast-glaref results (+ 2 offset)) (elt scaled 2)))))
       (let ((gl-results-v (gl:alloc-gl-array :float (to:f* vertices-count 3))))
-        (loop for i in vertices
+        (loop for vertex across vertices
               for gl-array-offset from 0 by 3
               do
-                 (get-vertices gl-results-v gl-array-offset i))
+                 (get-vertices gl-results-v gl-array-offset vertex))
         (setf renderer-data-vertices gl-results-v)
+        (debug-gl-array renderer-data-vertices (to:f* vertices-count 3))
         ;; setup finalizer
-        (let ((gl-arr-vert     (slot-value object 'renderer-data-vertices))
-              (vbos            (slot-value object 'vbo))
-              (vaos            (slot-value object 'vao)))
+        (let ((gl-arr-vert (slot-value object 'renderer-data-vertices))
+              (vbos        (slot-value object 'vbo))
+              (vaos        (slot-value object 'vao)))
           (tg:finalize object
                        #'(lambda ()
                            (free-memory* (list gl-arr-vert)
-                                         vbos vaos))))))))
+                                         vbos
+                                         vaos))))))))
 
 (defun free-memory (vertices vbo vao)
   (gl:free-gl-array vertices)
@@ -444,22 +518,31 @@ void main () {
     (gl:bind-buffer :array-buffer (vbo-vertex-buffer-handle vbo))
     (gl:buffer-data :array-buffer :static-draw renderer-data-vertices)
     (with-unbind-vao
-        (gl:bind-vertex-array (vao-vertex-buffer-handle vao))
+      (gl:bind-vertex-array (vao-vertex-buffer-handle vao))
       ;; vertices
       (gl:bind-buffer :array-buffer (vbo-vertex-buffer-handle vbo))
-      (gl:vertex-attrib-pointer +attribute-position-location+ 3 :float 0 0 (mock-null-pointer))
+      (gl:vertex-attrib-pointer +attribute-position-location+
+                                3
+                                :float
+                                0
+                                0
+                                (mock-null-pointer))
       (gl:enable-vertex-attrib-array +attribute-position-location+))
     object))
 
 (defmethod calculate ((object terrain-mesh) dt)
-  (with-accessors ((vbo vbo) (render-aabb render-aabb)
-                   (renderer-data-aabb-obj-space renderer-data-aabb-obj-space)) object
-    (call-next-method)))
+  (build-projection-matrix *camera*
+                           *near*
+                           *far*
+                           *fov*
+                           (to:d (/ +sdl-frame-width+
+                                    +sdl-frame-height+)))
+  (look-at *camera*))
 
 (defun uniform-matrix (location dim matrices &optional (transpose t))
   (gl:uniform-matrix location dim matrices transpose))
 
-(defmethod render ((object terrain-mesh) renderer)
+(defmethod render ((object terrain-mesh))
   (declare (optimize (debug 0) (speed 3) (safety 0)))
   (with-accessors ((shader-program    shader-program)
                    (vertices-count    vertices-count)
@@ -487,23 +570,178 @@ void main () {
         (gl:bind-vertex-array (vao-vertex-buffer-handle vao))
         (gl:draw-arrays :triangles 0 (to:f* vertices-count 3))))))
 
+(defun initialize-rendering-function (wish-stream)
+  (lambda (context)
+    (let ((*wish* wish-stream))
+      (with-busy ((root-toplevel))
+        (3d:default-initialize-function context)
+        (setf *terrain* (make-instance 'terrain-mesh))
+        (prepare-for-rendering *terrain*)))))
+
+(defparameter *3d-context* nil)
+
+(defun stop-3d-animation ()
+  (when (and *animation*
+             (bt:threadp (animation-thread *animation*)))
+    (stop-drawing-thread *animation*)
+    (wait-thread *animation*)))
+
+(defun draw-terrain-thread ()
+  (loop while (not (stop-drawing-thread-p *animation*)) do
+    (ctx:sync *3d-context*)
+    (ctx:push-for-updating *3d-context*
+                           (lambda (dt)
+                             (calculate *terrain* dt))
+                           :force-push nil)
+    (ctx:push-for-rendering *3d-context*
+                            (lambda (dt)
+                              (declare (ignore dt))
+                              (render *terrain*))
+                            :force-push nil))
+  (format t "STOP terrain rendering!~%"))
+
+(a:define-constant +velocity+ 10f0 :test #'=)
+
 (defun demo-terrain ()
-  (let ((sdl-context nil))
-    (with-nodgui ()
-        (let* ((sdl-frame        (ctx:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
-               (button-quit      (make-instance 'button
-                                                :master  nil
-                                                :text    "quit"
-                                                :command (lambda ()
-                                                           (ctx:quit-sdl sdl-context)
-                                                           (exit-nodgui)))))
-          (grid sdl-frame       0 0)
-          (grid button-quit     1 0 :sticky :nw)
-          (grid-columnconfigure (root-toplevel) :all :weight 1)
-          (grid-rowconfigure    (root-toplevel) :all :weight 1)
-          (wait-complete-redraw)
-          (setf sdl-context (make-instance '3d:opengl-context
-                                           :event-loop-type :polling
-                                           :classic-frame   sdl-frame
-                                           :buffer-width    +sdl-frame-width+
-                                           :buffer-height   +sdl-frame-height+))))))
+  (with-nodgui ()
+    (let* ((instruction      (make-instance 'label
+                                            :wraplength 800
+                                            :text "use cursor keys to move around, 'e' and 'd' to change camera's height and 's' and 'd' keys to rotate the position where camera is currently pointing; rerun the demo to generate a new map."
+                                            :font (font-create "serif"
+                                                               :size 12
+                                                               :weight :bold)))
+           (sdl-frame        (ctx:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
+           (button-quit      (make-instance 'button
+                                            :master  nil
+                                            :text    "quit"
+                                            :command (lambda ()
+                                                       (stop-3d-animation)
+                                                       (ctx:quit-sdl *3d-context*)
+                                                       (exit-nodgui)))))
+      (grid instruction     0 0)
+      (grid sdl-frame       1 0)
+      (grid button-quit     2 0 :sticky :nw)
+      (grid-columnconfigure (root-toplevel) :all :weight 1)
+      (grid-rowconfigure    (root-toplevel) :all :weight 1)
+      (setf *3d-context*
+            (make-instance '3d:opengl-context
+                           :event-loop-type         :polling
+                           :initialization-function (initialize-rendering-function *wish*)
+                           :classic-frame           sdl-frame
+                           :buffer-width            +sdl-frame-width+
+                           :buffer-height           +sdl-frame-height+))
+      (force-focus sdl-frame)
+      (flet ((calculate-moving (from to velocity)
+               (let ((dir (vec3:vec3* (vec3:vec3-normalize (vec3:vec3- to from))
+                                      velocity)))
+                 (setf (elt dir 1) 0f0)
+                 dir)))
+        (bind sdl-frame
+              #$<1>$
+              (lambda (event)
+                (declare (ignore event))
+                (format *error-output* "clicked on 3D rendering window~%")))
+        (bind sdl-frame
+              #$<KeyPress-Up>$
+              (lambda (event)
+                (declare (ignore event))
+                ;; when we are modifying a resources used both by TK and
+                ;; SDL (*camera* in this case) we need to force the code
+                ;; that update the  resources to be executed  by the SDL
+                ;; (this constrains is especially true if we call openGL
+                ;; library  functions) the  following macro  ensure only
+                ;; the SDL  thread will execute  the code in  the body's
+                ;; macro
+                (ctx:in-renderer-thread (*3d-context* dt)
+                  (declare (ignore dt))
+                  (let ((dir (calculate-moving (pos *camera*)
+                                               (target *camera*)
+                                               +velocity+)))
+                    (setf (pos *camera*)
+                          (vec3:vec3+ (pos *camera*)
+                                      dir))
+                    (setf (target *camera*)
+                          (vec3:vec3+ (target *camera*)
+                                      dir))))))
+        (bind sdl-frame
+              #$<KeyPress-Down>$
+              (lambda (event)
+                (declare (ignore event))
+                (ctx:in-renderer-thread (*3d-context* dt)
+                  (declare (ignore dt))
+                  (let ((dir (calculate-moving (target *camera*)
+                                               (pos *camera*)
+                                               +velocity+)))
+                    (setf (pos *camera*)
+                          (vec3:vec3+ (pos *camera*)
+                                      dir))
+                    (setf (target *camera*)
+                          (vec3:vec3+ (target *camera*)
+                                      dir))))))
+        (bind sdl-frame
+              #$<KeyPress-Left>$
+              (lambda (event)
+                (declare (ignore event))
+                (ctx:in-renderer-thread (*3d-context* dt)
+                                        (declare (ignore dt))
+                  (setf (pos *camera*)
+                        (vec3:vec3+ (pos *camera*)
+                                    (vec3:vec3 +velocity+ 0f0 0f0)))
+                  (setf (target *camera*)
+                        (vec3:vec3+ (target *camera*)
+                                    (vec3:vec3 +velocity+ 0f0 0f0))))))
+        (bind sdl-frame
+              #$<KeyPress-Right>$
+              (lambda (event)
+                (declare (ignore event))
+                (ctx:in-renderer-thread (*3d-context* dt)
+                                        (declare (ignore dt))
+                  (setf (pos *camera*)
+                        (vec3:vec3+ (pos *camera*)
+                                    (vec3:vec3 (to:d- +velocity+) 0f0 0f0)))
+                  (setf (target *camera*)
+                        (vec3:vec3+ (target *camera*)
+                                    (vec3:vec3 (to:d- +velocity+) 0f0 0f0))))))
+        (bind sdl-frame
+              #$<KeyPress-w>$
+              (lambda (event)
+                (declare (ignore event))
+                (ctx:in-renderer-thread (*3d-context* dt)
+                                        (declare (ignore dt))
+                  (setf (pos *camera*)
+                        (vec3:vec3+ (pos *camera*)
+                                    (vec3:vec3 0.0 10.0 0.0)))
+                  (setf (target *camera*)
+                        (vec3:vec3+ (target *camera*)
+                                    (vec3:vec3 0.0 10.0 0.0))))))
+        (bind sdl-frame
+              #$<KeyPress-s>$
+              (lambda (event)
+                (declare (ignore event))
+                (ctx:in-renderer-thread (*3d-context* dt)
+                                        (declare (ignore dt))
+                  (setf (pos *camera*)
+                        (vec3:vec3+ (pos *camera*)
+                                    (vec3:vec3 0.0 -10.0 0.0)))
+                  (setf (target *camera*)
+                        (vec3:vec3+ (target *camera*)
+                                    (vec3:vec3 0.0 -10.0 0.0))))))
+        (bind sdl-frame
+              #$<KeyPress-a>$
+              (lambda (event)
+                (declare (ignore event))
+                (ctx:in-renderer-thread (*3d-context* dt)
+                                        (declare (ignore dt))
+                  (rotate-around-y-axe *camera* -1f0))))
+        (bind sdl-frame
+              #$<KeyPress-d>$
+              (lambda (event)
+                (declare (ignore event))
+                (ctx:in-renderer-thread (*3d-context* dt)
+                                        (declare (ignore dt))
+                  (rotate-around-y-axe *camera* 1f0)))))
+      (wait-complete-redraw)
+      (setf *animation*
+            (make-animation :thread
+                            (make-thread #'draw-terrain-thread
+                                         :name "terrain"))))))

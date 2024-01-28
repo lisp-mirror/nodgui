@@ -455,24 +455,20 @@
     ;; could  give a  nice transition,  if  the queue  is filled  by
     ;; leftover of plasma rendering events
     (clear-sdl-window)
-    (format t "pushing clear~%")
     (let ((rectangles (loop repeat 1000
                             collect
                             (multiple-value-list (make-blitting-rectangle width
                                                                           height)))))
       (mapcar (lambda (rectangle)
-                (format t "pushing~%")
                 (ctx:push-for-updating *pixel-buffer-context*
                                        (lambda (dt)
                                          (declare (ignore dt))
                                          (declare (optimize (speed 3) (debug 0)))
-                                         (format t "pushing update~%")
                                          t)
                                        :force-push t)
                 (ctx:push-for-rendering *pixel-buffer-context*
                                         (lambda (dt)
                                           (declare (ignore dt))
-                                          (format t "pushing rendering~%")
                                           (let ((rectangle-buffer (first  rectangle))
                                                 (rectangle-width  (second rectangle))
                                                 (rectangle-height (third  rectangle))
@@ -648,7 +644,10 @@
              (bt:threadp (animation-thread *animation*)))
     (stop-drawing-thread *animation*)
     (wait-thread *animation*)
-    (format t "anim ~a queue ~a~%" *animation* (ctx::rendering-queue *pixel-buffer-context*))))
+    (format t
+            "anim ~a queue ~a~%"
+            *animation*
+            (ctx::rendering-queue *pixel-buffer-context*))))
 
 (a:define-constant +context-width+ 320 :test #'=)
 

@@ -41,7 +41,7 @@ in column-major order."
   `(simple-array single-float (16)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (u:definline mref (matrix row column)
+  (defun mref (matrix row column)
     "Accessor for value in the specificed ROW and COLUMN in MATRIX."
     (declare (fixnum row column))
     (declare (matrix matrix))

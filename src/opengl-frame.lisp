@@ -1,29 +1,25 @@
 (in-package :nodgui.opengl-frame)
 
-(a:define-constant +channels-number+ 4 :test #'=)
-
-(defun initialize-opengl-rendering (window)
-  (declare (ignore window))
-  (gl:front-face :ccw)
+(defun default-initialize-function (context)
+  (declare (ignore context))
+  (gl:front-face :cw)
   (gl:enable :depth-test :cull-face)
   (gl:depth-func :less)
   (gl:polygon-mode :front-and-back :fill)
   (gl:clear-color 0 0 0 1)
   (gl:clear-depth 1.0))
 
-(defclass opengl-context (ctx:context)
-  ((initialization-function
-    :initform #'initialize-opengl-rendering
-    :initarg :initialization-function
-    :accessor initialization-function
-    :type function)))
+(defclass opengl-context (ctx:context) ())
 
 (defmethod initialize-instance :after ((object opengl-context)
                                        &key
+                                         (initialization-function #'default-initialize-function)
                                        &allow-other-keys)
   (assert (eq (ctx::event-loop-type object) :polling)
           nil
-          "only polling has been implemented so far"))
+          "only polling has been implemented so far")
+  (setf (ctx:initialization-function object) initialization-function)
+  (setf (ctx:rendering-thread object) (make-rendering-thread object)))
 
 (defun make-rendering-thread (context)
   (nodgui.utils:make-thread
@@ -51,17 +47,28 @@
                     ()
                     (let* ((millis  (ctx::get-milliseconds))
                            (dt      (to:f- (the fixnum millis)
-                                      (the fixnum time-spent))))
-                      (if (not (ctx:rendering-must-wait-p context))
+                                           (the fixnum time-spent))))
+                      (declare (fixnum millis dt))
+                      (when (not (ctx:modify-must-wait-p context))
+                        (let ((modify-fn (ctx:pop-for-modify context)))
+                          (declare (function modify-fn))
+                          (funcall modify-fn dt)))
+                      (if (not (or (ctx:rendering-must-wait-p context)
+                                   (ctx:updating-must-wait-p context)))
                           (if (>= dt minimum-delta-t)
-                              (let ((fn (ctx:pop-for-rendering context)))
-                                (declare (function fn))
+                              (let ((updating-fn  (ctx:pop-for-updating context))
+                                    (rendering-fn (ctx:pop-for-rendering context)))
+                                (declare (function updating-fn rendering-fn))
                                 (setf time-spent millis)
-                                (if (eq fn #'ctx::quit-sentinel)
-                                    (funcall fn dt)
+                                (if (eq rendering-fn #'ctx:quit-sentinel)
+                                    (funcall rendering-fn dt)
                                     (progn
+                                      (loop while (> dt minimum-delta-t) do
+                                        (funcall updating-fn dt)
+                                        (decf dt minimum-delta-t))
+                                      (funcall updating-fn dt)
                                       (gl:clear :color-buffer :depth-buffer)
-                                      (funcall fn dt)
+                                      (funcall rendering-fn dt)
                                       (gl:flush)
                                       (sdl2:gl-swap-window window))))
                               (sdl2:delay (to:f- minimum-delta-t dt)))

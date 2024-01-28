@@ -302,7 +302,9 @@
    #:vec3-perpendicular
    #:vec3-perp-dot-product
    #:vec3-rotate
-   #:vec3-cross-product))
+   #:vec3-cross-product
+   #:transform-point
+   #:transform-direction))
 
 (defpackage :nodgui.matrix
   (:use :cl
@@ -1440,7 +1442,10 @@
    #:push-for-updating
    #:pop-for-updating
    #:updating-must-wait-p
+   #:pop-for-modify
+   #:modify-must-wait-p
    #:make-sdl-frame
+   #:in-renderer-thread
    #:quit-sentinel
    #:sync))
 
@@ -1488,7 +1493,7 @@
                     (:pixbuff :nodgui.pixels-canvas))
   (:export
    #:opengl-context
-   #:initialize-opengl-rendering))
+   #:default-initialize-function))
 
 (defpackage :nodgui
   (:use :cl

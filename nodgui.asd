@@ -116,7 +116,9 @@
                                      (:file "misc-widget")))
                (:file "demo-tests")
                (:file "demo-pixels-buffer")
-               (:file "demo-3d-window")))
+               (:file "demo-3d-window")
+               (:static-file "demo/shaders/3d-demo.frag")
+               (:static-file "demo/shaders/3d-demo.vert")))
 
 (defsystem nodgui/test
   :encoding         :utf-8
