@@ -1,4 +1,5 @@
-;; This software is Copyright (c) 2003-2010  Peter Herth <herth@peter-herth.de>
+;; This software is Copyright © cage
+;; Portions Copyright (c) 2003-2010  Peter Herth <herth@peter-herth.de>
 ;; Portions Copyright (c) 2005-2010 Thomas F. Burdick
 ;; Portions Copyright (c) 2006-2010 Cadence Design Systems
 ;; Portions Copyright (c) 2010 Daniel Herring
@@ -16,8 +17,8 @@
 
 (defsystem nodgui
   :name             "Nodgui"
-  :version          "0.5.0.1"
-  :author           "Peter Herth"
+  :version          "0.6.0.0"
+  :author           "cage"
   :encoding         :utf-8
   :maintainer       "cage"
   :bug-tracker      "https://codeberg.org/cage/nodgui/issues"

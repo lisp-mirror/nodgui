@@ -1,3 +1,15 @@
+;; This software is Copyright © cage
+
+;; cage  grant you  the  rights  to  distribute and  use  this
+;; software as  governed by the  terms of  the Lisp Lesser  GNU Public
+;; License  (http://opensource.franz.com/preamble.html), known  as the
+;; LLGPL.
+
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT  ANY  WARRANTY;  without   even  the  implied  warranty  of
+;; MERCHANTABILITY or FITNESS  FOR A PARTICULAR PURPOSE.   See the GNU
+;; General Public License for more details.
+
 (in-package :nodgui.rendering-buffer-context)
 
 (a:define-constant +channels-number+ 4 :test #'=)
