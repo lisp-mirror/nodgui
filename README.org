@@ -77,8 +77,10 @@ be fixed with the release of an upcoming Tcl/Tk version.
 - alexandria;
 - bordeaux-threads;
 - cl-colors2;
+- cl-opengl;
 - cl-ppcre-unicode;
 - cl-unicode;
+- sdl2;
 - clunit2;
 - esrap;
 - flexi-streams;
