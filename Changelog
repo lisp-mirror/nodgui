@@ -1,5 +1,200 @@
+2024-02-01 cage
+
+
+	Merge branch 'add-sdl-window'
+
+2024-01-28 cage
+
+	* nodgui.asd,
+	* src/demo-3d-window.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/demo-tests.lisp,
+	* src/demo/shaders/3d-demo.frag,
+	* src/demo/shaders/3d-demo.vert,
+	* src/matrix.lisp,
+	* src/opengl-frame.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/rendering-buffer-context.lisp,
+	* src/vec3.lisp:
+
+	- added updating queue in sdl context class definition;
+	- make mainloop updating function more stable (maximum time delta will
+	be euqls to the framerate for each call);
+	- fixed flame spike.
+	- completed terrain rendering as a demo for openGL frame.
+
+2024-01-27 cage
+
+	* nodgui.asd,
+	* src/demo-3d-window.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/matrix.lisp,
+	* src/opengl-frame.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/rendering-buffer-context.lisp,
+	* src/vec3.lisp:
+
+	- added opengl-frame
+	- explicited float literal constants in matrix and vec3 types;
+	- refactored initialization function for 'pixel-buffer:context'.
+	- refactored out SDL rendering context in a new package;
+	- applied cosmetic changes to pixel buffer demo.
+
+2024-01-25 cage , bo-tato
+
+	* LICENSES.org,
+	* nodgui.asd,
+	* src/demo-3d-window.lisp,
+	* src/matrix.lisp,
+	* src/package.lisp,
+	* src/utils.lisp,
+	* src/vec2.lisp,
+	* src/vec3.lisp:
+
+	- added implementation of 4x4 matrix and 3d vector;
+	- added a draft for the heightmap viewer demo.
+	specify single float literal
+	needed to work for users with a non-default value of
+	*read-default-float-format*
+	Merge pull request 'specify single float literal' (#7) from
+	botato/nodgui:read-default-float-format-fix into master
+
+2024-01-17 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- fixed again the SDL mainloop (non blocking) to both prevents
+	skipping rendering and reduce the pressure on the CPU.
+
+2024-01-15 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- added delay to mainloop to get in sync with fps.
+	- inlined 'blur-kernel'.
+
+2024-01-13 cage
+
+	* src/demo-pixels-buffer.lisp:
+
+	- fixed typo in comment.
+	- optimized more fire demo.
+	- fixed regression in fire demo.
+
+2024-01-10 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- fixed timing of non blocking pixel buffer mainloop.
+
+2024-01-09 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/typed-operations.lisp:
+
+	- used LUT for sin and cosine function in pixel buffer demo;
+	- used caching for a few more random number generator in fire demo.
+	- reverted sizes of sdl window and context, in pixel buffer demo.
+
+2024-01-08 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/pixmap.lisp:
+
+	- inlined a bunch of pixels-buffer related functions;
+	- optimized a bit fire demo.
+	- removed infinite recursion in 'random-0-2'.
+	- added one more little optimization in 'blur-kernel'.
+
+2024-01-07 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- added translating and optimized a bit 'blit-transform'.
+
+2024-01-06 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/demo-tests.lisp,
+	* src/pixels-buffer.lisp:
+
+	- resized demo sdl-window to 320x240 pixels;
+	- checking borders of sdl buffer before drawing the lines, in pixels
+	buffer demo.
+	- removed empty line.
+	- changed appearance of fire demo.
+	- fixed pixels buffer's rendering thread when using blocking queue;
+	- added demo for rendering in a pixels buffer with blocking queue.
+
+2024-01-05 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- suggested the compiler to stack allocate a few variables.
+
+2024-01-04 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- activated all the optimization switches.
+	- added type hints to allow more optimization from the compiler.
+
+2023-12-31 cage
+
+	* nodgui.asd,
+	* src/demo-sdl.lisp,
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/pixels-buffer.lisp,
+	* src/pixmap.lisp,
+	* src/sdl.lisp,
+	* src/{demo-sdl.lisp => demo-pixels-buffer.lisp},
+	* src/{sdl.lisp => pixels-buffer.lisp}:
+
+	- renamed package: from 'nodgui.sdl-window' to 'nodgui.pixels-canvas'.
+	- moved some functions from 'pixels-buffer' to 'pixmap'.
+	- changed file names to something more meaningful.
+	- fixed variables of bilinear filtering to match the diagram.
+
+2023-12-25 cage
+
+	* README.org,
+	* nodgui.asd,
+	* src/pixmap.lisp:
+
+	- set maximum opacity for pixpam that laks alpha channel;
+	- save pixmap in PNG format.
+
+2023-12-24 cage
+
+	* src/demo-sdl.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/sdl.lisp,
+	* src/typed-operations.lisp:
+
+	- fixed 'blit';
+	- fixed 'blit*' and renamed to 'blit-transform';
+	- fixed 'with-buffer'.
+	-changed GUI for SDL demo;
+	- allowed passin of arbitrary parameters to 'make-sdl-frame'.
+	- changed wrong function call: 'file-namestring' became 'namestring'.
+
 2023-12-23 cage
 
+	* Changelog,
 	* src/demo-sdl.lisp,
 	* src/package.lisp,
 	* src/pixmap.lisp,
@@ -7,6 +202,7 @@
 
 	- added function 'blit*' (draft) that does scaling and rotation of the
 	source buffer into the destination buffer.
+	- updated changelog.
 
 2023-12-20 cage
 
