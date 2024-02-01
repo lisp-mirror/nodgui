@@ -29,6 +29,62 @@
            #:+wish-to-lisp-event-reply+
            #:+2pi+))
 
+(defpackage :nodgui.typed-operations
+  (:use :cl)
+  (:export  #:desired
+            #:d
+            #:d+
+            #:d*
+            #:d-
+            #:d/
+            #:dsqrt
+            #:daref
+            #:dmin
+            #:dmax
+            #:d>
+            #:d<
+            #:d>=
+            #:d<=
+            #:d=
+            #:drandom
+            #:dslot-value
+            #:dsetf
+            #:dabs
+            #:dplusp
+            #:dminusp
+            #:dzerop
+            #:dcos
+            #:dsin
+            #:dtan
+            #:dcosh
+            #:dsinh
+            #:dtanh
+            #:dacos
+            #:dasin
+            #:datan
+            #:dexp
+            #:dexpt
+            #:dlog
+            #:dfloor
+            #:dlerp
+            #:secure-dacos
+            #:degree->radians
+            #:radians->degree
+            #:+2pi+
+            #:parse-number->desired
+            #:f
+            #:f*
+            #:f/
+            #:f+
+            #:f-
+            #:faref
+            #:f<
+            #:f>
+            #:f<=
+            #:f>=
+            #:frem
+            #:fabs))
+
 (defpackage :nodgui.utils
   (:use :cl
         :alexandria
@@ -112,6 +168,7 @@
            #:down-arrow
            #:big-dot
            #:bullet
+           #:definline
            #:*thread-default-special-bindings*
            #:make-thread
            #:make-lock
@@ -120,7 +177,9 @@
            #:condition-wait
            #:condition-notify
            #:join-thread
-           #:destroy-thread))
+           #:destroy-thread
+           #:threadp
+           #:define-compiler-macro*))
 
 (defpackage :syncronized-queue
   (:use :cl
@@ -142,6 +201,7 @@
    #:queue
    #:pop
    #:push
+   #:push-forced
    #:emptyp
    #:queue-data
    #:queue-next
@@ -187,7 +247,7 @@
         :nodgui.constants
         :nodgui.utils)
   (:export
-      #:vec2-type
+   #:vec2-type
    #:vec2
    #:+vec2-zero+
    #:sequence->vec2
@@ -210,6 +270,82 @@
    #:vec2-perp-dot-product
    #:vec2-rotate))
 
+(defpackage :nodgui.vec3
+  (:use
+   :cl
+   :nodgui.constants
+   :nodgui.utils)
+  (:local-nicknames (:a  :alexandria)
+                    (:to :nodgui.typed-operations)
+                    (:u  :nodgui.utils))
+  (:export
+   #:vec3-type
+   #:vec3
+   #:+vec3-zero+
+   #:sequence->vec3
+   #:make-fresh-vec3
+   #:copy-vec3
+   #:vec3-x
+   #:vec3-y
+   #:vec3p
+   #:vec3*
+   #:vec3/
+   #:vec3~
+   #:vec3=
+   #:vec3+
+   #:vec3-
+   #:vec3-negate
+   #:vec3-length
+   #:vec3-normalize
+   #:vec3-safe-normalize
+   #:vec3-dot-product
+   #:vec3-perpendicular
+   #:vec3-perp-dot-product
+   #:vec3-rotate
+   #:vec3-cross-product
+   #:transform-point
+   #:transform-direction))
+
+(defpackage :nodgui.matrix
+  (:use :cl
+        :nodgui.vec3)
+  (:local-nicknames (:a  :alexandria)
+                    (:to :nodgui.typed-operations)
+                    (:u  :nodgui.utils))
+  (:export
+   #:matrix
+   #:matrix~
+   #:matrix=
+   #:mref
+   #:matrixp
+   #:zero-matrix
+   #:identity-matrix
+   #:matrix*
+   #:translate
+   #:translate*
+   #:scale
+   #:rotate
+   #:rotate*
+   #:rotate-around
+   #:reorient
+   #:traspose-matrix
+   #:inverse-matrix
+   #:matrix-determinant
+   #:extract-translation-vec
+   #:extract-translation-mat
+   #:copy-matrix-element
+   #:clone-matrix
+   #:nremove-rotation
+   #:remove-rotation
+   #:ortho
+   #:ortho*
+   #:perspective
+   #:perspective-fov
+   #:infinite-perspective
+   #:frustum
+   #:look@
+   #:look@*))
+
 (defpackage :nodgui.fit-line
   (:use :cl
         :alexandria
@@ -224,7 +360,19 @@
         :nodgui.utils
         :nodgui.ubvec4
         :nodgui.vec2)
+  (:local-nicknames (:a  :alexandria)
+                    (:to :nodgui.typed-operations)
+                    (:u  :nodgui.utils))
   (:export
+   #:extract-red-component
+   #:extract-green-component
+   #:extract-blue-component
+   #:extract-alpha-component
+   #:assemble-color
+   #:make-buffer
+   #:make-buffer-elements
+   #:free-buffer-memory
+   #:with-buffer
    #:make-bits-array
    #:pixmap
    #:width
@@ -1268,6 +1416,85 @@
   (:export
    #:nodgui-syntax))
 
+(defpackage nodgui.rendering-buffer-context
+  (:use :cl)
+  (:local-nicknames (:a   :alexandria)
+                    (:bq  :syncronized-queue)
+                    (:q   :nodgui.non-blocking-queue)
+                    (:u   :nodgui.utils))
+  (:export
+   #:fps->delta-t
+   #:get-milliseconds
+   #:context
+   #:width
+   #:height
+   #:initialization-function
+   #:rendering-thread
+   #:queue
+   #:time-spent
+   #:minimum-delta-t
+   #:events-polling-p
+   #:window
+   #:quit-sdl
+   #:push-for-rendering
+   #:pop-for-rendering
+   #:rendering-must-wait-p
+   #:push-for-updating
+   #:pop-for-updating
+   #:updating-must-wait-p
+   #:pop-for-modify
+   #:modify-must-wait-p
+   #:make-sdl-frame
+   #:in-renderer-thread
+   #:quit-sentinel
+   #:sync))
+
+(defpackage nodgui.pixels-canvas
+  (:use :cl)
+  (:import-from :alexandria :define-constant)
+  (:local-nicknames (:a   :alexandria)
+                    (:p   :esrap)
+                    (:bq  :syncronized-queue)
+                    (:q   :nodgui.non-blocking-queue)
+                    (:to  :nodgui.typed-operations)
+                    (:u   :nodgui.utils)
+                    (:ctx :nodgui.rendering-buffer-context)
+                    (:pix :nodgui.pixmap))
+  (:export
+   #:buffer
+   #:pixel-buffer-context
+   #:pixel@
+   #:set-pixel@
+   #:with-displace-pixel
+   #:color-channel-lerp
+   #:blending-function-combine
+   #:blending-function-replace
+   #:blending-function-add
+   #:*blending-function*
+   #:sum-pixels
+   #:blit
+   #:blit-transform
+   #:clear-buffer
+   #:fill-rectangle
+   #:fill-circle
+   #:draw-circle
+   #:draw-line))
+
+(defpackage nodgui.opengl-frame
+  (:use :cl)
+  (:import-from :alexandria :define-constant)
+  (:local-nicknames (:a       :alexandria)
+                    (:bq      :syncronized-queue)
+                    (:q       :nodgui.non-blocking-queue)
+                    (:to      :nodgui.typed-operations)
+                    (:u       :nodgui.utils)
+                    (:pix     :nodgui.pixmap)
+                    (:ctx     :nodgui.rendering-buffer-context)
+                    (:pixbuff :nodgui.pixels-canvas))
+  (:export
+   #:opengl-context
+   #:default-initialize-function))
+
 (defpackage :nodgui
   (:use :cl
         #+(or :cmu :scl) :ext
@@ -1900,6 +2127,15 @@
         :nodgui.shapes
         :nodgui.mw)
   (:shadow :alexandria :rotate)
+  (:local-nicknames (:a      :alexandria)
+                    (:q      :nodgui.non-blocking-queue)
+                    (:to     :nodgui.typed-operations)
+                    (:ctx    :nodgui.rendering-buffer-context)
+                    (:px     :nodgui.pixels-canvas)
+                    (:pixmap :nodgui.pixmap)
+                    (:matrix :nodgui.matrix)
+                    (:vec3   :nodgui.vec3)
+                    (:3d     :nodgui.opengl-frame))
   (:export
    #:demo))
 

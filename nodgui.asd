@@ -37,16 +37,23 @@
                :zpng
                :flexi-streams
                :bordeaux-threads
+               :sdl2
+               :cl-opengl
+               :static-vectors
+               :trivial-garbage
                #-asdf3 :uiop)
   :components ((:file "package")
                (:file "config")
                (:file "constants")
+               (:file "typed-operations")
                (:file "utils")
                (:file "synchronized-queue")
                (:file "non-blocking-queue")
                (:file "base64")
                (:file "ubvec4")
                (:file "vec2")
+               (:file "vec3")
+               (:file "matrix")
                (:file "fit-line")
                (:file "pixmap")
                (:file "sanitize")
@@ -98,6 +105,9 @@
                (:file "winfo")
                (:file "trivial-debugger")
                (:file "nodgui-mw")
+               (:file "rendering-buffer-context")
+               (:file "pixels-buffer")
+               (:file "opengl-frame")
                (:module tklib
                         :components ((:file "package")
                                      (:file "calendar")
@@ -105,7 +115,11 @@
                                      (:file "plot")
                                      (:file "swaplist")
                                      (:file "misc-widget")))
-               (:file "demo-tests")))
+               (:file "demo-tests")
+               (:file "demo-pixels-buffer")
+               (:file "demo-3d-window")
+               (:static-file "demo/shaders/3d-demo.frag")
+               (:static-file "demo/shaders/3d-demo.vert")))
 
 (defsystem nodgui/test
   :encoding         :utf-8

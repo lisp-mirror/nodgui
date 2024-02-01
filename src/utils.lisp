@@ -555,3 +555,18 @@
 
 (definline destroy-thread (thread)
   (bt:destroy-thread thread))
+
+(definline threadp (maybe-thread)
+  (bt:threadp maybe-thread))
+
+(defmacro define-compiler-macro* (name &body args)
+  (with-gensyms (low-level-function-name)
+    `(progn
+       (defun ,low-level-function-name (,@args)
+         (,name ,@args))
+       (define-compiler-macro ,name (&whole form ,@args)
+         (let ((low-funname ',low-level-function-name))
+           (if (every #'constantp (list ,@args))
+               (funcall (symbol-function low-funname) ,@args)
+               (progn
+                 form)))))))

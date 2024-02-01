@@ -90,7 +90,7 @@
 (defmethod make-image ((object string) &optional (w nil) (h nil) (channels 3))
   "If object is a valid local file path is threated as a  pathname, otherwise the
 string must  be base64 encoded image.  Note in both cases  only PNG or
-GIF are supported but if tjimg is used more format are available!"
+GIF are supported but if tk-img is used more format are available!"
   (declare (ignore w h channels))
   (if (file-exists-p object)
       (make-image (namestring->pathname object))
@@ -134,17 +134,33 @@ repscts the alpha channnel" )
       (t
        (make-image-in-tcl)))))
 
+(defun bits-pixmap->bits-octets (bits-pixmap width height channels)
+  (let ((bytes (make-fresh-array (* width height channels) #x00 '(unsigned-byte 8) t)))
+    (loop for pixmap-index from 0 below (* width height)
+          for octet-index from 0 by channels do
+      (let* ((pixel (elt bits-pixmap pixmap-index))
+             (r     (extract-red-component   pixel))
+             (g     (extract-green-component pixel))
+             (b     (extract-blue-component  pixel)))
+        (setf (elt bytes    octet-index)    r
+              (elt bytes (+ octet-index 1)) g
+              (elt bytes (+ octet-index 2)) b)))
+    bytes))
+
 (defmethod make-image ((object pixmap) &optional (w nil) (h nil) (channels 4))
   (declare (ignore w h channels))
   (with-read-data (nil)
     (sync-data-to-bits object)
     (let* ((res (make-instance 'photo-image)))
       (let ((*max-line-length* nil)
-            (data-bits (make-image-data (bits   object)
+            (data-bits (make-image-data (bits-pixmap->bits-octets (bits object)
+                                                                  (width  object)
+                                                                  (height object)
+                                                                  3)
                                         (width  object)
                                         (height object)
                                         3
-                                        :column-offset 4)))
+                                        :column-offset 3)))
         (with-send-batch
             (format-wish (tclize `(senddatastring [ ,(sanitize (name res)) " "
                                                   put

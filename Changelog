@@ -1,21 +1,151 @@
-2023-11-25 cage <cage@invalid>
+2023-12-23 cage
 
-        * Changelog,
-        * NEWS.org,
-        * nodgui.asd,
-        * src/package.lisp,
-        * src/pixmap.lisp:
+	* src/demo-sdl.lisp,
+	* src/package.lisp,
+	* src/pixmap.lisp,
+	* src/sdl.lisp:
 
-        - increased version number;
-        - added code to save JPG files.
-        - updated changelog.
-        - updated news file.
-        exporting 'save-pixmap'.
-        - fixed saving of JPG.
-        - change  class of  return type  of methods  that transform  pixmap to
-        match the arguments passed to function
-        for example 'scale-nearest' would returns an istance of 'pixmap' even
-        if a 'jpeg' was passed; now it returns a 'jpeg' instance.
+	- added function 'blit*' (draft) that does scaling and rotation of the
+	source buffer into the destination buffer.
+
+2023-12-20 cage
+
+	* src/demo-sdl.lisp,
+	* src/package.lisp,
+	* src/sdl.lisp,
+	* src/typed-operations.lisp:
+
+	- added code to draw rectangles, filled circles and lines.
+	- change colors for lines demo.
+	- modified SDL main loop.
+
+2023-12-16 cage
+
+	* src/demo-sdl.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp,
+	* src/pixmap.lisp,
+	* src/sdl.lisp:
+
+	- implemented procedures to blit pixmaps to sdl window;
+	- changed internal representation of bitmap data for pixmap to make it
+	compatible with sdl format.
+	- added a note about bounds checking.
+	- removed call to 'sync' for blitting demo and using mapcar instead of
+	a loop.
+
+2023-12-15 cage
+
+	* src/demo-sdl.lisp,
+	* src/package.lisp,
+	* src/sdl.lisp:
+
+	- fixed and improved blitting function;
+	- added a counple of blitting blending modes;
+	- added a demo to show blitting.
+	- fixed reversed color channels in blending function.
+
+2023-12-14 cage
+
+	* src/demo-sdl.lisp,
+	* src/non-blocking-queue.lisp,
+	* src/package.lisp,
+	* src/sdl.lisp,
+	* test/test-non-blocking-queue.lisp:
+
+	- allowed a maximum size for non blocking queue.
+	- used queue with maximum size when rendering in the SDL window;
+	- removed optimizations directives;
+	- allowed overfilling of non blocking queue.
+	- readded call to 'sync'.
+
+2023-12-13 cage
+
+	* src/demo-sdl.lisp:
+
+	- removed empty line.
+
+2023-12-09 cage
+
+	* README.org,
+	* nodgui.asd,
+	* src/demo-sdl.lisp,
+	* src/demo-tests.lisp,
+	* src/non-blocking-queue.lisp,
+	* src/package.lisp,
+	* src/sdl.lisp,
+	* src/typed-operations.lisp,
+	* src/utils.lisp,
+	* test/test-non-blocking-queue.lisp:
+
+	- added new widget: an SDL2 window, useful for drawing block of pixels
+	and animations
+
+2023-12-06 cage
+
+	* nodgui.asd,
+	* {src/tests => test}/all-tests.lisp,
+	* {src/tests => test}/package.lisp,
+	* {src/tests => test}/test-event-parser.lisp,
+	* {src/tests => test}/test-nodgui.lisp,
+	* {src/tests => test}/test-non-blocking-queue.lisp,
+	* {src/tests => test}/test-styles.lisp,
+	* {src/tests => test}/test-tcl-emitter.lisp,
+	* {src/tests => test}/test-text-indices.lisp:
+
+	- moved tests in another system.
+	- increased version number.
+
+2023-12-02 cage
+
+	* nodgui.asd,
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/non-blocking-queue.lisp,
+	* src/package.lisp,
+	* src/synchronized-queue.lisp,
+	* src/tests/{non-blocking-queue.lisp => test-non-blocking-queue.lisp},
+	* src/toplevel.lisp,
+	* src/utils.lisp,
+	* src/winfo.lisp,
+	* src/wish-communication.lisp:
+
+	- reimplemented queue, this implementation should be faster than the
+	previous.
+	- removed duplicated function definition: 'window-id';
+	- wrapped bordeaux threads procedures.
+
+2023-12-01 cage
+
+	* nodgui.asd,
+	* src/non-blocking-queue.lisp,
+	* src/package.lisp,
+	* src/tests/non-blocking-queue.lisp,
+	* src/tests/package.lisp:
+
+	- added a non blocking (no condition variables) queue implementation.
+
+2023-11-25 cage
+
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
+	* src/package.lisp,
+	* src/pixmap.lisp:
+
+	- increased version number;
+	- added code to save JPG files.
+	- updated changelog.
+	- updated news file.
+	exporting 'save-pixmap'.
+	- fixed saving of JPG.
+	- change  class of  return type  of methods  that transform  pixmap to
+	match the arguments passed to function
+	for example 'scale-nearest' would returns an istance of 'pixmap' even
+	if
+	a 'jpeg' was passed; now it returns a 'jpeg' instance.
+	- updated changelog.
 
 2023-11-20 cage
 
