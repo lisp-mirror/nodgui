@@ -25,8 +25,9 @@
   - tooltip
   - searchable listbox
   - password entry
+  - openGL frame
   - …
-- =tklib=-derived widgets:
+- ~tklib~-derived widgets:
   - calendar
   - notify-window (a bit buggy, unfortunately)
   - plots and charts: dot-plot, bar-chart…
@@ -131,9 +132,13 @@ All of the above libraries are available on quicklisp.
 * License
 
  Portions Copyright © cage
+
  Portions Copyright (c) 2003-2010  Peter Herth
+
  Portions Copyright (c) 2005-2010 Thomas F. Burdick
+
  Portions Copyright (c) 2006-2010 Cadence Design Systems
+
  Portions Copyright (c) 2010 Daniel Herring
 
  The authors grant you the rights to distribute and use this software as governed by the terms

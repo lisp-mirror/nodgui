@@ -11,7 +11,7 @@
     https://codeberg.org/cage/nodgui/issues/5
 
   - [bugfix]
-   - this version should compile even when binging *READ-DEFAULT-FLOAT-FORMAT* to a value different from: 'float
+   - this version should compile even when binging *READ-DEFAULT-FLOAT-FORMAT* to a value different from: 'single-float
 
 ** 2023-11-25 Version 0.5.0.0
 
