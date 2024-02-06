@@ -819,7 +819,6 @@ The function THEME-NAMES will return both the default and the custom themes.")
     (grab-release (modal-toplevel-root-widget object))
     (withdraw (modal-toplevel-root-widget object))
     (flush-wish)
-    (push-enqueued-event :ignored-break)
     (break-mainloop)))
 
 (defmacro with-modal-toplevel ((toplevel-struct &rest toplevel-initargs) &body body)
