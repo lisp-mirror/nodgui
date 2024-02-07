@@ -769,8 +769,14 @@ The function THEME-NAMES will return both the default and the custom themes.")
   (format-wish "focus -force ~a" (widget-path widget))
   widget)
 
+(defun bind-tag-set-focus-next (focus-widget widget-to-pass-focus)
+  (format-wish "bind ~a <Tab> { focus ~a; break }"
+               (widget-path focus-widget)
+               (widget-path widget-to-pass-focus)))
+
 (defun set-focus-next (widget next)
-  (format-wish "bind ~a <Tab> { focus ~a; break }" (widget-path widget) (widget-path next)))
+  (warn "Please, do not use `set-focus-next', use `bind-tag-set-focus-next' instead")
+  (bind-tag-set-focus-next widget next))
 
 (defun cm (tree widget-path)
   (cond

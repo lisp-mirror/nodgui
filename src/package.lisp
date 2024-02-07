@@ -1885,6 +1885,7 @@
            #:set-coords
            #:set-coords*
            #:set-focus-next
+           #:bind-tag-set-focus-next
            #:set-geometry
            #:set-geometry-wh
            #:set-geometry-xy
