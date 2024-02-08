@@ -2053,7 +2053,8 @@ will shift the selected item up o down respectively."))
                                        confirmed-password))
                      (setf new-password :not-matching))
                    (exit-from-modal-toplevel toplevel))))
-          (let* ((old-password-entry     (make-instance 'password-entry
+          (let* ((padding                5)
+                 (old-password-entry     (make-instance 'password-entry
                                                         :show-password nil
                                                         :master        toplevel-widget))
                  (old-password-label     (make-instance 'label
@@ -2082,17 +2083,17 @@ will shift the selected item up o down respectively."))
                                                           (compare-password new-password-entry
                                                                             confirm-password-entry
                                                                             old-password-entry)))))
-            (grid label                  0 0 :columnspan 2 :sticky :news)
-            (grid old-password-label     1 0 :sticky :news)
-            (grid old-password-entry     2 0 :sticky :news)
-            (set-focus-next old-password-entry new-password-entry)
-            (grid new-password-label     3 0 :sticky :news)
-            (grid new-password-entry     4 0 :sticky :news)
-            (set-focus-next new-password-entry confirm-password-entry)
-            (grid confirm-password-label 5 0 :sticky :news)
-            (grid confirm-password-entry 6 0 :sticky :news)
-            (set-focus-next confirm-password-entry old-password-entry)
-            (grid ok-button 7 0 :sticky :news)))))
+            (grid label                  0 0 :sticky :news :padx padding)
+            (grid old-password-label     1 0 :sticky :news :padx padding)
+            (grid old-password-entry     2 0 :sticky :news :padx padding)
+            (bind-tag-set-focus-next old-password-entry new-password-entry)
+            (grid new-password-label     3 0 :sticky :news :padx padding)
+            (grid new-password-entry     4 0 :sticky :news :padx padding)
+            (bind-tag-set-focus-next new-password-entry confirm-password-entry)
+            (grid confirm-password-label 5 0 :sticky :news :padx padding)
+            (grid confirm-password-entry 6 0 :sticky :news :padx padding)
+            (bind-tag-set-focus-next confirm-password-entry old-password-entry)
+            (grid ok-button 7 0 :sticky :news :padx padding)))))
     (if (eq new-password :not-matching)
         (error no-matching-error-text)
         (values old-password
