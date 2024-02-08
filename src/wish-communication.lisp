@@ -613,6 +613,10 @@ error-strings) are ignored."
     (t
      (push-enqueued-event event))))
 
+(defparameter *popped-mainloop-event-lock* (make-lock "popped-mainloop-event-lock"))
+
+(defparameter *popped-mainloop-event-condvar* (make-condition-variable))
+
 (let ((mainloop-name -1))
   (defun start-main-loop (&key (thread-special-bindings *thread-default-special-bindings*))
     (dbg "start mainloop")
@@ -638,6 +642,9 @@ error-strings) are ignored."
                                              (dbg "pop from mainloop ~a ~a"
                                                   current-name
                                                   event)
+                                             (when (null (check-enqueued-event))
+                                               (with-lock-held (*popped-mainloop-event-lock*)
+                                                 (condition-notify *popped-mainloop-event-condvar*)))
                                              (with-nodgui-handlers ()
                                                (with-flush
                                                    (process-one-event event)))))
