@@ -568,16 +568,16 @@ error-strings) are ignored."
   (when event
     (dbg "event:~s<=~%" event)
     (cond
-     ((not (listp event)) nil)
-     ((eq (first event) :callback)
-      (let ((params (rest event)))
-        (callback (first params) (rest params))))
-     ((eq (first event) :event)
-      (let* ((params (rest event))
-             (callback-name (first params))
-             (evp (rest params))
-             (event (construct-tk-event evp)))
-        (callback callback-name (list event))))
+      ((not (listp event)) nil)
+      ((eq (first event) :callback)
+       (let ((params (rest event)))
+         (callback (first params) (rest params))))
+      ((eq (first event) :event)
+       (let* ((params (rest event))
+              (callback-name (first params))
+              (evp (rest params))
+              (event (construct-tk-event evp)))
+         (callback callback-name (list event))))
       ((eq (first event) :keepalive)
        (dbg "Ping from wish: ~{~A~^~}~%" (rest event)))
       ((eq (first event) :debug)
@@ -596,7 +596,7 @@ error-strings) are ignored."
 ;;      while (setf event (read-event))
 ;;      do (with-send-batch (process-one-event event)))))
 
-(defparameter *inside-mainloop* ())
+(defparameter *event-popped-from-mainloop* nil)
 
 (defun manage-wish-output (event)
   (dbg "manage ~a from" event)
@@ -619,8 +619,8 @@ error-strings) are ignored."
 
 (let ((mainloop-name -1))
   (defun start-main-loop (&key (thread-special-bindings *thread-default-special-bindings*))
-    (dbg "start mainloop")
     (incf mainloop-name)
+    (dbg "start mainloop ~a" mainloop-name)
     (let ((wish-process *wish*)
           (coordination-data (make-mainloop-coordination :mainloop-name mainloop-name)))
       (push-mainloop-coordination-data)
@@ -647,9 +647,10 @@ error-strings) are ignored."
                                                  (condition-notify *popped-mainloop-event-condvar*)))
                                              (with-nodgui-handlers ()
                                                (with-flush
-                                                   (process-one-event event)))))
+                                                   (let ((*event-popped-from-mainloop* t))
+                                                     (process-one-event event))))))
                                   (dbg "main-loop ~a terminated" current-name)))
-                              :name "main loop"
+                              :name             (format nil "main loop ~a" mainloop-name)
                               :initial-bindings thread-special-bindings))))))
 
 (defun filter-keys (desired-keys keyword-arguments)

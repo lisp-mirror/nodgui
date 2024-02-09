@@ -930,22 +930,22 @@
                  (lambda ()
                    (setf res (text entry))
                    (exit-from-modal-toplevel toplevel))))
-        (let* ((label  (make-instance 'label
-                                      :master toplevel-widget
-                                      :text   message))
-               (entry  (make-instance 'entry
-                                      :text   text
-                                      :master toplevel-widget))
-               (button (make-instance 'button
-                                      :text    button-message
-                                      :command (close-window-cb entry)
-                                      :master toplevel-widget)))
-          (bind entry #$<Return>$ (lambda (a)
-                                    (declare (ignore a))
-                                    (funcall (close-window-cb entry))))
-          (grid label  0 0 :sticky :n :padx padding-x :pady padding-y)
-          (grid entry  1 0 :sticky :n :padx padding-x :pady padding-y)
-          (grid button 2 0 :sticky :n :padx padding-x :pady padding-y)))))
+          (let* ((label  (make-instance 'label
+                                        :master toplevel-widget
+                                        :text   message))
+                 (entry  (make-instance 'entry
+                                        :text   text
+                                        :master toplevel-widget))
+                 (button (make-instance 'button
+                                        :text    button-message
+                                        :command (close-window-cb entry)
+                                        :master toplevel-widget)))
+            (bind entry #$<Return>$ (lambda (a)
+                                      (declare (ignore a))
+                                      (funcall (close-window-cb entry))))
+            (grid label  0 0 :sticky :n :padx padding-x :pady padding-y)
+            (grid entry  1 0 :sticky :n :padx padding-x :pady padding-y)
+            (grid button 2 0 :sticky :n :padx padding-x :pady padding-y)))))
     res))
 
 (alexandria:define-constant +selection-mode-allow-double-click+ '(:single :browse) :test #'equalp)

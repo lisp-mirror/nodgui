@@ -568,16 +568,20 @@
 
 (defun demo-modal (&key theme)
   (with-nodgui (:theme theme)
-   (let* ((b (make-instance 'button :text "Input"
-                            :command (lambda ()
-                                       (let ((erg (text-input-dialog *tk*
-                                                                     "Enter a string:"
-                                                                     "String input")))
-                                         (if erg
-                                             (format t "input was: ~a~%" erg)
-                                           (format t "input was cancelled~%"))
-                                       (finish-output))))))
-     (pack b))))
+    (let* ((b (make-instance 'button
+                             :text "Input"
+                             :command (lambda ()
+                                        (format t
+                                                "lambda *event-popped-from-mainloop* ~a~%"
+                                                nodgui::*event-popped-from-mainloop*)
+                                        (let ((erg (text-input-dialog *tk*
+                                                                      "Enter a string:"
+                                                                      "String input")))
+                                          (if erg
+                                              (format t "input was: ~a~%" erg)
+                                              (format t "input was cancelled~%"))
+                                          (finish-output))))))
+      (pack b))))
 
 (defun demo-combo (&key theme)
   (setf *debug-tk* t)

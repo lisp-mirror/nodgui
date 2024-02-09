@@ -846,27 +846,29 @@ The function THEME-NAMES will return both the default and the custom themes.")
                                                    (exit-from-modal-toplevel ,toplevel-struct)))
                                        (grab ,toplevel)
                                        (with-lock-held ((mainloop-coordination-pause-lock ,parent-mainloop-coordination-data))
-                                         (setf (mainloop-coordination-pause ,parent-mainloop-coordination-data) t))
-                                       ;; ensure  at  least  an  event
-                                       ;; (albeit  ignored) is  pushed
-                                       ;; in the event queue to unlock
-                                       ;; the  parent   mainloop  that
-                                       ;; could  be stuck  waiting for
-                                       ;; the queue  (see line  641 of
-                                       ;; "wish-communication.lisp")
-                                       (push-enqueued-event :ignored)
-                                       ;; this  code ensure  the event
-                                       ;; queue   is    empty   before
-                                       ;; starting  a  new loop,  this
-                                       ;; procedure   is   needed   to
-                                       ;; ensure  the  mainloops  does
-                                       ;; not   steals   events   each
-                                       ;; others
-                                       (with-lock-held (*popped-mainloop-event-lock*)
-                                         (loop while (not (check-enqueued-event))
-                                               do
-                                                  (condition-wait *popped-mainloop-event-condvar*
-                                                                  *popped-mainloop-event-lock*)))
+                                         (setf (mainloop-coordination-pause ,parent-mainloop-coordination-data)
+                                               t))
+                                       (when (not *event-popped-from-mainloop*)
+                                         ;; ensure  at  least  an  event
+                                         ;; (albeit  ignored) is  pushed
+                                         ;; in the event queue to unlock
+                                         ;; the  parent   mainloop  that
+                                         ;; could  be stuck  waiting for
+                                         ;; the queue  (see line  641 of
+                                         ;; "wish-communication.lisp")
+                                         (push-enqueued-event :ignored)
+                                         ;; this  code ensure  the event
+                                         ;; queue   is    empty   before
+                                         ;; starting  a  new loop,  this
+                                         ;; procedure   is   needed   to
+                                         ;; ensure  the  mainloops  does
+                                         ;; not   steals   events   each
+                                         ;; others
+                                         (with-lock-held (*popped-mainloop-event-lock*)
+                                           (loop while (check-enqueued-event)
+                                                 do
+                                                    (condition-wait *popped-mainloop-event-condvar*
+                                                                    *popped-mainloop-event-lock*))))
                                        (push-mainloop-thread)
                                        (start-main-loop :thread-special-bindings
                                                         ,(getf toplevel-initargs
@@ -882,10 +884,12 @@ The function THEME-NAMES will return both the default and the custom themes.")
                                          (condition-notify (mainloop-coordination-pause-condvar ,parent-mainloop-coordination-data)))
                                        (modal-toplevel-results ,toplevel-struct)))
                                    :initial-bindings
-                                   ,(or (getf toplevel-initargs
-                                              :modal-toplevel-thread-special-bindings)
-                                        (getf toplevel-initargs
-                                              :main-loop-thread-special-bindings)))))
+                                   (append (list (cons '*event-popped-from-mainloop*
+                                                       *event-popped-from-mainloop*))
+                                           ,(or (getf toplevel-initargs
+                                                      :modal-toplevel-thread-special-bindings)
+                                                (getf toplevel-initargs
+                                                      :main-loop-thread-special-bindings))))))
        (join-thread ,modal-widget-thread)
        (modal-toplevel-results ,toplevel-struct))))
 
