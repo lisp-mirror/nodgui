@@ -2098,3 +2098,60 @@ will shift the selected item up o down respectively."))
         (error no-matching-error-text)
         (values old-password
                 new-password))))
+
+(defun add-password-dialog (parent
+                            title
+                            message
+                            new-password-text
+                            confirm-password-text
+                            no-matching-error-text
+                            &key (button-message "OK"))
+  (let ((new-password nil))
+    (with-modal-toplevel (toplevel :title title)
+      (let ((toplevel-widget (modal-toplevel-root-widget toplevel)))
+        (transient toplevel-widget parent)
+        (flet ((compare-password (new-password-entry confirm-password-entry)
+                 (let ((confirmed-password (if (not (stringp (secret-string confirm-password-entry)))
+                                               ""
+                                               (secret-string confirm-password-entry))))
+                   (if (stringp (secret-string new-password-entry))
+                       (setf new-password (secret-string new-password-entry))
+                       (setf new-password ""))
+                   (when (not (string= new-password
+                                       confirmed-password))
+                     (setf new-password :not-matching))
+                   (exit-from-modal-toplevel toplevel))))
+          (let* ((padding                5)
+                 (new-password-entry     (make-instance 'password-entry
+                                                        :show-password nil
+                                                        :master        toplevel-widget))
+                 (new-password-label     (make-instance 'label
+                                                        :master toplevel-widget
+                                                        :text   new-password-text))
+                 (confirm-password-entry (make-instance 'password-entry
+                                                        :show-password nil
+                                                        :master        toplevel-widget))
+                 (confirm-password-label (make-instance 'label
+                                                        :master toplevel-widget
+                                                        :text   confirm-password-text))
+                 (message-label          (make-instance 'label
+                                                        :master toplevel-widget
+                                                        :text   message))
+                 (ok-button              (make-instance 'button
+                                                        :text   button-message
+                                                        :master toplevel-widget
+                                                        :command
+                                                        (lambda ()
+                                                          (compare-password new-password-entry
+                                                                            confirm-password-entry)))))
+            (grid message-label          0 0 :sticky :news :padx padding)
+            (grid new-password-label     3 0 :sticky :news :padx padding)
+            (grid new-password-entry     4 0 :sticky :news :padx padding)
+            (bind-tag-set-focus-next new-password-entry confirm-password-entry)
+            (grid confirm-password-label 5 0 :sticky :news :padx padding)
+            (grid confirm-password-entry 6 0 :sticky :news :padx padding)
+            (bind-tag-set-focus-next confirm-password-entry new-password-entry)
+            (grid ok-button 7 0 :sticky :news :padx padding)))))
+    (if (eq new-password :not-matching)
+        (error no-matching-error-text)
+        new-password)))
