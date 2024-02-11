@@ -85,10 +85,10 @@ giving the path of tkobjects."
   *tk*)
 
 (defun root-toplevel-title ()
-  (cget *tk* :title))
+  (cget (root-toplevel) :title))
 
 (defun set-root-toplevel-title (value)
-  (wm-title *tk* value))
+  (wm-title (root-toplevel) value))
 
 ;;; busy functions
 

@@ -102,7 +102,7 @@ can be passed to AFTER-CANCEL"
 (defun create-path (master name)
   "create pathname from master widget <master> and widget name <name>"
   (let ((master-path (if (or (null master)
-                             (eql master *tk*))
+                             (eql master (root-toplevel)))
                          ""
                          (widget-path master))))
     (format nil "~a.~a" master-path name)))
@@ -165,7 +165,8 @@ can be passed to AFTER-CANCEL"
 (defun destroy (widget)
   (when (slot-boundp widget 'widget-path)
     (format-wish "destroy ~a" (widget-path widget))
-    (unless (eql widget *tk*)
+    (unless (eql widget
+                 (root-toplevel))
       (slot-makunbound widget 'widget-path))))
 
 (defun clipboard-clear ()
@@ -628,7 +629,7 @@ set y [winfo y ~a]
                                                                                " "))
                                            ])))))
 
-(defun font-chooser-show (&key (parent *tk*) (title "Choose a font"))
+(defun font-chooser-show (&key (parent (root-toplevel)) (title "Choose a font"))
   (with-read-data ()
     (format-wish (tclize `(tk fontchooser configure
                               -parent {+ ,(widget-path parent) }

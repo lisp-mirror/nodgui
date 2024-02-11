@@ -99,7 +99,7 @@
                                                :text    "(mw) listbox dialog"
                                                :command (lambda ()
                                                           (let ((chosen (nodgui.mw:listbox-dialog
-                                                                         *tk*
+                                                                         (root-toplevel)
                                                                          "listbox dialog"
                                                                          "Choose an entry"
                                                                          '("hello" "world"))))
@@ -109,7 +109,7 @@
                                                                          "info"
                                                                          :ok
                                                                          "info"
-                                                                         :parent *tk*)))))
+                                                                         :parent (root-toplevel))))))
            (demo-date-picker   (make-instance 'button
                                               :text    "(mw) date picker"
                                               :command (lambda ()
@@ -124,7 +124,7 @@
                                                          (nodgui.mw::star-progress-demo))))
            (demo-timeout-dialog (make-instance 'button
                                                :text    "(mw) message dialog with timeout"
-                                               :command (lambda () (demo-message-timeout *tk*))))
+                                               :command (lambda () (demo-message-timeout (root-toplevel)))))
            (demo-tklib-calendar (make-instance 'button
                                                :text    "(tklib) calendar"
                                                :command (lambda () (demo-tklib-calendar))))
@@ -227,8 +227,8 @@
       (grid demo-pixel-buffer        13 1 :sticky :nswe)
       (grid demo-3d                  13 2 :sticky :nswe)
       (grid b-quit                   14 0 :sticky :nswe :columnspan 3)
-      (grid-columnconfigure *tk* :all :weight 1)
-      (grid-rowconfigure    *tk* :all :weight 1))))
+      (grid-columnconfigure (root-toplevel) :all :weight 1)
+      (grid-rowconfigure    (root-toplevel) :all :weight 1))))
 
 (defvar *do-rotate* nil)
 
@@ -389,7 +389,7 @@
                          mp-1 mp-2 mp-3 mfs-1 mfs-2 mfs-3 mfs-4))
         (setf (value progress) 10)
         (configure scale :orient :horizontal)
-        (bind *tk* #$<Alt-q>$ (lambda (event)
+        (bind (root-toplevel) #$<Alt-q>$ (lambda (event)
                                 (declare (ignore event))
                                 (exit-wish)))
         (bind c #$<1>$ (lambda (event)
@@ -521,10 +521,10 @@
      (setf *debug-tk* nil)
      (labels ((update ()
                       (multiple-value-bind (pos-x pos-y) (screen-mouse)
-                        (let* ((wx (window-x *tk*))
-                               (wy (window-y *tk*))
-                               (width (window-width *tk*))
-                               (height (window-height *tk*))
+                        (let* ((wx (window-x (root-toplevel)))
+                               (wy (window-y (root-toplevel)))
+                               (width (window-width (root-toplevel)))
+                               (height (window-height (root-toplevel)))
                                (mx pos-x)
                                (my pos-y)
                                (x (truncate (* width (/ mx w))))
@@ -574,7 +574,7 @@
                                         (format t
                                                 "lambda *event-popped-from-mainloop* ~a~%"
                                                 nodgui::*event-popped-from-mainloop*)
-                                        (let ((erg (text-input-dialog *tk*
+                                        (let ((erg (text-input-dialog (root-toplevel)
                                                                       "Enter a string:"
                                                                       "String input")))
                                           (if erg
@@ -981,8 +981,8 @@
       (configure text-widget :font default-font)
       (configure text-widget :wrap :word)
       (grid text-widget 0 0 :sticky :news)
-      (grid-columnconfigure *tk* :all :weight 1)
-      (grid-rowconfigure *tk* :all :weight 1)
+      (grid-columnconfigure (root-toplevel) :all :weight 1)
+      (grid-rowconfigure (root-toplevel) :all :weight 1)
       (append-line text-widget
                    "type random text, it will try fit it to the width of this widget")
       (append-line text-widget "")
@@ -1052,10 +1052,10 @@
 (defun demo-multifont-listbox (&key theme)
   (with-nodgui (:theme theme)
     (let ((listbox (make-instance 'multifont-listbox
-                                  :master *tk*)))
+                                  :master (root-toplevel))))
       (grid listbox 0 0 :sticky :news)
-      (grid-columnconfigure *tk* :all :weight 1)
-      (grid-rowconfigure *tk* :all :weight 1)
+      (grid-columnconfigure (root-toplevel) :all :weight 1)
+      (grid-rowconfigure (root-toplevel) :all :weight 1)
       (wait-complete-redraw)
       (loop for word in (split-words "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.")
             do
@@ -1086,12 +1086,12 @@
                              "info"
                              :ok
                              "info"
-                             :parent *tk*))))
+                             :parent (root-toplevel)))))
       (grid cal 0 0))))
 
 (defun demo-tklib-notify (&key theme)
   (with-nodgui (:theme theme)
-    (let ((message (text-input-dialog *tk*
+    (let ((message (text-input-dialog (root-toplevel)
                                       "info"
                                       "Insert the text you want shown as notify")))
       (format t "message ~a~%" message)

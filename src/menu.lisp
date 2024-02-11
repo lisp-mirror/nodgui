@@ -95,7 +95,7 @@
   (format-wish "menu ~a -tearoff 0 -type menubar" (widget-path mb))
   (format-wish "~a configure -menu ~a" (if (master mb)
                                            (widget-path (master mb))
-                                           (widget-path *tk*))
+                                           (widget-path (root-toplevel)))
                (widget-path mb)))
 
 ;;; method to pop up a menue at the root window coordinates x and y

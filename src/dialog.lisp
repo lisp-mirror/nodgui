@@ -74,7 +74,7 @@
                                             -title      \"+ ,title  \"
                                             -parent     ,(if parent
                                                              (widget-path parent)
-                                                             (widget-path *tk*)) " "
+                                                             (widget-path (root-toplevel))) " "
                                             ,(empty-string-if-nil initial-file
                                                                   `(-initialfile  \"+ ,initial-file \" " "))
                                             ,(empty-string-if-nil initial-dir

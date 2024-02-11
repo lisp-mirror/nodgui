@@ -1278,7 +1278,7 @@
                       "info"
                       :ok
                       "info"
-                      :parent *tk*))))
+                      :parent (root-toplevel)))))
 
 (defclass password-entry (entry)
   ((secret-string
@@ -1342,7 +1342,7 @@
                       "info"
                       :ok
                       "info"
-                      :parent *tk*))))
+                      :parent (root-toplevel)))))
 
 (defclass progress-bar-star (canvas)
   ((star-num
