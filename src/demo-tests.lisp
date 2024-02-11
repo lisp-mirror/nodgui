@@ -389,11 +389,15 @@
                          mp-1 mp-2 mp-3 mfs-1 mfs-2 mfs-3 mfs-4))
         (setf (value progress) 10)
         (configure scale :orient :horizontal)
-        (bind (root-toplevel) #$<Alt-q>$ (lambda (event)
-                                (declare (ignore event))
-                                (exit-wish)))
-        (bind c #$<1>$ (lambda (event)
-                         (popup mp (event-root-x event) (event-root-y event))))
+        (bind (root-toplevel)
+              #$<Alt-q>$
+              (lambda (event)
+                (declare (ignore event))
+                (exit-wish)))
+        (bind c
+              #$<1>$
+              (lambda (event)
+                (popup mp (event-root-x event) (event-root-y event))))
         (configure c :borderwidth 2 :relief :sunken)
         (pack sc :side :top :fill :both :expand t)
         (pack bar :side :bottom)
