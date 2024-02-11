@@ -2117,7 +2117,8 @@
    #:hide-candidates
    #:autocomplete-function
    #:change-password-dialog
-   #:add-password-dialog))
+   #:add-password-dialog
+   #:password-input-dialog))
 
 (defpackage :nodgui.demo
   (:use :cl

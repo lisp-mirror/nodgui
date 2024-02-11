@@ -2026,6 +2026,8 @@ will shift the selected item up o down respectively."))
       (grid autocomplete-widget 0 0)
       (grid button              1 0))))
 
+(a:define-constant +password-widgets-padding+ 5 :test #'=)
+
 (defun change-password-dialog (parent
                                title
                                message
@@ -2053,7 +2055,7 @@ will shift the selected item up o down respectively."))
                                        confirmed-password))
                      (setf new-password :not-matching))
                    (exit-from-modal-toplevel toplevel))))
-          (let* ((padding                5)
+          (let* ((padding                +password-widgets-padding+)
                  (old-password-entry     (make-instance 'password-entry
                                                         :show-password nil
                                                         :master        toplevel-widget))
@@ -2121,7 +2123,7 @@ will shift the selected item up o down respectively."))
                                        confirmed-password))
                      (setf new-password :not-matching))
                    (exit-from-modal-toplevel toplevel))))
-          (let* ((padding                5)
+          (let* ((padding                +password-widgets-padding+)
                  (new-password-entry     (make-instance 'password-entry
                                                         :show-password nil
                                                         :master        toplevel-widget))
@@ -2155,3 +2157,27 @@ will shift the selected item up o down respectively."))
     (if (eq new-password :not-matching)
         (error no-matching-error-text)
         new-password)))
+
+(defun password-input-dialog (parent title message &key (ok-button-label "OK"))
+  (let ((res nil))
+    (with-modal-toplevel (toplevel :title title)
+      (let ((toplevel-widget (modal-toplevel-root-widget toplevel)))
+        (transient toplevel-widget parent)
+        (let* ((padding   +password-widgets-padding+)
+               (label     (make-instance 'label
+                                         :text   message
+                                         :master toplevel-widget))
+               (widget    (make-instance 'password-entry
+                                         :show-password t
+                                         :master        toplevel-widget))
+               (ok-button (make-instance 'button
+                                         :text   ok-button-label
+                                         :master toplevel-widget
+                                         :command
+                                         (lambda ()
+                                           (setf res (secret-string widget))
+                                           (exit-from-modal-toplevel toplevel)))))
+          (grid label     0 0 :sticky :news :padx padding :pady padding)
+          (grid widget    1 0 :sticky :news :padx padding :pady padding)
+          (grid ok-button 2 0 :sticky :news :padx padding :pady padding))))
+    res))
