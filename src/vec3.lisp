@@ -45,7 +45,7 @@
     (typep a 'vec3))
 
   (defun vec3 (x y z)
-    (let ((res (make-array-frame 3 (to:d 0.0) 'vec3-type t)))
+    (let ((res (make-array-frame 3 (to:d 0f0) 'vec3-type t)))
       (setf (elt res 0) x
             (elt res 1) y
             (elt res 2) z)

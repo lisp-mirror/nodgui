@@ -38,7 +38,7 @@
     (and (= (elt a 0) (elt b 0))
          (= (elt a 1) (elt b 1))))
 
-  (alexandria:define-constant +vec2-zero+ (vec2 0.0 0.0)
+  (alexandria:define-constant +vec2-zero+ (vec2 0f0 0f0)
     :test #'vec2=)
 
   (defun vec2-x (a)
