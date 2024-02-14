@@ -183,17 +183,17 @@
 
 (defclass camera (transformable)
   ((target
-    :initform (vec3:vec3 0.0 100.0 0.0)
+    :initform (vec3:vec3 0f0 100f0 0f0)
     :accessor target
     :initarg :target
     :documentation "position the camera is pointing to.")
    (pos
-    :initform (vec3:vec3 0.0 300.0 -100.0)
+    :initform (vec3:vec3 0f0 300f0 -100f0)
     :accessor pos
     :initarg :pos
     :documentation "position the camera.")
    (up
-    :initform (vec3:vec3 0.0 1.0 0.0)
+    :initform (vec3:vec3 0f0 1f0 0f0)
     :accessor up
     :initarg :up)))
 

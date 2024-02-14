@@ -25,10 +25,10 @@
 
   (defun populate-sin-lut ()
     (let ((lut (make-fresh-array (* +sin-lut-step-per-degrees+ 360)
-                                 0.01
+                                 0.01f0
                                  'to::desired-type
                                  t)))
-      (loop for angle from 0.0 below 359.9 by (/ 1.0 +sin-lut-step-per-degrees+)
+      (loop for angle from 0f0 below 359.9 by (/ 1f0 +sin-lut-step-per-degrees+)
             for i from 0
             do
                (setf (aref lut i) (to:dsin (to:degree->radians angle))))
@@ -68,10 +68,10 @@
 
   (defun populate-cos-lut ()
     (let ((lut (make-fresh-array (* +cos-lut-step-per-degrees+ 360)
-                                 0.01
+                                 0.01f0
                                  'to::desired-type
                                  t)))
-      (loop for angle from 0.0 below 359.9 by (/ 1.0 +cos-lut-step-per-degrees+)
+      (loop for angle from 0.0f0 below 359.9 by (/ 1f0 +cos-lut-step-per-degrees+)
             for i from 0
             do
                (setf (aref lut i) (to:dcos (to:degree->radians angle))))
