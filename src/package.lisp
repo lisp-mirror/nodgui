@@ -397,6 +397,9 @@
    #:scale-nearest
    #:scale-bilinear
    #:rotate-pixmap
+   #:to-grayscale
+   #:to-disabled
+   #:encode-base64
    #:with-file-matrix))
 
 (defpackage :nodgui.sanitize

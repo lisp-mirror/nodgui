@@ -190,6 +190,8 @@ points to the same memory location (i.e. bg)."
 
 (defgeneric save-pixmap (object path))
 
+(defgeneric encode-base64 (object))
+
 (defgeneric h-mirror (object))
 
 (defgeneric v-mirror (object))
@@ -209,6 +211,10 @@ points to the same memory location (i.e. bg)."
 (defgeneric rotate-pixmap-90-degree-cw (object fill-value pivot))
 
 (defgeneric swap-elements (object row column row2 column2 &key destructive))
+
+(defgeneric to-grayscale (object))
+
+(defgeneric to-disabled (object))
 
 (defmacro with-check-borders ((x y x-bond y-bond w h) then else)
   `(if (and
@@ -478,7 +484,6 @@ range (0-1.0]), scaling use nearest-neighbor."
     (change-class res (class-of object))
     res))
 
-
 (defmethod sync-data-to-bits ((object pixmap))
   "Fill 'bits' slot of this pixmap  with the contents of 'data' slots"
   (with-accessors ((data data)
@@ -534,6 +539,11 @@ range (0-1.0]), scaling use nearest-neighbor."
     (write-sequence (pixmap->tga-file object) path)
     object))
 
+(defmethod encode-base64 ((object pixmap))
+  (let ((pixmap-as-vector (flexi-streams:with-output-to-sequence (stream)
+                            (save-pixmap object stream))))
+    (nodgui.base64:encode pixmap-as-vector)))
+
 (defmethod pixel@ ((object pixmap) x y)
   "Get the color of pixel at specified coordinate from 'data' slot"
   (declare (pixmap object))
@@ -588,7 +598,7 @@ range (0-1.0]), scaling use nearest-neighbor."
     object))
 
 (defmethod (setf alpha-bits@) (alpha-value (object pixmap) x y)
-  "Set  the alpha  component  for  the 'bits'  slotys  only; value  is
+  "Set  the alpha  component  for  the 'bits'  slot  only; value  is
 an (unsigned-byte 8)"
   (declare (fixnum x y))
   (declare ((unsigned-byte 8) alpha-value))
@@ -599,6 +609,35 @@ an (unsigned-byte 8)"
       (declare (fixnum offset))
       (setf (elt bits (+ 3 offset)) alpha-value))
     object))
+
+(defun pixel-to-grayscale (pixel)
+  (let ((value (floor (to:d+ (to:d* 0.2126 (to:d (elt pixel +red-channel+)))
+                             (to:d* 0.7152 (to:d (elt pixel +green-channel+)))
+                             (to:d* 0.0722 (to:d (elt pixel +blue-channel+)))))))
+    (ubvec4 value value value (elt pixel +alpha-channel+))))
+
+(defmethod to-grayscale ((object pixmap))
+  (assert (or (= 4 (the fixnum (depth object)))
+              (= 3 (the fixnum (depth object)))))
+  (loop-matrix (object x y)
+    (let ((grayscale-pixel (pixel-to-grayscale (pixel@ object x y))))
+      (setf (pixel@ object x y) grayscale-pixel)))
+  object)
+
+(defmethod to-disabled ((object pixmap))
+  (to-grayscale object)
+  (loop with offset = 0
+        for y fixnum from 0 below (height object) do
+          (loop for x fixnum from 0 below (width object) do
+            (let* ((shifted-x (rem (+ x offset)
+                                  (width object))))
+              (when (= (rem shifted-x 2)
+                       0)
+                  (let ((pixel (pixel@ object x y)))
+                    (setf (elt pixel +alpha-channel+) 0)
+                    (setf (pixel@ object x y) pixel)))))
+          (incf offset 1))
+  object)
 
 (defclass pixmap-file (pixmap)
   ((magic-number
