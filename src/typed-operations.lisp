@@ -111,7 +111,7 @@
 (defun secure-dacos (a)
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (desired-type a))
-  (dacos (dmin 1.0 a)))
+  (dacos (dmin 1f0 a)))
 
 (alexandria:define-constant +degree->radians-factor+ (d (/ pi 180)) :test #'=)
 

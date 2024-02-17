@@ -95,8 +95,8 @@
 (definline wave->color (v)
   (declare (to::desired-type v))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (truncate (to:d* (to:d/ (to:d+ 1.0 (sin-lut (to:d* 5.0 v 3.141))) 2.0)
-                   255.0)))
+  (truncate (to:d* (to:d/ (to:d+ 1.0f0 (sin-lut (to:d* 5.0 v 3.141))) 2.0f0)
+                   255.0f0)))
 
 (defun horizontal-wave (x frequency phase tick)
   (declare (to::desired-type frequency x))
@@ -108,24 +108,24 @@
 (definline rotating-wave (x y frequency phase tick)
   (declare (to::desired-type frequency x phase tick))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let* ((cosine    (cos-lut-positive-angle (to:d* 8.0 tick)))
-         (sinus     (sin-lut (to:d* 8.0 tick)))
+  (let* ((cosine    (cos-lut-positive-angle (to:d* 8.0f0 tick)))
+         (sinus     (sin-lut (to:d* 8.0f0 tick)))
          (rotated-x (to:d- (to:d* x cosine)
                            (to:d* y sinus))))
     (declare (dynamic-extent cosine sinus rotated-x))
-    (sin-lut (to:d+ phase (to:d* 2.0
-                                 (to:dabs (sin-lut (to:d* 30.0 tick)))
+    (sin-lut (to:d+ phase (to:d* 2.0f0
+                                 (to:dabs (sin-lut (to:d* 30.0f0 tick)))
                                  frequency
                                  rotated-x)))))
 
 (definline circular-wave (x y frequency phase tick)
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let* ((translated-x (to:d+ (sin-lut (to:d* 6.0 tick))
-                              (to:d- x 0.5)))
-         (translated-y (to:d+ (sin-lut (to:d* 2.0 tick))
-                              (to:d- y 0.5)))
-         (dist         (to:dsqrt (to:d+ (to:dexpt translated-x 2.0)
-                                        (to:dexpt translated-y 2.0)))))
+  (let* ((translated-x (to:d+ (sin-lut (to:d* 6.0f0 tick))
+                              (to:d- x 0.5f0)))
+         (translated-y (to:d+ (sin-lut (to:d* 2.0f0 tick))
+                              (to:d- y 0.5f0)))
+         (dist         (to:dsqrt (to:d+ (to:dexpt translated-x 2.0f0)
+                                        (to:dexpt translated-y 2.0f0)))))
     (declare (dynamic-extent translated-x translated-y dist))
     (sin-lut (to:d+ (to:d+ phase (to:d* -200.0 tick)) (to:d* frequency dist)))))
 
@@ -145,8 +145,8 @@
     (loop for j fixnum from 0 below height do
       (let ((color (wave->color (plasma-value (normalize-coordinate i width)
                                               (normalize-coordinate j height)
-                                              8.0
-                                              0.0
+                                              8.0f0
+                                              0.0f0
                                               tick))))
         (declare (dynamic-extent color))
         (px:set-pixel@ buffer width i j color color color)))))

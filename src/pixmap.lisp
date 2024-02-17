@@ -611,9 +611,9 @@ an (unsigned-byte 8)"
     object))
 
 (defun pixel-to-grayscale (pixel)
-  (let ((value (floor (to:d+ (to:d* 0.2126 (to:d (elt pixel +red-channel+)))
-                             (to:d* 0.7152 (to:d (elt pixel +green-channel+)))
-                             (to:d* 0.0722 (to:d (elt pixel +blue-channel+)))))))
+  (let ((value (floor (to:d+ (to:d* 0.2126f0 (to:d (elt pixel +red-channel+)))
+                             (to:d* 0.7152f0 (to:d (elt pixel +green-channel+)))
+                             (to:d* 0.0722f0 (to:d (elt pixel +blue-channel+)))))))
     (ubvec4 value value value (elt pixel +alpha-channel+))))
 
 (defmethod to-grayscale ((object pixmap))

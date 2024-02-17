@@ -580,8 +580,8 @@
              (floor-y   (floor (clamp-coordinate y (to:d buffer-height))))
              (ceiling-x (ceiling (clamp-coordinate x (to:d buffer-width))))
              (ceiling-y (ceiling (clamp-coordinate y (to:d buffer-height))))
-             (dx        (truncate (to:d* 255.0 (to:d- x (to:d (the fixnum (floor x)))))))
-             (dy        (truncate (to:d* 255.0 (to:d- y (to:d (the fixnum (floor y)))))))
+             (dx        (truncate (to:d* 255.0f0 (to:d- x (to:d (the fixnum (floor x)))))))
+             (dy        (truncate (to:d* 255.0f0 (to:d- y (to:d (the fixnum (floor y)))))))
              (a         (pixel@ buffer buffer-width floor-x floor-y))
              (b         (pixel@ buffer buffer-width ceiling-x floor-y))
              (c         (pixel@ buffer buffer-width ceiling-x ceiling-y))
@@ -666,9 +666,9 @@
                        source-last-row
                        source-last-column
                        &optional
-                         (rotation 0.0)
-                         (scaling-row 1.0)
-                         (scaling-column 1.0)
+                         (rotation 0f0)
+                         (scaling-row 1.0f0)
+                         (scaling-column 1.0f0)
                          (pivot-row 0)
                          (pivot-column 0)
                          (translate-x 0)
@@ -826,8 +826,8 @@
                                                        (float-coordinate-scale (float-translate reverse-rotated-destination-row
                                                                                                 (to:d scaled-pivot-row))
                                                                                reverse-scaling-row)))
-                                                (when (and (to:d>= unscaled-source-row 0.0)
-                                                           (to:d>= unscaled-source-column 0.0)
+                                                (when (and (to:d>= unscaled-source-row 0f0)
+                                                           (to:d>= unscaled-source-column 0f0)
                                                            (to:d< unscaled-source-row (to:d buffer-source-height))
                                                            (to:d< unscaled-source-column (to:d buffer-source-width)))
                                                   (let* ((color-source      (bilinear-interpolation buffer-source

@@ -519,7 +519,7 @@ element of V is ignored."
 (u:definline perspective-fov (fov width height near far)
   (declare (optimize (speed 3)))
   (let* ((rad (to:degree->radians fov))
-         (h   (to:d/ (to:dcos (to:d* 0.5 rad)) (to:dsin (to:d* 0.5 rad))))
+         (h   (to:d/ (to:dcos (to:d* 0.5f0 rad)) (to:dsin (to:d* 0.5f0 rad))))
          (w   (to:d/ (to:d* h height) width))
          (el-3-2 (to:d- (to:d/ (to:d* 2f0 far near) (to:d- far near))))
          (el-2-2 (to:d- (to:d/ (to:d+ far near) (to:d- far near)))))
