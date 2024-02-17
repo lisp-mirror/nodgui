@@ -2094,8 +2094,10 @@ will shift the selected item up o down respectively."))
             (bind-tag-set-focus-next new-password-entry confirm-password-entry)
             (grid confirm-password-label 5 0 :sticky :news :padx padding)
             (grid confirm-password-entry 6 0 :sticky :news :padx padding)
-            (bind-tag-set-focus-next confirm-password-entry old-password-entry)
-            (grid ok-button 7 0 :sticky :news :padx padding)))))
+            (bind-tag-set-focus-next confirm-password-entry ok-button)
+            (grid ok-button 7 0 :sticky :news :padx padding)
+            (bind-tag-set-focus-next ok-button old-password-entry)
+            (focus old-password-entry)))))
     (if (eq new-password :not-matching)
         (error no-matching-error-text)
         (values old-password
@@ -2152,8 +2154,10 @@ will shift the selected item up o down respectively."))
             (bind-tag-set-focus-next new-password-entry confirm-password-entry)
             (grid confirm-password-label 5 0 :sticky :news :padx padding)
             (grid confirm-password-entry 6 0 :sticky :news :padx padding)
-            (bind-tag-set-focus-next confirm-password-entry new-password-entry)
-            (grid ok-button 7 0 :sticky :news :padx padding)))))
+            (bind-tag-set-focus-next confirm-password-entry ok-button)
+            (grid ok-button 7 0 :sticky :news :padx padding)
+            (bind-tag-set-focus-next ok-button new-password-entry)
+            (focus new-password-entry)))))
     (if (eq new-password :not-matching)
         (error no-matching-error-text)
         new-password)))
@@ -2163,21 +2167,24 @@ will shift the selected item up o down respectively."))
     (with-modal-toplevel (toplevel :title title)
       (let ((toplevel-widget (modal-toplevel-root-widget toplevel)))
         (transient toplevel-widget parent)
-        (let* ((padding   +password-widgets-padding+)
-               (label     (make-instance 'label
-                                         :text   message
-                                         :master toplevel-widget))
-               (widget    (make-instance 'password-entry
-                                         :show-password t
-                                         :master        toplevel-widget))
-               (ok-button (make-instance 'button
-                                         :text   ok-button-label
-                                         :master toplevel-widget
-                                         :command
-                                         (lambda ()
-                                           (setf res (secret-string widget))
-                                           (exit-from-modal-toplevel toplevel)))))
+        (let* ((padding        +password-widgets-padding+)
+               (label          (make-instance 'label
+                                              :text   message
+                                              :master toplevel-widget))
+               (password-entry (make-instance 'password-entry
+                                              :show-password t
+                                              :master        toplevel-widget))
+               (ok-button      (make-instance 'button
+                                              :text   ok-button-label
+                                              :master toplevel-widget
+                                              :command
+                                              (lambda ()
+                                                (setf res (secret-string password-entry))
+                                                (exit-from-modal-toplevel toplevel)))))
           (grid label     0 0 :sticky :news :padx padding :pady padding)
-          (grid widget    1 0 :sticky :news :padx padding :pady padding)
-          (grid ok-button 2 0 :sticky :news :padx padding :pady padding))))
+          (grid password-entry    1 0 :sticky :news :padx padding :pady padding)
+          (bind-tag-set-focus-next password-entry ok-button)
+          (grid ok-button 2 0 :sticky :news :padx padding :pady padding)
+          (bind-tag-set-focus-next ok-button password-entry)
+          (focus password-entry))))
     res))

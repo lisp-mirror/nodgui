@@ -211,10 +211,9 @@
 
   (defun force-string-read-macro (stream char ign)
     (declare (ignore char ign))
-    (format *error-output*
-            (strcat "[NOTICE] The #[ ... ] reader macro is useless "
-                    "and will be removed in a future releases of "
-                    "the library.~%"))
+    (warn (strcat "[NOTICE] The #[ ... ] reader macro is useless "
+                  "and will be removed in a future releases of "
+                  "the library.~%"))
     (let ((raw (read-delimited-list #\] stream)))
       (if (= (length raw) 1)
           `(%to-safe-format-string ,(first raw))
