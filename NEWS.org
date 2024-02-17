@@ -8,7 +8,7 @@
     - add-password-dialog;
     - password-input-dialog.
 
-    - added thre convenience functionfor pixmaps:
+    - added three convenience functions for pixmaps:
       - to-grayscale;
       - to-disabled;
       - encode-base64.
