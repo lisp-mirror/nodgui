@@ -1,5 +1,22 @@
 * News
 
+** 2024-02-17 Version 0.6.0.1
+  - [new feature]
+    Added new widgets:
+
+    - change-password-dialog;
+    - add-password-dialog;
+    - password-input-dialog.
+
+    - added thre convenience functionfor pixmaps:
+      - to-grayscale;
+      - to-disabled;
+      - encode-base64.
+
+  - [bugfix]
+    - this version should *actually* compile even when binging ~*READ-DEFAULT-FLOAT-FORMAT*~ to a value different from: 'single-float
+    - the mainloops has been reworked to prevent event stealing from the parent mainloop to its child
+
 ** 2023-11-25 Version 0.6.0.0
 
   - [new feature]
