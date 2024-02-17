@@ -1,7 +1,113 @@
+2024-02-17 cage
+
+	* src/nodgui-mw.lisp,
+	* src/tcl-emitter.lisp:
+
+	- fixed focus in password related widgets.
+
+2024-02-14 bo-tato, cage
+
+	* src/demo-3d-window.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/pixmap.lisp,
+	* src/typed-operations.lisp,
+	* src/vec2.lisp,
+	* src/vec3.lisp:
+
+	- added three methods for pixmap manipulation, 'to-grayscale',
+	'to-disabled', 'encode-base64'.
+	work with *read-default-float-format* of 'double-float
+	Merge pull request 'work with *read-default-float-format* of
+	'double-float' (#10) from botato/nodgui:fix-read-default-float-format
+	into master
+	Merge branch 'master' into development
+
+2024-02-11 cage
+
+	* src/demo-tests.lisp,
+	* src/dialog.lisp,
+	* src/menu.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/widget.lisp:
+
+	- changed a bunch of references to variable *tk* with calls to
+	function 'root-toplevel'.
+	- fixed indentation.
+	- added 'password-input-dialog';
+	- used a constant instead of an hardcoded value for padding in
+	password dialog windows.
+
+2024-02-10 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- added function 'add-password-dialog'.
+
+2024-02-09 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/wish-communication.lisp:
+
+	- fixed code that prevents events stealing.
+
+2024-02-08 cage
+
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/wish-communication.lisp:
+
+	- ensured a parent mainloop cannot steals events from its child when a
+	modal toplevel has just been created.
+	- added padding to 'change-password-dialog'.
+
+2024-02-07 cage
+
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp:
+
+	- added function 'change-password-dialog'.
+	- added 'bind-tag-set-focus-next' and deprecated 'set-focus-next';
+	the name of the latter did not looked right to me.
+
+2024-02-06 cage
+
+	* src/nodgui.lisp:
+
+	- removed spurious event that would never be popped leading to program
+	blocking.
+	To reproduce the issue:
+	(with-nodgui () (with-modal-toplevel (toplevel)))
+	Then closing th emodal window would freeze the root toplevel.
+
 2024-02-01 cage
 
+	* Changelog,
+	* LICENSES.org,
+	* NEWS.org,
+	* README.org,
+	* nodgui.asd,
+	* src/demo-3d-window.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/non-blocking-queue.lisp,
+	* src/opengl-frame.lisp,
+	* src/pixels-buffer.lisp,
+	* src/rendering-buffer-context.lisp,
+	* src/synchronized-queue.lisp:
 
 	Merge branch 'add-sdl-window'
+	- updated changelog.
+	- increased version number and changed author name in the ASDF file;
+	- added copyright comment on top of files, where missing.
+	- updated NEWS file.
+	- updated documentation.
+	- updated dependencies list in readme.
 
 2024-01-28 cage
 

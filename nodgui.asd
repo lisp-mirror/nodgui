@@ -16,8 +16,8 @@
 ;; GNU General Public License for more details.
 
 (defsystem nodgui
-  :name             "Nodgui"
-  :version          "0.6.0.0"
+  :name             "nodgui"
+  :version          "0.6.0.1"
   :author           "cage"
   :encoding         :utf-8
   :maintainer       "cage"
