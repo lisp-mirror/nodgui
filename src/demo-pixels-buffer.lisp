@@ -699,10 +699,10 @@
                                          (lambda (value)
                                            (format t "button ~a pressed~%" value)
                                            (stop-animation)
-                                           (setf *animation*
-                                                 (make-animation :thread
-                                                                 (make-thread #'draw-plasma-thread
-                                                                              :name "plasma")))
+                                           (setf *animation* (make-animation))
+                                           (setf (animation-thread *animation*)
+                                                 (make-thread #'draw-plasma-thread
+                                                              :name "plasma"))
                                            (format t "tk event returned~%"))))
            (radio-fire    (make-instance 'radio-button
                                          :master   buttons-frame
@@ -713,9 +713,9 @@
                                          (lambda (value)
                                            (format t "button ~a pressed~%" value)
                                            (stop-animation)
-                                           (setf *animation*
-                                                 (make-animation :thread
-                                                                 (make-thread #'draw-fire-thread)))
+                                           (setf *animation* (make-animation))
+                                           (setf (animation-thread *animation*)
+                                                 (make-thread #'draw-fire-thread))
                                            (format t "tk event returned~%"))))
            (radio-rectangles (make-instance 'radio-button
                                             :master   buttons-frame
@@ -726,9 +726,10 @@
                                             (lambda (value)
                                               (format t "button ~a pressed~%" value)
                                               (stop-animation)
-                                              (setf *animation*
-                                                    (make-animation :thread
-                                                                    (make-thread #'draw-rectangles-thread)))
+                                              (setf *animation* (make-animation))
+                                              (setf (animation-thread *animation*)
+                                                    (make-thread (make-thread #'draw-rectangles-thread
+                                                                              :name "rectangles")))
                                               (format t "tk event returned~%"))))
            (button-quit  (make-instance 'button
                                         :master  quit-frame
