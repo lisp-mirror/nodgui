@@ -148,7 +148,7 @@
   (push-for-updating object
                      (lambda (dt) (declare (ignore dt)) t)
                      :force-push t)
-  (bt:join-thread (rendering-thread object)))
+  (u:join-thread (rendering-thread object)))
 
 (u:definline push-in-queue (context queue function force-push)
   (if (events-polling-p context)

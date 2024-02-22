@@ -594,7 +594,7 @@
 
 (defun stop-3d-animation ()
   (when (and *animation*
-             (bt:threadp (animation-thread *animation*)))
+             (threadp (animation-thread *animation*)))
     (stop-drawing-thread *animation*)
     (wait-thread *animation*)))
 
