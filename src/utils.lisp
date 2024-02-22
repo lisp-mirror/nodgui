@@ -523,7 +523,7 @@
 (defun bullet ()
   (string (try-unicode "BULLET" "*")))
 
-(defparameter *thread-default-special-bindings* bt:*default-special-bindings*)
+(defparameter *thread-default-special-bindings* bt2:*default-special-bindings*)
 
 (defmacro definline (name arg &rest body)
   (let* ((function-name (alexandria:format-symbol t "~:@(~a~)" name)))
@@ -532,32 +532,32 @@
        (defun ,function-name (,@arg) ,@body))))
 
 (definline make-thread (function &key (name nil) (initial-bindings *thread-default-special-bindings*))
-  (bt:make-thread function :name name :initial-bindings initial-bindings))
+  (bt2:make-thread function :name name :initial-bindings initial-bindings))
 
 (definline make-lock (&optional name)
-  (bt:make-lock name))
+  (bt2:make-lock :name name))
 
 (defmacro with-lock-held ((lock) &body body)
-  `(bt:with-lock-held (,lock)
+  `(bt2:with-lock-held (,lock)
      ,@body))
 
 (definline make-condition-variable (&key (name nil))
-  (bt:make-condition-variable :name name))
+  (bt2:make-condition-variable :name name))
 
 (definline condition-wait (condition-variable lock &key (timeout nil))
-  (bt:condition-wait condition-variable lock :timeout timeout))
+  (bt2:condition-wait condition-variable lock :timeout timeout))
 
 (definline condition-notify (condition-variable)
-  (bt:condition-notify condition-variable))
+  (bt2:condition-notify condition-variable))
 
 (definline join-thread (thread)
-  (bt:join-thread thread))
+  (bt2:join-thread thread))
 
 (definline destroy-thread (thread)
-  (bt:destroy-thread thread))
+  (bt2:destroy-thread thread))
 
 (definline threadp (maybe-thread)
-  (bt:threadp maybe-thread))
+  (bt2:threadp maybe-thread))
 
 (defmacro define-compiler-macro* (name &body args)
   (with-gensyms (low-level-function-name)
