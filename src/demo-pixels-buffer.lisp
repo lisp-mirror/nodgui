@@ -411,7 +411,7 @@
                                   (declare (optimize (speed 3) (debug 0)))
                                   (draw-plasma buffer width height tick))
                                 :force-push nil))
-      (format t "STOP!~%"))))
+      (format t "STOP PlASMA!~%"))))
 
 (defun clear-sdl-window (&key (context *pixel-buffer-context*) (force nil))
   (with-accessors ((buffer px:buffer)
@@ -653,7 +653,7 @@
 
 (defun stop-animation ()
   (when (and *animation*
-             (bt:threadp (animation-thread *animation*)))
+             (threadp (animation-thread *animation*)))
     (stop-drawing-thread *animation*)
     (wait-thread *animation*)
     (format t
