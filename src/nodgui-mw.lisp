@@ -1855,10 +1855,10 @@ if  a  number   is  given  the  corresponding   element  is  selected."
     :initarg  :autocomplete-function
     :accessor autocomplete-function
     :type     function
-    :documentation "A function that accepts a single parameter and return two values:
- - the list of candidates (or nil) that matches `hint' and are suitable to complete the text contained in the entry;
+    :documentation "A function that accepts a single parameter and return tree values:
+- the list of candidates (or nil) that matches `hint' and are suitable to complete the text contained in the entry;
 - a list where each element is a list of index value that idicates the matching character in the corresponding string, for example:
-
+- a generalized boolean that, if not null, will autoselect an item if there is only a single candidate
 first value:  (\"foo\" \"school\")
 second value: ((1 2) (3 4))
 
@@ -1940,7 +1940,7 @@ will shift the selected item up o down respectively."))
              (string= (event-char event) nodgui.event-symbols:+backspace+)
              (string= (event-char event) nodgui.event-symbols:+delete+))
          (let ((hint (text autocomplete-entry-widget)))
-          (multiple-value-bind (candidates matching-indices)
+          (multiple-value-bind (candidates matching-indices autoselect-only-candidate)
               (funcall autocomplete-function hint)
             (if (string-empty-p hint)
                 (hide-candidates candidates-widget)
@@ -1948,8 +1948,10 @@ will shift the selected item up o down respectively."))
                   (listbox-delete candidates-widget)
                   (listbox-append candidates-widget candidates)
                   (cond
-                    ((and (= (listbox-size candidates-widget) 1)
-                          (not (string= (event-char event) nodgui.event-symbols:+backspace+)))
+                    ((and autoselect-only-candidate
+                          (= (listbox-size candidates-widget) 1)
+                          (not (string= (event-char event)
+                                        nodgui.event-symbols:+backspace+)))
                      (funcall (autocomplete-click-1-clsr candidates-widget
                                                          autocomplete-entry-widget)
                               nil))
