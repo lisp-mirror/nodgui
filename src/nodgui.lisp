@@ -500,7 +500,7 @@ set y [winfo y ~a]
 (defgeneric configure (widget option value &rest others))
 
 (defmethod configure (widget option value &rest others)
-  (format-wish "~A configure~{ {-~(~a~)} {~a}~}"
+  (format-wish "~a configure~{ {-~(~a~)} {~a}~}"
                (widget-path widget)
                (mapcar #'down (list* option value others)))
   widget)

@@ -41,10 +41,20 @@
                        (name val)))
   button)
 
+(defmethod configure ((object button) (option (eql :text)) value &rest others)
+  (declare (ignorable others))
+  (setf (text object) value)
+  (if others
+      (apply #'configure object others)
+      object))
+
+(defmethod configure ((object button) (option (eql :command)) (value function) &rest others)
+  (declare (ignorable others))
+  (setf (command object) value)
+  (if others
+      (apply #'configure object others)
+      object))
+
 (defmethod configure ((object button) option value &rest others)
   (declare (ignorable others))
-  (if (eq option :text)
-      (progn
-        (setf (text object) value)
-        object)
-      (call-next-method)))
+  (call-next-method))
