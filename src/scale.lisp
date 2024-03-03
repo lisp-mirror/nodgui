@@ -23,6 +23,7 @@
   from
   length
   orient
+  orientation
   style
   takefocus
   to

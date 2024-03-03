@@ -20,6 +20,7 @@
   class
   cursor
   orient
+  orientation
   style
   takefocus
   length

@@ -251,9 +251,15 @@
       (offset offset "~@[ -offset {~(~a~)}~]" offset "")
       (onvalue onvalue "~@[ -onvalue {~(~a~)}~]" onvalue "")
       (opaqueresize opaqueresize "~@[ -opaqueresize {~(~a~)}~]" opaqueresize "")
-      (orient orientation
+      (orientation
+       orientation
        "~@[ -orient {~(~a~)}~]"
        orientation
+       "orientation of the widget (horizontal, vertical)")
+      (orient
+       orient
+       "~@[ -orient {~(~a~)}~]"
+       orient
        "orientation of the widget (horizontal, vertical)")
       (overrelief
        overrelief

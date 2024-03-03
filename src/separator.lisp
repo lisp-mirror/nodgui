@@ -17,6 +17,12 @@
 (in-package :nodgui)
 
 (defargs separator ()
-  class cursor orient state style takefocus)
+  class
+  cursor
+  orient
+  orientation
+  state
+  style
+  takefocus)
 
 (defwrapper separator (widget) () "ttk::separator")

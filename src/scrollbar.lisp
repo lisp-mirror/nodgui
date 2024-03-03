@@ -17,7 +17,13 @@
 (in-package :nodgui)
 
 (defargs scrollbar ()
-  class command-scrollbar cursor orient style takefocus)
+  class
+  command-scrollbar
+  cursor
+  orient
+  orientation
+  style
+  takefocus)
 
 (defwrapper scrollbar (widget) () "ttk::scrollbar")
 
