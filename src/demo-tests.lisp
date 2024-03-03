@@ -675,7 +675,7 @@
     ;; of this treeview
     (let* ((parent    (make-instance 'tree-item
                                      :text    "~hallo~" ; text of the first column
-                                     :id      "[a]"
+                                     :id      "[/a/b/a;b]]"
                                      ;; the parent of this item is the root of the treeview
                                      :parent  +treeview-root+
                                      :index   +treeview-last-index+))
@@ -685,7 +685,7 @@
                                       ;; the parent of this item is the first item defined
                                       :parent        (id parent)
                                       ;; text of the second and third column
-                                      :column-values '("} [~hello]" "[world]")
+                                      :column-values '("}  [~he;llo]" "[world]")
                                       :index          +treeview-last-index+))
            (second-row nil)) ; used later...
        ;; setup headers
