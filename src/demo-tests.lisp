@@ -681,7 +681,7 @@
                                      :index   +treeview-last-index+))
            (child      (make-instance 'tree-item
                                       ;; text of the first column
-                                      :text          "w[e]lt"
+                                      :text          "b[a;r];;"
                                       ;; the parent of this item is the first item defined
                                       :parent        (id parent)
                                       ;; text of the second and third column
