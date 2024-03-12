@@ -1,5 +1,25 @@
-* News
-
+** 2024-03-12  Version 0.6.0.2
+  - [new feature]
+    - added ~command~ option for configuring button widget, for example:
+      #+BEGIN_SRC lisp
+        (with-nodgui ()
+          (let ((button (make-instance 'button :text "foo")))
+            (configure  button
+                        :command
+                        (lambda ()
+                          (format t "quitting~%")
+                          (exit-nodgui))
+                        :text "Quit"
+                        :underline 0)
+            (pack button)))
+       #+END_SRC
+    - moved from bordeaux threads version 1 API to version 2.
+  - [bugfix]
+    - fixed inconsistency in widget initialization intargs, accepted ~:orient~ instead of ~:orientation~, the latter is not accepted by ~configure~ (thanks Arkdae!);
+    - added missing brace when generating tags for treeview;
+    - fixed escaping of treeview's row id;
+    - fixed escaping of treeview's row text (first column);
+    - fixed blocking of pixelbuffer demo.
 ** 2024-02-17 Version 0.6.0.1
   - [new feature]
     Added new widgets:
@@ -14,7 +34,7 @@
       - encode-base64.
 
   - [bugfix]
-    - this version should *actually* compile even when binging ~*READ-DEFAULT-FLOAT-FORMAT*~ to a value different from: 'single-float
+    - this version should *actually* compile even when binging ~*READ-DEFAULT-FLOAT-FORMAT*~ to a value different from: ~'single-float~
     - the mainloops has been reworked to prevent event stealing from the parent mainloop to its child
 
 ** 2023-11-25 Version 0.6.0.0

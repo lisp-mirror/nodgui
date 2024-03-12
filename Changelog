@@ -1,9 +1,127 @@
+2024-03-12 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/wish-communication.lisp:
+
+	- collected all password related widgets in a single demo item.
+	- added quit button on bottom of password widgets demo window.
+	- added debug message.
+
+2024-03-03 cage
+
+	* src/demo-tests.lisp,
+	* src/panedwindow.lisp,
+	* src/progressbar.lisp,
+	* src/scale.lisp,
+	* src/scrollbar.lisp,
+	* src/separator.lisp,
+	* src/treeview.lisp,
+	* src/widget-helpers.lisp:
+
+	- added missing brace when generating tags for treeview.
+	- fixed escaping of treeview's row id.
+	- fixed escaping of treeview's row text (first column).
+	- added 'orient' keyarg when initializing some widgets.
+
+2024-03-01 cage
+
+	* src/button.lisp,
+	* src/nodgui.lisp:
+
+	- allowed passing ':command' option via 'configure' for buttons
+	widget.
+
+2024-02-23 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp:
+
+	- [MW]   changed  autocomplete:   added  a   third  return   value  to
+	autocomplete  function, if  this  value is  not  null, instructs  the
+	widget to autoselect the candidate it it is the only one.
+
+2024-02-22 cage
+
+	* src/demo-3d-window.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/rendering-buffer-context.lisp,
+	* src/utils.lisp:
+
+	- removed direct reference to 'bt' package in pixels buffer demo.
+	- removed direct reference to 'bt' package in pixels buffer and 3d
+	window widgets.
+	- moved from bordeaux threads version 1 API to version 2.
+
+2024-02-21 cage
+
+	* src/demo-pixels-buffer.lisp:
+
+	- fixed 'stealing' of stop-thread flag.
+	for future reference:
+	The demo  has a structure  that contains  the rendering thread  and a
+	flag  that, in  not null,  stop the  rendering loop  contained in  the
+	aforementioned thread
+	(defstruct animation
+	(thread)
+	(lock (make-lock))
+	(stop-p nil))
+	the thread contains code similar to:
+	(loop while (not (animation-thread *animation*)) do
+	;; draw stuff
+	)
+	where *animation* is  a special variable that is bound  to the current
+	animation (in this  demo only a single animation can  be active at the
+	same time)
+	when a radio button of the demo UI has been clicked, the old animation
+	is stopped and a new is started
+	(stop-animation)
+	the code above will set the slot stop-p  of the object *animation* to
+	't', then will wait the rendering loop to exit and the rendering
+	thread to join, finally it returns
+	(setf *animation*
+	(make-animation :thread (make-thread #'draw-plasma-thread
+	:name "plasma"))))
+	But this code has a subtle bug: as we are creating a thread inside the
+	call to create a struct, will be first evaluated the code to start the
+	rendering thread or the code to create the struct?
+	If the  second occurs  no problem  arises but, if  the former  is true
+	(thread first, struct after) the new  thread will start before the new
+	struct is created so the rendering loop will look at the slot 'stop-p'
+	of the  old value of *animation*  that is, in fact  (because we called
+	the function 'stop-animation' before), non null. So the rendering loop
+	immediately  exits and  so the  rendering thread;  the results  is the
+	animation does not even starts
+	My solution  is to separate the  creation the struct (that  occurs for
+	first) and then start the rendering thread:
+	(setf *animation* (make-animation))
+	(setf (animation-thread *animation*)
+	(make-thread #'draw-plasma-thread
+	:name "plasma"))
+	```
+
 2024-02-17 cage
 
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
+	* src/demo-pixels-buffer.lisp,
+	* src/matrix.lisp,
 	* src/nodgui-mw.lisp,
-	* src/tcl-emitter.lisp:
+	* src/pixels-buffer.lisp,
+	* src/pixmap.lisp,
+	* src/tcl-emitter.lisp,
+	* src/typed-operations.lisp,
+	* src/vec3.lisp:
 
 	- fixed focus in password related widgets.
+	- increased version number;
+	- updated changelog.
+	- updated NEWS.org
+	- removed useless code.
+	- specified more numeric constants as single-float.
+	- fixed typos in NEWS file.
+
 
 2024-02-14 bo-tato, cage
 
