@@ -269,10 +269,17 @@
                                                                                           "New password"
                                                                                           "Confirm"
                                                                                           "Old password and confirmation do not match")))
+                                                   :master toplevel))
+            (button-quit            (make-instance 'button
+                                                   :text "quit"
+                                                   :command
+                                                   (lambda ()
+                                                     (exit-from-toplevel toplevel))
                                                    :master toplevel)))
         (grid button-password-entry  0 0 :pady 0 :padx 5 :sticky :ew)
         (grid button-password-add    1 0 :pady 0 :padx 5 :sticky :ew)
-        (grid button-password-change 2 0 :pady 0 :padx 5 :sticky :ew)))))
+        (grid button-password-change 2 0 :pady 0 :padx 5 :sticky :ew)
+        (grid button-quit            3 0 :pady 0 :padx 5 :sticky :ew)))))
 
 (defvar *do-rotate* nil)
 
