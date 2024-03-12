@@ -638,6 +638,8 @@ error-strings) are ignored."
                                   (loop while (not (or (break-mainloop-p)
                                                        (maybe-wait-for-other-mainloops)))
                                         do
+                                           (dbg " mainloop ~a waiting"
+                                                  current-name)
                                            (let ((event (pop-enqueued-event)))
                                              (dbg "pop from mainloop ~a ~a"
                                                   current-name
