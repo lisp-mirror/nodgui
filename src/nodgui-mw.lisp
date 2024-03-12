@@ -1321,7 +1321,7 @@
             :exclusive t
             :append nil))))
 
-(defun password-entry-demo ()
+(defun password-entry-demo (parent)
   (let ((res nil))
     (with-modal-toplevel (toplevel)
       (let* ((toplevel-widget (modal-toplevel-root-widget toplevel))
@@ -1335,8 +1335,10 @@
                                        (lambda ()
                                          (setf res (secret-string widget))
                                          (exit-from-modal-toplevel toplevel)))))
+        (transient toplevel-widget parent)
         (grid widget    0 0 :sticky :news)
-        (grid ok-button 0 1 :sticky :news)))
+        (grid ok-button 0 1 :sticky :news)
+        (focus widget)))
     (and res
          (message-box (format nil "pssst: ~s" res)
                       "info"

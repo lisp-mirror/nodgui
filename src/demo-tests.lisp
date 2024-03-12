@@ -115,9 +115,8 @@
                                               :command (lambda ()
                                                          (nodgui.mw::date-picker-demo))))
            (demo-password      (make-instance 'button
-                                              :text    "(mw) password entry"
-                                              :command (lambda ()
-                                                         (nodgui.mw::password-entry-demo))))
+                                              :text    "(mw) password widgets"
+                                              :command #'demo-password-widgets))
            (demo-star-progress (make-instance 'button
                                               :text    "(mw) star progress bar"
                                               :command (lambda ()
@@ -229,6 +228,51 @@
       (grid b-quit                   14 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
+
+(defun demo-password-widgets ()
+  (macrolet ((with-popup-error ((parent) &body body)
+               `(handler-case
+                    (progn ,@body)
+                  (error (e)
+                    (message-box (format nil "~a" e)
+                                 "error"
+                                 :ok
+                                 "error"
+                                 :parent ,parent)))))
+    (with-toplevel (toplevel)
+      (let ((button-password-entry (make-instance 'button
+                                                  :text "password entry"
+                                                  :command (lambda ()
+                                                             (nodgui.mw::password-entry-demo toplevel))
+                                                  :master toplevel))
+            (button-password-add   (make-instance 'button
+                                                  :text "password add dialog"
+                                                  :command
+                                                  (lambda ()
+                                                    (with-popup-error (toplevel)
+                                                      (nodgui.mw::add-password-dialog toplevel
+                                                                                      "Add password"
+                                                                                      "Add a password"
+                                                                                      "New password"
+                                                                                      "Confirm"
+                                                                                      "Password and confirmation do not match")))
+                                                  :master toplevel))
+            (button-password-change (make-instance 'button
+                                                   :text "password change dialog"
+                                                   :command
+                                                   (lambda ()
+                                                     (with-popup-error (toplevel)
+                                                       (nodgui.mw::change-password-dialog toplevel
+                                                                                          "Change password"
+                                                                                          "Change password"
+                                                                                          "Old password"
+                                                                                          "New password"
+                                                                                          "Confirm"
+                                                                                          "Old password and confirmation do not match")))
+                                                   :master toplevel)))
+        (grid button-password-entry  0 0 :pady 0 :padx 5 :sticky :ew)
+        (grid button-password-add    1 0 :pady 0 :padx 5 :sticky :ew)
+        (grid button-password-change 2 0 :pady 0 :padx 5 :sticky :ew)))))
 
 (defvar *do-rotate* nil)
 
