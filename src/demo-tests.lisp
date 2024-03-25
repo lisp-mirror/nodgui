@@ -179,6 +179,10 @@
                                                      :text "3D rendering demo"
                                                      :command (lambda ()
                                                                 (demo-terrain))))
+           (demo-virtual-event        (make-instance 'button
+                                                     :text "Virtual event"
+                                                     :command (lambda ()
+                                                                (demo-virtual-event))))
            (b-quit                    (make-instance 'button
                                                      :text    "Quit lisp 🙂"
                                                      :command (lambda ()
@@ -225,7 +229,8 @@
       (grid demo-animation           13 0 :sticky :nswe)
       (grid demo-pixel-buffer        13 1 :sticky :nswe)
       (grid demo-3d                  13 2 :sticky :nswe)
-      (grid b-quit                   14 0 :sticky :nswe :columnspan 3)
+      (grid demo-virtual-event       14 0 :sticky :nswe)
+      (grid b-quit                   15 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
 
@@ -1574,3 +1579,46 @@
                            :ok
                            "info"
                            :parent (root-toplevel)))))))
+
+(defun demo-virtual-event (&key theme)
+  (setf *debug-tk* t)
+  (with-nodgui (:theme theme)
+    (let* ((insert-event #$<<insert>>$)
+           (text-area    (make-instance 'text))
+           (button-insert (make-instance 'button
+                                        :text "fire virtual-event"))
+           (button-remove (make-instance 'button
+                                         :text "delete virtual event"
+                                         :command (lambda ()
+                                                    (nodgui::event-alias-info insert-event)
+                                                    ;; NB:    removing
+                                                    ;; events     will
+                                                    ;; prevent  key F1
+                                                    ;; to   fire   the
+                                                    ;; virtual  event,
+                                                    ;; but         the
+                                                    ;; callback     of
+                                                    ;; button
+                                                    ;; "button-insert"
+                                                    ;; will   keep  to
+                                                    ;; fire        the
+                                                    ;; virtual   event
+                                                    ;; until  you call
+                                                    ;; unbind  on  the
+                                                    ;; receiving
+                                                    ;; widget
+                                                    (remove-event-alias insert-event #$<F1>$)
+                                                    (unbind text-area insert-event)))))
+      (append-text text-area
+                   (format nil "~a virtual event is an alias for F1 key~%" insert-event))
+      (grid text-area     0 0)
+      (grid button-insert  1 0)
+      (grid button-remove 2 0)
+      (add-event-alias insert-event #$<F1>$)
+      (bind text-area insert-event
+            (lambda (e)
+              (insert-text text-area
+                           (format nil
+                                   "[~a] virtual event fired~%" (event-timestamp e)))))
+      (configure button-insert
+                 :command (lambda () (fire-event-alias text-area insert-event))))))

@@ -1603,6 +1603,10 @@
            #:calculate-internal-time-scaling-millis
            #:*debounce-minimum-delay*
            #:lambda-debounce
+           #:add-event-alias
+           #:remove-event-alias
+           #:fire-event-alias
+           #:event-alias-info
            #:wait-complete-redraw
            #:button
            #:calc-scroll-region

@@ -1,4 +1,4 @@
-** 2024-03-12  Version 0.6.0.2
+* 2024-03-12  Version 0.6.0.2
   - [new feature]
     - added ~command~ option for configuring button widget, for example:
       #+BEGIN_SRC lisp
@@ -20,7 +20,7 @@
     - fixed escaping of treeview's row id;
     - fixed escaping of treeview's row text (first column);
     - fixed blocking of pixelbuffer demo.
-** 2024-02-17 Version 0.6.0.1
+* 2024-02-17 Version 0.6.0.1
   - [new feature]
     Added new widgets:
 
@@ -37,7 +37,7 @@
     - this version should *actually* compile even when binging ~*READ-DEFAULT-FLOAT-FORMAT*~ to a value different from: ~'single-float~
     - the mainloops has been reworked to prevent event stealing from the parent mainloop to its child
 
-** 2023-11-25 Version 0.6.0.0
+* 2023-11-25 Version 0.6.0.0
 
   - [new feature]
     Added a frame as an alternative for TK canvas when fast rendering is needed.
@@ -50,18 +50,18 @@
   - [bugfix]
    - this version should compile even when binging *READ-DEFAULT-FLOAT-FORMAT* to a value different from: 'single-float
 
-** 2023-11-25 Version 0.5.0.0
+* 2023-11-25 Version 0.5.0.0
 
    This version adds a couple of functions to save pixmaps in JPG format.
 
-** 2023-11-19 Version 0.4.9.6
+* 2023-11-19 Version 0.4.9.6
    - added parameter 'other-bindings' in functions that create tag
      buttons for text widgets;
    - prevented pasting of text in read only text widget;
    - added 'window-class' and 'window-id';
    - added theme 'forest light'.
 
-** 2023-09-18 Version 0.4.9.3
+* 2023-09-18 Version 0.4.9.3
    - fixed 'search-regexp';
    - added functions 'panes' and 'paned-widget-p';
    - supported PNG and JPG bitmap file formats without using a TCl/TK library;
@@ -78,39 +78,39 @@
 
    Thanks to all the people that helped me with this release!
 
-** 2023-05-17 Version 0.4.2
+* 2023-05-17 Version 0.4.2
    - removed function that does not works with ttk::paned-window.
    - improved 'lambda-debounce'.
 
-** 2023-05-17 Version 0.4.0
+* 2023-05-17 Version 0.4.0
    - the main  loop has  been totally rewritten  and should  works well
      with multithread code;
    - expanded the wrapper for the 'text' widget;
    - used tkimg  to expand the  number of image file  format supported
      (JPG, TGA and more).
 
-** 2022-12-26 Version 0.3.0
+* 2022-12-26 Version 0.3.0
 
    - added a new widget: a text entry with auto completion feature;
    - specialized function "see" on listbox;
    - added "listbox-move-selection" to shift,  by an arbitrary offset,
      the selected entry in a listbox;
 
-** 2022-11-18 Version 0.1.6
+* 2022-11-18 Version 0.1.6
 
    Implemented an API to modify the styles of the widgets
 
-** 2020-03-27 version 0.0.6
+* 2020-03-27 version 0.0.6
    Fixed a bug in ~validatecommand~ for widget ~entry~.
 
-** 2019-12-07 Version 0.0.5
+* 2019-12-07 Version 0.0.5
    The user can choose (from a set)  the shape of a symbol to paint the
    points of a scatter plot.
 
-** 2019-09-08 Version 0.0.4
+* 2019-09-08 Version 0.0.4
    Removed the reader macro ~#[ ... ]~
 
-** 2019-09-08 Version 0.0.3
+* 2019-09-08 Version 0.0.3
 
    - Included three more widgets:
      - [[https://core.tcl-lang.org/tklib/doc/trunk/embedded/www/tklib/files/modules/swaplist/swaplist.html][swaplist]];
@@ -119,7 +119,7 @@
 
    - Scatter plot it is a bit interactive now (see the demo)
 
-** 2019-09-01 Version 0.0.2
+* 2019-09-01 Version 0.0.2
 
    Included three more widgets:
 

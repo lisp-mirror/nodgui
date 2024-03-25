@@ -402,7 +402,7 @@
   (format-wish (tclize `(,(widget-path object) " "
                          insert
                          {+ ,(parse-indices coordinates) }
-                         {+ ,string }))))
+                         {+ ,(make-bypass-escape :data string) }))))
 
 
 (defmethod delete-in-range ((object text) start-index &optional (end-index nil))
@@ -418,7 +418,7 @@
                          replace
                          {+ ,(parse-indices start-index) } " "
                          {+ ,(parse-indices end-index) } " "
-                         string))))
+                         {+ ,(make-bypass-escape :data string) }))))
 
 (defmethod line-info ((object text) &optional (coordinates (raw-coordinates object)))
   "Returns a plist of line information, keys are: :x, :y, :w, :h, :baseline."

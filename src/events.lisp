@@ -104,3 +104,25 @@
              (setf ,results (progn ,@body)))
            (setf ,last-fired (current-time-milliseconds))
            ,results)))))
+
+(defun add-event-alias (virtual-event &rest events)
+  (let ((*suppress-newline-for-tcl-statements* t))
+    (format-wish (tclize `(event add
+                                 ,virtual-event " "
+                                 ,(reduce (lambda (a b) (format nil "~a ~a" a b))
+                                          events))))))
+
+(defun remove-event-alias (virtual-event &rest events)
+  (format-wish (tclize `(event delete ,virtual-event " "
+                               ,(reduce (lambda (a b) (format nil "~a ~a" a b))
+                                        events
+                                        :initial-value "")))))
+
+(defun fire-event-alias (window virtual-event &rest options)
+  (format-wish (tclize `(event generate
+                               ,(widget-path window) " "
+                               ,virtual-event ,@options))))
+
+(defun event-alias-info (virtual-event)
+  (with-read-data ()
+    (format-wish "senddatastring [event info {~a}]" virtual-event)))
