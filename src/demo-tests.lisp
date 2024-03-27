@@ -180,7 +180,7 @@
                                                      :command (lambda ()
                                                                 (demo-terrain))))
            (demo-virtual-event-alias  (make-instance 'button
-                                                     :text "Virtual event"
+                                                     :text "Virtual event aliasing"
                                                      :command (lambda ()
                                                                 (demo-virtual-event-aliasing))))
            (b-quit                    (make-instance 'button
