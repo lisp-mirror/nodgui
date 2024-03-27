@@ -179,10 +179,10 @@
                                                      :text "3D rendering demo"
                                                      :command (lambda ()
                                                                 (demo-terrain))))
-           (demo-virtual-event        (make-instance 'button
+           (demo-virtual-event-alias  (make-instance 'button
                                                      :text "Virtual event"
                                                      :command (lambda ()
-                                                                (demo-virtual-event))))
+                                                                (demo-virtual-event-aliasing))))
            (b-quit                    (make-instance 'button
                                                      :text    "Quit lisp 🙂"
                                                      :command (lambda ()
@@ -229,7 +229,7 @@
       (grid demo-animation           13 0 :sticky :nswe)
       (grid demo-pixel-buffer        13 1 :sticky :nswe)
       (grid demo-3d                  13 2 :sticky :nswe)
-      (grid demo-virtual-event       14 0 :sticky :nswe)
+      (grid demo-virtual-event-alias 14 0 :sticky :nswe)
       (grid b-quit                   15 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
@@ -1580,13 +1580,13 @@
                            "info"
                            :parent (root-toplevel)))))))
 
-(defun demo-virtual-event (&key theme)
+(defun demo-virtual-event-aliasing (&key theme)
   (setf *debug-tk* t)
   (with-nodgui (:theme theme)
     (let* ((insert-event #$<<insert>>$)
            (text-area    (make-instance 'text))
            (button-insert (make-instance 'button
-                                        :text "fire virtual-event"))
+                                         :text "fire virtual-event"))
            (button-remove (make-instance 'button
                                          :text "delete virtual event"
                                          :command (lambda ()

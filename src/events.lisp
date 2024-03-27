@@ -110,7 +110,8 @@
     (format-wish (tclize `(event add
                                  ,virtual-event " "
                                  ,(reduce (lambda (a b) (format nil "~a ~a" a b))
-                                          events))))))
+                                          events
+                                          :initial-value ""))))))
 
 (defun remove-event-alias (virtual-event &rest events)
   (format-wish (tclize `(event delete ,virtual-event " "
