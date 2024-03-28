@@ -106,12 +106,12 @@
            ,results)))))
 
 (defun add-event-alias (virtual-event &rest events)
+  (assert events)
   (let ((*suppress-newline-for-tcl-statements* t))
     (format-wish (tclize `(event add
                                  ,virtual-event " "
                                  ,(reduce (lambda (a b) (format nil "~a ~a" a b))
-                                          events
-                                          :initial-value ""))))))
+                                          events))))))
 
 (defun remove-event-alias (virtual-event &rest events)
   (format-wish (tclize `(event delete ,virtual-event " "
@@ -119,7 +119,7 @@
                                         events
                                         :initial-value "")))))
 
-(defun fire-event-alias (window virtual-event &rest options)
+(defun fire-event (window virtual-event &rest options)
   (format-wish (tclize `(event generate
                                ,(widget-path window) " "
                                ,virtual-event ,@options))))

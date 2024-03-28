@@ -179,6 +179,10 @@
                                                      :text "3D rendering demo"
                                                      :command (lambda ()
                                                                 (demo-terrain))))
+           (demo-virtual-event  (make-instance 'button
+                                               :text "Virtual event"
+                                               :command (lambda ()
+                                                          (demo-virtual-event))))
            (demo-virtual-event-alias  (make-instance 'button
                                                      :text "Virtual event aliasing"
                                                      :command (lambda ()
@@ -229,7 +233,8 @@
       (grid demo-animation           13 0 :sticky :nswe)
       (grid demo-pixel-buffer        13 1 :sticky :nswe)
       (grid demo-3d                  13 2 :sticky :nswe)
-      (grid demo-virtual-event-alias 14 0 :sticky :nswe)
+      (grid demo-virtual-event       14 0 :sticky :nswe)
+      (grid demo-virtual-event-alias 14 1 :sticky :nswe)
       (grid b-quit                   15 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
@@ -1621,4 +1626,24 @@
                            (format nil
                                    "[~a] virtual event fired~%" (event-timestamp e)))))
       (configure button-insert
-                 :command (lambda () (fire-event-alias text-area insert-event))))))
+                 :command (lambda () (fire-event text-area insert-event))))))
+
+(defun demo-virtual-event (&key theme)
+  (setf *debug-tk* t)
+  (with-nodgui (:theme theme)
+    (let* ((insert-event #$<<insert>>$)
+           (text-area    (make-instance 'text)))
+      (append-text text-area
+                   (format nil "Press return key to fire a the virtual event ~a~%" insert-event))
+      (grid text-area     0 0)
+      (bind text-area
+            insert-event
+            (lambda (e)
+              (insert-text text-area
+                           (format nil
+                                   "[~a] virtual event fired~%" (event-timestamp e)))))
+      (bind (root-toplevel)
+            #$<Return>$
+            (lambda (e)
+              (declare (ignore e))
+              (fire-event text-area insert-event))))))

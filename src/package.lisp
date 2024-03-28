@@ -1605,7 +1605,7 @@
            #:lambda-debounce
            #:add-event-alias
            #:remove-event-alias
-           #:fire-event-alias
+           #:fire-event
            #:event-alias-info
            #:wait-complete-redraw
            #:button
