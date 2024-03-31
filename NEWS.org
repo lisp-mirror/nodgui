@@ -1,3 +1,9 @@
+* 2024-03-31 Version 0.6.1.0
+  - [new feature]
+    - added procedures related to events management
+  - [bugfix]
+    - fixed escaping of strings inserted in a text widget.
+
 * 2024-03-12  Version 0.6.0.2
   - [new feature]
     - added ~command~ option for configuring button widget, for example:
@@ -20,6 +26,7 @@
     - fixed escaping of treeview's row id;
     - fixed escaping of treeview's row text (first column);
     - fixed blocking of pixelbuffer demo.
+
 * 2024-02-17 Version 0.6.0.1
   - [new feature]
     Added new widgets:
