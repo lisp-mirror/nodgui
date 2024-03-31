@@ -133,28 +133,24 @@ All of the above libraries are available on quicklisp.
 
 * License
 
- Portions Copyright © cage
+  This software is Copyright © cage.
 
- Portions Copyright (c) 2003-2010  Peter Herth
+  Derived from:
 
- Portions Copyright (c) 2005-2010 Thomas F. Burdick
+   - © Peter Herth;
+   - © Thomas F. Burdick;
+   - © Cadence Design Systems;
+   - © Daniel Herring.
 
- Portions Copyright (c) 2006-2010 Cadence Design Systems
+  The authors grant you the rights to distribute and use this software as governed by the terms of the Lisp Lesser GNU Public License (http://opensource.franz.com/preamble.html), known as the LLGPL.
 
- Portions Copyright (c) 2010 Daniel Herring
-
- The authors grant you the rights to distribute and use this software as governed by the terms
- of the Lisp Lesser GNU Public License (http://opensource.franz.com/preamble.html), known as the LLGPL.
-
- This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
  This library uses code from other authors see the file [[./LICENSES.org]] for details.
 
 ** Themes
 
-The themes definitions found in the ~themes/~ subdirectory are
-distributed with many different license, please carefully check the file
-~LICENSE.org~ in each theme's subdirectory (e.g [[./themes/yaru/LICENSE.org]]) for more information.
+The themes definitions found in the ~themes/~ subdirectory are distributed with many different license, please carefully check the file ~LICENSE.org~ in each theme's subdirectory (e.g [[./themes/yaru/LICENSE.org]]) for more information.
 
 * Acknowledgment
 
