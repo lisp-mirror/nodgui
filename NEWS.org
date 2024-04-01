@@ -1,3 +1,7 @@
+* 2024-03-31 Version 0.6.1.1
+  - [bugfix]
+    - fixed error signalled from TK interpreter when passing floating point value from lisp.
+
 * 2024-03-31 Version 0.6.1.0
   - [new feature]
     - added procedures related to events management

@@ -1,10 +1,29 @@
-2024-03-31 cage <cage@invalid>
+2024-04-01 cage
 
-	* README.org:
+        * src/utils.lisp:
 
-	- updated copyright in README.
+        - ensured bordeaux-thread print floating point number without the 'f';
 
-2024-03-28 cage <cage@invalid>
+	(bt2:make-thread (lambda () (format t "~a" 1.0)))
+
+	prints: "1.0f0" that makes "wish" interpreter signals an error.
+
+	(nodgui.utils:make-thread (lambda () (format t "~a" 1.0)))
+
+	prints "1.0" now.
+
+2024-03-31 cage
+
+        * Changelog,
+        * NEWS.org,
+        * README.org,
+        * nodgui.asd:
+
+        - updated copyright in README.
+        - increased version number;
+        - updated NEWS and Changelog files.
+
+2024-03-28 cage
 
 	* src/demo-tests.lisp,
 	* src/events.lisp,
@@ -15,7 +34,7 @@
 	'add-event-alias';
 	- added a demo for virtual event.
 
-2024-03-27 cage <cage@invalid>
+2024-03-27 cage
 
 	* src/demo-tests.lisp,
 	* src/events.lisp:
@@ -23,7 +42,7 @@
 	- renamed demo about virtual events aliasing.
 	- changed demo's name.
 
-2024-03-25 cage <cage@invalid>
+2024-03-25 cage
 
 	* NEWS.org,
 	* src/demo-tests.lisp,
@@ -35,7 +54,7 @@
 	- bypassed escaping for text inserted in a text widget;
 	- incresed level of entries in news file.
 
-2024-03-12 cage <cage@invalid>
+2024-03-12 cage
 
 	* Changelog,
 	* NEWS.org,
