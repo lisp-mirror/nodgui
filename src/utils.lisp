@@ -532,7 +532,11 @@
        (defun ,function-name (,@arg) ,@body))))
 
 (definline make-thread (function &key (name nil) (initial-bindings *thread-default-special-bindings*))
-  (bt2:make-thread function :name name :initial-bindings initial-bindings))
+  (bt2:make-thread function
+                   :name name
+                   :initial-bindings (append initial-bindings
+                                             (list (cons '*read-default-float-format*
+                                                         ''single-float)))))
 
 (definline make-lock (&optional name)
   (bt2:make-lock :name name))
