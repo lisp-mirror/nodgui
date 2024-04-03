@@ -179,6 +179,7 @@
            #:join-thread
            #:destroy-thread
            #:threadp
+           #:thread-alive-p
            #:define-compiler-macro*))
 
 (defpackage :syncronized-queue

@@ -563,6 +563,9 @@
 (definline threadp (maybe-thread)
   (bt2:threadp maybe-thread))
 
+(definline thread-alive-p (thread)
+  (bt2:thread-alive-p thread))
+
 (defmacro define-compiler-macro* (name &body args)
   (with-gensyms (low-level-function-name)
     `(progn
