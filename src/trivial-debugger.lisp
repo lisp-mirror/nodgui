@@ -30,15 +30,14 @@
             (setf (backtrace prototype)
                   (with-output-to-string (out)
                     (print-backtrace condition out)))
-            (with-modal-toplevel (tl :title title)
-              (let* ((toplevel-widget (modal-toplevel-root-widget tl))
-                     (debugger (make-instance class
-                                              :backtrace (backtrace prototype)
-                                              :master  toplevel-widget
-                                              :condition condition)))
+            (with-toplevel (toplevel-widget :title title)
+              (let ((debugger (make-instance class
+                                             :backtrace (backtrace prototype)
+                                             :master  toplevel-widget
+                                             :condition condition)))
                 (on-close toplevel-widget
                           (lambda ()
-                            (exit-from-modal-toplevel tl)
+                            (exit-wish)
                             (abort-condition-handler debugger)))
                 (pack debugger))))))
       (constantly nil)))
@@ -145,8 +144,7 @@
                (setf (text show) "Show details"
                      (command show) #'show))
              (exit ()
-               (exit-wish)
-               (uiop:quit 1)))
+               (ignore-errors (exit-wish))))
       (setf (command exit) #'exit
             (command show) #'show
             (command report) (lambda () (report-bug handler)))

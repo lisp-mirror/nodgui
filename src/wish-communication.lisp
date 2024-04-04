@@ -604,9 +604,9 @@ error-strings) are ignored."
 (defun manage-wish-output (event)
   (dbg "manage ~a from" event)
   (cond
-    ((or (null event)
-         (event-got-error-p event))
-     (exit-wish)
+    ((null event)
+     (error "Wish interpreter returned a null event"))
+    ((event-got-error-p event)
      (error (second event)))
     ((eq (first event) :data)
      (push-enqueued-data event))
@@ -671,9 +671,13 @@ error-strings) are ignored."
                               (loop while (not (break-mainloop-p))
                                     do
                                        (dbg "reading input wait")
-                                       (let ((input (read-event +no-event-value+)))
-                                         (dbg "read input ~a" input)
-                                         (manage-wish-output input)))
+                                       (handler-case
+                                           (let ((input (read-event +no-event-value+)))
+                                             (dbg "read input ~a" input)
+                                             (manage-wish-output input))
+                                         (error (e)
+                                           (exit-wish)
+                                           (show-debugger e))))
                               (dbg "read input thread terminated")))
                           :name "read loop"
                           :initial-bindings thread-special-bindings))))
@@ -754,3 +758,7 @@ error-strings) are ignored."
                   (setf results-after-exit (funcall thunk)))))
         (wait-mainloop-threads)
         results-after-exit))))
+
+(defun show-debugger (error)
+  (with-nodgui (:debugger-class 'graphical-condition-handler)
+    (error error)))
