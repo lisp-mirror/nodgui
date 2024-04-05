@@ -96,7 +96,8 @@
   (saved-main-loop-threads '())
   (main-loop-coordination-data nil)
   (saved-main-loop-coordination-data '())
-  (variables (make-hash-table :test #'equal)))
+  (variables (make-hash-table :test #'equal))
+  (debug-level :development))
 
 (defmethod wish-variable (name (wish nodgui-connection))
   (gethash name (wish-variables wish)))
@@ -677,7 +678,10 @@ error-strings) are ignored."
                                              (manage-wish-output input))
                                          (error (e)
                                            (exit-wish)
-                                           (show-debugger e))))
+                                           (if (eq (wish-debug-level *wish*)
+                                                   :deploy)
+                                               (show-debugger e)
+                                               (error e)))))
                               (dbg "read input thread terminated")))
                           :name "read loop"
                           :initial-bindings thread-special-bindings))))
@@ -687,7 +691,7 @@ error-strings) are ignored."
 (defmacro with-nodgui ((&rest keys
                         &key
                           (title   "")
-                          (debug    2)
+                          (debug    :development)
                           (main-loop-thread-special-bindings *thread-default-special-bindings*)
                           (stream nil)
                         &allow-other-keys)
@@ -695,8 +699,7 @@ error-strings) are ignored."
   "Create a new Nodgui connection, evaluate BODY, and enter the main loop.
 
   :DEBUG indicates the level of debugging support to provide.  It can be a
-  number from 0 to 3, or one of the corresponding keywords:
-  :minimum, :deploy, :develop, or :maximum.
+  one of the keywords: :deploy, :development.
 
   If :STREAM is non-NIL, it should be a two-way stream connected to a running
   wish.  This will be used instead of running a new wish.
@@ -716,6 +719,8 @@ error-strings) are ignored."
                          &rest keys
                          &key stream &allow-other-keys)
   "Functional interface to with-nodgui, provided to allow the user the build similar macros."
+  (assert (or (null (getf keys :debug))
+              (member (getf keys :debug) '(:deploy :development))))
   (flet ((start-wish ()
            (apply #'start-wish
                   (append (filter-keys '(:stream)
@@ -743,6 +748,8 @@ error-strings) are ignored."
       (when (getf keys :debugger-class)
         (setf (wish-call-with-condition-handlers-function *wish*)
               (make-call-with-condition-handlers-function (getf keys :debugger-class))))
+      (setf (wish-debug-level *wish*)
+            (getf keys :debug :development))
       (start-main-loop :thread-special-bindings main-loop-special-bindings)
       (start-reading-loop)
       (let ((results-after-exit nil))
