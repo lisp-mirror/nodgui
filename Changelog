@@ -1,16 +1,45 @@
+2024-04-05 cage
+
+	* src/wish-communication.lisp:
+
+	- actually used the keyword argument ':debug' in macro 'with-nodgui'
+	when the  debug argument is  bound to ':deploy' the  TCL interpreter
+	errors are shown in the GUI.
+
+2024-04-04 cage
+
+	* src/trivial-debugger.lisp,
+	* src/wish-communication.lisp:
+
+	- shown a window printing the error when the wish interpreter signaled
+	a problem.
+
+2024-04-03 cage
+
+	* src/package.lisp,
+	* src/utils.lisp,
+	* src/wish-communication.lisp:
+
+	- printed a more meaningful error message when the wish interpreter
+	signaled an error.
+
 2024-04-01 cage
 
-        * src/utils.lisp:
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
+	* src/utils.lisp,
+	* src/wish-communication.lisp:
 
-        - ensured bordeaux-thread print floating point number without the 'f';
-
+	- ensured bordeaux-thread print floating point number without the 'f';
 	(bt2:make-thread (lambda () (format t "~a" 1.0)))
-
-	prints: "1.0f0" that makes "wish" interpreter signals an error.
-
+           prints: "1.0f0"
+	that makes "wish" interpreter signals an error.
 	(nodgui.utils:make-thread (lambda () (format t "~a" 1.0)))
-
-	prints "1.0" now.
+           prints "1.0" now.
+	- increased version number;
+	- updated NEWS and Changelog files.
+	- removed two hardcoded constants.
 
 2024-03-31 cage
 

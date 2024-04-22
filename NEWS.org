@@ -1,3 +1,7 @@
+* 2024-03-31 Version 0.6.1.2
+  - [new feature]
+    - printed the TCL backtrace when sending wrong commands to wish interpreter.
+
 * 2024-03-31 Version 0.6.1.1
   - [bugfix]
     - fixed error signalled from TK interpreter when passing floating point value from lisp.

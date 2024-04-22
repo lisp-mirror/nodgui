@@ -94,7 +94,7 @@ All of the above libraries are available on quicklisp.
 
 ** C Libraries
 
-- libjpeg-turbo
+- turboJpeg (high level api for libjpeg-turbo)
   https://www.libjpeg-turbo.org/
 
 ** TCL/TK libraries (optional)
