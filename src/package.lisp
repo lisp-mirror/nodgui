@@ -1782,6 +1782,7 @@
            #:listbox-values-in-range
            #:listbox-all-values
            #:listbox-move-selection
+           #:listbox-index-at
            #:listbox-colorize-item
            #:listbox-nearest
            #:listbox-select
@@ -1790,6 +1791,7 @@
            #:listbox-export-selection
            #:load-text
            #:scroll-until-line-on-top
+           #:index->line-char-coordinates
            #:lower
            #:mainloop
            #:make-items
@@ -1849,6 +1851,7 @@
            #:panes
            #:paned-widget-p
            #:save-text
+           #:text-in-range
            #:scale
            #:screen-height
            #:screen-height-mm

@@ -80,7 +80,7 @@
 (defmethod cursor-index ((text text))
   (with-read-data (nil)
     (format-wish "senddatastring [~a index insert]" (widget-path text))
-    (let* ((raw-index (read-data)))
+    (let ((raw-index (read-data)))
       (multiple-value-bind (lines chars)
           (parse-line-char-index raw-index)
         (values lines chars raw-index)))))
@@ -194,6 +194,8 @@
 (defgeneric height-in-chars (object))
 
 (defgeneric scroll-until-line-on-top (object line-index &optional column-index))
+
+(defgeneric index->line-char-coordinates (object index))
 
 (defun make-indices-xy (x y)
   (format nil "@~a,~a" x y))
@@ -807,6 +809,17 @@
     (format-wish (tclize `(,(widget-path object) " " yview {+ ,indices })))
     object))
 
+(defmethod index->line-char-coordinates ((object text) coordinates)
+  (with-read-data (nil)
+    (format-wish (tclize `(senddatastring [ ,(widget-path object)      " "
+                                          index
+                                          {+ ,(parse-indices coordinates) }
+                                          ])))
+    (let ((raw-index (read-data)))
+      (multiple-value-bind (lines chars)
+          (parse-line-char-index raw-index)
+        (values lines chars raw-index)))))
+
 ;;; scrolled-text
 
 (defclass scrolled-text (frame)
@@ -1104,6 +1117,10 @@
   (with-inner-text (text-widget object)
     (scroll-until-line-on-top text-widget line-index column-index)
     object))
+
+(defmethod index->line-char-coordinates ((object scrolled-text) coordinates)
+  (with-inner-text (text-widget object)
+    (index->line-char-coordinates text-widget coordinates)))
 
 (defmethod insert-window ((object scrolled-text) obj
                           &optional (coordinates (raw-coordinates object)))

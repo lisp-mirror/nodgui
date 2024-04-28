@@ -1700,6 +1700,10 @@
 (defmethod listbox-get-selection-index ((object multifont-listbox))
   (list (selected-index object)))
 
+(defmethod listbox-index-at ((object multifont-listbox) index)
+  (with-inner-text (text-widget object)
+    (index->line-char-coordinates text-widget index)))
+
 (defmethod listbox-get-selection-value ((object multifont-listbox))
   (with-accessors ((items items)) object
     (when items
@@ -1842,6 +1846,10 @@ if  a  number   is  given  the  corresponding   element  is  selected."
   (with-accessors ((listbox listbox)) object
     (see listbox `(:line ,(1+ pos) :char 0))))
 
+(defmethod listbox-index-at ((object autocomplete-candidates) index)
+  (with-accessors ((listbox listbox)) object
+    (listbox-index-at listbox index)))
+
 (defclass autocomplete-entry ()
   ((autocomplete-entry-widget
     :initform nil
@@ -1921,6 +1929,20 @@ will shift the selected item up o down respectively."))
 
 (defun autocomplete-click-1-clsr (candidates-widget autocomplete-entry-widget)
   (lambda (event)
+    (a:when-let* ((index         (listbox-index-at candidates-widget
+                                                   `(:x ,(event-x event)
+                                                     :y ,(event-y event))))
+                  (selected-line (text-in-range (inner-text (listbox candidates-widget))
+                                                `(:line ,index :char 0)
+                                                `(+ (:line ,index :char 0) 1 :lines)))
+                  (selected      (trim selected-line)))
+      (setf (text autocomplete-entry-widget) selected)
+      (set-cursor-index autocomplete-entry-widget :end)
+      (focus autocomplete-entry-widget)
+      (hide-candidates candidates-widget))))
+
+(defun autocomplete-set-text-from-selected (candidates-widget autocomplete-entry-widget)
+  (lambda (event)
     (declare (ignore event))
     (a:when-let ((selected (listbox-get-selection-value candidates-widget)))
       (setf (text autocomplete-entry-widget) (first selected))
@@ -1954,8 +1976,8 @@ will shift the selected item up o down respectively."))
                           (= (listbox-size candidates-widget) 1)
                           (not (string= (event-char event)
                                         nodgui.event-symbols:+backspace+)))
-                     (funcall (autocomplete-click-1-clsr candidates-widget
-                                                         autocomplete-entry-widget)
+                     (funcall (autocomplete-set-text-from-selected candidates-widget
+                                                                   autocomplete-entry-widget)
                               nil))
                     ((> (listbox-size candidates-widget) 0)
                      (listbox-select candidates-widget 0)
@@ -1988,7 +2010,7 @@ will shift the selected item up o down respectively."))
     (bind autocomplete-entry-widget #$<KeyPress-Up>$ (scroll-candidates candidates-widget -1))
     (bind autocomplete-entry-widget
           #$<KeyPress-Tab>$
-          (autocomplete-click-1-clsr candidates-widget autocomplete-entry-widget)
+          (autocomplete-set-text-from-selected candidates-widget autocomplete-entry-widget)
           :exclusive t)
     (bind autocomplete-entry-widget
           #$<KeyPress>$

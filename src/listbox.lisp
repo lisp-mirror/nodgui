@@ -97,6 +97,8 @@
 
 (defgeneric listbox-move-selection (object offset))
 
+(defgeneric listbox-index-at (object index))
+
 (defmethod listbox-append ((l listbox) values)
   "append values (which may be a list) to the list box"
   (if (listp values)
@@ -226,6 +228,29 @@ alternatively a list of numbers may be given"
     (listbox-select object index)
     object))
 
+(defmethod listbox-index-at ((object listbox) (index (eql :end)))
+  (format-wish "~a index end" (widget-path object)))
+
+(defmethod listbox-index-at ((object listbox) (index (eql :active)))
+  (format-wish "~a index active" (widget-path object)))
+
+(defmethod listbox-index-at ((object listbox) (index (eql :anchor)))
+  (format-wish "~a index anchor" (widget-path object)))
+
+(defmethod listbox-index-at ((object listbox) (index number))
+  (assert (>= index 0))
+  (format-wish "~a index ~a" (widget-path object) (truncate index)))
+
+(defmethod listbox-index-at ((object listbox) (index list))
+  (assert (eq (first index) :x))
+  (assert (numberp (second index)))
+  (assert (eq (third index) :y))
+  (assert (numberp (fourth index)))
+  (format-wish "~a index @~a,~a"
+               (widget-path object)
+               (truncate (second index))
+               (truncate (fourth index))))
+
 (defclass scrolled-listbox (frame)
   ((listbox
     :initform nil
@@ -320,6 +345,10 @@ alternatively a list of numbers may be given"
 (defmethod listbox-move-selection ((object scrolled-listbox) offset)
   (with-accessors ((listbox listbox)) object
     (listbox-move-selection listbox offset)))
+
+(defmethod listbox-index-at ((object scrolled-listbox) index)
+  (with-accessors ((listbox listbox)) object
+    (listbox-index-at listbox index)))
 
 (defmethod see ((object scrolled-listbox) pos)
   (with-accessors ((listbox listbox)) object
