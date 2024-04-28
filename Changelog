@@ -1,10 +1,31 @@
+2024-04-28 cage
+
+        * src/listbox.lisp,
+        * src/nodgui-mw.lisp,
+        * src/package.lisp,
+        * src/text.lisp:
+
+        - added 'listbox-index-at';
+        - added 'index->line-char-coordinates';
+        - [MW] fixed mouse selection of item in autocomplete entry widget.
+
+2024-04-22 cage
+
+        * Changelog,
+        * NEWS.org,
+        * README.org,
+        * nodgui.asd:
+
+        - increased version number;
+        - updated documentation, NEWS and chengelog.
+
 2024-04-05 cage
 
-	* src/wish-communication.lisp:
+        * src/wish-communication.lisp:
 
-	- actually used the keyword argument ':debug' in macro 'with-nodgui'
-	when the  debug argument is  bound to ':deploy' the  TCL interpreter
-	errors are shown in the GUI.
+        - actually used the keyword argument ':debug' in macro 'with-nodgui'
+        when the  debug argument is  bound to ':deploy' the  TCL interpreter
+        errors are shown in the GUI.
 
 2024-04-04 cage
 

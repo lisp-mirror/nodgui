@@ -1,3 +1,10 @@
+* 2024-04-28 Version 0.6.2.0
+ - [new feature]
+   - added "listbox-index-at";
+   - added "index->line-char-coordinates" for text widget;
+ - [bugfix]
+   - [MW] fixed mouse selection of item in autocomplete entry widget.
+
 * 2024-03-31 Version 0.6.1.2
   - [new feature]
     - printed the TCL backtrace when sending wrong commands to wish interpreter.
