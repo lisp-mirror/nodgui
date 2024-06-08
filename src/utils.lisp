@@ -577,3 +577,12 @@
                (funcall (symbol-function low-funname) ,@args)
                (progn
                  form)))))))
+
+(cffi:defcfun (%memcpy "memcpy")
+    :pointer
+  (destination   :pointer)
+  (source        :pointer)
+  (size          :unsigned-int))
+
+(defun copy-ffi-vector (source-pointer destination-pointer octets-size)
+  (%memcpy destination-pointer source-pointer octets-size))

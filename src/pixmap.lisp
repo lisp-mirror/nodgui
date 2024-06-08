@@ -44,6 +44,36 @@
 (defun free-buffer-memory (buffer)
   (static-vectors:free-static-vector buffer))
 
+(defun copy-buffer-row (source
+                        destination
+                        source-buffer-width
+                        destination-buffer-width
+                        x-source
+                        y-source
+                        x-destination
+                        y-destination
+                        pixels-count)
+  (declare (fixnum x-source
+                   y-source
+                   x-destination
+                   y-destination
+                   pixels-count
+                   source-buffer-width
+                   destination-buffer-width))
+  (declare ((simple-array (unsigned-byte 32)) source destination))
+  (declare (optimize (speed 3) (debug 3) (safety 0)))
+  (let ((offset-source      (to:f+ x-source      (the fixnum
+                                                      (to:f* y-source
+                                                             source-buffer-width))))
+        (offset-destination (to:f+ x-destination (the fixnum
+                                                      (to:f* y-destination
+                                                             destination-buffer-width)))))
+    (copy-ffi-vector (cffi:inc-pointer (static-vectors:static-vector-pointer source)
+                                       (* offset-source 4))
+                     (cffi:inc-pointer (static-vectors:static-vector-pointer destination)
+                                       (* offset-destination 4))
+                     (to:f* pixels-count 4))))
+
 (defmacro with-buffer ((buffer width height) &body body)
   `(let ((,buffer nil))
      (unwind-protect

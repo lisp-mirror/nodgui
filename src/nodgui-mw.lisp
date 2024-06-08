@@ -2214,3 +2214,9 @@ will shift the selected item up o down respectively."))
           (bind-tag-set-focus-next ok-button password-entry)
           (focus password-entry))))
     res))
+
+(defun event-key-dump ()
+  (with-nodgui ()
+    (bind (root-toplevel)
+          #$<KeyPress>$
+          (lambda (e) (format *error-output* "~s~%" e)))))

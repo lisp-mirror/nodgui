@@ -117,6 +117,41 @@
 
 (defparameter *blending-function* #'blending-function-replace)
 
+(defun blit-solid (buffer-source
+                   buffer-source-width
+                   buffer-destination
+                   buffer-destination-width
+                   source-row
+                   source-column
+                   destination-row
+                   destination-column
+                   source-last-row
+                   source-last-column)
+  "Note: no bounds checking is done. This function supposed to be faster than `blit' when `*blending-function*' is bound to `#'blending-function-replace'."
+  (declare ((simple-array (unsigned-byte 32)) buffer-source buffer-destination))
+  (declare (fixnum buffer-source-width
+                   buffer-destination-width
+                   source-row
+                   source-column
+                   destination-row
+                   destination-column
+                   source-last-row
+                   source-last-column))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let ((pixels-count (to:f- source-last-column source-column)))
+    (loop for from-row fixnum from source-row below source-last-row
+          for to-row fixnum from destination-row do
+            (pix:copy-buffer-row buffer-source
+                                 buffer-destination
+                                 buffer-source-width
+                                 buffer-destination-width
+                                 source-column
+                                 from-row
+                                 destination-column
+                                 to-row
+                                 pixels-count)))
+  buffer-destination)
+
 (defun blit (buffer-source
              buffer-source-width
              buffer-destination
@@ -154,9 +189,9 @@
                           (color (funcall *blending-function* color-source color-destination)))
                      (declare (dynamic-extent color-destination color-source))
                      (setf (to:faref buffer-destination (to:f+ (to:f* row-destination
-                                                                buffer-destination-width)
-                                                         (to:f+ destination-column to-column)))
-                     color)))))
+                                                                      buffer-destination-width)
+                                                               (to:f+ destination-column to-column)))
+                           color)))))
     (loop for from-row fixnum from source-row below source-last-row
           for to-row fixnum from destination-row do
             (copy-row from-row to-row))

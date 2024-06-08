@@ -180,7 +180,8 @@
            #:destroy-thread
            #:threadp
            #:thread-alive-p
-           #:define-compiler-macro*))
+           #:define-compiler-macro*
+           #:copy-ffi-vector))
 
 (defpackage :syncronized-queue
   (:use :cl
@@ -374,6 +375,7 @@
    #:make-buffer-elements
    #:free-buffer-memory
    #:with-buffer
+   #:copy-buffer-row
    #:make-bits-array
    #:pixmap
    #:width
@@ -1477,6 +1479,7 @@
    #:*blending-function*
    #:sum-pixels
    #:blit
+   #:blit-solid
    #:blit-transform
    #:clear-buffer
    #:fill-rectangle
