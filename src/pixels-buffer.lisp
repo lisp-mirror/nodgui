@@ -139,7 +139,19 @@
                    source-last-column))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((pixels-count (to:f- source-last-column source-column)))
-    (loop for from-row fixnum from source-row below source-last-row
+    (if (and (= destination-column 0)
+             (= source-last-column
+                buffer-destination-width))
+        (pix:copy-buffer-row buffer-source
+                             buffer-destination
+                             buffer-source-width
+                             buffer-destination-width
+                             source-column
+                             source-row
+                             destination-column
+                             destination-row
+                             pixels-count)
+        (loop for from-row fixnum from source-row below source-last-row
           for to-row fixnum from destination-row do
             (pix:copy-buffer-row buffer-source
                                  buffer-destination
@@ -150,7 +162,7 @@
                                  destination-column
                                  to-row
                                  pixels-count)))
-  buffer-destination)
+    buffer-destination))
 
 (defun blit (buffer-source
              buffer-source-width
