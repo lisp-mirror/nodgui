@@ -376,6 +376,7 @@
    #:free-buffer-memory
    #:with-buffer
    #:copy-buffer-row
+   #:copy-buffer-row-pointer
    #:make-bits-array
    #:pixmap
    #:width
@@ -1485,7 +1486,12 @@
    #:fill-rectangle
    #:fill-circle
    #:draw-circle
-   #:draw-line))
+   #:draw-line
+   #:draw-text
+   #:init-font-system
+   #:terminate-font-system
+   #:open-font
+   #:close-font))
 
 (defpackage nodgui.opengl-frame
   (:use :cl)

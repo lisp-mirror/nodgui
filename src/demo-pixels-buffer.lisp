@@ -788,14 +788,18 @@
                               (make-thread #'draw-fire-thread)))))))
 
 (defun demo-pixel-buffer ()
-  (let ((sdl-context nil)
-        (scaling        1.0)
-        (rotation       0.0)
-        (translating-x  0)
-        (translating-y  0)
-        (context-buffer nil)
-        (context-width   nil)
-        (context-height  nil))
+  (px:init-font-system)
+  (let* ((sdl-context nil)
+         (scaling        1.0)
+         (rotation       0.0)
+         (translating-x  0)
+         (translating-y  0)
+         (context-buffer nil)
+         (context-width   nil)
+         (context-height  nil)
+         (font-path (asdf:system-relative-pathname 'sdl2-ttf-examples
+                                                   "examples/PROBE_10PX_OTF.otf"))
+         (font           (px:open-font font-path 20)))
     (flet ((make-button (master label callback)
              (make-instance 'button
                             :master  master
@@ -814,6 +818,16 @@
                                                         context-width
                                                         context-height
                                                         0 0 0)
+                                       (px:draw-text context-buffer
+                                                     context-width
+                                                     "Hello there!"
+                                                     font
+                                                     10
+                                                     20
+                                                     255
+                                                     255
+                                                     255
+                                                     0)
                                        (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
                                                           (nodgui.pixmap:width  *bell-sprite*)
                                                           (nodgui.pixmap:height *bell-sprite*)
@@ -896,6 +910,8 @@
                                                 :text    "quit"
                                                 :command (lambda ()
                                                            (stop-animation)
+                                                           (px:close-font font)
+                                                           (px:terminate-font-system)
                                                            (ctx:quit-sdl sdl-context)
                                                            (exit-nodgui)))))
           (grid info               0 0)

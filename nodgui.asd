@@ -39,6 +39,7 @@
                :flexi-streams
                :bordeaux-threads
                :sdl2
+               :sdl2-ttf
                :cl-opengl
                :static-vectors
                :trivial-garbage

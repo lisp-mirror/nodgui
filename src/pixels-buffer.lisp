@@ -164,6 +164,53 @@
                                  pixels-count)))
     buffer-destination))
 
+(defun blit-solid-ffi-pointer (buffer-source
+                                     buffer-source-width
+                                     buffer-destination
+                                     buffer-destination-width
+                                     source-row
+                                     source-column
+                                     destination-row
+                                     destination-column
+                                     source-last-row
+                                     source-last-column)
+  "Note: no bounds checking is done. This function supposed to be faster than `blit' when `*blending-function*' is bound to `#'blending-function-replace'."
+  (declare ((simple-array (unsigned-byte 32)) buffer-destination))
+  (declare (fixnum buffer-source-width
+                   buffer-destination-width
+                   source-row
+                   source-column
+                   destination-row
+                   destination-column
+                   source-last-row
+                   source-last-column))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let ((pixels-count (to:f- source-last-column source-column)))
+    (if (and (= destination-column 0)
+             (= source-last-column
+                buffer-destination-width))
+        (pix::copy-buffer-row-ffi-pointer buffer-source
+                                          buffer-destination
+                                          buffer-source-width
+                                          buffer-destination-width
+                                          source-column
+                                          source-row
+                                          destination-column
+                                          destination-row
+                                          pixels-count)
+        (loop for from-row fixnum from source-row below source-last-row
+              for to-row fixnum from destination-row do
+                (pix::copy-buffer-row-ffi-pointer buffer-source
+                                                  buffer-destination
+                                                  buffer-source-width
+                                                  buffer-destination-width
+                                                  source-column
+                                                  from-row
+                                                  destination-column
+                                                  to-row
+                                                  pixels-count)))
+    buffer-destination))
+
 (defun blit (buffer-source
              buffer-source-width
              buffer-destination
@@ -226,6 +273,7 @@
            (declare ((simple-array (unsigned-byte 32)) buffer))
            (declare (fixnum width height minimum-delta-t))
            (sdl2:with-init (:everything)
+             (init-font-system)
              (setf window
                    (ctx::create-window-from-pointer (ctx::window-id->pointer window-id)))
              (sdl2:with-renderer (renderer window :flags '(:accelerated))
@@ -264,7 +312,9 @@
                                     (sdl2:render-present renderer))))
                             (sdl2:delay (to:f- minimum-delta-t dt)))
                         (sdl2:delay minimum-delta-t))))
-                 (:quit () t))))))))))
+                 (:quit ()
+                        (terminate-font-system)
+                        t))))))))))
 
 (defun make-rendering-thread-blocking (context)
   (nodgui.utils:make-thread
@@ -280,6 +330,7 @@
                           (time-spent      ctx:time-spent)
                           (minimum-delta-t ctx:minimum-delta-t)) context
            (sdl2:with-init (:everything)
+             (init-font-system)
              (setf window
                    (ctx::create-window-from-pointer (ctx::window-id->pointer window-id)))
              (sdl2:with-renderer (renderer window :flags '(:accelerated))
@@ -298,7 +349,9 @@
                                            (to:f* +channels-number+ width)) ; pitch
                       (sdl2:render-copy renderer texture)
                       (sdl2:render-present renderer))))
-                 (:quit () t))))))))))
+                 (:quit ()
+                        (terminate-font-system)
+                        t))))))))))
 
 (defmethod initialize-instance :after ((object pixel-buffer-context)
                                        &key
@@ -896,3 +949,46 @@
                                                                       actual-to-row
                                                                       color)))))))))))))))))
   buffer-destination)
+
+(defun draw-text (buffer buffer-width text font x y r g b a)
+  (let* ((surface        (sdl2-ttf:render-utf8-blended font text r g b a))
+         (pixels         (sdl2:surface-pixels surface))
+         ;;(surface-width  (sdl2:surface-width surface))
+         (surface-height (sdl2:surface-height surface))
+         (surface-pitch  (sdl2:surface-pitch surface))
+         (surface-pixels-width (/ surface-pitch 4)))
+    (flet ((extract-channel (raw-pixel shift)
+             (logand (ash raw-pixel shift)
+                     #xff)))
+      (pix:with-buffer (tmp-buffer (* surface-height surface-pixels-width) surface-height)
+        (loop for index from 0 below (* surface-height surface-pixels-width)
+              do
+                 (let* ((raw-pixel    (cffi:mem-aref pixels :uint32 index))
+                        (alpha        (extract-channel raw-pixel -24))
+                        (source-color (pix:assemble-color r g b alpha)))
+                   (setf (elt tmp-buffer index) source-color)))
+        (let ((*blending-function* #'blending-function-combine))
+          (blit tmp-buffer
+                surface-pixels-width
+                buffer
+                buffer-width
+                0
+                0
+                y
+                x
+                surface-height
+                surface-pixels-width)
+          (sdl2:free-surface surface))))))
+
+(defun init-font-system ()
+  (sdl2-ttf:init))
+
+(defun terminate-font-system ()
+  (when (> (sdl2-ttf:was-init) 0)
+    (sdl2-ttf:quit)))
+
+(defun open-font (font-path points-size)
+  (sdl2-ttf:open-font font-path points-size))
+
+(defun close-font (font-handle)
+  (sdl2-ttf:close-font font-handle))
