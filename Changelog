@@ -1,5 +1,18 @@
+2024-06-20 cage
+
+        * src/canvas-shapes.lisp,
+        * src/demo-tests.lisp:
+
+        - fixed instance name ('canvas-polygon' to 'polygon');
+        - fixed keyword argument name in 'make-polygon' (:coords argument does
+        not exists in 'polygon' class.
+        Thanks to the person who reported this issue!
+
 2024-04-28 cage
 
+        * Changelog,
+        * NEWS.org,
+        * nodgui.asd,
         * src/listbox.lisp,
         * src/nodgui-mw.lisp,
         * src/package.lisp,
@@ -8,6 +21,8 @@
         - added 'listbox-index-at';
         - added 'index->line-char-coordinates';
         - [MW] fixed mouse selection of item in autocomplete entry widget.
+        - increased version number;
+        - updated Changelog and news file.
 
 2024-04-22 cage
 
