@@ -126,13 +126,13 @@ outline-width: the width in pixel of the outline of this polygon"
                        (outline-width 1))
     "Make a polygon.
 canvas:        the canvas where draw the polygon
-coords:        the vertices of this polygon
+coords:        the vertices of this polygon  (x1 y1 x2 y2 ...)
 fill-color:    the color that fills this polygon
 outline-color: the color of  the contour that surrond this polygon
 outline-width: the width in pixel of the outline of this polygon"
-  (make-instance 'canvas-polygon
+  (make-instance 'polygon
                  :canvas        canvas
-                 :coords        coords
+                 :coordinates   coords
                  :fill-color    fill-color
                  :outline-color outline-color
                  :outline-width outline-width))

@@ -930,11 +930,23 @@
                (rotated-text (create-text canvas 0 20
                                           (strcat (format nil "Text can be rotated~%at an ")
                                                   "arbitrary angle like this!")
-                                          :angle -80)))
+                                          :angle -80))
+               (pentagon-radius 20)
+               (pentagon-coords (mapcar #'truncate
+                                        (flatten (loop for i from 0 below (* 2 pi)
+                                                       by (/ (* 2 pi) 5)
+                                                       collect
+                                                       (list (* pentagon-radius (cos i))
+                                                             (* pentagon-radius (sin i)))))))
+               (pentagon     (make-polygon canvas
+                                           pentagon-coords
+                                           :fill-color    "#00ff00"
+                                           :outline-color "#ff00ff")))
           (let ((aabb-rotated-text (canvas-item-bbox canvas rotated-text)))
             (item-move    canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0))
           (shape-move-to  bicolor-star (/ size 2) (/ size 2))
           (shape-move-to  star 30 30)
+          (shape-move-to  pentagon (- size pentagon-radius) pentagon-radius)
           (create-text    canvas 0 0  "Slices of the pie are clickable")
           (item-configure canvas arc1 "fill"  "#ff0000") ;; using x11-colors via cl-colors2
           (item-configure canvas arc2 "fill"  "#00ff00") ;; strings are accepted, though
