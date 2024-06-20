@@ -933,7 +933,9 @@
                                           :angle -80))
                (pentagon-radius 20)
                (pentagon-coords (mapcar #'truncate
-                                        (flatten (loop for i from 0 below (* 2 pi)
+                                        (flatten (loop for i from (- (/ pi 2))
+                                                         below (- (* 2 pi)
+                                                                  (/ pi 2))
                                                        by (/ (* 2 pi) 5)
                                                        collect
                                                        (list (* pentagon-radius (cos i))
@@ -946,7 +948,10 @@
             (item-move    canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0))
           (shape-move-to  bicolor-star (/ size 2) (/ size 2))
           (shape-move-to  star 30 30)
-          (shape-move-to  pentagon (- size pentagon-radius) pentagon-radius)
+          (shape-move-to  pentagon
+                          (- size (* 2
+                                     pentagon-radius))
+                          (* 2 pentagon-radius))
           (create-text    canvas 0 0  "Slices of the pie are clickable")
           (item-configure canvas arc1 "fill"  "#ff0000") ;; using x11-colors via cl-colors2
           (item-configure canvas arc2 "fill"  "#00ff00") ;; strings are accepted, though
