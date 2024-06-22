@@ -131,6 +131,7 @@
            #:jpgp
            #:file-jpg-p
            #:rgb->tk
+           #:make-tk-color
            #:safe-parse-number
            #:*default-epsilon*
            #:with-epsilon

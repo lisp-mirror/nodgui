@@ -323,6 +323,8 @@
 
 (gen-check-magic-number jpg +jpeg-magic-number+)
 
+;;; colors
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (defun rgb-struct->tk-color (rgb-struct)
@@ -349,6 +351,20 @@
   (named-readtables:defreadtable nodgui-color-syntax
     (:fuse :standard)
     (:dispatch-macro-char #\# #\% #'read-color-macro)))
+
+;;; numbers
+
+(defgeneric make-tk-color (object &key colors-list))
+
+(defmethod make-tk-color ((object cl-colors2:rgb) &key (colors-list nil))
+  (declare (ignore colors-list))
+  (rgb-struct->tk-color object))
+
+(defmethod make-tk-color ((object string) &key (colors-list nil))
+  (rgb-struct->tk-color (cl-colors2:as-rgb object :errorp t :colors-list colors-list)))
+
+(defmethod make-tk-color ((object symbol) &key (colors-list nil))
+  (rgb-struct->tk-color (cl-colors2:as-rgb object :errorp t :colors-list colors-list)))
 
 (defun safe-parse-number (number &key (fix-fn #'(lambda (e) (declare (ignore e)) nil)))
   (handler-bind ((parse-error

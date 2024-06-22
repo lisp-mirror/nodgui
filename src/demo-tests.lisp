@@ -942,10 +942,10 @@
                                                              (* pentagon-radius (sin i)))))))
                (pentagon     (make-polygon canvas
                                            pentagon-coords
-                                           :fill-color    "#00ff00"
-                                           :outline-color "#ff00ff")))
-          (let ((aabb-rotated-text (canvas-item-bbox canvas rotated-text)))
-            (item-move    canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0))
+                                           :fill-color    (make-tk-color :green)
+                                           :outline-color (make-tk-color :ff00ff)))
+               (aabb-rotated-text (canvas-item-bbox canvas rotated-text)))
+          (item-move    canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0)
           (shape-move-to  bicolor-star (/ size 2) (/ size 2))
           (shape-move-to  star 30 30)
           (shape-move-to  pentagon
