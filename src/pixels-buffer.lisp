@@ -839,10 +839,14 @@
              (scaled-pivot-column            (float-coordinate-scale (to:d pivot-column) scaling-column))
              (width-source-rectangle         (to:f- source-last-column source-column))
              (height-source-rectangle        (to:f- source-last-row source-row))
-             (scaled-origin-column-offset    (the fixnum (coordinate-scale source-column scaling-column)))
-             (scaled-origin-row-offset       (the fixnum (coordinate-scale source-row scaling-row)))
-             (scaled-translate-x             (the fixnum (coordinate-scale translate-x scaling-column)))
-             (scaled-translate-y             (the fixnum (coordinate-scale translate-y scaling-row))))
+             (scaled-origin-column-offset    (the fixnum
+                                                  (coordinate-scale source-column scaling-column)))
+             (scaled-origin-row-offset       (the fixnum
+                                                  (coordinate-scale source-row scaling-row)))
+             (scaled-translate-x             (the fixnum
+                                                  (coordinate-scale translate-x scaling-column)))
+             (scaled-translate-y             (the fixnum
+                                                  (coordinate-scale translate-y scaling-row))))
         (declare (dynamic-extent angle cos-reverse-angle sin-reverse-angle reverse-scaling-column
                                  reverse-scaling-row scaled-pivot-row scaled-pivot-column
                                  width-source-rectangle height-source-rectangle scaled-origin-column-offset
@@ -1033,13 +1037,16 @@
               :adjustable nil))
 
 (defun iaabb2= (a b)
-  (and
-   (= (elt a 0) (elt b 0))
-   (= (elt a 1) (elt b 1))
-   (= (elt a 2) (elt b 2))
-   (= (elt a 3) (elt b 3))))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array fixnum) a b))
+  (and (= (elt a 0) (elt b 0))
+       (= (elt a 1) (elt b 1))
+       (= (elt a 2) (elt b 2))
+       (= (elt a 3) (elt b 3))))
 
 (defun valid-iaabb2-p (aabb)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array fixnum) aabb))
   (and (>= (elt aabb 0) 0)
        (>= (elt aabb 1) 0)
        (>= (elt aabb 2) 0)
@@ -1054,6 +1061,9 @@
                 :fill-pointer nil))
 
 (defun expand-iaabb2 (aabb coord)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array fixnum) aabb))
+  (declare (nodgui.vec2:uivec2 coord))
   (when (< (elt coord 0) (elt aabb 0))
     (setf (elt aabb 0) (elt coord 0)))
   (when (> (elt coord 0) (elt aabb 2))
@@ -1074,33 +1084,50 @@
 (defun iaabb2->irect2 (coords)
   "(upper-left-x upper-left-y bottom-right-x bottom-right-y) to
    (upper-left-x upper-left-y  w h)"
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array fixnum) coords))
   (let ((x1 (elt coords 0))
         (y1 (elt coords 1))
         (x2 (elt coords 2))
         (y2 (elt coords 3)))
-  (make-iaabb2 x1 y1 (- x2 x1) (- y2 y1))))
+    (declare (fixnum x1 x2 y1 y2))
+    (make-iaabb2 x1
+                 y1
+                 (the fixnum (- x2 x1))
+                 (the fixnum (- y2 y1)))))
 
 (defun irect2->iaabb2 (coords)
   "(upper-left-x upper-left-y  w h) to
    (upper-left-x upper-left-y bottom-right-x bottom-right-y)"
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array fixnum) coords))
   (let ((x1 (elt coords 0))
         (y1 (elt coords 1))
         (w  (elt coords 2))
         (h  (elt coords 3)))
-  (make-iaabb2 x1 y1 (+ x1 w) (+ y1 h))))
+    (declare (fixnum x1 y1 w h))
+    (make-iaabb2 x1
+                 y1
+                 (the fixnum (+ x1 w))
+                 (the fixnum (+ y1 h)))))
 
-(defun irect2->iaabb2* (&rest coords)
+(defun irect2->iaabb2* (coords)
   (irect2->iaabb2 coords))
 
 (defun inside-iaabb2-p (aabb x y)
   "t if x y is inside this bounding box
    aabb is: (upper-left-x upper-left-y bottom-right-x bottom-right-y)"
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array fixnum) aabb))
+  (declare (fixnum x y))
   (and (>= x (elt aabb 0))
        (<= x (elt aabb 2))
        (>= y (elt aabb 1))
        (<= y (elt aabb 3))))
 
 (defun iaabb2-intersect-p (aabb1 aabb2)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array fixnum) aabb1 aabb2))
   (if (or (>= (iaabb2-min-x aabb1) (iaabb2-max-x aabb2))
           (<= (iaabb2-max-x aabb1) (iaabb2-min-x aabb2))
           (>= (iaabb2-min-y aabb1) (iaabb2-max-y aabb2))
@@ -1118,10 +1145,13 @@
          (= 0 (elt rect 3)))))
 
 (defun trasl-iaabb2 (aabb &optional (dx (- (elt aabb 0))) (dy (- (elt aabb 1))))
-  (make-iaabb2 (+ (elt aabb 0) dx)
-               (+ (elt aabb 1) dy)
-               (+ (elt aabb 2) dx)
-               (+ (elt aabb 3) dy)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array fixnum) aabb))
+  (declare (fixnum dx dy))
+  (make-iaabb2 (the fixnum (+ (elt aabb 0) dx))
+               (the fixnum (+ (elt aabb 1) dy))
+               (the fixnum (+ (elt aabb 2) dx))
+               (the fixnum (+ (elt aabb 3) dy))))
 
 (defun trasl-irect2 (rect &optional (dx (- (elt rect 0))) (dy (- (elt rect 1))))
   (make-iaabb2 (+ (elt rect 0) dx)
@@ -1131,8 +1161,12 @@
 
 (defun center-iaabb2 (aabb)
   (let ((rect (iaabb2->irect2 aabb)))
-    (uivec2 (+ (elt rect 0) (/ (elt rect 2) 2))
-            (+ (elt rect 1) (/ (elt rect 3) 2)))))
+    (uivec2 (+ (elt rect 0)
+               (truncate (/ (elt rect 2)
+                            2)))
+            (+ (elt rect 1)
+               (truncate (/ (elt rect 3)
+                            2))))))
 
 (defun draw-polygon (buffer width vertices color)
   "Note: vertices must be presented in clockwise or counterclockwise order."
@@ -1159,8 +1193,8 @@
                (t
                 (let ((slope          (/ (to:d (- y2 y1))
                                          (to:d (- x2 x1))))
-                      (x-intersection (/ (- (to:d (* y1 x2))
-                                            (to:d (* y2 x1)))
+                      (x-intersection (/ (- (to:d (the fixnum (* y1 x2)))
+                                            (to:d (the fixnum (* y2 x1))))
                                          (to:d (- x2 x1)))))
                   (values slope x-intersection)))))
            (line-parallel-to-y-p (x-intersection)
@@ -1175,8 +1209,9 @@
                (if (or (line-parallel-to-x-p slope)
                        (line-parallel-to-y-p y-intersection))
                   start-x
-                  (round (/ (to:d (- ray-y y-intersection))
-                            slope)))))
+                  (round (/ (to:d (- (to:d ray-y)
+                                     (the to::desired-type y-intersection)))
+                            (the to::desired-type slope))))))
            (collect-intersections (ray-y)
              (declare (fixnum ray-y))
              (let ((intersections '())
@@ -1225,6 +1260,7 @@
                          (push intersection intersections))))))
                intersections)))
     (let ((aabb (create-aabb)))
+      (declare ((simple-array fixnum) aabb))
       (loop for y fixnum from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1 do
         (let ((intersections (sort (collect-intersections y) #'<)))
           (declare (dynamic-extent intersections))
