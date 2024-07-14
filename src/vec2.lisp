@@ -97,7 +97,7 @@
   (declare (optimize (debug 0) (safety 0) (speed 3)))
   (declare (vec2 a))
   (sqrt (+ (expt (elt a 0) 2.0)
-                     (expt (elt a 1) 2.0))))
+           (expt (elt a 1) 2.0))))
 
 (defun vec2-normalize (a)
   (declare (optimize (debug 0) (safety 0) (speed 3)))
@@ -126,3 +126,62 @@
   (declare (single-float angle))
   (vec2 (- (* (vec2-x v) (cos angle)) (* (vec2-y v) (sin angle)))
         (+ (* (vec2-x v) (sin angle)) (* (vec2-y v) (cos angle)))))
+
+(deftype uivec2-type ()
+  'fixnum)
+
+(deftype uivec2 ()
+  "A 2d vector of unsigned integer."
+  `(simple-array fixnum (2)))
+
+(defun uivec2 (x y)
+  (let ((v (make-array-frame 2 0 'uivec2-type t)))
+    (declare (uivec2 v))
+    (setf (elt v 0) (truncate x)
+          (elt v 1) (truncate y))
+    v))
+
+(defun uivec2-x (a)
+  (elt a 0))
+
+(defun uivec2-y (a)
+  (elt a 1))
+
+(defun copy-uivec2 (old)
+  (let ((res (make-array-frame 2 0.0 'uivec2-type t)))
+    (declare (uivec2 res))
+    (setf (elt res 0) (elt old 0)
+          (elt res 1) (elt old 1))
+    res))
+
+(defun uivec2* (vec val)
+  (declare (uivec2 vec))
+  (uivec2 (* (elt vec 0) val)
+          (* (elt vec 1) val)))
+
+(defun uivec2/ (vec val)
+  (declare (uivec2 vec))
+  (uivec2 (/ (elt vec 0) val)
+          (/ (elt vec 1) val)))
+
+(defun uivec2~ (a b)
+  (and (epsilon= (elt a 0) (elt b 0))
+       (epsilon= (elt a 1) (elt b 1))))
+
+(defun uivec2+ (a b)
+  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  (declare (uivec2 a b))
+  (uivec2 (+ (elt a 0) (elt b 0))
+          (+ (elt a 1) (elt b 1))))
+
+(defun uivec2- (a b)
+  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  (declare (uivec2 a b))
+  (uivec2 (- (elt a 0) (elt b 0))
+          (- (elt a 1) (elt b 1))))
+
+(defun uivec2-negate (a)
+  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  (declare (uivec2 a))
+  (uivec2 (- (elt a 0))
+          (- (elt a 1))))

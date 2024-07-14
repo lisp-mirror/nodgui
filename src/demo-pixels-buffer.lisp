@@ -787,19 +787,36 @@
               (make-animation :thread
                               (make-thread #'draw-fire-thread)))))))
 
+(defun approx-gaussian-random ()
+  (/ (- 6
+        (loop repeat 12 sum (random 1.0)))
+     6))
+
+(defun make-polygon-vertices ()
+  (let* (#+sbcl (*random-state* (sb-kernel::seed-random-state 0))
+         (vertices (loop for i from 0 below (* 2 pi) by (/ pi 16)
+                        for radius = 50.0 then (+ 50.0 (* 50 (approx-gaussian-random)))
+                        collect
+                        (nodgui.vec2:uivec2+ (nodgui.vec2:uivec2 (truncate (* radius (cos i)))
+                                                                 (truncate (* radius (sin i))))
+                                             (nodgui.vec2:uivec2 100 100)))))
+    (px:make-polygon-vertex-array vertices)))
+
 (defun demo-pixel-buffer ()
   (px:init-font-system)
-  (let* ((sdl-context nil)
-         (scaling        1.0)
-         (rotation       0.0)
-         (translating-x  0)
-         (translating-y  0)
-         (context-buffer nil)
-         (context-width   nil)
-         (context-height  nil)
-         (font-path (asdf:system-relative-pathname 'sdl2-ttf-examples
-                                                   "examples/PROBE_10PX_OTF.otf"))
-         (font           (px:open-font font-path 20)))
+  (let* ((sdl-context      nil)
+         (scaling          1.0)
+         (rotation         0.0)
+         (translating-x    0)
+         (translating-y    0)
+         (context-buffer   nil)
+         (context-width    nil)
+         (context-height   nil)
+         (font-path        (asdf:system-relative-pathname 'sdl2-ttf-examples
+                                                          "examples/PROBE_10PX_OTF.otf"))
+         (font             (px:open-font font-path 20))
+         (polygon-vertices (make-polygon-vertices))
+         (polygon-color    (pixmap:assemble-color 255 0 255 255)))
     (flet ((make-button (master label callback)
              (make-instance 'button
                             :master  master
@@ -828,6 +845,10 @@
                                                      255
                                                      255
                                                      0)
+                                       (px:draw-polygon context-buffer
+                                                        context-width
+                                                        polygon-vertices
+                                                        polygon-color)
                                        (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
                                                           (nodgui.pixmap:width  *bell-sprite*)
                                                           (nodgui.pixmap:height *bell-sprite*)

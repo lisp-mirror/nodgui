@@ -81,6 +81,7 @@ be fixed with the release of an upcoming Tcl/Tk version.
 - cl-ppcre-unicode;
 - cl-unicode;
 - sdl2;
+- sdl2-ttf;
 - clunit2;
 - esrap;
 - flexi-streams;

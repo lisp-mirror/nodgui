@@ -995,3 +995,240 @@
 
 (defun close-font (font-handle)
   (sdl2-ttf:close-font font-handle))
+
+(defun uivec2 (x y)
+  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  (let ((v (u:make-array-frame 2 0 'fixnum t)))
+    (declare (nodgui.vec2:uivec2 v))
+    (setf (elt v 0) x
+          (elt v 1) y)
+    v))
+
+(u:definline iaabb2-min-x (aabb)
+  (elt aabb 0))
+
+(u:definline iaabb2-max-x (aabb)
+  (elt aabb 2))
+
+(u:definline iaabb2-min-y (aabb)
+  (elt aabb 1))
+
+(u:definline iaabb2-max-y (aabb)
+  (elt aabb 3))
+
+(defun make-polygon-vertex-array (initial-contents)
+  (let ((array (u:make-array-frame (length initial-contents)
+                                   (uivec2 0 0)
+                                   'uivec2
+                                   t)))
+    (loop for initial-value in initial-contents
+          for i from 0 do
+            (setf (aref array i) initial-value))
+    array))
+
+(defun make-iaabb2 (min-x min-y max-x max-y)
+  (make-array 4
+              :element-type 'fixnum
+              :initial-contents (list min-x min-y max-x max-y)
+              :adjustable nil))
+
+(defun iaabb2= (a b)
+  (and
+   (= (elt a 0) (elt b 0))
+   (= (elt a 1) (elt b 1))
+   (= (elt a 2) (elt b 2))
+   (= (elt a 3) (elt b 3))))
+
+(defun valid-iaabb2-p (aabb)
+  (and (>= (elt aabb 0) 0)
+       (>= (elt aabb 1) 0)
+       (>= (elt aabb 2) 0)
+       (>= (elt aabb 3) 0)
+       (> (elt aabb 2) (elt aabb 0))
+       (> (elt aabb 3) (elt aabb 1))))
+
+(defun copy-iaabb2 (original)
+  (a:copy-array original
+                :element-type 'fixnum
+                :adjustable nil
+                :fill-pointer nil))
+
+(defun expand-iaabb2 (aabb coord)
+  (when (< (elt coord 0) (elt aabb 0))
+    (setf (elt aabb 0) (elt coord 0)))
+  (when (> (elt coord 0) (elt aabb 2))
+    (setf (elt aabb 2) (elt coord 0)))
+  (when (< (elt coord 1) (elt aabb 1))
+    (setf (elt aabb 1) (elt coord 1)))
+  (when (> (elt coord 1) (elt aabb 3))
+    (setf (elt aabb 3) (elt coord 1)))
+  aabb)
+
+(defun union-iaabb2 (aabb aabb2)
+  (expand-iaabb2 aabb (subseq aabb2 0 2))
+  (expand-iaabb2 aabb (uivec2 (elt aabb2 2) (elt aabb2 1)))
+  (expand-iaabb2 aabb (uivec2 (elt aabb2 2) (elt aabb2 3)))
+  (expand-iaabb2 aabb (uivec2 (elt aabb2 0) (elt aabb2 3)))
+  aabb)
+
+(defun iaabb2->irect2 (coords)
+  "(upper-left-x upper-left-y bottom-right-x bottom-right-y) to
+   (upper-left-x upper-left-y  w h)"
+  (let ((x1 (elt coords 0))
+        (y1 (elt coords 1))
+        (x2 (elt coords 2))
+        (y2 (elt coords 3)))
+  (make-iaabb2 x1 y1 (- x2 x1) (- y2 y1))))
+
+(defun irect2->iaabb2 (coords)
+  "(upper-left-x upper-left-y  w h) to
+   (upper-left-x upper-left-y bottom-right-x bottom-right-y)"
+  (let ((x1 (elt coords 0))
+        (y1 (elt coords 1))
+        (w  (elt coords 2))
+        (h  (elt coords 3)))
+  (make-iaabb2 x1 y1 (+ x1 w) (+ y1 h))))
+
+(defun irect2->iaabb2* (&rest coords)
+  (irect2->iaabb2 coords))
+
+(defun inside-iaabb2-p (aabb x y)
+  "t if x y is inside this bounding box
+   aabb is: (upper-left-x upper-left-y bottom-right-x bottom-right-y)"
+  (and (>= x (elt aabb 0))
+       (<= x (elt aabb 2))
+       (>= y (elt aabb 1))
+       (<= y (elt aabb 3))))
+
+(defun iaabb2-intersect-p (aabb1 aabb2)
+  (if (or (>= (iaabb2-min-x aabb1) (iaabb2-max-x aabb2))
+          (<= (iaabb2-max-x aabb1) (iaabb2-min-x aabb2))
+          (>= (iaabb2-min-y aabb1) (iaabb2-max-y aabb2))
+          (<= (iaabb2-max-y aabb1) (iaabb2-min-y aabb2)))
+      nil
+      t))
+
+(defun iaabb2-inglobe-p (host guest)
+  (and (inside-iaabb2-p host (iaabb2-min-x guest) (iaabb2-min-x guest))
+       (inside-iaabb2-p host (iaabb2-max-x guest) (iaabb2-max-x guest))))
+
+(defun iaabb2-null-p (aabb)
+  (let ((rect (iaabb2->irect2 aabb)))
+    (and (= 0 (elt rect 2))
+         (= 0 (elt rect 3)))))
+
+(defun trasl-iaabb2 (aabb &optional (dx (- (elt aabb 0))) (dy (- (elt aabb 1))))
+  (make-iaabb2 (+ (elt aabb 0) dx)
+               (+ (elt aabb 1) dy)
+               (+ (elt aabb 2) dx)
+               (+ (elt aabb 3) dy)))
+
+(defun trasl-irect2 (rect &optional (dx (- (elt rect 0))) (dy (- (elt rect 1))))
+  (make-iaabb2 (+ (elt rect 0) dx)
+               (+ (elt rect 1) dy)
+               (elt rect 2)
+               (elt rect 3)))
+
+(defun center-iaabb2 (aabb)
+  (let ((rect (iaabb2->irect2 aabb)))
+    (uivec2 (+ (elt rect 0) (/ (elt rect 2) 2))
+            (+ (elt rect 1) (/ (elt rect 3) 2)))))
+
+(defun draw-polygon (buffer width vertices color)
+  "Note: vertices must be presented in clockwise or counterclockwise order."
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum width))
+  (declare ((simple-array nodgui.vec2:uivec2) vertices))
+  (declare ((unsigned-byte 32) color))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (labels ((create-aabb ()
+             (let ((aabb (make-iaabb2 most-positive-fixnum
+                                      most-positive-fixnum
+                                      most-negative-fixnum
+                                      most-negative-fixnum)))
+               (loop for vertex across vertices do
+                 (expand-iaabb2 aabb vertex))
+               aabb))
+           (line-equation (x1 y1 x2 y2)
+             (declare (fixnum x1 x2 y1 y2))
+             (cond
+               ((= x1 x2) ; parallel to x
+                (values (to:d 0.0) most-negative-fixnum))
+               ((= y1 y2) ;parallel to y
+                (values most-positive-fixnum y1))
+               (t
+                (let ((slope          (/ (to:d (- y2 y1))
+                                         (to:d (- x2 x1))))
+                      (x-intersection (/ (- (to:d (* y1 x2))
+                                            (to:d (* y2 x1)))
+                                         (to:d (- x2 x1)))))
+                  (values slope x-intersection)))))
+           (line-parallel-to-y-p (x-intersection)
+             (typep x-intersection 'fixnum))
+           (line-parallel-to-x-p (slope)
+             (typep slope 'fixnum))
+           (calculate-intersection (ray-y start-x start-y end-x end-y)
+             (declare (fixnum ray-y start-x start-y end-x end-y))
+             (multiple-value-bind (slope y-intersection)
+                 (line-equation start-x start-y end-x end-y)
+               (declare ((or to::desired-type fixnum) slope y-intersection))
+               (if (or (line-parallel-to-x-p slope)
+                       (line-parallel-to-y-p y-intersection))
+                  start-x
+                  (round (/ (to:d (- ray-y y-intersection))
+                            slope)))))
+           (collect-intersections (ray-y)
+             (declare (fixnum ray-y))
+             (let ((intersections '())
+                   (vertices-length (length vertices)))
+               (loop for offset from 0 by 1 below (length vertices) do
+                 (let* ((start-segment (aref vertices offset))
+                        (end-segment   (aref vertices (rem (1+ offset)
+                                                           vertices-length)))
+                        (next-segment  (aref vertices (rem (+ 2 offset)
+                                                           vertices-length)))
+                        (start-x       (nodgui.vec2:uivec2-x start-segment))
+                        (start-y       (nodgui.vec2:uivec2-y start-segment))
+                        (end-x         (nodgui.vec2:uivec2-x end-segment))
+                        (end-y         (nodgui.vec2:uivec2-y end-segment))
+                        (next-y        (nodgui.vec2:uivec2-y next-segment)))
+                   (declare (fixnum start-x start-y end-x end-y next-y))
+                   (declare (dynamic-extent start-segment end-segment
+                                            start-x start-y end-x end-y next-y))
+                   (when (not (or
+                               ; discard if ray does not interescts segment
+                               (and (> ray-y start-y)
+                                       (> ray-y end-y))
+                               (and (< ray-y start-y)
+                                    (< ray-y end-y))
+                               ; discard horizontal segment
+                               (= start-y end-y)))
+                     (let ((intersection (calculate-intersection ray-y
+                                                                 start-x
+                                                                 start-y
+                                                                 end-x
+                                                                 end-y)))
+                       ;; add intersection
+                       (when (or
+                              ;; adds if its y is equal to starting segments
+                              (=  ray-y start-y)
+                              ;; or if its y is not equal to y of the ending segment
+                              (/= ray-y end-y)
+                              ;; if  its  y *is*  equal  to  y of  the
+                              ;; ending segment  add if the ys  of the
+                              ;; segments next  lays both on  the same
+                              ;; half plane wrt the ray
+                              (or (and (> next-y ray-y)
+                                       (> start-y ray-y))
+                                  (and (< next-y ray-y)
+                                       (< start-y ray-y))))
+                         (push intersection intersections))))))
+               intersections)))
+    (let ((aabb (create-aabb)))
+      (loop for y fixnum from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1 do
+        (let ((intersections (sort (collect-intersections y) #'<)))
+          (declare (dynamic-extent intersections))
+          (loop for (intersection-a intersection-b) on intersections by 'cddr do
+              (when intersection-b
+                (loop for pixel-x fixnum from intersection-a below intersection-b by 1 do
+                  (set-pixel-color@ buffer width pixel-x y color)))))))))

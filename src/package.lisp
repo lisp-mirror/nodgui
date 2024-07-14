@@ -271,7 +271,21 @@
    #:vec2-dot-product
    #:vec2-perpendicular
    #:vec2-perp-dot-product
-   #:vec2-rotate))
+   #:vec2-rotate
+   #:uivec2
+   #:uivec2-x
+   #:uivec2-y
+   #:copy-uivec2
+   #:uivec2-x
+   #:uivec2-y
+   #:uivec2p
+   #:uivec2*
+   #:uivec2/
+   #:uivec2~
+   #:uivec2=
+   #:uivec2+
+   #:uivec2-
+   #:uivec2-negate))
 
 (defpackage :nodgui.vec3
   (:use
@@ -1489,6 +1503,8 @@
    #:draw-circle
    #:draw-line
    #:draw-text
+   #:make-polygon-vertex-array
+   #:draw-polygon
    #:init-font-system
    #:terminate-font-system
    #:open-font
