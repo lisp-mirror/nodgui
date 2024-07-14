@@ -1168,6 +1168,106 @@
                (truncate (/ (elt rect 3)
                             2))))))
 
+(defun polygon-create-aabb (vertices)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array nodgui.vec2:uivec2) vertices))
+  (let ((aabb (make-iaabb2 most-positive-fixnum
+                           most-positive-fixnum
+                           most-negative-fixnum
+                           most-negative-fixnum)))
+    (loop for vertex across vertices do
+      (expand-iaabb2 aabb vertex))
+    aabb))
+
+(defun polygon-line-equation (x1 y1 x2 y2)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (fixnum x1 x2 y1 y2))
+  (cond
+    ((= x1 x2) ; parallel to x
+     (values (to:d 0.0) most-negative-single-float))
+    ((= y1 y2) ;parallel to y
+     (values most-positive-single-float y1))
+    (t
+     (let ((slope          (/ (to:d (- y2 y1))
+                              (to:d (- x2 x1))))
+           (x-intersection (/ (- (to:d (the fixnum (* y1 x2)))
+                                 (to:d (the fixnum (* y2 x1))))
+                              (to:d (- x2 x1)))))
+       (values slope x-intersection)))))
+
+(defun polygon-line-parallel-to-y-p (x-intersection)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (to::desired-type x-intersection))
+  (= x-intersection most-negative-single-float))
+
+(defun polygon-line-parallel-to-x-p (slope)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (to::desired-type slope))
+  (= slope most-positive-single-float))
+
+(defun polygon-calculate-intersection (ray-y start-x start-y end-x end-y)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (fixnum ray-y start-x start-y end-x end-y))
+  (multiple-value-bind (slope y-intersection)
+      (polygon-line-equation start-x start-y end-x end-y)
+    (declare (to::desired-type slope y-intersection))
+    (if (or (polygon-line-parallel-to-x-p slope)
+            (polygon-line-parallel-to-y-p y-intersection))
+        start-x
+        (truncate (/ (- (to:d ray-y)
+                        y-intersection)
+                     slope)))))
+
+(defun polygon-collect-intersections (vertices ray-y)
+  (declare ((simple-array nodgui.vec2:uivec2) vertices))
+  (declare (fixnum ray-y))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let ((intersections '())
+        (vertices-length (length vertices)))
+    (loop for offset from 0 by 1 below (length vertices) do
+      (let* ((start-segment (aref vertices offset))
+             (end-segment   (aref vertices (rem (1+ offset)
+                                                vertices-length)))
+             (next-segment  (aref vertices (rem (+ 2 offset)
+                                                vertices-length)))
+             (start-x       (nodgui.vec2:uivec2-x start-segment))
+             (start-y       (nodgui.vec2:uivec2-y start-segment))
+             (end-x         (nodgui.vec2:uivec2-x end-segment))
+             (end-y         (nodgui.vec2:uivec2-y end-segment))
+             (next-y        (nodgui.vec2:uivec2-y next-segment)))
+        (declare (fixnum start-x start-y end-x end-y next-y))
+        (declare (dynamic-extent start-segment end-segment
+                                 start-x start-y end-x end-y next-y))
+        (when (not (or
+                                        ; discard if ray does not interescts segment
+                    (and (> ray-y start-y)
+                         (> ray-y end-y))
+                    (and (< ray-y start-y)
+                         (< ray-y end-y))
+                                        ; discard horizontal segment
+                    (= start-y end-y)))
+          (let ((intersection (polygon-calculate-intersection ray-y
+                                                              start-x
+                                                              start-y
+                                                              end-x
+                                                              end-y)))
+            ;; add intersection
+            (when (or
+                   ;; adds if its y is equal to starting segments
+                   (=  ray-y start-y)
+                   ;; or if its y is not equal to y of the ending segment
+                   (/= ray-y end-y)
+                   ;; if  its  y *is*  equal  to  y of  the
+                   ;; ending segment  add if the ys  of the
+                   ;; segments next  lays both on  the same
+                   ;; half plane wrt the ray
+                   (or (and (> next-y ray-y)
+                            (> start-y ray-y))
+                       (and (< next-y ray-y)
+                            (< start-y ray-y))))
+              (push intersection intersections))))))
+    intersections))
+
 (defun draw-polygon (buffer width vertices color)
   "Note: vertices must be presented in clockwise or counterclockwise order."
   (declare ((simple-array (unsigned-byte 32)) buffer))
@@ -1175,96 +1275,15 @@
   (declare ((simple-array nodgui.vec2:uivec2) vertices))
   (declare ((unsigned-byte 32) color))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (labels ((create-aabb ()
-             (let ((aabb (make-iaabb2 most-positive-fixnum
-                                      most-positive-fixnum
-                                      most-negative-fixnum
-                                      most-negative-fixnum)))
-               (loop for vertex across vertices do
-                 (expand-iaabb2 aabb vertex))
-               aabb))
-           (line-equation (x1 y1 x2 y2)
-             (declare (fixnum x1 x2 y1 y2))
-             (cond
-               ((= x1 x2) ; parallel to x
-                (values (to:d 0.0) most-negative-fixnum))
-               ((= y1 y2) ;parallel to y
-                (values most-positive-fixnum y1))
-               (t
-                (let ((slope          (/ (to:d (- y2 y1))
-                                         (to:d (- x2 x1))))
-                      (x-intersection (/ (- (to:d (the fixnum (* y1 x2)))
-                                            (to:d (the fixnum (* y2 x1))))
-                                         (to:d (- x2 x1)))))
-                  (values slope x-intersection)))))
-           (line-parallel-to-y-p (x-intersection)
-             (typep x-intersection 'fixnum))
-           (line-parallel-to-x-p (slope)
-             (typep slope 'fixnum))
-           (calculate-intersection (ray-y start-x start-y end-x end-y)
-             (declare (fixnum ray-y start-x start-y end-x end-y))
-             (multiple-value-bind (slope y-intersection)
-                 (line-equation start-x start-y end-x end-y)
-               (declare ((or to::desired-type fixnum) slope y-intersection))
-               (if (or (line-parallel-to-x-p slope)
-                       (line-parallel-to-y-p y-intersection))
-                  start-x
-                  (round (/ (to:d (- (to:d ray-y)
-                                     (the to::desired-type y-intersection)))
-                            (the to::desired-type slope))))))
-           (collect-intersections (ray-y)
-             (declare (fixnum ray-y))
-             (let ((intersections '())
-                   (vertices-length (length vertices)))
-               (loop for offset from 0 by 1 below (length vertices) do
-                 (let* ((start-segment (aref vertices offset))
-                        (end-segment   (aref vertices (rem (1+ offset)
-                                                           vertices-length)))
-                        (next-segment  (aref vertices (rem (+ 2 offset)
-                                                           vertices-length)))
-                        (start-x       (nodgui.vec2:uivec2-x start-segment))
-                        (start-y       (nodgui.vec2:uivec2-y start-segment))
-                        (end-x         (nodgui.vec2:uivec2-x end-segment))
-                        (end-y         (nodgui.vec2:uivec2-y end-segment))
-                        (next-y        (nodgui.vec2:uivec2-y next-segment)))
-                   (declare (fixnum start-x start-y end-x end-y next-y))
-                   (declare (dynamic-extent start-segment end-segment
-                                            start-x start-y end-x end-y next-y))
-                   (when (not (or
-                               ; discard if ray does not interescts segment
-                               (and (> ray-y start-y)
-                                       (> ray-y end-y))
-                               (and (< ray-y start-y)
-                                    (< ray-y end-y))
-                               ; discard horizontal segment
-                               (= start-y end-y)))
-                     (let ((intersection (calculate-intersection ray-y
-                                                                 start-x
-                                                                 start-y
-                                                                 end-x
-                                                                 end-y)))
-                       ;; add intersection
-                       (when (or
-                              ;; adds if its y is equal to starting segments
-                              (=  ray-y start-y)
-                              ;; or if its y is not equal to y of the ending segment
-                              (/= ray-y end-y)
-                              ;; if  its  y *is*  equal  to  y of  the
-                              ;; ending segment  add if the ys  of the
-                              ;; segments next  lays both on  the same
-                              ;; half plane wrt the ray
-                              (or (and (> next-y ray-y)
-                                       (> start-y ray-y))
-                                  (and (< next-y ray-y)
-                                       (< start-y ray-y))))
-                         (push intersection intersections))))))
-               intersections)))
-    (let ((aabb (create-aabb)))
-      (declare ((simple-array fixnum) aabb))
-      (loop for y fixnum from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1 do
-        (let ((intersections (sort (collect-intersections y) #'<)))
-          (declare (dynamic-extent intersections))
-          (loop for (intersection-a intersection-b) on intersections by 'cddr do
-              (when intersection-b
-                (loop for pixel-x fixnum from intersection-a below intersection-b by 1 do
-                  (set-pixel-color@ buffer width pixel-x y color)))))))))
+  (let ((aabb (polygon-create-aabb vertices)))
+    (declare ((simple-array fixnum) aabb))
+    (declare (dynamic-extent aabb))
+    (loop for y fixnum from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1 do
+      (let ((intersections (sort (the list
+                                      (polygon-collect-intersections vertices y))
+                                 #'<)))
+        (declare (dynamic-extent intersections))
+        (loop for (intersection-a intersection-b) on intersections by 'cddr do
+          (when intersection-b
+            (loop for pixel-x fixnum from intersection-a below intersection-b by 1 do
+              (set-pixel-color@ buffer width pixel-x y color))))))))
