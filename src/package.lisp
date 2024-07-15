@@ -1504,7 +1504,9 @@
    #:draw-line
    #:draw-text
    #:make-polygon-vertex-array
+   #:make-polygon-texture-coordinates-array
    #:draw-polygon
+   #:draw-texture-mapped-polygon
    #:init-font-system
    #:terminate-font-system
    #:open-font

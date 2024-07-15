@@ -92,7 +92,6 @@
                    destination-buffer-width))
   (declare ((simple-array (unsigned-byte 32)) source destination))
   (declare (optimize (speed 3) (debug 3) (safety 0)))
-
   (copy-buffer-row-ffi-pointer #+sbcl (the sb-sys:system-area-pointer
                                            (static-vectors:static-vector-pointer source))
                                #-sbcl (static-vectors:static-vector-pointer source)

@@ -512,6 +512,11 @@
 
 (defparameter *bell-sprite* (load-bell-sprite))
 
+;; +-----+------+
+;; | red | green|
+;; +-----+------+
+;; | blue| gray |
+;; +-----+------+
 ;; 10px
 (a:define-constant +test-sprite+
   "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAIUlEQVQY02P8z4ACGFH5TAx4AU2lGRkYUByzatXqweI0ABCcBRCKObYxAAAAAElFTkSuQmCC"
@@ -793,7 +798,7 @@
      6))
 
 (defun make-polygon-vertices ()
-  (let* (#+sbcl (*random-state* (sb-kernel::seed-random-state 0))
+  (let* (#+sbcl (*random-state* (sb-kernel::seed-random-state 4))
          (vertices (loop for i from 0 below (* 2 pi) by (/ pi 16)
                         for radius = 50.0 then (+ 50.0 (* 50 (approx-gaussian-random)))
                         collect
@@ -801,6 +806,18 @@
                                                                  (truncate (* radius (sin i))))
                                              (nodgui.vec2:uivec2 100 100)))))
     (px:make-polygon-vertex-array vertices)))
+
+(defun make-textured-polygon-vertices ()
+  (let* ((vertices (list (nodgui.vec2:uivec2 4   100)
+                         (nodgui.vec2:uivec2 200 60)
+                         (nodgui.vec2:uivec2 200 200)
+                         (nodgui.vec2:uivec2 4   200)))
+         (texels   (list (nodgui.vec2:vec2 0f0 0f0)
+                         (nodgui.vec2:vec2 1f0 0f0)
+                         (nodgui.vec2:vec2 1f0 1f0)
+                         (nodgui.vec2:vec2 0f0 1f0))))
+    (values (px:make-polygon-vertex-array vertices)
+            (px:make-polygon-texture-coordinates-array texels))))
 
 (defun demo-pixel-buffer ()
   (px:init-font-system)
@@ -817,149 +834,156 @@
          (font             (px:open-font font-path 20))
          (polygon-vertices (make-polygon-vertices))
          (polygon-color    (pixmap:assemble-color 255 0 255 255)))
-    (flet ((make-button (master label callback)
-             (make-instance 'button
-                            :master  master
-                            :text    label
-                            :command callback))
-           (update-info (label)
-             (setf (text label)
-                   (format nil
-                           "rotation: ~,1f° scaling: ~a translate x: ~a translate y: ~a"
-                           rotation scaling translating-x translating-y)))
-           (draw ()
-             (ctx:push-for-rendering sdl-context
-                                     (lambda (dt)
-                                       (declare (ignore dt))
-                                       (px:clear-buffer context-buffer
-                                                        context-width
-                                                        context-height
-                                                        0 0 0)
-                                       (px:draw-text context-buffer
-                                                     context-width
-                                                     "Hello there!"
-                                                     font
-                                                     10
-                                                     20
-                                                     255
-                                                     255
-                                                     255
-                                                     0)
-                                       (px:draw-polygon context-buffer
-                                                        context-width
-                                                        polygon-vertices
-                                                        polygon-color)
-                                       (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
-                                                          (nodgui.pixmap:width  *bell-sprite*)
-                                                          (nodgui.pixmap:height *bell-sprite*)
-                                                          context-buffer
+    (multiple-value-bind (textured-polygon-vertices textured-polygon-texture-coords)
+        (make-textured-polygon-vertices)
+      (flet ((make-button (master label callback)
+               (make-instance 'button
+                              :master  master
+                              :text    label
+                              :command callback))
+             (update-info (label)
+               (setf (text label)
+                     (format nil
+                             "rotation: ~,1f° scaling: ~a translate x: ~a translate y: ~a"
+                             rotation scaling translating-x translating-y)))
+             (draw ()
+               (ctx:push-for-rendering sdl-context
+                                       (lambda (dt)
+                                         (declare (ignore dt))
+                                         (px:clear-buffer context-buffer
                                                           context-width
                                                           context-height
-                                                          0
-                                                          0
-                                                          (truncate (/ context-height 2))
-                                                          (truncate (/ context-width 2))
-                                                          (nodgui.pixmap:height *bell-sprite*)
-                                                          (nodgui.pixmap:width  *bell-sprite*)
-                                                          rotation
-                                                          scaling
-                                                          scaling
-                                                          (truncate (/ (nodgui.pixmap:width *bell-sprite*)
-                                                                       2))
-                                                          (truncate (/ (nodgui.pixmap:height *bell-sprite*)
-                                                                       2))
-                                                          translating-x
-                                                          translating-y)))))
-      (with-nodgui ()
-        (let* ((sdl-frame         (ctx:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
-               (info              (make-instance 'label))
-               (buttons-frame     (make-instance 'nodgui:frame
-                                                 :borderwidth 2
-                                                 :relief :groove))
-               (quit-frame        (make-instance 'nodgui:frame
-                                                 :master buttons-frame))
-               (button-rotate-cw  (make-button buttons-frame
-                                               "rotate clockwise"
-                                               (lambda ()
-                                                 (incf rotation 10.0)
-                                                 (update-info info)
-                                                 (draw))))
-               (button-rotate-ccw (make-button buttons-frame
-                                               "rotate counterclockwise"
-                                               (lambda ()
-                                                 (incf rotation -10.0)
-                                                 (update-info info)
-                                                 (draw))))
-               (button-enlarge    (make-button buttons-frame
-                                               "enlarge"
-                                               (lambda ()
-                                                 (incf scaling 0.5)
-                                                 (update-info info)
-                                                 (draw))))
-               (button-shrink    (make-button buttons-frame
-                                              "shrink"
-                                              (lambda ()
-                                                (incf scaling -0.5)
-                                                (update-info info)
-                                                (draw))))
-               (button-move-left  (make-button buttons-frame
-                                               "move left"
-                                               (lambda ()
-                                                 (incf translating-x -5)
-                                                 (update-info info)
-                                                 (draw))))
-               (button-move-right (make-button buttons-frame
-                                               "move right"
-                                               (lambda ()
-                                                 (incf translating-x 5)
-                                                 (update-info info)
-                                                 (draw))))
-               (button-move-up    (make-button buttons-frame
-                                               "move up"
-                                               (lambda ()
-                                                 (incf translating-y -5)
-                                                 (update-info info)
-                                                 (draw))))
-               (button-move-down  (make-button buttons-frame
-                                               "move down"
-                                               (lambda ()
-                                                 (incf translating-y 5)
-                                                 (update-info info)
-                                                 (draw))))
-               (button-quit      (make-instance 'button
-                                                :master  quit-frame
-                                                :text    "quit"
-                                                :command (lambda ()
-                                                           (stop-animation)
-                                                           (px:close-font font)
-                                                           (px:terminate-font-system)
-                                                           (ctx:quit-sdl sdl-context)
-                                                           (exit-nodgui)))))
-          (grid info               0 0)
-          (grid sdl-frame          1 0)
-          (grid buttons-frame      1 1 :sticky :news)
-          (grid button-rotate-cw   0 0 :sticky :nw)
-          (grid button-rotate-ccw  1 0 :sticky :nw)
-          (grid button-enlarge     2 0 :sticky :nw)
-          (grid button-shrink      3 0 :sticky :nw)
-          (grid button-move-up     4 0 :sticky :nw)
-          (grid button-move-down   5 0 :sticky :nw)
-          (grid button-move-left   6 0 :sticky :nw)
-          (grid button-move-right  7 0 :sticky :nw)
-          (grid quit-frame         8 0 :sticky :s)
-          (grid button-quit        0 0 :sticky :s)
-          (grid-columnconfigure (root-toplevel) :all :weight 1)
-          (grid-rowconfigure    (root-toplevel) :all :weight 1)
-          (grid-rowconfigure    buttons-frame 8 :weight 1)
-          (grid-columnconfigure buttons-frame :all :weight 1)
-          (update-info info)
-          (wait-complete-redraw)
-          (setf sdl-context (make-instance 'px:pixel-buffer-context
-                                           :event-loop-type :serving
-                                           :classic-frame   sdl-frame
-                                           :buffer-width    +sdl-frame-width+
-                                           :buffer-height   +sdl-frame-height+))
-          (setf context-buffer (px:buffer sdl-context))
-          (setf context-width  (ctx:width  sdl-context))
-          (setf context-height (ctx:height sdl-context))
-          (draw))))))
+                                                          0 0 0)
+                                         (px:draw-text context-buffer
+                                                       context-width
+                                                       "Hello there!"
+                                                       font
+                                                       10
+                                                       20
+                                                       255
+                                                       255
+                                                       255
+                                                       0)
+                                         ;; (px:draw-polygon context-buffer
+                                         ;;                  context-width
+                                         ;;                  textured-polygon-vertices
+                                         ;;                  polygon-color)
+                                         (px:draw-texture-mapped-polygon context-buffer
+                                                                         context-width
+                                                                         textured-polygon-vertices
+                                                                         textured-polygon-texture-coords
+                                                                         *test-sprite*)
+                                         (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
+                                                            (nodgui.pixmap:width  *bell-sprite*)
+                                                            (nodgui.pixmap:height *bell-sprite*)
+                                                            context-buffer
+                                                            context-width
+                                                            context-height
+                                                            0
+                                                            0
+                                                            (truncate (/ context-height 2))
+                                                            (truncate (/ context-width 2))
+                                                            (nodgui.pixmap:height *bell-sprite*)
+                                                            (nodgui.pixmap:width  *bell-sprite*)
+                                                            rotation
+                                                            scaling
+                                                            scaling
+                                                            (truncate (/ (nodgui.pixmap:width *bell-sprite*)
+                                                                         2))
+                                                            (truncate (/ (nodgui.pixmap:height *bell-sprite*)
+                                                                         2))
+                                                            translating-x
+                                                            translating-y)))))
+        (with-nodgui ()
+          (let* ((sdl-frame         (ctx:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
+                 (info              (make-instance 'label))
+                 (buttons-frame     (make-instance 'nodgui:frame
+                                                   :borderwidth 2
+                                                   :relief :groove))
+                 (quit-frame        (make-instance 'nodgui:frame
+                                                   :master buttons-frame))
+                 (button-rotate-cw  (make-button buttons-frame
+                                                 "rotate clockwise"
+                                                 (lambda ()
+                                                   (incf rotation 10.0)
+                                                   (update-info info)
+                                                   (draw))))
+                 (button-rotate-ccw (make-button buttons-frame
+                                                 "rotate counterclockwise"
+                                                 (lambda ()
+                                                   (incf rotation -10.0)
+                                                   (update-info info)
+                                                   (draw))))
+                 (button-enlarge    (make-button buttons-frame
+                                                 "enlarge"
+                                                 (lambda ()
+                                                   (incf scaling 0.5)
+                                                   (update-info info)
+                                                   (draw))))
+                 (button-shrink    (make-button buttons-frame
+                                                "shrink"
+                                                (lambda ()
+                                                  (incf scaling -0.5)
+                                                  (update-info info)
+                                                  (draw))))
+                 (button-move-left  (make-button buttons-frame
+                                                 "move left"
+                                                 (lambda ()
+                                                   (incf translating-x -5)
+                                                   (update-info info)
+                                                   (draw))))
+                 (button-move-right (make-button buttons-frame
+                                                 "move right"
+                                                 (lambda ()
+                                                   (incf translating-x 5)
+                                                   (update-info info)
+                                                   (draw))))
+                 (button-move-up    (make-button buttons-frame
+                                                 "move up"
+                                                 (lambda ()
+                                                   (incf translating-y -5)
+                                                   (update-info info)
+                                                   (draw))))
+                 (button-move-down  (make-button buttons-frame
+                                                 "move down"
+                                                 (lambda ()
+                                                   (incf translating-y 5)
+                                                   (update-info info)
+                                                   (draw))))
+                 (button-quit      (make-instance 'button
+                                                  :master  quit-frame
+                                                  :text    "quit"
+                                                  :command (lambda ()
+                                                             (stop-animation)
+                                                             (px:close-font font)
+                                                             (px:terminate-font-system)
+                                                             (ctx:quit-sdl sdl-context)
+                                                             (exit-nodgui)))))
+            (grid info               0 0)
+            (grid sdl-frame          1 0)
+            (grid buttons-frame      1 1 :sticky :news)
+            (grid button-rotate-cw   0 0 :sticky :nw)
+            (grid button-rotate-ccw  1 0 :sticky :nw)
+            (grid button-enlarge     2 0 :sticky :nw)
+            (grid button-shrink      3 0 :sticky :nw)
+            (grid button-move-up     4 0 :sticky :nw)
+            (grid button-move-down   5 0 :sticky :nw)
+            (grid button-move-left   6 0 :sticky :nw)
+            (grid button-move-right  7 0 :sticky :nw)
+            (grid quit-frame         8 0 :sticky :s)
+            (grid button-quit        0 0 :sticky :s)
+            (grid-columnconfigure (root-toplevel) :all :weight 1)
+            (grid-rowconfigure    (root-toplevel) :all :weight 1)
+            (grid-rowconfigure    buttons-frame 8 :weight 1)
+            (grid-columnconfigure buttons-frame :all :weight 1)
+            (update-info info)
+            (wait-complete-redraw)
+            (setf sdl-context (make-instance 'px:pixel-buffer-context
+                                             :event-loop-type :serving
+                                             :classic-frame   sdl-frame
+                                             :buffer-width    +sdl-frame-width+
+                                             :buffer-height   +sdl-frame-height+))
+            (setf context-buffer (px:buffer sdl-context))
+            (setf context-width  (ctx:width  sdl-context))
+            (setf context-height (ctx:height sdl-context))
+            (draw)))))))
