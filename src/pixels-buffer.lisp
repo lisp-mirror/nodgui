@@ -1351,7 +1351,6 @@
                             (> start-y ray-y))
                        (and (< next-y ray-y)
                             (< start-y ray-y))))
-              ;(format t "ss ~a ~a ~a~%" start-segment end-segment intersection)
               (push (make-polygon-intersection :point        intersection
                                                :start-vertex start-segment
                                                :end-vertex   end-segment
@@ -1387,10 +1386,14 @@
   (declare (fixnum width))
   (declare ((simple-array nodgui.vec2:uivec2) vertices texels))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let ((aabb    (polygon-create-aabb vertices))
-        (texture (pix:bits pixmap)))
+  (let ((aabb          (polygon-create-aabb vertices))
+        (texture       (pix:bits pixmap))
+        (pixmap-width  (to:d (the fixnum (pix:width pixmap))))
+        (pixmap-height (to:d (the fixnum (pix:height pixmap)))))
     (declare ((simple-array fixnum) aabb))
-    (declare (dynamic-extent aabb))
+    (declare ((simple-array (unsigned-byte 32)) texture))
+    (declare (to::desired-type pixmap-width pixmap-height))
+    (declare (dynamic-extent aabb pixmap-width pixmap-height))
     (loop for y fixnum
           from (iaabb2-min-y aabb) to (iaabb2-max-y aabb) by 1
           do
@@ -1398,8 +1401,8 @@
                (declare (dynamic-extent intersections))
                (loop for (intersection-a intersection-b) on intersections by 'cddr
                      when
-                     (/= (nodgui.vec2:uivec2-y (polygon-intersection-start-vertex intersection-a))
-                         (nodgui.vec2:uivec2-y (polygon-intersection-start-vertex intersection-b)))
+                     (/= (the fixnum (nodgui.vec2:uivec2-y (polygon-intersection-start-vertex intersection-a)))
+                         (the fixnum (nodgui.vec2:uivec2-y (polygon-intersection-start-vertex intersection-b))))
                      do
                         (let* ((start-vertex-a   (polygon-intersection-start-vertex intersection-a))
                                (end-vertex-a     (polygon-intersection-end-vertex intersection-a))
@@ -1411,42 +1414,95 @@
                                (end-texel-b      (polygon-intersection-end-texel intersection-b))
                                (intersection-a-x (polygon-intersection-point intersection-a))
                                (intersection-b-x (polygon-intersection-point intersection-b))
-                               (texel-weight-a   (/ (to:d (- (nodgui.vec2:uivec2-y start-vertex-a)
+                               (texel-weight-a   (/ (to:d (- (the fixnum (nodgui.vec2:uivec2-y start-vertex-a))
                                                              y))
-                                                    (to:d (- (nodgui.vec2:uivec2-y start-vertex-a)
-                                                             (nodgui.vec2:uivec2-y end-vertex-a)))))
-                               (texel-weight-b   (/ (to:d (- (nodgui.vec2:uivec2-y start-vertex-b)
+                                                    (to:d (- (the fixnum (nodgui.vec2:uivec2-y start-vertex-a))
+                                                             (the fixnum (nodgui.vec2:uivec2-y end-vertex-a))))))
+                               (texel-weight-b   (/ (to:d (- (the fixnum (nodgui.vec2:uivec2-y start-vertex-b))
                                                              y))
-                                                    (to:d (- (nodgui.vec2:uivec2-y start-vertex-b)
-                                                             (nodgui.vec2:uivec2-y end-vertex-b)))))
-                               (texel-t-start-a  (nodgui.vec2:uivec2-y start-texel-a))
-                               (texel-s-start-a  (nodgui.vec2:uivec2-x start-texel-a))
-                               (texel-t-end-a    (nodgui.vec2:uivec2-y end-texel-a))
-                               (texel-s-end-a    (nodgui.vec2:uivec2-x end-texel-a))
-                               (texel-t-start-b  (nodgui.vec2:uivec2-y start-texel-b))
-                               (texel-s-start-b  (nodgui.vec2:uivec2-x start-texel-b))
-                               (texel-t-end-b    (nodgui.vec2:uivec2-y end-texel-b))
-                               (texel-s-end-b    (nodgui.vec2:uivec2-x end-texel-b))
+                                                    (to:d (- (the fixnum (nodgui.vec2:uivec2-y start-vertex-b))
+                                                             (the fixnum (nodgui.vec2:uivec2-y end-vertex-b))))))
+                               (texel-t-start-a  (nodgui.vec2:vec2-y start-texel-a))
+                               (texel-s-start-a  (nodgui.vec2:vec2-x start-texel-a))
+                               (texel-t-end-a    (nodgui.vec2:vec2-y end-texel-a))
+                               (texel-s-end-a    (nodgui.vec2:vec2-x end-texel-a))
+                               (texel-t-start-b  (nodgui.vec2:vec2-y start-texel-b))
+                               (texel-s-start-b  (nodgui.vec2:vec2-x start-texel-b))
+                               (texel-t-end-b    (nodgui.vec2:vec2-y end-texel-b))
+                               (texel-s-end-b    (nodgui.vec2:vec2-x end-texel-b))
                                (texel1-t         (to:dlerp texel-weight-a texel-t-start-a texel-t-end-a))
                                (texel1-s         (to:dlerp texel-weight-a texel-s-start-a texel-s-end-a))
                                (texel2-t         (to:dlerp texel-weight-b texel-t-start-b texel-t-end-b))
                                (texel2-s         (to:dlerp texel-weight-b texel-s-start-b texel-s-end-b)))
-                          (loop for x fixnum
-                                from intersection-a-x below intersection-b-x by 1
-                                with range =  (- intersection-b-x
-                                                 intersection-a-x)
-                                do
-                                   (let* ((weight   (to:d (/ (- x intersection-a-x)
-                                                             range)))
-                                          (t-texel  (texture-border-clamp (to:dlerp weight
-                                                                                    texel1-t
-                                                                                    texel2-t)))
-                                          (s-texel  (texture-border-clamp (to:dlerp weight
-                                                                                    texel1-s
-                                                                                    texel2-s)))
-                                          (pixmap-x (truncate (* s-texel (pix:width pixmap))))
-                                          (pixmap-y (truncate (* t-texel (pix:height pixmap))))
-                                          (pixel    (pixel@ texture
-                                                            (pix:width pixmap)
-                                                            pixmap-x pixmap-y)))
-                                     (set-pixel-color@ buffer width x y pixel)))))))))
+                          (declare (dynamic-extent start-vertex-a
+                                                   end-vertex-a
+                                                   start-vertex-b
+                                                   end-vertex-b
+                                                   start-texel-a
+                                                   end-texel-a
+                                                   start-texel-b
+                                                   end-texel-b
+                                                   intersection-a-x
+                                                   intersection-b-x
+                                                   texel-weight-a
+                                                   texel-weight-b
+                                                   texel-t-start-a
+                                                   texel-s-start-a
+                                                   texel-t-end-a
+                                                   texel-s-end-a
+                                                   texel-t-start-b
+                                                   texel-s-start-b
+                                                   texel-t-end-b
+                                                   texel-s-end-b
+                                                   texel1-t
+                                                   texel1-s
+                                                   texel2-t
+                                                   texel2-s))
+                          (declare (nodgui.vec2:uivec2
+                                    start-vertex-a
+                                    end-vertex-a
+                                    start-vertex-b
+                                    end-vertex-b))
+                          (declare (fixnum intersection-a-x
+                                           intersection-b-x))
+                          (declare (nodgui.vec2:vec2
+                                    start-texel-a
+                                    end-texel-a
+                                    start-texel-b
+                                    end-texel-b))
+                          (declare (to::desired-type texel-weight-a
+                                                     texel-weight-b
+                                                     texel-t-start-a
+                                                     texel-s-start-a
+                                                     texel-t-end-a
+                                                     texel-s-end-a
+                                                     texel-t-start-b
+                                                     texel-s-start-b
+                                                     texel-t-end-b
+                                                     texel-s-end-b
+                                                     texel1-t
+                                                     texel1-s
+                                                     texel2-t
+                                                     texel2-s))
+                          (let ((range (- intersection-b-x intersection-a-x)))
+                            (declare (fixnum range))
+                            (when (/= range 0)
+                              (loop for x fixnum from intersection-a-x below intersection-b-x by 1
+                                    with delta-t = (to:d- texel2-t texel1-t)
+                                    with delta-s = (to:d- texel2-s texel1-s)
+                                    with t-increment = (to:d/ delta-t
+                                                              (to:d range))
+                                    with s-increment = (to:d/ delta-s
+                                                              (to:d range))
+                                    for interpolated-t from texel1-t by t-increment
+                                    for interpolated-s from texel1-s by s-increment
+                                    do
+                                       (let* ((pixmap-x (truncate (to:d* interpolated-t
+                                                                         pixmap-width)))
+                                              (pixmap-y (truncate (to:d* interpolated-s
+                                                                         pixmap-height)))
+                                              (pixel    (pixel@ texture
+                                                                (pix:width pixmap)
+                                                                pixmap-x pixmap-y)))
+                                         (declare (fixnum pixmap-x pixmap-y))
+                                         (set-pixel-color@ buffer width x y pixel)))))))))))
