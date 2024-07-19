@@ -152,8 +152,6 @@
          (coerce (length vecs) 'vec3-type)))
 
 (defun vec3-cross-product (a b)
-  "Apply transformation MATRIX to VEC, return result as a
-freshly allocated VEC."
   (let* ((result (vec3 (to:d 0) (to:d 0) (to:d 0)))
          (a1 (aref a 0))
          (a2 (aref a 1))

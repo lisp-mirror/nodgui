@@ -249,6 +249,8 @@
   (:use :cl
         :nodgui.constants
         :nodgui.utils)
+  (:local-nicknames (:a  :alexandria)
+                    (:to :nodgui.typed-operations))
   (:export
    #:vec2-type
    #:vec2
@@ -1500,8 +1502,10 @@
    #:clear-buffer
    #:fill-rectangle
    #:fill-circle
+   #:fill-circle-insecure
    #:draw-circle
    #:draw-line
+   #:draw-line-insecure
    #:draw-text
    #:make-polygon-vertex-array
    #:make-polygon-texture-coordinates-array
@@ -2178,6 +2182,7 @@
                     (:pixmap :nodgui.pixmap)
                     (:matrix :nodgui.matrix)
                     (:vec3   :nodgui.vec3)
+                    (:vec2   :nodgui.vec2)
                     (:3d     :nodgui.opengl-frame))
   (:export
    #:demo))

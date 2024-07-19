@@ -215,16 +215,17 @@
              buffer-source-width
              buffer-destination
              buffer-destination-width
+             buffer-destination-height
              source-row
              source-column
              destination-row
              destination-column
              source-last-row
              source-last-column)
-  "Note: no bounds checking is done"
   (declare ((simple-array (unsigned-byte 32)) buffer-source buffer-destination))
   (declare (fixnum buffer-source-width
                    buffer-destination-width
+                   buffer-destination-height
                    source-row
                    source-column
                    destination-row
@@ -232,29 +233,73 @@
                    source-last-row
                    source-last-column))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (flet ((copy-row (row-source row-destination)
-           (declare (fixnum row-source row-destination))
-           (declare (function *blending-function*))
-           (declare (optimize (speed 3) (debug 0) (safety 0)))
-           (loop for from-column fixnum from source-column below source-last-column
-                 for to-column fixnum from 0 do
-                   (let* ((color-destination (to:faref buffer-destination
-                                               (to:f+ (to:f* row-destination
-                                                        buffer-destination-width)
-                                                 (to:f+ destination-column to-column))))
-                          (color-source      (to:faref buffer-source
-                                               (to:f+ (to:f* row-source buffer-source-width)
-                                                 from-column)))
-                          (color (funcall *blending-function* color-source color-destination)))
-                     (declare (dynamic-extent color-destination color-source))
-                     (setf (to:faref buffer-destination (to:f+ (to:f* row-destination
-                                                                      buffer-destination-width)
-                                                               (to:f+ destination-column to-column)))
-                           color)))))
-    (loop for from-row fixnum from source-row below source-last-row
-          for to-row fixnum from destination-row do
-            (copy-row from-row to-row))
-    buffer-destination))
+  (let* ((source-blitted-w        (the fixnum (- source-last-column source-column)))
+         (source-blitted-h        (the fixnum (- source-last-row source-row)))
+         (destination-last-column (+ destination-column source-blitted-w))
+         (destination-last-row    (+ destination-row source-blitted-h)))
+    (when (not (or (< destination-last-row 0)
+                   (< destination-last-column 0)
+                   (> destination-row buffer-destination-height)
+                   (> destination-column buffer-destination-width)))
+
+      (let ((actual-source-row         (if (< destination-row 0)
+                                           (- source-row destination-row)
+                                           source-row))
+            (actual-source-column      (if (< destination-column 0)
+                                           (- source-column destination-column)
+                                           source-column))
+            (actual-source-last-row    (if (> destination-last-row
+                                              buffer-destination-height)
+                                           (- source-last-row
+                                              (- destination-last-row
+                                                 buffer-destination-height))
+                                           source-last-row))
+            (actual-source-last-column (if (> destination-last-column
+                                              buffer-destination-width)
+                                           (- source-last-column
+                                              (- destination-last-column
+                                                 buffer-destination-width))
+                                           source-last-column))
+            (actual-destination-row    (if (< destination-row 0)
+                                           0
+                                           destination-row))
+            (actual-destination-column (if (< destination-column 0)
+                                           0
+                                           destination-column)))
+        (declare (fixnum actual-source-row
+                         actual-source-column
+                         actual-source-last-row
+                         actual-source-last-column
+                         actual-destination-row
+                         actual-destination-column))
+        (flet ((copy-row (row-source row-destination)
+                 (declare (fixnum row-source row-destination))
+                 (declare (function *blending-function*))
+                 (declare (optimize (speed 3) (debug 0) (safety 0)))
+                 (loop for from-column fixnum
+                       from actual-source-column
+                         below actual-source-last-column
+                       for to-column fixnum from 0 do
+                         (let* ((color-destination (to:faref buffer-destination
+                                                     (to:f+ (to:f* row-destination
+                                                              buffer-destination-width)
+                                                       (to:f+ actual-destination-column
+                                                         to-column))))
+                                (color-source      (to:faref buffer-source
+                                                     (to:f+ (to:f* row-source
+                                                              buffer-source-width)
+                                                       from-column)))
+                                (color (funcall *blending-function* color-source color-destination)))
+                           (declare (dynamic-extent color-destination color-source))
+                           (setf (to:faref buffer-destination (to:f+ (to:f* row-destination
+                                                                       buffer-destination-width)
+                                                                (to:f+ actual-destination-column
+                                                                  to-column)))
+                                 color)))))
+          (loop for from-row fixnum from actual-source-row below actual-source-last-row
+                for to-row fixnum from actual-destination-row do
+                  (copy-row from-row to-row))
+          buffer-destination)))))
 
 (defun make-rendering-thread (context)
   (nodgui.utils:make-thread
@@ -406,32 +451,76 @@
     (loop for i from 0 below (to:f* width height) do
       (setf (aref buffer i) color))))
 
-(defun fill-rectangle (buffer buffer-width
+(defun fill-rectangle (buffer
+                       buffer-width
+                       buffer-height
                        top-left-x top-left-y
                        bottom-right-x bottom-right-y
                        r g b
                        &optional (a 255))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (fixnum buffer-width top-left-x top-left-y bottom-right-x bottom-right-y))
+  (declare (fixnum buffer-width buffer-height
+                   top-left-x top-left-y bottom-right-x bottom-right-y))
   (declare ((unsigned-byte 8) r g b a))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let* ((width  (to:f- bottom-right-x top-left-x))
-         (height (to:f- bottom-right-y top-left-y))
-         (w/2    (ash width  -1))
-         (h/2    (ash height -1))
-         (color  (pix:assemble-color r g b a)))
-    (loop for column from top-left-x below (to:f+ top-left-x w/2) do
-      (loop for row from top-left-y below (to:f+ top-left-y h/2) do
-        (set-pixel@ buffer buffer-width column             row r g b a)
-        (set-pixel-color@ buffer buffer-width (to:f+ column w/2) row color)
-        (set-pixel-color@ buffer buffer-width column             (to:f+ row h/2) color)
-        (set-pixel-color@ buffer buffer-width column             (to:f+ row h/2) color)
-        (set-pixel-color@ buffer buffer-width (to:f+ column w/2) (to:f+ row h/2) color)))
-    buffer))
+  (when (and (> bottom-right-x 0)
+             (> bottom-right-y 0)
+             (< top-left-x buffer-width)
+             (< top-left-y buffer-height))
+    (let* ((clipped-top-left-x     (if (< top-left-x 0)
+                                     0
+                                     top-left-x))
+           (clipped-top-left-y     (if (< top-left-y 0)
+                                       0
+                                       top-left-y))
+           (clipped-bottom-right-x (if (> bottom-right-x buffer-width)
+                                       buffer-width
+                                       bottom-right-x))
+           (clipped-bottom-right-y (if (> bottom-right-y buffer-height)
+                                       buffer-height
+                                       bottom-right-y))
+           (width                  (to:f- clipped-bottom-right-x clipped-top-left-x))
+           (height                 (to:f- clipped-bottom-right-y clipped-top-left-y))
+           (w/2                    (ash width  -1))
+           (h/2                    (ash height -1))
+           (color                  (pix:assemble-color r g b a)))
+      (declare (dynamic-extent clipped-top-left-x
+                               clipped-top-left-y
+                               clipped-bottom-right-x
+                               clipped-bottom-right-y
+                               width
+                               height
+                               w/2
+                               h/2
+                               color))
+      (declare (fixnum clipped-top-left-x
+                       clipped-top-left-y
+                       clipped-bottom-right-x
+                       clipped-bottom-right-y
+                       width
+                       height
+                       w/2
+                       h/2
+                       color))
+      (loop for column from clipped-top-left-x below (to:f+ clipped-top-left-x w/2) do
+        (loop for row from clipped-top-left-y below (to:f+ clipped-top-left-y h/2) do
+          (set-pixel@ buffer buffer-width column             row r g b a)
+          (set-pixel-color@ buffer buffer-width (to:f+ column w/2) row color)
+          (set-pixel-color@ buffer buffer-width column             (to:f+ row h/2) color)
+          (set-pixel-color@ buffer buffer-width column             (to:f+ row h/2) color)
+          (set-pixel-color@ buffer buffer-width (to:f+ column w/2) (to:f+ row h/2) color)))
+      buffer)))
 
-(defun fill-circle (buffer buffer-width x-center y-center radius r g b &optional (a 255))
+(defun pixel-inside-buffer-p (width height x y)
+  (declare (fixnum width height x y))
+  (and (>= x 0)
+       (<  x width)
+       (>= y 0)
+       (<  y height)))
+
+(defun fill-circle (buffer buffer-width buffer-height x-center y-center radius r g b &optional (a 255))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (fixnum x-center y-center radius))
+  (declare (fixnum buffer-width buffer-height x-center y-center radius))
   (declare ((unsigned-byte 8) r g b a))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((r-square  (to:f* radius radius))
@@ -440,39 +529,93 @@
     (loop for x from 0 below radius do
       (let ((x-square (to:f* x x)))
         (declare (dynamic-extent x-square))
-        (loop named inner for y from 0 below radius do
+        (loop named inner for y fixnum from 0 below radius do
+          (let ((condition (to:f<= (to:f+ (to:f* y y)
+                                     x-square)
+                             r-square)))
+            (if condition
+                (let ((x-top-left     (to:f+ x-center (to:f- x)))
+                      (y-top-left     (to:f+ y-center        y))
+                      (x-bottom-right (to:f+ x-center        x))
+                      (y-bottom-right (to:f+ y-center (to:f- y))))
+                  (declare (dynamic-extent x-top-left
+                                           y-top-left
+                                           x-bottom-right
+                                           y-bottom-right))
+                  (when (pixel-inside-buffer-p buffer-width buffer-height
+                                               x-bottom-right y-top-left)
+                    (set-pixel-color@ buffer buffer-width
+                                      x-bottom-right
+                                      y-top-left
+                                      color))
+                  (when (pixel-inside-buffer-p buffer-width buffer-height
+                                               x-bottom-right y-bottom-right)
+                    (set-pixel-color@ buffer buffer-width
+                                      x-bottom-right
+                                      y-bottom-right
+                                      color))
+                  (when (pixel-inside-buffer-p buffer-width buffer-height
+                                               x-top-left y-bottom-right)
+                    (set-pixel-color@ buffer buffer-width
+                                      x-top-left
+                                      y-bottom-right
+                                      color))
+                  (when (pixel-inside-buffer-p buffer-width buffer-height
+                                               x-top-left y-top-left)
+                    (set-pixel-color@ buffer buffer-width
+                                      x-top-left
+                                      y-top-left
+                                      color)))
+                (return-from inner t))))))
+    buffer))
+
+(defun fill-circle-insecure (buffer buffer-width x-center y-center radius r g b &optional (a 255))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum buffer-width x-center y-center radius))
+  (declare ((unsigned-byte 8) r g b a))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let ((r-square  (to:f* radius radius))
+        (color     (pix:assemble-color r g b a)))
+    (declare (dynamic-extent r-square))
+    (loop for x from 0 below radius do
+      (let ((x-square (to:f* x x)))
+        (declare (dynamic-extent x-square))
+        (loop named inner for y fixnum from 0 below radius do
           (let ((condition (to:f<= (to:f+ (to:f* y y)
                                           x-square)
                                    r-square)))
             (if condition
-                (progn
+                (let ((x-top-left     (to:f+ x-center (to:f- x)))
+                      (y-top-left     (to:f+ y-center        y))
+                      (x-bottom-right (to:f+ x-center        x))
+                      (y-bottom-right (to:f+ y-center (to:f- y))))
                   (set-pixel-color@ buffer buffer-width
-                                    (to:f+ x-center x)
-                                    (to:f+ y-center y)
+                                    x-bottom-right
+                                    y-top-left
                                     color)
                   (set-pixel-color@ buffer buffer-width
-                                    (to:f+ x-center x)
-                                    (to:f+ y-center (to:f- y))
+                                    x-bottom-right
+                                    y-bottom-right
                                     color)
                   (set-pixel-color@ buffer buffer-width
-                                    (to:f+ x-center (to:f- x))
-                                    (to:f+ y-center (to:f- y))
+                                    x-top-left
+                                    y-bottom-right
                                     color)
                   (set-pixel-color@ buffer buffer-width
-                                    (to:f+ x-center (to:f- x))
-                                    (to:f+ y-center        y)
+                                    x-top-left
+                                    y-top-left
                                     color))
                 (return-from inner t))))))
     buffer))
 
 (a:define-constant +cos-45-degree+ (to:d (cos (/ pi 4))) :test #'=)
 
-(defun draw-circle (buffer buffer-width x-center y-center radius r g b &optional (a 255))
+(defun draw-circle (buffer buffer-width buffer-height x-center y-center radius r g b &optional (a 255))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (fixnum buffer-width x-center y-center radius))
+  (declare (fixnum buffer-width buffer-height x-center y-center radius))
   (declare ((unsigned-byte 8) r g b a))
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (let ((x-end     (ash (to:f* radius 185364) -18))
+  (let ((x-end     (ash (to:f* radius 185364) -18)) ; ~ r * cos(45°)
         (color     (pix:assemble-color r g b a)))
     (declare (dynamic-extent x-end))
     (loop for x fixnum from 0 to x-end
@@ -481,43 +624,125 @@
           do
              (if (< threshold 0)
                  (incf threshold (to:f+ (to:f* 2 x)
-                                        1))
+                                   1))
                  (progn
                    (incf threshold (to:f* 2 (to:f+ (to:f- x y)
-                                                   1)))
+                                              1)))
                    (decf y)))
-             (set-pixel-color@ buffer buffer-width
-                               (to:f+ x-center x)
-                               (to:f+ y-center y)
-                               color)
-             (set-pixel-color@ buffer buffer-width
-                               (to:f+ x-center y)
-                               (to:f+ y-center x)
-                               color)
-             (set-pixel-color@ buffer buffer-width
-                               (to:f+ x-center (to:f- x))
-                               (to:f+ y-center y)
-                               color)
-             (set-pixel-color@ buffer buffer-width
-                               (to:f+ x-center y)
-                               (to:f+ y-center (to:f- x))
-                               color)
-             (set-pixel-color@ buffer buffer-width
-                               (to:f+ x-center (to:f- x))
-                               (to:f+ y-center (to:f- y))
-                               color)
-             (set-pixel-color@ buffer buffer-width
-                               (to:f+ x-center (to:f- y))
-                               (to:f+ y-center (to:f- x))
-                               color)
-             (set-pixel-color@ buffer buffer-width
-                               (to:f+ x-center        x)
-                               (to:f+ y-center (to:f- y))
-                               color)
-             (set-pixel-color@ buffer buffer-width
-                               (to:f+ x-center (to:f- y))
-                               (to:f+ y-center        x)
-                               color))))
+
+             ;;       E      |     D                 |
+             ;;          ----+----                   |
+             ;;       --/    |    \--                |
+             ;;      X       |       X-              |
+             ;;     / -\     |     /- \  C           |
+             ;; F  /    -\   |   /-    \             |
+             ;;   /       -\ |0/-       \            |
+             ;; --+----------+----------+-           |
+             ;;   \      --/ | \-       /            |
+             ;; G  \  --/    |   \-    / B           |
+             ;;     -/       |     \- /              |
+             ;;      \       |       X               |
+             ;;       --\    |    /--                |
+             ;;   H      ----+---- A                 | y axe
+             ;;              |                       V
+
+             (let* ((xa (to:f+ x-center x))
+                    (ya (to:f+ y-center y))
+                    (xb (to:f+ x-center y))
+                    (yb (to:f+ y-center x))
+                    (xh (to:f+ x-center (to:f- x)))
+                    (yh ya)
+                    (xc xb)
+                    (yc (to:f+ y-center (to:f- x)))
+                    (xe (to:f+ x-center (to:f- x)))
+                    (ye (to:f+ y-center (to:f- y)))
+                    (xf (to:f+ x-center (to:f- y)))
+                    (yf yc)
+                    (xd xa)
+                    (yd ye)
+                    (xg xf)
+                    (yg yb))
+               (declare (dynamic-extent xa ya xb yb xh yh xc yc xe ye xf yf xd yd xg yg))
+               (when (pixel-inside-buffer-p buffer-width buffer-height xa ya)
+                 (set-pixel-color@ buffer buffer-width xa ya color))
+               (when (pixel-inside-buffer-p buffer-width buffer-height xb yb)
+                  (set-pixel-color@ buffer buffer-width xb yb color))
+               (when (pixel-inside-buffer-p buffer-width buffer-height xh yh)
+                 (set-pixel-color@ buffer buffer-width xh yh color))
+               (when (pixel-inside-buffer-p buffer-width buffer-height xc yc)
+                 (set-pixel-color@ buffer buffer-width xc yc color))
+               (when (pixel-inside-buffer-p buffer-width buffer-height xe ye)
+                 (set-pixel-color@ buffer buffer-width xe ye color))
+               (when (pixel-inside-buffer-p buffer-width buffer-height xf yf)
+                 (set-pixel-color@ buffer buffer-width xf yf color))
+               (when (pixel-inside-buffer-p buffer-width buffer-height xd yd)
+                 (set-pixel-color@ buffer buffer-width xd yd color))
+               (when (pixel-inside-buffer-p buffer-width buffer-height xg yg)
+                 (set-pixel-color@ buffer buffer-width xg yg color))))))
+
+(defun draw-circle-insecure (buffer buffer-width x-center y-center radius r g b &optional (a 255))
+    "Note: no bounds checking is done. This function supposed to be faster than `draw-circle'."
+
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum buffer-width x-center y-center radius))
+  (declare ((unsigned-byte 8) r g b a))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let ((x-end     (ash (to:f* radius 185364) -18)) ; ~ r * cos(45°)
+        (color     (pix:assemble-color r g b a)))
+    (declare (dynamic-extent x-end))
+    (loop for x fixnum from 0 to x-end
+          with y fixnum          = radius
+          with threshold fixnum  = 0
+          do
+             (if (< threshold 0)
+                 (incf threshold (to:f+ (to:f* 2 x)
+                                   1))
+                 (progn
+                   (incf threshold (to:f* 2 (to:f+ (to:f- x y)
+                                              1)))
+                   (decf y)))
+
+             ;;       E      |     D                 |
+             ;;          ----+----                   |
+             ;;       --/    |    \--                |
+             ;;      X       |       X-              |
+             ;;     / -\     |     /- \  C           |
+             ;; F  /    -\   |   /-    \             |
+             ;;   /       -\ |0/-       \            |
+             ;; --+----------+----------+-           |
+             ;;   \      --/ | \-       /            |
+             ;; G  \  --/    |   \-    / B           |
+             ;;     -/       |     \- /              |
+             ;;      \       |       X               |
+             ;;       --\    |    /--                |
+             ;;   H      ----+---- A                 | y axe
+             ;;              |                       V
+
+             (let* ((xa (to:f+ x-center x))
+                    (ya (to:f+ y-center y))
+                    (xb (to:f+ x-center y))
+                    (yb (to:f+ y-center x))
+                    (xh (to:f+ x-center (to:f- x)))
+                    (yh ya)
+                    (xc xb)
+                    (yc (to:f+ y-center (to:f- x)))
+                    (xe (to:f+ x-center (to:f- x)))
+                    (ye (to:f+ y-center (to:f- y)))
+                    (xf (to:f+ x-center (to:f- y)))
+                    (yf yc)
+                    (xd xa)
+                    (yd ye)
+                    (xg xf)
+                    (yg yb))
+               (declare (dynamic-extent xa ya xb yb xh yh xc yc xe ye xf yf xd yd xg yg))
+               (set-pixel-color@ buffer buffer-width xa ya color)
+               (set-pixel-color@ buffer buffer-width xb yb color)
+               (set-pixel-color@ buffer buffer-width xh yh color)
+               (set-pixel-color@ buffer buffer-width xc yc color)
+               (set-pixel-color@ buffer buffer-width xe ye color)
+               (set-pixel-color@ buffer buffer-width xf yf color)
+               (set-pixel-color@ buffer buffer-width xd yd color)
+               (set-pixel-color@ buffer buffer-width xg yg color)))))
 
 (defun calc-octant (x y)
   (declare (fixnum x y))
@@ -613,11 +838,227 @@
     (:8
      (values x (to:f- y)))))
 
-(defun draw-line (buffer buffer-width x0 y0 x1 y1 r g b &optional (a 255))
+(defun line-parallel-to-y-p (x-intersection)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (to::desired-type x-intersection))
+  (= x-intersection most-negative-single-float))
+
+(defun line-parallel-to-x-p (slope)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (to::desired-type slope))
+  (= slope most-positive-single-float))
+
+(defun line-equation (x1 y1 x2 y2)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (fixnum x1 x2 y1 y2))
+  (cond
+    ((= x1 x2) ; parallel to x
+     (values (to:d 0.0) most-negative-single-float))
+    ((= y1 y2) ;parallel to y
+     (values most-positive-single-float y1))
+    (t
+     (let ((slope          (/ (to:d (- y2 y1))
+                              (to:d (- x2 x1))))
+           (x-intersection (/ (- (to:d (the fixnum (* y1 x2)))
+                                 (to:d (the fixnum (* y2 x1))))
+                              (to:d (- x2 x1)))))
+       (values slope x-intersection)))))
+
+(defun clockwise-orientation-p (x0 y0 x1 y1 x2 y2)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (fixnum x0 y0 x1 y1 x2 y2))
+  (> (- (to:f* (- y1 y0)
+               (- x2 x1))
+        (to:f* (- y2 y1)
+               (- x1 x0)))
+     0))
+
+(defun segments-intersect-p (x0 y0 x1 y1 x2 y2 x3 y3)
+  (and (not (eq (clockwise-orientation-p x0 y0 x1 y1 x2 y2)
+                (clockwise-orientation-p x0 y0 x1 y1 x3 y3)))
+       (not (eq (clockwise-orientation-p x2 y2 x3 y3 x0 y0)
+                (clockwise-orientation-p x2 y2 x3 y3 x1 y1)))))
+
+(defun intersects-horizontal-axe-p (y-axe axe-width x0 y0 x1 y1)
+  (segments-intersect-p 0 y-axe axe-width y-axe x0 y0 x1 y1))
+
+(defun intersects-x-axe-p (width x0 y0 x1 y1)
+  (intersects-horizontal-axe-p 0 width x0 y0 x1 y1))
+
+(defun intersects-x-max-p (height width x0 y0 x1 y1)
+  (intersects-horizontal-axe-p height width x0 y0 x1 y1))
+
+(defun intersects-vertical-axe-p (x-axe axe-height x0 y0 x1 y1)
+  (segments-intersect-p x-axe 0 x-axe axe-height x0 y0 x1 y1))
+
+(defun intersects-y-axe-p (height x0 y0 x1 y1)
+  (intersects-vertical-axe-p 0 height x0 y0 x1 y1))
+
+(defun intersects-y-max-p (height width x0 y0 x1 y1)
+  (intersects-vertical-axe-p width height x0 y0 x1 y1))
+
+(defun draw-line (buffer buffer-width buffer-height x0 y0 x1 y1 r g b &optional (a 255))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum buffer-width buffer-height x0 y0 x1 y1))
+  (declare ((unsigned-byte 8) r g b a))
+  ;;(declare (optimize (speed 3) (debug 0) (safety 0)))
+  (let* ((width-limit      (1- buffer-width))
+         (height-limit     (1- buffer-height))
+         (intersects-x-axe (intersects-x-axe-p width-limit x0 y0 x1 y1))
+         (intersects-x-max (intersects-x-max-p height-limit width-limit x0 y0 x1 y1))
+         (intersects-y-axe (intersects-y-axe-p height-limit x0 y0 x1 y1))
+         (intersects-y-max (intersects-y-max-p height-limit width-limit x0 y0 x1 y1))
+         (actual-x0 -1)
+         (actual-y0 -1)
+         (actual-x1 -1)
+         (actual-y1 -1))
+    (declare (dynamic-extent width-limit
+                             height-limit
+                             intersects-x-axe
+                             intersects-x-max
+                             intersects-y-axe
+                             intersects-y-max
+                             actual-x0
+                             actual-y0
+                             actual-x1
+                             actual-y1))
+    (declare (fixnum actual-x0 actual-y0 actual-x1 actual-y1))
+    (multiple-value-bind (slope intersection)
+        (line-equation x0 y0 x1 y1)
+      (let* ((intersection-y-axe (if (line-parallel-to-x-p slope)
+                                     (to:d y0)
+                                     intersection)) ; 0, intersection
+             (intersection-y-max (if (line-parallel-to-x-p slope)
+                                     (to:d y0)
+                                     (to:d+ (to:d* slope (to:d width-limit))
+                                            intersection))) ; buffer-width, intersection
+             (intersection-x-axe (cond
+                                   ((line-parallel-to-y-p intersection)
+                                    (to:d x0)) ; x0, 0
+                                   ((line-parallel-to-x-p slope)
+                                    -1f0) ; no intersection
+                                   (t
+                                    (to:d/ (to:d- intersection)
+                                           slope)))) ; intersection, 0
+             (intersection-x-max (cond
+                                   ((line-parallel-to-y-p intersection)
+                                    (to:d x0)) ; x0, buffer-height
+                                   ((line-parallel-to-x-p slope)
+                                    -1f0) ;  no intersection
+                                   (t
+                                    (to:d/ (to:d- (to:d height-limit)
+                                                  intersection)
+                                           slope))))) ; intersection, buffer-height
+        (declare (dynamic-extent intersection-y-axe
+                                 intersection-y-max
+                                 intersection-x-axe
+                                 intersection-x-max))
+        (declare (to::desired-type intersection-y-axe
+                                   intersection-y-max
+                                   intersection-x-axe
+                                   intersection-x-max))
+        (when (or (pixel-inside-buffer-p buffer-width buffer-height x0 y0)
+                  (pixel-inside-buffer-p buffer-width buffer-height x1 y1)
+                  intersects-x-axe
+                  intersects-x-max
+                  intersects-y-axe
+                  intersects-y-max)
+          (cond
+            ; both ends inside the the buffer
+            ((and (pixel-inside-buffer-p buffer-width buffer-height x0 y0)
+                  (pixel-inside-buffer-p buffer-width buffer-height x1 y1))
+             (setf actual-x0 x0
+                   actual-y0 y0
+                   actual-x1 x1
+                   actual-y1 y1))
+            ;; only one end insithe the buffer
+            ((or (pixel-inside-buffer-p buffer-width buffer-height x0 y0)
+                 (pixel-inside-buffer-p buffer-width buffer-height x1 y1))
+             (if (pixel-inside-buffer-p buffer-width buffer-height x0 y0)
+                 (setf actual-x0 x0
+                       actual-y0 y0
+                       actual-x1 x1
+                       actual-y1 y1)
+                 (setf actual-x0 x1
+                       actual-y0 y1
+                       actual-x1 x0
+                       actual-y1 y0))
+             (cond
+               (intersects-y-max
+                (setf actual-y1 (truncate intersection-y-max)
+                      actual-x1 width-limit))
+               (intersects-y-axe
+                (setf actual-y1 (truncate intersection-y-axe)
+                      actual-x1 0))
+               (intersects-x-max
+                (setf actual-y1 height-limit
+                      actual-x1 (truncate intersection-x-max)))
+               (intersects-x-axe
+                (setf actual-y1 0
+                      actual-x1 (truncate intersection-x-axe)))))
+            (t ; both ends outside the the buffer
+             (when intersects-y-max
+               (if (< actual-x0 0)
+                   (setf actual-y0 (truncate intersection-y-max)
+                         actual-x0 width-limit)
+                   (setf actual-y1 (truncate intersection-y-max)
+                         actual-x1 width-limit)))
+             (when intersects-y-axe
+               (if (< actual-x0 0)
+                   (setf actual-y0 (truncate intersection-y-axe)
+                         actual-x0 0)
+                   (setf actual-y1 (truncate intersection-y-axe)
+                         actual-x1 0)))
+             (when intersects-x-max
+               (if (< actual-x0 0)
+                   (setf actual-y0 height-limit
+                         actual-x0 (truncate intersection-x-max))
+                   (setf actual-y1 height-limit
+                         actual-x1 (truncate intersection-x-max))))
+             (when intersects-x-axe
+               (if (< actual-x0 0)
+                   (setf actual-y0 0
+                         actual-x0 (truncate intersection-x-axe))
+                   (setf actual-y1 0
+                         actual-x1 (truncate intersection-x-axe))))))
+          (draw-line-insecure buffer
+                              buffer-width
+                              actual-x0
+                              actual-y0
+                              actual-x1
+                              actual-y1
+                              r
+                              g
+                              b
+                              a))))))
+
+(defun combine-pixel-colors (buffer buffer-width color-source x y)
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare ((unsigned-byte 32) color-source))
+  (declare (fixnum x y))
+  (let* ((color-destination (pixel@ buffer
+                                    buffer-width
+                                    x
+                                    y))
+         (color             (funcall *blending-function*
+                                     color-source
+                                     color-destination)))
+    (declare (dynamic-extent color-destination))
+    (declare (function *blending-function*))
+    (declare ((unsigned-byte 32) color color-destination))
+    (set-pixel-color@ buffer
+                      buffer-width
+                      x
+                      y
+                      color)))
+
+(defun draw-line-insecure (buffer buffer-width x0 y0 x1 y1 r g b &optional (a 255))
+  "No bound checking, faster than `DRAW-LINE`."
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width x0 y0 x1 y1))
   (declare ((unsigned-byte 8) r g b a))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;;(declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((octant (calc-octant (to:f- x1 x0)
                              (to:f- y1 y0))))
     (declare (dynamic-extent octant))
@@ -625,12 +1066,12 @@
         (to-first-octant octant
                          (to:f- x1 x0)
                          (to:f- y1 y0))
-      (let* ((delta-x   (the fixnum first-octant-x))
-             (delta-y   (the fixnum first-octant-y))
-             (2dx       (ash delta-x 1))
-             (2dy       (ash delta-y 1))
-             (threshold (to:f- 2dy delta-x))
-             (color     (pix:assemble-color r g b a)))
+      (let* ((delta-x      (the fixnum first-octant-x))
+             (delta-y      (the fixnum first-octant-y))
+             (2dx          (ash delta-x 1))
+             (2dy          (ash delta-y 1))
+             (threshold    (to:f- 2dy delta-x))
+             (color-source (pix:assemble-color r g b a)))
         (declare (dynamic-extent delta-x
                                  delta-y
                                  2dx
@@ -638,22 +1079,36 @@
                                  threshold))
         (loop with x fixnum = 0
               with y fixnum = 0
-              while (to:f< x delta-x)
+              while (to:f<= x delta-x)
               do
-                 (multiple-value-bind (actual-x actual-y)
+                 (multiple-value-bind (first-octant-x first-octant-y)
                      (from-first-octant octant x y)
-                   (declare (dynamic-extent actual-x actual-y))
-                   (set-pixel-color@ buffer
-                                     buffer-width
-                                     (to:f+ (the fixnum actual-x) x0)
-                                     (to:f+ (the fixnum actual-y) y0)
-                                     color))
+                   (declare (dynamic-extent first-octant-x
+                                            first-octant-y))
+                   (let* ((actual-x          (to:f+ (the fixnum first-octant-x) x0))
+                          (actual-y          (to:f+ (the fixnum first-octant-y) y0))
+                          (color-destination (pixel@ buffer
+                                                     buffer-width
+                                                     actual-x
+                                                     actual-y))
+                          (color             (funcall *blending-function*
+                                                      color-source
+                                                      color-destination)))
+                     (declare (dynamic-extent actual-x actual-y color-destination))
+                     (declare (function *blending-function*))
+                     (declare ((unsigned-byte 32) color color-destination))
+                     (declare (fixnum actual-x actual-y))
+                     (set-pixel-color@ buffer
+                                       buffer-width
+                                       actual-x
+                                       actual-y
+                                       color)))
                  (when (to:f>= (the fixnum threshold) 0)
                    (incf (the fixnum threshold) (to:f- 2dx))
                    (incf y))
                  (incf (the fixnum threshold) 2dy)
                  (incf x)))))
-    buffer)
+  buffer)
 
 (defun bilinear-interpolation (buffer buffer-width buffer-height x y)
   (declare ((simple-array (unsigned-byte 32)) buffer))
@@ -803,6 +1258,7 @@
                 buffer-source-width
                 copy
                 copy-width
+                copy-height
                 source-row
                 source-column
                 0
@@ -954,38 +1410,53 @@
                                                                       color)))))))))))))))))
   buffer-destination)
 
-(defun draw-text (buffer buffer-width text font x y r g b a)
+(defun create-new-buffer-with-text (text font r g b a)
+  "This functionc creates a heap allocated buffer that need to be freed after use using `nodgui.pixmap:free-buffer-memory'."
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((surface        (sdl2-ttf:render-utf8-blended font text r g b a))
          (pixels         (sdl2:surface-pixels surface))
          ;;(surface-width  (sdl2:surface-width surface))
-         (surface-height (sdl2:surface-height surface))
-         (surface-pitch  (sdl2:surface-pitch surface))
+         (surface-height       (sdl2:surface-height surface))
+         (surface-pitch        (sdl2:surface-pitch surface))
          (surface-pixels-width (to:f/ surface-pitch 4)))
     (declare (fixnum surface-height surface-pitch surface-pixels-width))
+    (declare (dynamic-extent surface pixels surface-height surface-pitch))
     (flet ((extract-channel (raw-pixel shift)
+             (declare (fixnum raw-pixel shift))
+             (declare (optimize (speed 3) (debug 0) (safety 0)))
              (logand (ash raw-pixel shift)
                      #xff)))
-      (pix:with-buffer (tmp-buffer (to:f* surface-height surface-pixels-width) surface-height)
-        (loop for index from 0 below (to:f* surface-height surface-pixels-width)
-              do
-                 (let* ((raw-pixel    (cffi:mem-aref pixels :uint32 index))
-                        (alpha        (extract-channel raw-pixel -24))
-                        (source-color (pix:assemble-color r g b alpha)))
-                   (declare ((simple-array (unsigned-byte 32)) tmp-buffer))
-                   (setf (elt tmp-buffer index) source-color)))
-        (let ((*blending-function* #'blending-function-combine))
-          (blit tmp-buffer
-                surface-pixels-width
-                buffer
-                buffer-width
-                0
-                0
-                y
-                x
-                surface-height
-                surface-pixels-width)
-          (sdl2:free-surface surface))))))
+      (let* ((buffer-width  (to:f* surface-height surface-pixels-width))
+             (buffer-height surface-height)
+             (buffer        (pix:make-buffer buffer-width buffer-height)))
+        (declare (fixnum buffer-width buffer-height))
+        (declare ((simple-array (unsigned-byte 32)) buffer))
+        (loop for index fixnum from 0 below buffer-width do
+          (let* ((raw-pixel    (cffi:mem-aref pixels :uint32 index))
+                 (alpha        (extract-channel raw-pixel -24))
+                 (source-color (pix:assemble-color r g b alpha)))
+            (declare (dynamic-extent raw-pixel alpha))
+            (setf (elt buffer index) source-color)))
+        (sdl2:free-surface surface)
+        (values buffer surface-pixels-width buffer-height)))))
+
+(defun draw-text (buffer buffer-width buffer-height text font x y r g b a)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (multiple-value-bind (buffer-text buffer-text-width buffer-text-height)
+      (create-new-buffer-with-text text font r g b a)
+    (let ((*blending-function* #'blending-function-combine))
+      (blit buffer-text
+            buffer-text-width
+            buffer
+            buffer-width
+            buffer-height
+            0
+            0
+            y
+            x
+            buffer-text-height
+            buffer-text-width)
+      (pix:free-buffer-memory buffer-text))))
 
 (defun init-font-system ()
   (sdl2-ttf:init))
@@ -1000,14 +1471,6 @@
 (defun close-font (font-handle)
   (sdl2-ttf:close-font font-handle))
 
-(defun uivec2 (x y)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
-  (let ((v (u:make-array-frame 2 0 'fixnum t)))
-    (declare (nodgui.vec2:uivec2 v))
-    (setf (elt v 0) x
-          (elt v 1) y)
-    v))
-
 (u:definline iaabb2-min-x (aabb)
   (elt aabb 0))
 
@@ -1019,6 +1482,18 @@
 
 (u:definline iaabb2-max-y (aabb)
   (elt aabb 3))
+
+(defsetf iaabb2-min-x (aabb) (new-val)
+  `(setf (elt ,aabb 0) ,new-val))
+
+(defsetf iaabb2-min-y (aabb) (new-val)
+  `(setf (elt ,aabb 1) ,new-val))
+
+(defsetf iaabb2-max-x (aabb) (new-val)
+  `(setf (elt ,aabb 2) ,new-val))
+
+(defsetf iaabb2-max-y (aabb) (new-val)
+  `(setf (elt ,aabb 3) ,new-val))
 
 (defun make-polygon-vertex-array (initial-contents)
   (let ((array (u:make-array-frame (length initial-contents)
@@ -1086,9 +1561,9 @@
 
 (defun union-iaabb2 (aabb aabb2)
   (expand-iaabb2 aabb (subseq aabb2 0 2))
-  (expand-iaabb2 aabb (uivec2 (elt aabb2 2) (elt aabb2 1)))
-  (expand-iaabb2 aabb (uivec2 (elt aabb2 2) (elt aabb2 3)))
-  (expand-iaabb2 aabb (uivec2 (elt aabb2 0) (elt aabb2 3)))
+  (expand-iaabb2 aabb (nodgui.vec2:uivec2 (elt aabb2 2) (elt aabb2 1)))
+  (expand-iaabb2 aabb (nodgui.vec2:uivec2 (elt aabb2 2) (elt aabb2 3)))
+  (expand-iaabb2 aabb (nodgui.vec2:uivec2 (elt aabb2 0) (elt aabb2 3)))
   aabb)
 
 (defun iaabb2->irect2 (coords)
@@ -1171,12 +1646,12 @@
 
 (defun center-iaabb2 (aabb)
   (let ((rect (iaabb2->irect2 aabb)))
-    (uivec2 (+ (elt rect 0)
-               (truncate (/ (elt rect 2)
-                            2)))
-            (+ (elt rect 1)
-               (truncate (/ (elt rect 3)
-                            2))))))
+    (nodgui.vec2:uivec2 (+ (elt rect 0)
+                           (truncate (/ (elt rect 2)
+                                        2)))
+                        (+ (elt rect 1)
+                           (truncate (/ (elt rect 3)
+                                        2))))))
 
 (defun polygon-create-aabb (vertices)
   (declare (optimize (speed 3) (debug 0) (safety 0)))
@@ -1189,44 +1664,39 @@
       (expand-iaabb2 aabb vertex))
     aabb))
 
-(defun polygon-line-equation (x1 y1 x2 y2)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (declare (fixnum x1 x2 y1 y2))
-  (cond
-    ((= x1 x2) ; parallel to x
-     (values (to:d 0.0) most-negative-single-float))
-    ((= y1 y2) ;parallel to y
-     (values most-positive-single-float y1))
-    (t
-     (let ((slope          (/ (to:d (- y2 y1))
-                              (to:d (- x2 x1))))
-           (x-intersection (/ (- (to:d (the fixnum (* y1 x2)))
-                                 (to:d (the fixnum (* y2 x1))))
-                              (to:d (- x2 x1)))))
-       (values slope x-intersection)))))
-
-(defun polygon-line-parallel-to-y-p (x-intersection)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (declare (to::desired-type x-intersection))
-  (= x-intersection most-negative-single-float))
-
-(defun polygon-line-parallel-to-x-p (slope)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (declare (to::desired-type slope))
-  (= slope most-positive-single-float))
-
 (defun polygon-calculate-intersection (ray-y start-x start-y end-x end-y)
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (fixnum ray-y start-x start-y end-x end-y))
   (multiple-value-bind (slope y-intersection)
-      (polygon-line-equation start-x start-y end-x end-y)
+      (line-equation start-x start-y end-x end-y)
     (declare (to::desired-type slope y-intersection))
-    (if (or (polygon-line-parallel-to-x-p slope)
-            (polygon-line-parallel-to-y-p y-intersection))
+    (if (or (line-parallel-to-x-p slope)
+            (line-parallel-to-y-p y-intersection))
         start-x
         (truncate (/ (- (to:d ray-y)
                         y-intersection)
                      slope)))))
+
+(u:definline add-intersection-p (ray-y start-y end-y next-y)
+  (or
+   ;; adds if its y is equal to starting segments
+   (=  ray-y start-y)
+   ;; or if its y is not equal to y of the ending segment
+   (/= ray-y end-y)
+   ;; if  its  y *is*  equal  to  y of  the
+   ;; ending segment  add if the ys  of the
+   ;; segments next  lays both on  the same
+   ;; half plane wrt the ray
+   (or (and (> next-y ray-y)
+            (> start-y ray-y))
+       (and (< next-y ray-y)
+            (< start-y ray-y)))))
+
+(u:definline exists-intersection-with-segment-p (ray-y start-y end-y)
+  (not (or (and (> ray-y start-y)
+                (> ray-y end-y))
+           (and (< ray-y start-y)
+                (< ray-y end-y)))))
 
 (defun polygon-collect-intersections (vertices ray-y)
   (declare ((simple-array nodgui.vec2:uivec2) vertices))
@@ -1249,34 +1719,45 @@
         (declare (dynamic-extent start-segment end-segment
                                  start-x start-y end-x end-y next-y))
         ;; discard if ray does not intersects segment
-        (when (not (or (and (> ray-y start-y)
-                            (> ray-y end-y))
-                       (and (< ray-y start-y)
-                            (< ray-y end-y))))
+        (when (exists-intersection-with-segment-p ray-y start-y end-y)
           (let ((intersection (polygon-calculate-intersection ray-y
                                                               start-x
                                                               start-y
                                                               end-x
                                                               end-y)))
             ;; add intersection
-            (when (or
-                   ;; adds if its y is equal to starting segments
-                   (=  ray-y start-y)
-                   ;; or if its y is not equal to y of the ending segment
-                   (/= ray-y end-y)
-                   ;; if  its  y *is*  equal  to  y of  the
-                   ;; ending segment  add if the ys  of the
-                   ;; segments next  lays both on  the same
-                   ;; half plane wrt the ray
-                   (or (and (> next-y ray-y)
-                            (> start-y ray-y))
-                       (and (< next-y ray-y)
-                            (< start-y ray-y))))
+            (when (add-intersection-p ray-y start-y end-y next-y)
               (push intersection intersections))))))
     (sort intersections #'<)))
 
-(defun draw-polygon (buffer width vertices color)
-  "Note: vertices must be presented in clockwise or counterclockwise order."
+(defun clip-y-polygon-aabb (aabb buffer-height)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array fixnum) aabb))
+  (declare (fixnum buffer-height))
+  (when (< (iaabb2-min-y aabb) 0)
+    (setf (iaabb2-min-y aabb) 0))
+  (when (>= (iaabb2-max-y aabb) buffer-height)
+    (setf (iaabb2-max-y aabb) (1- buffer-height)))
+  aabb)
+
+(defun aabb-outside-buffer-p (width height aabb)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array fixnum) aabb))
+  (not (or (pixel-inside-buffer-p width height
+                                  (iaabb2-min-x aabb)
+                                  (iaabb2-min-y aabb))
+           (pixel-inside-buffer-p width height
+                                  (iaabb2-max-x aabb)
+                                  (iaabb2-min-y aabb))
+           (pixel-inside-buffer-p  width height
+                                   (iaabb2-max-x aabb)
+                                   (iaabb2-max-y aabb))
+           (pixel-inside-buffer-p width height
+                                  (iaabb2-min-x aabb)
+                                  (iaabb2-max-y aabb)))))
+
+(defun draw-polygon (buffer width height vertices color)
+  "Note: vertices must be presented in consistent clockwise or counterclockwise order."
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum width))
   (declare ((simple-array nodgui.vec2:uivec2) vertices))
@@ -1285,16 +1766,21 @@
   (let ((aabb (polygon-create-aabb vertices)))
     (declare ((simple-array fixnum) aabb))
     (declare (dynamic-extent aabb))
-    (loop for y fixnum from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1 do
-      (let ((intersections (polygon-collect-intersections vertices y)))
-        (declare (dynamic-extent intersections))
-        (loop for (intersection-a intersection-b) on intersections by 'cddr do
-          (loop for pixel-x fixnum
-                from intersection-a
-                below intersection-b
-                by 1
-                do
-                   (set-pixel-color@ buffer width pixel-x y color)))))))
+    (when (not (aabb-outside-buffer-p width height aabb))
+      (clip-y-polygon-aabb aabb height)
+      (loop for y fixnum from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1 do
+        (let ((intersections (polygon-collect-intersections vertices y)))
+          (declare (dynamic-extent intersections))
+          (loop for (intersection-a intersection-b) fixnum on intersections by 'cddr do
+            (when (< intersection-a 0)
+              (setf intersection-a 0))
+            (when (>= intersection-b width)
+              (setf intersection-b (1- width)))
+            (loop for pixel-x fixnum
+                  from intersection-a below intersection-b
+                  by 1
+                  do
+                     (combine-pixel-colors buffer width color pixel-x y))))))))
 
 (defstruct polygon-intersection
   point
@@ -1328,29 +1814,14 @@
         (declare (dynamic-extent start-segment end-segment
                                  start-x start-y end-x end-y next-y))
         ;; discard if ray does not intersects segment
-        (when (not (or (and (> ray-y start-y)
-                            (> ray-y end-y))
-                       (and (< ray-y start-y)
-                            (< ray-y end-y))))
+        (when (exists-intersection-with-segment-p ray-y start-y end-y)
           (let ((intersection (polygon-calculate-intersection ray-y
                                                               start-x
                                                               start-y
                                                               end-x
                                                               end-y)))
             ;; add intersection
-            (when (or
-                   ;; adds if its y is equal to starting segments
-                   (=  ray-y start-y)
-                   ;; or if its y is not equal to y of the ending segment
-                   (/= ray-y end-y)
-                   ;; if  its  y *is*  equal  to  y of  the
-                   ;; ending segment  add if the ys  of the
-                   ;; segments next  lays both on  the same
-                   ;; half plane wrt the ray
-                   (or (and (> next-y ray-y)
-                            (> start-y ray-y))
-                       (and (< next-y ray-y)
-                            (< start-y ray-y))))
+            (when (add-intersection-p ray-y start-y end-y next-y)
               (push (make-polygon-intersection :point        intersection
                                                :start-vertex start-segment
                                                :end-vertex   end-segment
@@ -1380,7 +1851,7 @@
     (t
      v)))
 
-(defun draw-texture-mapped-polygon (buffer width vertices texels pixmap)
+(defun draw-texture-mapped-polygon (buffer width height vertices texels pixmap)
   "Note: vertices must be presented in clockwise order."
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum width))
@@ -1394,6 +1865,7 @@
     (declare ((simple-array (unsigned-byte 32)) texture))
     (declare (to::desired-type pixmap-width pixmap-height))
     (declare (dynamic-extent aabb pixmap-width pixmap-height))
+    (clip-y-polygon-aabb aabb height)
     (loop for y fixnum
           from (iaabb2-min-y aabb) to (iaabb2-max-y aabb) by 1
           do
@@ -1487,6 +1959,10 @@
                           (let ((range (- intersection-b-x intersection-a-x)))
                             (declare (fixnum range))
                             (when (/= range 0)
+                              (when (< intersection-a-x 0)
+                                (setf intersection-a-x 0))
+                              (when (>= intersection-b-x width)
+                                (setf intersection-b-x (1- width)))
                               (loop for x fixnum from intersection-a-x below intersection-b-x by 1
                                     with delta-t = (to:d- texel2-t texel1-t)
                                     with delta-s = (to:d- texel2-s texel1-s)

@@ -343,17 +343,21 @@
 
 ;;;; blit ;;;;
 
-(defun make-blitting-rectangle (width height)
+(defun make-blitting-rectangle (width height test-clip)
   (declare (fixnum width height))
   (let* ((rectangle-width  (+ 20 (random (truncate (- (* width  1/4) 40)))))
          (rectangle-height (+ 20 (random (truncate (- (* height 1/4) 40)))))
          (rectangle        (pixmap:make-buffer rectangle-width rectangle-height))
-         (destination-x    (+ (truncate (* 3/4
-                                           (random width)))
-                              20))
-         (destination-y     (+ (truncate (* 3/4
-                                            (random height)))
-                               20)))
+         (destination-x    (if test-clip
+                               (+ -40 (random (+ width 40)))
+                               (+ (truncate (* 3/4
+                                               (random width)))
+                                  20)))
+         (destination-y    (if test-clip
+                               (+ -40 (random (+ height 40)))
+                               (+ (truncate (* 3/4
+                                               (random height)))
+                                  20))))
     (px:clear-buffer rectangle
                      rectangle-width
                      rectangle-height
@@ -399,6 +403,7 @@
                    (height ctx:height)) *pixel-buffer-context*
     (let ((tick (to:d 0.0)))
       (loop while (not (stop-drawing-thread-p *animation*)) do
+        (ctx:sync *pixel-buffer-context*)
         (ctx:push-for-updating *pixel-buffer-context*
                                (lambda (dt)
                                  (declare (fixnum dt))
@@ -439,6 +444,7 @@
           (shift-down-2    (to:f* -2 width)))
       (declare (dynamic-extent float-width smoke-threshold shift-down-2))
       (loop while (not (stop-drawing-thread-p *animation*)) do
+        (ctx:sync *pixel-buffer-context*)
         (ctx:push-for-updating *pixel-buffer-context*
                                (lambda (dt)
                                  (declare (fixnum dt))
@@ -457,6 +463,7 @@
                                 :force-push nil))
       (format t "STOP FIRE!~%"))))
 
+(let ((test-clip nil))
 (defun draw-rectangles-thread ()
   (with-accessors ((buffer px:buffer)
                    (width  ctx:width)
@@ -470,8 +477,11 @@
     (let ((rectangles (loop repeat 1000
                             collect
                             (multiple-value-list (make-blitting-rectangle width
-                                                                          height)))))
+                                                                          height
+                                                                          test-clip)))))
+      (setf test-clip (not test-clip))
       (mapcar (lambda (rectangle)
+                (ctx:sync *pixel-buffer-context*)
                 (ctx:push-for-updating *pixel-buffer-context*
                                        (lambda (dt)
                                          (declare (ignore dt))
@@ -495,6 +505,7 @@
                                                        rectangle-width
                                                        buffer
                                                        width
+                                                       height
                                                        0
                                                        0
                                                        y
@@ -503,7 +514,7 @@
                                                        rectangle-width))))
                                         :force-push t))
                 rectangles)
-      (format t "STOP RECTANGLES!~%"))))
+      (format t "STOP RECTANGLES!~%")))))
 
 (defun load-bell-sprite ()
   (let ((px (make-instance 'nodgui.pixmap:png)))
@@ -625,14 +636,10 @@
                           :force-push t))
 
 (defun draw-lines (buffer width height x y)
-  (loop for degree from 0 below 360 by 2
+  (loop for degree from 0 below 360 by 1
         for color = 0 then (truncate (abs (* 255 (sin (* 12 (/ degree 360))))))
         do
-           (let ((radius (min (to:d x)
-                              (to:d y)
-                              (to:d (- width x))
-                              (to:d (- height y))
-                              50.0)))
+           (let ((radius 100.0))
              (ctx:push-for-updating *pixel-buffer-context*
                                     (lambda (dt)
                                       (declare (ignore dt))
@@ -643,18 +650,226 @@
                                             (actual-degree degree)
                                             (radians   (to:d/ (to:d* (to:d pi)
                                                                      (to:d actual-degree))
-                                                              180.0))
+                                                              180.0f0))
                                             (current-x (to:f+ x
                                                          (truncate (to:d* radius (to:dcos radians)))))
                                             (current-y (to:f+ y
                                                          (truncate (* radius (sin radians))))))
                                        (lambda (dt)
                                          (declare (ignore dt))
-                                         (px:draw-line buffer width
+                                         (px:draw-line buffer
+                                                       width
+                                                       height
                                                        x y
                                                        current-x current-y
                                                        255 0 current-color  255)))
-                                     :force-push t))))
+                                     :force-push t)))
+  ;;parallel to x
+  (loop for i from 0 below width by (truncate (/ width 20))
+        for color = 0 then (truncate (to:dlerp (to:d (/ i width)) (to:d 0) (to:d 255)))
+        do
+    (ctx:push-for-updating *pixel-buffer-context*
+                           (lambda (dt)
+                             (declare (ignore dt))
+                             t)
+                           :force-push t)
+    (ctx:push-for-rendering *pixel-buffer-context*
+                            (let ((current-color color)
+                                  (x i))
+                              (lambda (dt)
+                                (declare (ignore dt))
+                                (px:draw-line buffer
+                                              width
+                                              height
+                                              x 0
+                                              x height
+                                              255 0 current-color)))
+                            :force-push t))
+  ;; parallel to y
+  (loop for i from 0 below height by (truncate (/ height 20))
+        for color = 0 then (truncate (to:dlerp (to:d (/ i height)) (to:d 0) (to:d 255)))
+        do
+    (ctx:push-for-updating *pixel-buffer-context*
+                           (lambda (dt)
+                             (declare (ignore dt))
+                             t)
+                           :force-push t)
+    (ctx:push-for-rendering *pixel-buffer-context*
+                            (let ((current-color color)
+                                  (y i))
+                              (lambda (dt)
+                                (declare (ignore dt))
+                                (px:draw-line buffer
+                                              width
+                                              height
+                                              0     y
+                                              width y
+                                              255 0 current-color)))
+                            :force-push t))
+  (loop for i from 0 below 300 by 10
+        for color = 0 then (truncate (to:dlerp (to:d (/ i 300)) (to:d 0) (to:d 255)))
+        for v0 = (vec2:uivec2 -400 -400) then (vec2:uivec2+ v0 (vec2:uivec2 -10 10))
+        for v1 = (vec2:uivec2 400 400) then (vec2:uivec2+ v1 (vec2:uivec2 -10 10))
+        do
+           (ctx:push-for-updating *pixel-buffer-context*
+                                  (lambda (dt)
+                                    (declare (ignore dt))
+                                    t)
+                                  :force-push t)
+           (ctx:push-for-rendering *pixel-buffer-context*
+                                   (let* ((current-color color)
+                                          (actual-x0 (vec2:uivec2-x v0))
+                                          (actual-y0 (vec2:uivec2-y v0))
+                                          (actual-x1 (vec2:uivec2-x v1))
+                                          (actual-y1 (vec2:uivec2-y v1))
+                                          (v2        (vec2:vec2-rotate (vec2:vec2 (to:d actual-x0)
+                                                                                 (to:d actual-y0))
+                                                                      (to:d pi)))
+                                          (v3        (vec2:vec2-rotate (vec2:vec2 (to:d actual-x1)
+                                                                                 (to:d actual-y1))
+                                                                      (to:d pi)))
+
+                                          (actual-x2 (truncate (vec2:uivec2-x v2)))
+                                          (actual-y2 (truncate (vec2:uivec2-y v2)))
+                                          (actual-x3 (truncate (vec2:uivec2-x v3)))
+                                          (actual-y3 (truncate (vec2:uivec2-y v3))))
+                                     (lambda (dt)
+                                       (declare (ignore dt))
+                                       (px:draw-line buffer
+                                                     width
+                                                     height
+                                                     actual-x0
+                                                     actual-y0
+                                                     actual-x1
+                                                     actual-y1
+                                                     255 0 current-color)
+                                       (px:draw-line buffer
+                                                     width
+                                                     height
+                                                     actual-x2
+                                                     actual-y2
+                                                     actual-x3
+                                                     actual-y3
+                                                     255 0 current-color)))
+                                    :force-push t)))
+
+(defun make-bouncing-rectangle (w h)
+  (let* ((rectangle (pixmap:make-buffer w h)))
+    (px:clear-buffer rectangle w h 255 0 255)
+    rectangle))
+
+(defun bouncing-rectangle-initial-velocity ()
+  (let ((v (vec2:vec2 (random 10.0f0)
+                      (random 10.0f0))))
+    (if (or (epsilon= (vec2:vec2-x v) 0.0 1e-3)
+            (epsilon= (vec2:vec2-y v) 0.0 1e-3))
+        (bouncing-rectangle-initial-velocity)
+        v)))
+
+(defun draw-bouncing-rectangle-thread ()
+  (with-accessors ((buffer px:buffer)
+                   (width  ctx:width)
+                   (height ctx:height)) *pixel-buffer-context*
+    (declare (fixnum width height))
+    (let* ((rectangle-width    30)
+           (rectangle-height   10)
+           (rectangle          (make-bouncing-rectangle rectangle-width rectangle-height))
+           (rectangle-position (vec2:vec2 (to:f (/ width 2))
+                                          (to:f (/ height 2))))
+           (rectangle-velocity (bouncing-rectangle-initial-velocity))
+           (polygon-vertices (make-polygon-vertices))
+           (polygon-color    (pixmap:assemble-color 255 0 255 255)))
+      (declare (vec2:vec2 rectangle-position rectangle-velocity))
+      (ctx:push-for-updating *pixel-buffer-context*
+                              (lambda (dt)
+                                (declare (ignore dt))
+                                (setf (ctx:time-spent *pixel-buffer-context*)
+                                      (ctx:get-milliseconds)))
+                              :force-push nil)
+      (loop while (not (stop-drawing-thread-p *animation*)) do
+        (ctx:sync *pixel-buffer-context*)
+        (ctx:push-for-updating *pixel-buffer-context*
+                               (lambda (dt)
+                                 (declare (fixnum dt))
+                                 ;;(declare (optimize (speed 3) (debug 0)))
+                                 (when (or (to:d> (vec2:vec2-x rectangle-position)
+                                                  (to:d* 2.0 (to:d width)))
+                                           (to:d< (to:d+ (vec2:vec2-x rectangle-position)
+                                                         (to:d rectangle-width))
+                                                  (to:d* -2.0 (to:d width))))
+                                   (setf (vec2:vec2-x rectangle-velocity)
+                                         (to:d- (vec2:vec2-x rectangle-velocity))))
+                                 (when (or (to:d> (vec2:vec2-y rectangle-position)
+                                                  (to:d* 2.0 (to:d width)))
+                                           (to:d< (to:d+ (vec2:vec2-y rectangle-position)
+                                                         (to:d rectangle-height))
+                                                  (to:d* -2.0 (to:d width))))
+                                   (setf (vec2:vec2-y rectangle-velocity)
+                                         (to:d- (vec2:vec2-y rectangle-velocity))))
+                                 (let ((delta-pos (vec2:vec2* rectangle-velocity
+                                                              (to:d* 8e-2 (to:d dt)))))
+                                   (setf rectangle-position
+                                         (vec2:vec2+ rectangle-position delta-pos))
+                                   (setf polygon-vertices
+                                         (translate-polygon-vertices polygon-vertices
+                                                                     delta-pos))))
+                               :force-push nil)
+        (ctx:push-for-rendering *pixel-buffer-context*
+                                (lambda (dt)
+                                  (declare (ignore dt))
+                                  ;;(declare (optimize (speed 3) (debug 0)))
+                                  (px:clear-buffer buffer width height 0 0 0)
+                                  (px:fill-rectangle buffer
+                                                     width
+                                                     height
+                                                     (round (vec2:vec2-x rectangle-position))
+                                                     (round (- (vec2:vec2-y rectangle-position)
+                                                               rectangle-width))
+                                                     (round (+ (vec2:vec2-x rectangle-position)
+                                                               rectangle-width))
+                                                     (round (+  (vec2:vec2-y rectangle-position)
+                                                                rectangle-height))
+                                                     255
+                                                     255
+                                                     0)
+                                  (px:fill-circle buffer
+                                                  width
+                                                  height
+                                                  (round (+ (vec2:vec2-x rectangle-position)
+                                                            (* 2 rectangle-width)))
+                                                  (round (vec2:vec2-y rectangle-position))
+                                                  rectangle-width
+                                                  0
+                                                  255
+                                                  0)
+                                  (px:draw-circle buffer
+                                                  width
+                                                  height
+                                                  (round (- (vec2:vec2-x rectangle-position)
+                                                            (* 2 rectangle-width)))
+                                                  (round (vec2:vec2-y rectangle-position))
+                                                  rectangle-width
+                                                  0
+                                                  255
+                                                  255)
+                                  (px:blit rectangle
+                                           rectangle-width
+                                           buffer
+                                           width
+                                           height
+                                           0
+                                           0
+                                           (round (vec2:vec2-y rectangle-position))
+                                           (round (vec2:vec2-x rectangle-position))
+                                           rectangle-height
+                                           rectangle-width)
+                                  (px:draw-polygon buffer
+                                                   width
+                                                   height
+                                                   polygon-vertices
+                                                   polygon-color))
+                                :force-push nil))
+      (format t "STOP BOUNCING SHAPES!~%"))))
 
 (defun stop-animation ()
   (when (and *animation*
@@ -733,9 +948,23 @@
                                               (stop-animation)
                                               (setf *animation* (make-animation))
                                               (setf (animation-thread *animation*)
-                                                    (make-thread (make-thread #'draw-rectangles-thread
-                                                                              :name "rectangles")))
+                                                    (make-thread #'draw-rectangles-thread
+                                                                 :name "rectangles"))
                                               (format t "tk event returned~%"))))
+           (radio-bouncing-rectangle (make-instance 'radio-button
+                                                  :master   buttons-frame
+                                                  :value    :bouncing-shapes
+                                                  :variable "dummy"
+                                                  :text     "Bouncing shapes"
+                                                  :command
+                                                  (lambda (value)
+                                                    (format t "button ~a pressed~%" value)
+                                                    (stop-animation)
+                                                    (setf *animation* (make-animation))
+                                                    (setf (animation-thread *animation*)
+                                                          (make-thread #'draw-bouncing-rectangle-thread
+                                                                       :name "bouncing rectangle"))
+                                                    (format t "tk event returned~%"))))
            (button-quit  (make-instance 'button
                                         :master  quit-frame
                                         :text    "quit"
@@ -743,17 +972,18 @@
                                                    (stop-animation)
                                                    (ctx:quit-sdl *pixel-buffer-context*)
                                                    (exit-nodgui)))))
-      (grid warning-label     0 0 :columnspan 2)
-      (grid interaction-label 1 0 :columnspan 2)
-      (grid sdl-frame         2 0)
-      (grid buttons-frame     2 1 :sticky :nws)
-      (grid buttons-label     1 0 :sticky :nw :padx 5 :pady 10)
-      (grid radio-rectangles  2 0 :sticky :nw :padx 5)
-      (grid radio-fire        3 0 :sticky :nw :padx 5)
-      (grid radio-plasma      4 0 :sticky :nw :padx 5)
-      (grid quit-frame        5 0 :sticky :wes)
-      (grid button-quit       0 0 :sticky :s)
-      (grid notice-label      1 0 :sticky :sw)
+      (grid warning-label            0 0 :columnspan 2)
+      (grid interaction-label        1 0 :columnspan 2)
+      (grid sdl-frame                2 0)
+      (grid buttons-frame            2 1 :sticky :nws)
+      (grid buttons-label            1 0 :sticky :nw :padx 5 :pady 10)
+      (grid radio-rectangles         2 0 :sticky :nw :padx 5)
+      (grid radio-fire               3 0 :sticky :nw :padx 5)
+      (grid radio-plasma             4 0 :sticky :nw :padx 5)
+      (grid radio-bouncing-rectangle 5 0 :sticky :nw :padx 5)
+      (grid quit-frame               5 0 :sticky :wes)
+      (grid button-quit              0 0 :sticky :s)
+      (grid notice-label             1 0 :sticky :sw)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1)
       (grid-rowconfigure    buttons-frame 5 :weight 1)
@@ -773,9 +1003,9 @@
                                                (/ +context-height+
                                                   +sdl-frame-height+)))))
                     (cond
-                      ((= (rem what-to-draw 3) 0)
+                      ((and nil (= (rem what-to-draw 3) 0))
                        (draw-bell-sprite buffer width height scaled-x scaled-y))
-                      ((= (rem what-to-draw 3) 1)
+                      ((and nil (= (rem what-to-draw 3) 1))
                        (draw-test-sprite buffer width height scaled-x scaled-y))
                       (t
                        (draw-lines buffer width height scaled-x scaled-y))))))))
@@ -808,16 +1038,26 @@
     (px:make-polygon-vertex-array vertices)))
 
 (defun make-textured-polygon-vertices ()
-  (let* ((vertices (list (nodgui.vec2:uivec2 4   100)
-                         (nodgui.vec2:uivec2 200 60)
-                         (nodgui.vec2:uivec2 200 200)
-                         (nodgui.vec2:uivec2 4   200)))
+  (let* ((vertices (list (nodgui.vec2:uivec2 300 100)
+                         (nodgui.vec2:uivec2 400 60)
+                         (nodgui.vec2:uivec2 400 200)
+                         (nodgui.vec2:uivec2 300 200)))
          (texels   (list (nodgui.vec2:vec2 0f0 0f0)
                          (nodgui.vec2:vec2 1f0 0f0)
                          (nodgui.vec2:vec2 1f0 1f0)
                          (nodgui.vec2:vec2 0f0 1f0))))
     (values (px:make-polygon-vertex-array vertices)
             (px:make-polygon-texture-coordinates-array texels))))
+
+(defun translate-polygon-vertices (vertices offset)
+  (map 'vector
+       (lambda (a)
+         (let ((v (vec2:vec2+ (vec2:vec2 (to:d (vec2:uivec2-x a))
+                                         (to:d (vec2:uivec2-y a)))
+                              offset)))
+           (vec2:uivec2 (round (vec2:vec2-x v))
+                        (round (vec2:vec2-y v)))))
+       vertices))
 
 (defun demo-pixel-buffer ()
   (px:init-font-system)
@@ -856,6 +1096,7 @@
                                                           0 0 0)
                                          (px:draw-text context-buffer
                                                        context-width
+                                                       context-height
                                                        "Hello there!"
                                                        font
                                                        10
@@ -864,15 +1105,22 @@
                                                        255
                                                        255
                                                        0)
-                                         ;; (px:draw-polygon context-buffer
-                                         ;;                  context-width
-                                         ;;                  textured-polygon-vertices
-                                         ;;                  polygon-color)
-                                         (px:draw-texture-mapped-polygon context-buffer
-                                                                         context-width
-                                                                         textured-polygon-vertices
-                                                                         textured-polygon-texture-coords
-                                                                         *test-sprite*)
+                                         (let ((delta-pos (vec2:vec2 (to:d translating-x)
+                                                                     (to:d translating-y))))
+                                           (px:draw-polygon context-buffer
+                                                            context-width
+                                                            context-height
+                                                            (translate-polygon-vertices polygon-vertices
+                                                                                        delta-pos)
+                                                            polygon-color)
+                                           (px:draw-texture-mapped-polygon context-buffer
+                                                                           context-width
+                                                                           context-height
+                                                                           (translate-polygon-vertices textured-polygon-vertices
+                                                                                                       delta-pos)
+
+                                                                           textured-polygon-texture-coords
+                                                                           *test-sprite*))
                                          (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
                                                             (nodgui.pixmap:width  *bell-sprite*)
                                                             (nodgui.pixmap:height *bell-sprite*)

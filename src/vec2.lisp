@@ -42,10 +42,20 @@
     :test #'vec2=)
 
   (defun vec2-x (a)
+    (declare (optimize (debug 0) (safety 0) (speed 3)))
+    (declare (vec2 a))
     (elt a 0))
 
+  (defsetf vec2-x (v) (new-val)
+    `(setf (elt ,v 0) ,new-val))
+
   (defun vec2-y (a)
+    (declare (optimize (debug 0) (safety 0) (speed 3)))
+    (declare (vec2 a))
     (elt a 1))
+
+  (defsetf vec2-y (v) (new-val)
+    `(setf (elt ,v 1) ,new-val))
 
   (defun sequence->vec2 (vec)
     (vec2 (->f (elt vec 0))
@@ -144,8 +154,14 @@
 (defun uivec2-x (a)
   (elt a 0))
 
+(defsetf uivec2-x (v) (new-val)
+  `(setf (elt ,v 1) ,new-val))
+
 (defun uivec2-y (a)
   (elt a 1))
+
+(defsetf uivec2-y (v) (new-val)
+  `(setf (elt ,v 1) ,new-val))
 
 (defun copy-uivec2 (old)
   (let ((res (make-array-frame 2 0.0 'uivec2-type t)))
