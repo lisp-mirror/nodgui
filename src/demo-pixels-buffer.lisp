@@ -1003,9 +1003,9 @@
                                                (/ +context-height+
                                                   +sdl-frame-height+)))))
                     (cond
-                      ((and nil (= (rem what-to-draw 3) 0))
+                      ((= (rem what-to-draw 3) 0)
                        (draw-bell-sprite buffer width height scaled-x scaled-y))
-                      ((and nil (= (rem what-to-draw 3) 1))
+                      ((= (rem what-to-draw 3) 1)
                        (draw-test-sprite buffer width height scaled-x scaled-y))
                       (t
                        (draw-lines buffer width height scaled-x scaled-y))))))))
