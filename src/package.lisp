@@ -1510,6 +1510,10 @@
    #:make-polygon-vertex-array
    #:make-polygon-texture-coordinates-array
    #:draw-polygon
+   #:texture-border-clamp
+   #:texture-border-wrap
+   #:texture-shader-wrap
+   #:*texture-shader*
    #:draw-texture-mapped-polygon
    #:init-font-system
    #:terminate-font-system
