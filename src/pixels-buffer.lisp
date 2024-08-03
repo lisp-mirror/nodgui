@@ -2027,7 +2027,9 @@
                           (let ((range (- intersection-b-x intersection-a-x)))
                             (declare (fixnum range))
                             (when (/= range 0)
-                              (loop for x fixnum from (max 0 intersection-a-x) below intersection-b-x by 1
+                              (loop for x fixnum from (max 0 intersection-a-x)
+                                      below (min intersection-b-x width)
+                                    by 1
                                     with delta-t = (max 0f0 (to:d- texel2-t texel1-t))
                                     with delta-s = (max 0f0 (to:d- texel2-s texel1-s))
                                     with t-increment = (to:d/ delta-t
@@ -2047,15 +2049,14 @@
                                       then (to:d+ interpolated-s
                                                   s-increment)
                                     do
-                                       (when (< x width)
-                                         (funcall *texture-shader*
-                                                  interpolated-s
-                                                  interpolated-t
-                                                  texture
-                                                  pixmap-width
-                                                  pixmap-height
-                                                  buffer
-                                                  width
-                                                  height
-                                                  x
-                                                  y)))))))))))
+                                       (funcall *texture-shader*
+                                                interpolated-s
+                                                interpolated-t
+                                                texture
+                                                pixmap-width
+                                                pixmap-height
+                                                buffer
+                                                width
+                                                height
+                                                x
+                                                y))))))))))
