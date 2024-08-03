@@ -48,7 +48,7 @@
   "Note: no bounds checking is done"
   (declare (fixnum x y width))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (optimize (speed 3) (debug 3) (safety 0)))
+  (declare (optimize (speed 0) (debug 3) (safety 3)))
   (to:faref buffer (to:f+ x (the fixnum (to:f* y width)))))
 
 (defmacro with-displace-pixel ((r g b a) pixel &body body)
@@ -1121,30 +1121,32 @@
   ;; |          |
   ;; +----------+
   ;; d          c
-  (flet ((clamp-coordinate (coord max-value)
-           (declare (to::desired-type max-value coord))
-           (declare (optimize (speed 3) (debug 0) (safety 0)))
-           (cond
-             ((< coord 0f0)
-              0f0)
-             ((>= coord (1- max-value))
-              (1- max-value))
-             (t
-              coord))))
-      (let* ((floor-x   (floor (clamp-coordinate x (to:d buffer-width))))
-             (floor-y   (floor (clamp-coordinate y (to:d buffer-height))))
-             (ceiling-x (ceiling (clamp-coordinate x (to:d buffer-width))))
-             (ceiling-y (ceiling (clamp-coordinate y (to:d buffer-height))))
-             (dx        (truncate (to:d* 255.0f0 (to:d- x (to:d (the fixnum (floor x)))))))
-             (dy        (truncate (to:d* 255.0f0 (to:d- y (to:d (the fixnum (floor y)))))))
-             (a         (pixel@ buffer buffer-width floor-x floor-y))
-             (b         (pixel@ buffer buffer-width ceiling-x floor-y))
-             (c         (pixel@ buffer buffer-width ceiling-x ceiling-y))
-             (d         (pixel@ buffer buffer-width floor-x ceiling-y))
-             (inter-x1  (color-lerp c d dx))
-             (inter-x2  (color-lerp b a dx))
-             (inter-y   (color-lerp inter-x1 inter-x2 dy)))
-        inter-y)))
+  (let* ((floor-x   (floor x))
+         (floor-y   (floor y))
+         (ceiling-x (rem (ceiling x) buffer-width))
+         (ceiling-y (rem (ceiling y) buffer-height))
+         (dx        (truncate (to:d* 255.0f0 (to:d- x (to:d floor-x)))))
+         (dy        (truncate (to:d* 255.0f0 (to:d- y (to:d floor-y)))))
+         (a         (pixel@ buffer buffer-width floor-x floor-y))
+         (b         (pixel@ buffer buffer-width ceiling-x floor-y))
+         (c         (pixel@ buffer buffer-width ceiling-x ceiling-y))
+         (d         (pixel@ buffer buffer-width floor-x ceiling-y))
+         (inter-x1  (color-lerp c d dx))
+         (inter-x2  (color-lerp b a dx))
+         (inter-y   (color-lerp inter-x1 inter-x2 dy)))
+    (declare (fixnum floor-x floor-y
+                     ceiling-x ceiling-y
+                     dx dy
+                     a b c d
+                     inter-x1 inter-x2
+                     inter-y))
+    (declare (dynamic-extent floor-x floor-y
+                             ceiling-x ceiling-y
+                             dx dy
+                             a b c d
+                             inter-x1 inter-x2
+                             inter-y))
+    inter-y))
 
 (u:definline translate (coordinate delta)
   (declare (fixnum coordinate delta))
@@ -1902,7 +1904,7 @@
   (let* ((wrapped-s (texture-border-wrap s-tex))
          (wrapped-t (texture-border-wrap t-tex))
          (pixmap-x  (to:d* wrapped-t
-                          texture-width))
+                           texture-width))
          (pixmap-y  (to:d* wrapped-s
                            texture-height))
          (pixel     (bilinear-interpolation texture
@@ -2029,7 +2031,7 @@
                                 (setf intersection-a-x 0))
                               (when (>= intersection-b-x width)
                                 (setf intersection-b-x (1- width)))
-                                                            (loop for x fixnum from intersection-a-x below intersection-b-x by 1
+                              (loop for x fixnum from intersection-a-x below intersection-b-x by 1
                                     with delta-t = (max 0f0 (to:d- texel2-t texel1-t))
                                     with delta-s = (max 0f0 (to:d- texel2-s texel1-s))
                                     with t-increment = (to:d/ delta-t
