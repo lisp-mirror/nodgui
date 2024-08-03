@@ -2034,16 +2034,16 @@
                                                               (to:d range))
                                     with s-increment = (to:d/ delta-s
                                                               (to:d range))
-                                    for interpolated-t = (+ texel1-t
-                                                            (* t-increment
-                                                               (- (min 0f0
-                                                                       intersection-a-x))))
+                                    for interpolated-t = (to:d+ texel1-t
+                                                            (to:d* t-increment
+                                                               (to:d- (min 0f0
+                                                                           (to:d intersection-a-x)))))
                                       then (to:d+ interpolated-t
                                                   t-increment)
-                                    for interpolated-s = (+ texel1-s
-                                                            (* s-increment
-                                                               (- (min 0f0
-                                                                       intersection-a-x))))
+                                    for interpolated-s = (to:d+ texel1-s
+                                                            (to:d* s-increment
+                                                               (to:d- (min 0f0
+                                                                           (to:d intersection-a-x)))))
                                       then (to:d+ interpolated-s
                                                   s-increment)
                                     do
