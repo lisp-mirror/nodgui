@@ -1855,27 +1855,44 @@
     (t
      v)))
 
-(defun texture-shader-wrap (s-tex t-tex
-                            texture
-                            texture-width
-                            texture-height
-                            buffer
-                            buffer-width
-                            buffer-height)
-  (declare (ignore texture texture-width texture-height
-                   buffer buffer-width buffer-height))
-  (values (texture-border-wrap s-tex)
-          (texture-border-wrap t-tex)))
+(defun texture-shader-wrap-replace (s-tex
+                                    t-tex
+                                    texture
+                                    texture-width
+                                    texture-height
+                                    buffer
+                                    buffer-width
+                                    buffer-height
+                                    x-buffer
+                                    y-buffer)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (ignore buffer-height))
+  (declare (to::desired-type texture-width texture-height))
+  (declare (fixnum buffer-width buffer-height))
+  (declare ((simple-array (unsigned-byte 32)) buffer texture))
+  (let* ((wrapped-s (texture-border-wrap s-tex))
+         (wrapped-t (texture-border-wrap t-tex))
+         (pixmap-x (truncate (to:d* wrapped-t
+                                    texture-width)))
+         (pixmap-y (truncate (to:d* wrapped-s
+                                    texture-height)))
+         (pixel    (pixel@ texture
+                           (truncate texture-width)
+                           pixmap-x pixmap-y)))
+    (declare (fixnum pixmap-x pixmap-y))
+    (declare ((unsigned-byte 32) pixel))
+    (declare (to::desired-type wrapped-s wrapped-t))
+    (set-pixel-color@ buffer buffer-width x-buffer y-buffer pixel)))
 
-(defparameter *texture-shader* #'texture-shader-wrap)
+(defparameter *texture-shader* #'texture-shader-wrap-replace)
 
 (defun draw-texture-mapped-polygon (buffer width height vertices texels pixmap)
-  "Note: vertices must be presented in clockwise order."
+  "Note: vertices must be provided in clockwise order."
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum width))
   (declare ((simple-array nodgui.vec2:uivec2) vertices texels))
   (declare (function *texture-shader*))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((aabb          (polygon-create-aabb vertices))
         (texture       (pix:bits pixmap))
         (pixmap-width  (to:d (the fixnum (pix:width pixmap))))
@@ -1992,22 +2009,14 @@
                                     for interpolated-t from texel1-t by t-increment
                                     for interpolated-s from texel1-s by s-increment
                                     do
-                                       (multiple-value-bind (s-tex t-tex)
-                                           (funcall *texture-shader*
-                                                    interpolated-s
-                                                    interpolated-t
-                                                    texture
-                                                    pixmap-width
-                                                    pixmap-height
-                                                    buffer
-                                                    width
-                                                    height)
-                                         (let* ((pixmap-x (truncate (to:d* t-tex
-                                                                           pixmap-width)))
-                                                (pixmap-y (truncate (to:d* s-tex
-                                                                           pixmap-height)))
-                                                (pixel    (pixel@ texture
-                                                                  (pix:width pixmap)
-                                                                  pixmap-x pixmap-y)))
-                                           (declare (fixnum pixmap-x pixmap-y))
-                                           (set-pixel-color@ buffer width x y pixel))))))))))))
+                                       (funcall *texture-shader*
+                                                interpolated-s
+                                                interpolated-t
+                                                texture
+                                                pixmap-width
+                                                pixmap-height
+                                                buffer
+                                                width
+                                                height
+                                                x
+                                                y))))))))))
