@@ -2027,20 +2027,27 @@
                           (let ((range (- intersection-b-x intersection-a-x)))
                             (declare (fixnum range))
                             (when (/= range 0)
-                              (loop for x fixnum from intersection-a-x below intersection-b-x by 1
+                              (loop for x fixnum from (max 0 intersection-a-x) below intersection-b-x by 1
                                     with delta-t = (max 0f0 (to:d- texel2-t texel1-t))
                                     with delta-s = (max 0f0 (to:d- texel2-s texel1-s))
                                     with t-increment = (to:d/ delta-t
                                                               (to:d range))
                                     with s-increment = (to:d/ delta-s
                                                               (to:d range))
-                                    for interpolated-t = texel1-t then (to:d+ interpolated-t
-                                                                              t-increment)
-                                    for interpolated-s = texel1-s then (to:d+ interpolated-s
-                                                                              s-increment)
+                                    for interpolated-t = (+ texel1-t
+                                                            (* t-increment
+                                                               (- (min 0f0
+                                                                       intersection-a-x))))
+                                      then (to:d+ interpolated-t
+                                                  t-increment)
+                                    for interpolated-s = (+ texel1-s
+                                                            (* s-increment
+                                                               (- (min 0f0
+                                                                       intersection-a-x))))
+                                      then (to:d+ interpolated-s
+                                                  s-increment)
                                     do
-                                       (when (and (>= x 0)
-                                                  (< x width))
+                                       (when (< x width)
                                          (funcall *texture-shader*
                                                   interpolated-s
                                                   interpolated-t
