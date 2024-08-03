@@ -1513,6 +1513,8 @@
    #:texture-border-clamp
    #:texture-border-wrap
    #:texture-shader-wrap
+   #:texture-shader-wrap-replace
+   #:texture-shader-wrap-replace-bilinear
    #:*texture-shader*
    #:draw-texture-mapped-polygon
    #:init-font-system

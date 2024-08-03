@@ -1125,8 +1125,8 @@
            (declare (to::desired-type max-value coord))
            (declare (optimize (speed 3) (debug 0) (safety 0)))
            (cond
-             ((< coord 0.0)
-              0.0)
+             ((< coord 0f0)
+              0f0)
              ((>= coord (1- max-value))
               (1- max-value))
              (t
@@ -1884,7 +1884,37 @@
     (declare (to::desired-type wrapped-s wrapped-t))
     (set-pixel-color@ buffer buffer-width x-buffer y-buffer pixel)))
 
-(defparameter *texture-shader* #'texture-shader-wrap-replace)
+(defun texture-shader-wrap-replace-bilinear (s-tex
+                                             t-tex
+                                             texture
+                                             texture-width
+                                             texture-height
+                                             buffer
+                                             buffer-width
+                                             buffer-height
+                                             x-buffer
+                                             y-buffer)
+  ;(declare (optimize (speed 0) (debug 3) (safety 3)))
+  (declare (ignore buffer-height))
+  (declare (to::desired-type texture-width texture-height))
+  (declare (fixnum buffer-width buffer-height))
+  (declare ((simple-array (unsigned-byte 32)) buffer texture))
+  (let* ((wrapped-s (texture-border-wrap s-tex))
+         (wrapped-t (texture-border-wrap t-tex))
+         (pixmap-x  (to:d* wrapped-t
+                          texture-width))
+         (pixmap-y  (to:d* wrapped-s
+                           texture-height))
+         (pixel     (bilinear-interpolation texture
+                                            (truncate texture-width)
+                                            (truncate texture-height)
+                                            pixmap-x
+                                            pixmap-y)))
+    (declare ((unsigned-byte 32) pixel))
+    (declare (to::desired-type wrapped-s wrapped-t pixmap-x pixmap-y))
+    (set-pixel-color@ buffer buffer-width x-buffer y-buffer pixel)))
+
+(defparameter *texture-shader* #'texture-shader-wrap-replace-bilinear)
 
 (defun draw-texture-mapped-polygon (buffer width height vertices texels pixmap)
   "Note: vertices must be provided in clockwise order."
