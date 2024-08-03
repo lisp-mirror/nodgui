@@ -1918,7 +1918,7 @@
 
 (defun draw-texture-mapped-polygon (buffer width height vertices texels pixmap)
   "Note: vertices must be provided in clockwise order."
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 0) (debug 3) (safety 3)))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum width))
   (declare ((simple-array nodgui.vec2:uivec2) vertices texels))
@@ -2036,8 +2036,8 @@
                                                               (to:d range))
                                     with s-increment = (to:d/ delta-s
                                                               (to:d range))
-                                    for interpolated-t from texel1-t by t-increment
-                                    for interpolated-s from texel1-s by s-increment
+                                    with interpolated-t = texel1-t
+                                    with interpolated-s = texel1-s
                                     do
                                        (funcall *texture-shader*
                                                 interpolated-s
@@ -2049,4 +2049,6 @@
                                                 width
                                                 height
                                                 x
-                                                y))))))))))
+                                                y)
+                                       (incf interpolated-t (to:d t-increment))
+                                       (incf interpolated-s (to:d s-increment)))))))))))
