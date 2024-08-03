@@ -40,7 +40,7 @@
   (declare (fixnum x y width))
   (declare ((unsigned-byte 8) r g b a))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;(declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((color (pix:assemble-color r g b a)))
     (set-pixel-color@ buffer width x y color)))
 
@@ -2027,10 +2027,6 @@
                           (let ((range (- intersection-b-x intersection-a-x)))
                             (declare (fixnum range))
                             (when (/= range 0)
-                              (when (< intersection-a-x 0)
-                                (setf intersection-a-x 0))
-                              (when (>= intersection-b-x width)
-                                (setf intersection-b-x (1- width)))
                               (loop for x fixnum from intersection-a-x below intersection-b-x by 1
                                     with delta-t = (max 0f0 (to:d- texel2-t texel1-t))
                                     with delta-s = (max 0f0 (to:d- texel2-s texel1-s))
@@ -2043,14 +2039,16 @@
                                     for interpolated-s = texel1-s then (to:d+ interpolated-s
                                                                               s-increment)
                                     do
-                                       (funcall *texture-shader*
-                                                interpolated-s
-                                                interpolated-t
-                                                texture
-                                                pixmap-width
-                                                pixmap-height
-                                                buffer
-                                                width
-                                                height
-                                                x
-                                                y))))))))))
+                                       (when (and (>= x 0)
+                                                  (< x width))
+                                         (funcall *texture-shader*
+                                                  interpolated-s
+                                                  interpolated-t
+                                                  texture
+                                                  pixmap-width
+                                                  pixmap-height
+                                                  buffer
+                                                  width
+                                                  height
+                                                  x
+                                                  y)))))))))))

@@ -1043,9 +1043,9 @@
                          (nodgui.vec2:uivec2 400 200)
                          (nodgui.vec2:uivec2 300 200)))
          (texels   (list (nodgui.vec2:vec2 0f0 0f0)
-                         (nodgui.vec2:vec2 2f0 0f0)
-                         (nodgui.vec2:vec2 2f0 2f0)
-                         (nodgui.vec2:vec2 0f0 2f0))))
+                         (nodgui.vec2:vec2 1f0 0f0)
+                         (nodgui.vec2:vec2 1f0 1f0)
+                         (nodgui.vec2:vec2 0f0 1f0))))
     (values (px:make-polygon-vertex-array vertices)
             (px:make-polygon-texture-coordinates-array texels))))
 
