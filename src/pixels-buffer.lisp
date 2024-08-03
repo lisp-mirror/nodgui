@@ -2029,15 +2029,17 @@
                                 (setf intersection-a-x 0))
                               (when (>= intersection-b-x width)
                                 (setf intersection-b-x (1- width)))
-                              (loop for x fixnum from intersection-a-x below intersection-b-x by 1
-                                    with delta-t = (to:d- texel2-t texel1-t)
-                                    with delta-s = (to:d- texel2-s texel1-s)
+                                                            (loop for x fixnum from intersection-a-x below intersection-b-x by 1
+                                    with delta-t = (max 0f0 (to:d- texel2-t texel1-t))
+                                    with delta-s = (max 0f0 (to:d- texel2-s texel1-s))
                                     with t-increment = (to:d/ delta-t
                                                               (to:d range))
                                     with s-increment = (to:d/ delta-s
                                                               (to:d range))
-                                    with interpolated-t = texel1-t
-                                    with interpolated-s = texel1-s
+                                    for interpolated-t = texel1-t then (to:d+ interpolated-t
+                                                                              t-increment)
+                                    for interpolated-s = texel1-s then (to:d+ interpolated-s
+                                                                              s-increment)
                                     do
                                        (funcall *texture-shader*
                                                 interpolated-s
@@ -2049,6 +2051,4 @@
                                                 width
                                                 height
                                                 x
-                                                y)
-                                       (incf interpolated-t (to:d t-increment))
-                                       (incf interpolated-s (to:d s-increment)))))))))))
+                                                y))))))))))
