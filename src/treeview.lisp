@@ -446,6 +446,23 @@ not equal to all the others. The test is performed calling :test"
                             ,(empty-string-if-nil command
                                  `(-command { callback ,callback-name })))))))
 
+(defgeneric treeview-collect-heading-text (object))
+
+(defmethod treeview-collect-heading-text ((object treeview))
+  (with-accessors ((items items)) object
+    (when items
+      (let ((columns (loop for i from 0 below (length (column-values (first items)))
+                           collect
+                           (with-read-data ()
+                             (format-wish "senddatastring [~a heading ~a -text]"
+                                          (widget-path object)
+                                          i))))
+            (id      (with-read-data ()
+                       (format-wish "senddatastring [~a heading ~a -text]"
+                                    (widget-path object)
+                                    +treeview-first-column-id+))))
+        (append (list id) columns)))))
+
 (defun treeview-move* (tree item &optional (test #'eq) (key #'identity) (parent nil) (index nil))
   (let ((child     (treeview-find-item tree item :test test :key key))
         (parent-id (or parent +treeview-root+)))
@@ -480,36 +497,55 @@ not equal to all the others. The test is performed calling :test"
   (format-wish "~a selection set {~{~a ~}}" (widget-path tv) (mapcar #'id items)))
 
 (defmethod treeview-refit-columns-width ((object treeview))
-  "Nothe that works only with default font"
-  (with-accessors ((items items)) object
-    (a:when-let* ((all-values (loop for item in items collect (column-values item)))
-                  (all-texts  (loop for item in items collect (text item)))
-                  (max-text   (reduce (lambda (a b)
-                                        (if (> (length a) (length b))
-                                            a
-                                            b))
-                                      all-texts))
-                  (max-values (loop for column from 0 below (length (first all-values))
-                                    collect
-                                      (let ((max-column ""))
-                                        (loop for row from 0 below (length all-values)
-                                              do
-                                                 (let ((candidate (elt (elt all-values row)
-                                                                       column)))
-                                                   (when (> (length candidate)
-                                                            (length max-column))
-                                                     (setf max-column candidate))))
-                                        max-column))))
-      (flet ((string-width (string)
-               (font-measure +tk-text-font+ (strcat string "oooo"))))
-        (loop repeat (1+ (length all-values)) do
-          (column-configure object +treeview-first-column-id+
-                            :minwidth (string-width max-text)))
+  "Note that this function works only with default fonts"
+  (flet ((string-width (string font)
+           (if (not (string-empty-p string))
+               (font-measure font (strcat string "M"))
+               (font-measure font "M"))))
+    (with-accessors ((items items)) object
+      (a:when-let* ((all-values    (loop for item in items collect (column-values item)))
+                    (all-texts     (loop for item in items collect (text item)))
+                    (all-headings  (treeview-collect-heading-text object))
+                    (heading-sizes (mapcar (lambda (a) (string-width a +tk-heading-font+))
+                                           all-headings))
+                    (max-text     (reduce (lambda (a b)
+                                            (if (> (string-width a +tk-text-font+)
+                                                   (string-width b +tk-text-font+))
+                                                a
+                                                b))
+                                          all-texts))
+                    (max-values   (loop for column from 0 below (length (first all-values))
+                                        collect
+                                        (let ((max-column ""))
+                                          (loop for row from 0 below (length all-values)
+                                                do
+                                                   (let ((candidate (elt (elt all-values row)
+                                                                         column)))
+                                                     (when (> (string-width candidate
+                                                                            +tk-text-font+)
+                                                              (string-width max-column
+                                                                            +tk-text-font+))
+                                                       (setf max-column candidate))))
+                                          max-column))))
+        (let ((max-index-size (max (string-width max-text +tk-text-font+)
+                                   (first heading-sizes))))
+          (column-configure object
+                            +treeview-first-column-id+
+                            :minwidth max-index-size)
+          (column-configure object
+                            +treeview-first-column-id+
+                            :width max-index-size))
         (loop for i from 1
+              for heading-size in (rest heading-sizes)
               for max-value in max-values do
-                (column-configure object
-                                  (format nil "#~a" i)
-                                  :minwidth (string-width max-value))))))
+                (let ((max-size (max (string-width max-value +tk-text-font+)
+                                     heading-size)))
+                  (column-configure object
+                                    (format nil "#~a" i)
+                                    :minwidth max-size)
+                  (column-configure object
+                                    (format nil "#~a" i)
+                                    :width max-size))))))
   object)
 
 (defclass scrolled-treeview (frame)
@@ -576,7 +612,8 @@ not equal to all the others. The test is performed calling :test"
                             (widths     (make-fresh-list (1+ (length column-ids)) 200)))
   "Set id,  header and width for the columns of this treeview"
   (with-inner-treeview (treeview object)
-    (setup-columns treeview column-ids
+    (setup-columns treeview
+                   column-ids
                    :column-labels column-labels
                    :min-widths    min-widths
                    :widths        widths)))
@@ -643,6 +680,10 @@ not equal to all the others. The test is performed calling :test"
                       :image   image
                       :anchor  anchor
                       :command command)))
+
+(defmethod treeview-collect-heading-text ((object scrolled-treeview))
+  (with-inner-treeview (treeview object)
+    (treeview-collect-heading-text treeview)))
 
 (defmethod treeview-get-selection ((object scrolled-treeview))
   (with-inner-treeview (treeview object)
