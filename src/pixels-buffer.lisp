@@ -1874,9 +1874,9 @@
   (declare ((simple-array (unsigned-byte 32)) buffer texture))
   (let* ((wrapped-s (texture-border-wrap s-tex))
          (wrapped-t (texture-border-wrap t-tex))
-         (pixmap-x (truncate (to:d* wrapped-t
+         (pixmap-x (truncate (to:d* wrapped-s
                                     texture-width)))
-         (pixmap-y (truncate (to:d* wrapped-s
+         (pixmap-y (truncate (to:d* wrapped-t
                                     texture-height)))
          (pixel    (pixel@ texture
                            (truncate texture-width)
@@ -1903,9 +1903,9 @@
   (declare ((simple-array (unsigned-byte 32)) buffer texture))
   (let* ((wrapped-s (texture-border-wrap s-tex))
          (wrapped-t (texture-border-wrap t-tex))
-         (pixmap-x  (to:d* wrapped-t
+         (pixmap-x  (to:d* wrapped-s
                            texture-width))
-         (pixmap-y  (to:d* wrapped-s
+         (pixmap-y  (to:d* wrapped-t
                            texture-height))
          (pixel     (bilinear-interpolation texture
                                             (truncate texture-width)
