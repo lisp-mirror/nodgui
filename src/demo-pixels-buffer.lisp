@@ -1038,14 +1038,14 @@
     (px:make-polygon-vertex-array vertices)))
 
 (defun make-textured-polygon-vertices ()
-  (let* ((vertices (list (nodgui.vec2:uivec2 300 100)
+  (let* ((vertices (list (nodgui.vec2:uivec2 300 0)
                          (nodgui.vec2:uivec2 400 100)
                          (nodgui.vec2:uivec2 400 200)
                          (nodgui.vec2:uivec2 300 200)))
          (texels   (list (nodgui.vec2:vec2 0f0 0f0)
-                         (nodgui.vec2:vec2 1f0 0f0)
-                         (nodgui.vec2:vec2 1f0 1f0)
-                         (nodgui.vec2:vec2 0f0 1f0))))
+                         (nodgui.vec2:vec2 2f0 0f0)
+                         (nodgui.vec2:vec2 2f0 2f0)
+                         (nodgui.vec2:vec2 0f0 2f0))))
     (values (px:make-polygon-vertex-array vertices)
             (px:make-polygon-texture-coordinates-array texels))))
 
@@ -1120,7 +1120,7 @@
                                                                                                        delta-pos)
 
                                                                            textured-polygon-texture-coords
-                                                                           *bell-sprite*))
+                                                                           *test-sprite*))
                                          (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
                                                             (nodgui.pixmap:width  *bell-sprite*)
                                                             (nodgui.pixmap:height *bell-sprite*)

@@ -1875,9 +1875,9 @@
   (let* ((wrapped-s (texture-border-wrap s-tex))
          (wrapped-t (texture-border-wrap t-tex))
          (pixmap-x (truncate (to:d* wrapped-s
-                                    texture-width)))
+                                    (1- texture-width))))
          (pixmap-y (truncate (to:d* wrapped-t
-                                    texture-height)))
+                                    (1- texture-height))))
          (pixel    (pixel@ texture
                            (truncate texture-width)
                            pixmap-x pixmap-y)))
@@ -1904,9 +1904,9 @@
   (let* ((wrapped-s (texture-border-wrap s-tex))
          (wrapped-t (texture-border-wrap t-tex))
          (pixmap-x  (to:d* wrapped-s
-                           texture-width))
+                           (1- texture-width)))
          (pixmap-y  (to:d* wrapped-t
-                           texture-height))
+                           (1- texture-height)))
          (pixel     (bilinear-interpolation texture
                                             (truncate texture-width)
                                             (truncate texture-height)
@@ -2030,8 +2030,8 @@
                               (loop for x fixnum from (max 0 intersection-a-x)
                                       below (min intersection-b-x width)
                                     by 1
-                                    with delta-t = (max 0f0 (to:d- texel2-t texel1-t))
-                                    with delta-s = (max 0f0 (to:d- texel2-s texel1-s))
+                                    with delta-t = (to:d- texel2-t texel1-t)
+                                    with delta-s = (to:d- texel2-s texel1-s)
                                     with t-increment = (to:d/ delta-t
                                                               (to:d range))
                                     with s-increment = (to:d/ delta-s
