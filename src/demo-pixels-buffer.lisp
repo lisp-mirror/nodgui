@@ -990,7 +990,7 @@
       (grid-columnconfigure buttons-frame :all :weight 1)
       (bind sdl-frame
             #$<1>$
-            (let ((what-to-draw 0))
+            (let ((what-to-draw -1))
               (lambda (event)
                 (incf what-to-draw)
                 (with-accessors ((buffer px:buffer)
@@ -1003,12 +1003,14 @@
                                                (/ +context-height+
                                                   +sdl-frame-height+)))))
                     (cond
-                      ((= (rem what-to-draw 3) 0)
+                      ((= (rem what-to-draw 4) 0)
                        (draw-bell-sprite buffer width height scaled-x scaled-y))
-                      ((= (rem what-to-draw 3) 1)
+                      ((= (rem what-to-draw 4) 1)
                        (draw-test-sprite buffer width height scaled-x scaled-y))
+                      ((= (rem what-to-draw 4) 2)
+                       (draw-lines buffer width height scaled-x scaled-y))
                       (t
-                       (draw-lines buffer width height scaled-x scaled-y))))))))
+                        (do-msg "Hello!" :title "Message4you"))))))))
       (wait-complete-redraw)
       (setf *pixel-buffer-context* (make-instance 'px:pixel-buffer-context
                                                   :non-blocking-queue-maximum-size 16
