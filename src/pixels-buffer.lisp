@@ -856,7 +856,7 @@
     ((= x1 x2) ; parallel to x
      (values (to:d 0.0) most-negative-single-float))
     ((= y1 y2) ;parallel to y
-     (values most-positive-single-float y1))
+     (values most-positive-single-float (to:d y1)))
     (t
      (let ((slope          (/ (to:d (- y2 y1))
                               (to:d (- x2 x1))))
