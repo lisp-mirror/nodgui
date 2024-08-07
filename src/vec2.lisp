@@ -132,6 +132,7 @@
   (vec2-dot-product (vec2-perpendicular a) b))
 
 (defun vec2-rotate (v angle)
+  ;; (declare (optimize (debug 0) (safety 0) (speed 3)))
   (declare (vec2 v))
   (declare (single-float angle))
   (vec2 (- (* (vec2-x v) (cos angle)) (* (vec2-y v) (sin angle)))

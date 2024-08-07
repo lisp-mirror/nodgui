@@ -29,6 +29,7 @@
 
 (u:definline set-pixel-color@ (buffer width x y color)
   "Note: no bounds checking is done"
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (fixnum x y width))
   (declare ((unsigned-byte 32) color))
   (declare ((simple-array (unsigned-byte 32)) buffer))
@@ -40,7 +41,7 @@
   (declare (fixnum x y width))
   (declare ((unsigned-byte 8) r g b a))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  ;(declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((color (pix:assemble-color r g b a)))
     (set-pixel-color@ buffer width x y color)))
 
@@ -48,7 +49,7 @@
   "Note: no bounds checking is done"
   (declare (fixnum x y width))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (optimize (speed 0) (debug 3) (safety 3)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:faref buffer (to:f+ x (the fixnum (to:f* y width)))))
 
 (defmacro with-displace-pixel ((r g b a) pixel &body body)
@@ -61,7 +62,7 @@
 
 (u:definline color-channel-lerp (a b w)
   (declare ((unsigned-byte 8) a b w))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (ash (+ (* a w)
           (* b (- 256 w)))
        -8))
@@ -82,7 +83,7 @@
 
 (defun blending-function-combine (pixel-source pixel-destination)
   (declare (fixnum pixel-source pixel-destination))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (with-displace-pixel (r-source g-source b-source alpha-source)
                        pixel-source
     (with-displace-pixel (r-destination g-destination b-destination alpha-destination)
@@ -96,7 +97,7 @@
 (defun blending-function-replace (pixel-source pixel-destination)
   (declare (fixnum pixel-source pixel-destination))
   (declare (ignore pixel-destination))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   pixel-source)
 
 (defun saturate-byte (a)
@@ -105,7 +106,7 @@
 
 (defun blending-function-add (pixel-source pixel-destination)
   (declare (fixnum pixel-source pixel-destination))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (with-displace-pixel (r-source g-source b-source alpha-source)
                        pixel-source
     (with-displace-pixel (r-destination g-destination b-destination alpha-destination)
@@ -137,7 +138,7 @@
                    destination-column
                    source-last-row
                    source-last-column))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((pixels-count (to:f- source-last-column source-column)))
     (if (and (= destination-column 0)
              (= source-last-column
@@ -184,7 +185,7 @@
                    destination-column
                    source-last-row
                    source-last-column))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((pixels-count (to:f- source-last-column source-column)))
     (if (and (= destination-column 0)
              (= source-last-column
@@ -232,7 +233,7 @@
                    destination-column
                    source-last-row
                    source-last-column))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((source-blitted-w        (the fixnum (- source-last-column source-column)))
          (source-blitted-h        (the fixnum (- source-last-row source-row)))
          (destination-last-column (+ destination-column source-blitted-w))
@@ -275,7 +276,7 @@
         (flet ((copy-row (row-source row-destination)
                  (declare (fixnum row-source row-destination))
                  (declare (function *blending-function*))
-                 (declare (optimize (speed 3) (debug 0) (safety 0)))
+                 ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
                  (loop for from-column fixnum
                        from actual-source-column
                          below actual-source-last-column
@@ -305,7 +306,7 @@
   (nodgui.utils:make-thread
    (let ((sdl-context  context))
      (lambda ()
-       (declare (optimize (speed 3) (debug 0) (safety 0)))
+       ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
        (let ((context  sdl-context))
          (with-accessors ((width           ctx:width)
                           (height          ctx:height)
@@ -428,7 +429,7 @@
 (defun sum-pixels (pixel-a pixel-b)
   (flet ((sum (a b)
            (min (to:f+ a b) #xff)))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((red-a   (pix:extract-red-component pixel-a))
         (green-a (pix:extract-green-component pixel-a))
         (blue-a  (pix:extract-blue-component pixel-a))
@@ -446,7 +447,7 @@
   (declare (fixnum width height))
   (declare ((unsigned-byte 8) r g b alpha))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((color (pix:assemble-color r g b alpha)))
     (loop for i from 0 below (to:f* width height) do
       (setf (aref buffer i) color))))
@@ -462,7 +463,7 @@
   (declare (fixnum buffer-width buffer-height
                    top-left-x top-left-y bottom-right-x bottom-right-y))
   (declare ((unsigned-byte 8) r g b a))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (when (and (> bottom-right-x 0)
              (> bottom-right-y 0)
              (< top-left-x buffer-width)
@@ -522,7 +523,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width buffer-height x-center y-center radius))
   (declare ((unsigned-byte 8) r g b a))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((r-square  (to:f* radius radius))
         (color     (pix:assemble-color r g b a)))
     (declare (dynamic-extent r-square))
@@ -573,7 +574,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width x-center y-center radius))
   (declare ((unsigned-byte 8) r g b a))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((r-square  (to:f* radius radius))
         (color     (pix:assemble-color r g b a)))
     (declare (dynamic-extent r-square))
@@ -614,7 +615,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width buffer-height x-center y-center radius))
   (declare ((unsigned-byte 8) r g b a))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((x-end     (ash (to:f* radius 185364) -18)) ; ~ r * cos(45°)
         (color     (pix:assemble-color r g b a)))
     (declare (dynamic-extent x-end))
@@ -686,7 +687,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width x-center y-center radius))
   (declare ((unsigned-byte 8) r g b a))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((x-end     (ash (to:f* radius 185364) -18)) ; ~ r * cos(45°)
         (color     (pix:assemble-color r g b a)))
     (declare (dynamic-extent x-end))
@@ -746,7 +747,7 @@
 
 (defun calc-octant (x y)
   (declare (fixnum x y))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((dx-positive (to:f> x 0))
          (dy-positive (to:f> y 0))
          (dx-negative (not dx-positive))
@@ -797,7 +798,7 @@
 (defun to-first-octant (octant x y)
   (declare (symbol octant))
   (declare (fixnum x y))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (case octant
     (:1
      (values x y))
@@ -819,7 +820,7 @@
 (defun from-first-octant (new-octant x y)
   (declare (symbol new-octant))
   (declare (fixnum x y))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (case new-octant
     (:1
      (values x y))
@@ -839,17 +840,17 @@
      (values x (to:f- y)))))
 
 (defun line-parallel-to-y-p (x-intersection)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (to::desired-type x-intersection))
   (= x-intersection most-negative-single-float))
 
 (defun line-parallel-to-x-p (slope)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (to::desired-type slope))
   (= slope most-positive-single-float))
 
 (defun line-equation (x1 y1 x2 y2)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (fixnum x1 x2 y1 y2))
   (cond
     ((= x1 x2) ; parallel to x
@@ -865,7 +866,7 @@
        (values slope x-intersection)))))
 
 (defun clockwise-orientation-p (x0 y0 x1 y1 x2 y2)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (fixnum x0 y0 x1 y1 x2 y2))
   (> (- (to:f* (- y1 y0)
                (- x2 x1))
@@ -901,7 +902,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width buffer-height x0 y0 x1 y1))
   (declare ((unsigned-byte 8) r g b a))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((width-limit      (1- buffer-width))
          (height-limit     (1- buffer-height))
          (intersects-x-axe (intersects-x-axe-p width-limit x0 y0 x1 y1))
@@ -1033,7 +1034,7 @@
                               a))))))
 
 (defun combine-pixel-colors (buffer buffer-width color-source x y)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare ((unsigned-byte 32) color-source))
   (declare (fixnum x y))
@@ -1058,7 +1059,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width x0 y0 x1 y1))
   (declare ((unsigned-byte 8) r g b a))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((octant (calc-octant (to:f- x1 x0)
                              (to:f- y1 y0))))
     (declare (dynamic-extent octant))
@@ -1114,7 +1115,7 @@
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum buffer-width buffer-height))
   (declare (to::desired-type x y))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   ;; a          b
   ;; +----------+
   ;; |          |
@@ -1150,18 +1151,18 @@
 
 (u:definline translate (coordinate delta)
   (declare (fixnum coordinate delta))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:f+ coordinate delta))
 
 (u:definline float-translate (coordinate delta)
   (declare (to::desired-type coordinate delta))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:d+ coordinate delta))
 
 (u:definline rotate-sin-cos (x y sin-angle cosin-angle)
   (declare (fixnum x y))
   (declare (to::desired-type sin-angle cosin-angle))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (values (truncate (to:d- (to:d* (to:d x)
                                   cosin-angle)
                            (to:d* (to:d y)
@@ -1174,14 +1175,14 @@
 (defun rotate (x y angle)
   (declare (fixnum x y))
   (declare (to::desired-type angle))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((sin-angle   (to:dsin angle))
         (cosin-angle (to:dcos angle)))
     (rotate-sin-cos x y sin-angle cosin-angle)))
 
 (u:definline float-rotate-sin-cos (x y sin-angle cosin-angle)
   (declare (to::desired-type x y sin-angle cosin-angle))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (values (to:d- (to:d* (to:d x)
                         cosin-angle)
                  (to:d* (to:d y)
@@ -1194,20 +1195,20 @@
 (defun float-rotate (x y angle)
   (declare (to::desired-type angle))
   (declare (fixnum x y))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((sin-angle   (to:dsin angle))
         (cosin-angle (to:dcos angle)))
     (float-rotate-sin-cos (to:d x) (to:d y) sin-angle cosin-angle)))
 
 (defun float-coordinate-scale (coordinate factor)
   (declare (to::desired-type coordinate factor))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (to:d* coordinate factor))
 
 (defun coordinate-scale (coordinate factor)
   (declare (fixnum coordinate))
   (declare (to::desired-type factor))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (truncate (the to::desired-type (float-coordinate-scale (to:d coordinate) factor))))
 
 (defun blit-transform (buffer-source
@@ -1247,7 +1248,7 @@
                    translate-x
                    translate-y))
   (declare (function *blending-function*))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (if (and (/= rotation 0.0)
            (or (/= source-column 0)
                (/= source-row 0)
@@ -1311,7 +1312,7 @@
                                  scaled-origin-row-offset
                                  scaled-translate-x scaled-translate-y))
         (flet ((calc-aabb-vertex (x y)
-                 (declare (optimize (speed 3) (debug 0) (safety 0)))
+                 ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
                  (let ((to-origin-x (coordinate-scale (translate (translate x (- pivot-column))
                                                                  (to:f- destination-column))
                                                       scaling-column))
@@ -1414,7 +1415,7 @@
 
 (defun create-new-buffer-with-text (text font r g b a)
   "This functionc creates a heap allocated buffer that need to be freed after use using `nodgui.pixmap:free-buffer-memory'."
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let* ((surface        (sdl2-ttf:render-utf8-blended font text r g b a))
          (pixels         (sdl2:surface-pixels surface))
          ;;(surface-width  (sdl2:surface-width surface))
@@ -1425,7 +1426,7 @@
     (declare (dynamic-extent surface pixels surface-height surface-pitch))
     (flet ((extract-channel (raw-pixel shift)
              (declare (fixnum raw-pixel shift))
-             (declare (optimize (speed 3) (debug 0) (safety 0)))
+             ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
              (logand (ash raw-pixel shift)
                      #xff)))
       (let* ((buffer-width  (to:f* surface-height surface-pixels-width))
@@ -1443,7 +1444,7 @@
         (values buffer surface-pixels-width buffer-height)))))
 
 (defun draw-text (buffer buffer-width buffer-height text font x y r g b a)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (multiple-value-bind (buffer-text buffer-text-width buffer-text-height)
       (create-new-buffer-with-text text font r g b a)
     (let ((*blending-function* #'blending-function-combine))
@@ -1524,7 +1525,7 @@
               :adjustable nil))
 
 (defun iaabb2= (a b)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array fixnum) a b))
   (and (= (elt a 0) (elt b 0))
        (= (elt a 1) (elt b 1))
@@ -1532,7 +1533,7 @@
        (= (elt a 3) (elt b 3))))
 
 (defun valid-iaabb2-p (aabb)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array fixnum) aabb))
   (and (>= (elt aabb 0) 0)
        (>= (elt aabb 1) 0)
@@ -1548,7 +1549,7 @@
                 :fill-pointer nil))
 
 (defun expand-iaabb2 (aabb coord)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array fixnum) aabb))
   (declare (nodgui.vec2:uivec2 coord))
   (when (< (elt coord 0) (elt aabb 0))
@@ -1571,7 +1572,7 @@
 (defun iaabb2->irect2 (coords)
   "(upper-left-x upper-left-y bottom-right-x bottom-right-y) to
    (upper-left-x upper-left-y  w h)"
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array fixnum) coords))
   (let ((x1 (elt coords 0))
         (y1 (elt coords 1))
@@ -1586,7 +1587,7 @@
 (defun irect2->iaabb2 (coords)
   "(upper-left-x upper-left-y  w h) to
    (upper-left-x upper-left-y bottom-right-x bottom-right-y)"
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array fixnum) coords))
   (let ((x1 (elt coords 0))
         (y1 (elt coords 1))
@@ -1604,7 +1605,7 @@
 (defun inside-iaabb2-p (aabb x y)
   "t if x y is inside this bounding box
    aabb is: (upper-left-x upper-left-y bottom-right-x bottom-right-y)"
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array fixnum) aabb))
   (declare (fixnum x y))
   (and (>= x (elt aabb 0))
@@ -1613,7 +1614,7 @@
        (<= y (elt aabb 3))))
 
 (defun iaabb2-intersect-p (aabb1 aabb2)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array fixnum) aabb1 aabb2))
   (if (or (>= (iaabb2-min-x aabb1) (iaabb2-max-x aabb2))
           (<= (iaabb2-max-x aabb1) (iaabb2-min-x aabb2))
@@ -1632,7 +1633,7 @@
          (= 0 (elt rect 3)))))
 
 (defun trasl-iaabb2 (aabb &optional (dx (- (elt aabb 0))) (dy (- (elt aabb 1))))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array fixnum) aabb))
   (declare (fixnum dx dy))
   (make-iaabb2 (the fixnum (+ (elt aabb 0) dx))
@@ -1656,7 +1657,7 @@
                                         2))))))
 
 (defun polygon-create-aabb (vertices)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array nodgui.vec2:uivec2) vertices))
   (let ((aabb (make-iaabb2 most-positive-fixnum
                            most-positive-fixnum
@@ -1667,7 +1668,7 @@
     aabb))
 
 (defun polygon-calculate-intersection (ray-y start-x start-y end-x end-y)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (fixnum ray-y start-x start-y end-x end-y))
   (multiple-value-bind (slope y-intersection)
       (line-equation start-x start-y end-x end-y)
@@ -1703,7 +1704,7 @@
 (defun polygon-collect-intersections (vertices ray-y)
   (declare ((simple-array nodgui.vec2:uivec2) vertices))
   (declare (fixnum ray-y))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((intersections '())
         (vertices-length (length vertices)))
     (loop for offset from 0 by 1 below (length vertices) do
@@ -1733,7 +1734,7 @@
     (sort intersections #'<)))
 
 (defun clip-y-polygon-aabb (aabb buffer-height)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array fixnum) aabb))
   (declare (fixnum buffer-height))
   (when (< (iaabb2-min-y aabb) 0)
@@ -1743,7 +1744,7 @@
   aabb)
 
 (defun aabb-outside-buffer-p (width height aabb)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare ((simple-array fixnum) aabb))
   (not (or (pixel-inside-buffer-p width height
                                   (iaabb2-min-x aabb)
@@ -1764,7 +1765,7 @@
   (declare (fixnum width))
   (declare ((simple-array nodgui.vec2:uivec2) vertices))
   (declare ((unsigned-byte 32) color))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((aabb (polygon-create-aabb vertices)))
     (declare ((simple-array fixnum) aabb))
     (declare (dynamic-extent aabb))
@@ -1794,7 +1795,7 @@
 (defun polygon-collect-intersections-texture (vertices texels ray-y)
   (declare ((simple-array nodgui.vec2:uivec2) vertices texels))
   (declare (fixnum ray-y))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (let ((intersections '())
         (vertices-length (length vertices))
         (texels-length   (length texels)))
@@ -1836,7 +1837,7 @@
                 (the fixnum (polygon-intersection-point b)))))))
 
 (defun texture-border-clamp (v)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (to::desired-type v))
   (cond
     ((< v 0f0)
@@ -1847,7 +1848,7 @@
      v)))
 
 (defun texture-border-wrap (v)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (to::desired-type v))
   (cond
     ((< v 0f0)
@@ -1867,7 +1868,7 @@
                                     buffer-height
                                     x-buffer
                                     y-buffer)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (ignore buffer-height))
   (declare (to::desired-type texture-width texture-height))
   (declare (fixnum buffer-width buffer-height))
@@ -1896,7 +1897,7 @@
                                              buffer-height
                                              x-buffer
                                              y-buffer)
-  ;(declare (optimize (speed 0) (debug 3) (safety 3)))
+  ;;; (declare (optimize (speed 0) (debug 3) (safety 3)))
   (declare (ignore buffer-height))
   (declare (to::desired-type texture-width texture-height))
   (declare (fixnum buffer-width buffer-height))
@@ -1920,7 +1921,7 @@
 
 (defun draw-texture-mapped-polygon (buffer width height vertices texels pixmap)
   "Note: vertices must be provided in clockwise order."
-  (declare (optimize (speed 0) (debug 3) (safety 3)))
+  ;; (declare (optimize (speed 0) (debug 3) (safety 3)))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum width))
   (declare ((simple-array nodgui.vec2:uivec2) vertices texels))
