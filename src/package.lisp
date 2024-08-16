@@ -1911,6 +1911,7 @@
            #:window-class
            #:children-pathname
            #:scrollbar
+           #:scrollbar-get
            #:scrolled-canvas
            #:scrolled-frame
            #:scrolled-listbox
