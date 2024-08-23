@@ -5,7 +5,8 @@
    - added 'make-tk-color';
    - [pixel buffer]
      - added clipping of primitives in pixel buffer widget;
-     - added an inefficient draft for texture mapped 2D polygons;.
+     - added an inefficient draft for texture mapped 2D polygons;
+     - added routines to draw text strings.
  - [improvements]
    - improved visual results of 'treeview-refit-columns-width'.
  - [bugfix]
