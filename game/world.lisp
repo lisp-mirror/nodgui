@@ -502,7 +502,7 @@
       (:easy   nil) ; no UFO on easy level
       (:medium (= (rem time 3500)
                   0))
-      (:hard   (= (rem time 3500)
+      (:hard   (= (rem time 3000)
                   0)))))
 
 (defun initialize-game (world)
@@ -700,8 +700,9 @@
       (loop for bullet in bullets
             when (e:alivep bullet)
             do
-               (when (aabb2:aabb2-intersect-p (e:aabb bullet)
-                                              (e:target-aabb ufo))
+               (when (and (e:alivep ufo)
+                          (aabb2:aabb2-intersect-p (e:aabb bullet)
+                                                   (e:target-aabb ufo)))
                  (add-explosion-medium world (e:center-pos ufo))
                  (add-bullet-sparks bullet 30)
                  (decf (e:hitpoints bullet))
