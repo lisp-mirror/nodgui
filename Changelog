@@ -1,17 +1,271 @@
+2024-08-23 cage
+
+	* game/entities.lisp,
+	* game/main.lisp,
+	* game/packages.lisp,
+	* game/world.lisp,
+	* nodgui.asd,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/vec2.lisp:
+
+	- added success message;
+	- added explosion when UFO if hitted;
+	- modulated difficult levels.
+	- added sparks.
+	- added 'difficult level' menu.
+	- reduced speed at hard difficult level;
+	- switched off debugging code.
+	- modulated spasks number based on the asteroid's size.
+	- ensured a bullet can hit just one target;
+	- turned on optimizations.
+	- ensured a polygon has an even number of intersection with an
+	horizontal ray.
+
+2024-08-22 cage
+
+	* LICENSES.org,
+	* game/data/explosions/explosion-15x15-6.png,
+	* game/data/explosions/explosion-32x32-6.png,
+	* game/data/explosions/explosion-96x96-12.png,
+	* game/entities.lisp,
+	* game/packages.lisp,
+	* game/world.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp:
+
+	- added explosions.
+	- implemented event tiggerered after an effect has ended its lifetime.
+	- added missing explosions for tiny asteroids.
+	- fixed some asteroid's parameter.
+
+2024-08-21 cage
+
+	* game/main.lisp,
+	* game/packages.lisp,
+	* game/world.lisp,
+	* src/pixels-buffer.lisp:
+
+	- fixed bumping with asteroids;
+	- added effective shield (no damage).
+	- added teleport;
+	- removed debug code.
+	- swithced scaling and translating in 'blit-transform', this change
+	ensures that the scaling is made using the rotation pivot as origin.
+
+2024-08-20 cage
+
+	* game/entities.lisp,
+	* game/main.lisp,
+	* game/world.lisp,
+	* src/message.lisp,
+	* src/package.lisp:
+
+	- chaged player's mass;
+	- added animation for semitransparent asteroid.
+	- changed positioning of labels.
+	- fixed bullet's position;
+	- added 'game over' message.
+	- added bumping of player with asteroids.
+
+2024-08-19 cage
+
+	* game/entities.lisp,
+	* game/main.lisp,
+	* game/packages.lisp,
+	* game/world.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- fixed bullets staring position;
+	- reduced default entities mass;
+	- exchanged thrust keybindings.
+	- reverted demo code.
+	- added bullet damage;
+	- added asteroids fragmentation.
+	- added points tracking on GUI.
+
+2024-08-18 cage
+
+	* game/aabb2.lisp,
+	* game/data/bullet.png,
+	* game/data/ufo.png,
+	* game/entities.lisp,
+	* game/main.lisp,
+	* game/packages.lisp,
+	* game/world.lisp,
+	* src/events.lisp,
+	* src/package.lisp:
+
+	- added bullets fired from player;
+	- added 'lambda-fixed-frequency;
+	- ensured 'lambda-debounce' respects '**debounce-minimum-delay*'.
+	- added debug code for bullet.
+	- added ufo.
+
+2024-08-17 cage
+
+	* game/data/shield.png,
+	* game/data/thrust.png,
+	* game/entities.lisp,
+	* game/main.lisp,
+	* game/packages.lisp,
+	* game/world.lisp,
+	* src/demo-pixels-buffer.lisp:
+
+	- synched the thrust with the rotation of the player ship.
+	- added drawing of thrust sprite.
+	- improved blending of engine flame for player.
+	- added shield.
+
 2024-08-16 cage
+
+	* game/aabb2.lisp,
+	* game/entities.lisp,
+	* game/main.lisp,
+	* game/packages.lisp,
+	* src/pixels-buffer.lisp:
+
+	- added ship thrust;
+	- optimized 'rotate-aabb2*'.
+	- fixed compilation error of aabb2.lisp;
+	- restored debugging code.
+	- fixed line clipping.
 
 	Merge pull request 'Add `scrollbar-get`' (#16) from
 	defaultxr/nodgui:master into development
 
-2024-08-15 modula t. worm
+2024-08-15 modula t. worm, cage
 
+	* src/scrollbar.lisp,
+	* game/data/player.png,
+	* game/entities.lisp,
+	* game/main.lisp,
+	* game/packages.lisp,
+	* game/world.lisp:
+
+	- added skeleton of entity player;
+	- fixed rendering of aabb sizes.
+	- added player rotation.
+
+
+	- added `scrollbar-get` (thanks modula t. worm!)
+
+2024-08-14 cage
+
+	* game/entities.lisp,
+	* src/pixels-buffer.lisp:
+
+	- fixed missing polygon's horizontal edge rendering.
+	- made vintage asteroids less 'spikey'.
+	- fixed 90° corner case for textured rendering.
+
+2024-08-13 cage
+
+	* game/aabb2.lisp,
+	* game/entities.lisp,
+	* game/packages.lisp,
+	* game/world.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- fixed 'add-intersection-p'.
+	- added type declaration for polygon rendering intersection tests.
+	- fixed aabb positioning and size for vintage asteroids.
+	- added blending for vintage asteroid.
+	- fixed aabb-clipping for polygons.
+
+2024-08-12 cage
+
+	* game/aabb2.lisp,
+	* game/entities.lisp,
+	* game/packages.lisp,
+	* game/world.lisp:
+
+	- added aabb used for collison detection with bullets only.
+	- removed useless code.
+	- fixed 'expand-aabb2';
+	- added 'vintage' asteroids.
+
+2024-08-11 cage
+
+	* game/aabb2.lisp,
+	* game/entities.lisp,
+	* game/main.lisp,
+	* game/packages.lisp,
+	* game/world.lisp,
+	* nodgui.asd,
+	* src/pixels-buffer.lisp:
+
+	- added moving asteroid.
+	- redesigned class hierarchy.
+
+2024-08-10 cage
+
+	* LICENSES.org,
+	* game/data/bkg.png,
+	* game/data/meteor1.png,
+	* game/data/meteor2.png,
+	* game/data/meteor3.png,
+	* game/data/meteor4.png,
+	* game/data/player.png,
+	* game/data/ufo.png,
+	* game/entities.lisp,
+	* game/main.lisp,
+	* game/packages.lisp,
+	* game/world.lisp:
+
+	- added bitmaps;
+	- refactored/added new entities;
+	- drawn game background.
+
+2024-08-09 cage
+
+	* game/aabb2.lisp,
+	* game/entities.lisp,
+	* game/main.lisp,
+	* game/packages.lisp,
+	* game/world.lisp,
+	* nodgui.asd,
+	* src/base64.lisp,
+	* src/config.lisp,
+	* src/demo-3d-window.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/demo-tests.lisp,
+	* src/opengl-frame.lisp,
 	* src/package.lisp,
-	* src/scrollbar.lisp:
+	* src/pixels-buffer.lisp,
+	* src/pixmap.lisp,
+	* src/rendering-buffer-context.lisp,
+	* src/typed-operations.lisp,
+	* src/ubvec4.lisp,
+	* src/utils.lisp,
+	* src/vec2.lisp,
+	* src/vec3.lisp:
 
-	- added `scrollbar-get`
+	- added function to blit skipping transparents pixels.
+	- added skeleton for game.
+	- added 'vec2-insecure'.
+	- used a reader macro for set the same optimization level on functions
+	that needs to be optimized.
+	- moved macro for the optimization to config.lisp;
+	- refactored classes for entities.
+
+2024-08-08 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/vec2.lisp:
+
+	- allowed floating point vertices when drawing polygons.
+	- made 'blit-transform' a wrapper for polygon rendering.
 
 2024-08-07 cage
 
+	* game/aabb2.lisp,
+	* game/packages.lisp,
+	* nodgui.asd,
 	* src/demo-pixels-buffer.lisp,
 	* src/pixels-buffer.lisp,
 	* src/vec2.lisp:
@@ -19,6 +273,7 @@
 	- commented out optimization.
 	- fixed return type of 'line-equation'.
 	- added dialog to demo 'animation'.
+	- added aabb2 and skeleton.
 
 2024-08-06 cage
 
