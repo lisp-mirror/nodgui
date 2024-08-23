@@ -506,6 +506,7 @@
                   0)))))
 
 (defun initialize-game (world)
+  (setf (game-finished world) nil)
   (setf (asteroids world) '())
   (setf (bullets world) '())
   (let ((difficult-level (difficult-level world)))
