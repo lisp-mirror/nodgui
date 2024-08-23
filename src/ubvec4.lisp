@@ -28,7 +28,7 @@
     (typep a 'ubvec4))
 
   (defun ubvec4 (x y z &optional (w 0))
-    (declare (optimize (safety 0) (speed 3) (debug 0)))
+    #.nodgui.config:default-optimization
     (declare (ubvec4-type x y z w))
     (let ((res (make-array-frame 4 0 'ubvec4-type t)))
       (declare (ubvec4 res))
@@ -39,7 +39,7 @@
       res))
 
   (defun copy-ubvec4 (old)
-    (declare (optimize (safety 0) (speed 3) (debug 0)))
+    #.nodgui.config:default-optimization
     (declare (ubvec4 old))
     (let ((res (make-array-frame 4 0 'ubvec4-type t)))
       (declare (ubvec4 res))

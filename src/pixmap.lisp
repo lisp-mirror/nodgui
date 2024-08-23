@@ -30,7 +30,7 @@
 
 (defun buffer-sizes->static-vector-size (width height)
   (declare (fixnum width height))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (nodgui.typed-operations:f* width height))
 
 (defun make-buffer (width height)
@@ -62,7 +62,7 @@
                    destination-buffer-width))
   (declare ((simple-array (unsigned-byte 32)) destination))
   #+sbcl (declare (sb-sys:system-area-pointer source-buffer-pointer))
-  (declare (optimize (speed 3) (debug 3) (safety 0)))
+  #.nodgui.config:default-optimization
   (let ((offset-source      (to:f+ x-source      (the fixnum
                                                       (to:f* y-source
                                                         source-buffer-width))))
@@ -91,7 +91,7 @@
                    source-buffer-width
                    destination-buffer-width))
   (declare ((simple-array (unsigned-byte 32)) source destination))
-  (declare (optimize (speed 3) (debug 3) (safety 0)))
+  #.nodgui.config:default-optimization
   (copy-buffer-row-ffi-pointer #+sbcl (the sb-sys:system-area-pointer
                                            (static-vectors:static-vector-pointer source))
                                #-sbcl (static-vectors:static-vector-pointer source)
@@ -114,27 +114,27 @@
 
 (u:definline extract-red-component (color)
   (declare (fixnum color))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (logand (ash color -24) #xff))
 
 (u:definline extract-blue-component (color)
   (declare (fixnum color))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (logand (ash color -8) #xff))
 
 (u:definline extract-green-component (color)
   (declare (fixnum color))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (logand (ash color -16) #xff))
 
 (u:definline extract-alpha-component (color)
   (declare (fixnum color))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (logand color #xff))
 
 (u:definline assemble-color (r g b &optional (a 255))
   (declare ((unsigned-byte 8) r g b a))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (logior (logand a #xff)
           (the fixnum (ash b 8))
           (the fixnum (ash g 16))
@@ -622,13 +622,13 @@ range (0-1.0]), scaling use nearest-neighbor."
 (declaim (inline %offset-bits))
 
 (defun %offset-bits (w x y)
-  (declare (optimize (safety 0) (debug 0) (speed 3)))
+  #.nodgui.config:default-optimization
   (declare (fixnum w x y))
   (the fixnum (* 4 (+ (the fixnum (* w y)) x))))
 
 (defmethod bits-pixel@ ((object pixmap) x y)
   "Get the color of pixel at specified coordinate from 'bits' slot"
-  (declare (optimize (safety 0) (debug 0) (speed 3)))
+  #.nodgui.config:default-optimization
   (declare (fixnum x y))
   (with-accessors ((bits  bits)
                    (width width)) object

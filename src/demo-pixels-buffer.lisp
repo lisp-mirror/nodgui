@@ -40,7 +40,7 @@
 
 (definline sin-lut (angle)
   (declare (to::desired-type angle))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (let* ((normalized-angle (to:d* to:+2pi+ (nth-value 1 (truncate (to:d* angle +1/2pi+)))))
          (actual-angle     (if (< normalized-angle 0)
                                (to:d+ normalized-angle to:+2pi+)
@@ -52,7 +52,7 @@
 
 (definline sin-lut-fire (angle)
   (declare (to::desired-type angle))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (let* ((normalized-angle (to:d* to:+2pi+ (nth-value 1 (truncate (to:d* angle +1/2pi+)))))
          (index            (to:f* +sin-lut-step-per-degrees+
                              (the fixnum (truncate (to:radians->degree normalized-angle))))))
@@ -83,7 +83,7 @@
 
 (definline cos-lut-positive-angle (angle)
   (declare (to::desired-type angle))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (let* ((normalized-angle (to:d* to:+2pi+ (nth-value 1 (truncate (to:d* angle +1/2pi+)))))
          (index            (truncate (to:d* +float-cos-lut-step-per-degrees+
                                             (to:radians->degree normalized-angle)))))
@@ -94,20 +94,20 @@
 
 (definline wave->color (v)
   (declare (to::desired-type v))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (truncate (to:d* (to:d/ (to:d+ 1.0f0 (sin-lut (to:d* 5.0 v 3.141))) 2.0f0)
                    255.0f0)))
 
 (defun horizontal-wave (x frequency phase tick)
   (declare (to::desired-type frequency x))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (sin-lut (to:d+ phase
                   (to:d* frequency
                          (to:d+ x tick)))))
 
 (definline rotating-wave (x y frequency phase tick)
   (declare (to::desired-type frequency x phase tick))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (let* ((cosine    (cos-lut-positive-angle (to:d* 8.0f0 tick)))
          (sinus     (sin-lut (to:d* 8.0f0 tick)))
          (rotated-x (to:d- (to:d* x cosine)
@@ -119,7 +119,7 @@
                                  rotated-x)))))
 
 (definline circular-wave (x y frequency phase tick)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (let* ((translated-x (to:d+ (sin-lut (to:d* 6.0f0 tick))
                               (to:d- x 0.5f0)))
          (translated-y (to:d+ (sin-lut (to:d* 2.0f0 tick))
@@ -131,11 +131,11 @@
 
 (definline normalize-coordinate (v max)
   (declare (fixnum v max))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (to:d/ (to:d v) (to:d max)))
 
 (definline plasma-value (x y frequency phase tick)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (to:d+ (circular-wave x y frequency phase tick)
          (horizontal-wave x frequency phase tick)
          (rotating-wave x y frequency phase tick)))
@@ -161,14 +161,14 @@
       `(progn
          (let ((,cache '()))
            (defun ,random-function-name ()
-             (declare (optimize (speed 3) (debug 0) (safety 0)))
+             #.nodgui.config:default-optimization
              (if ,cache
                  (pop ,cache)
                  (progn
                    (setf ,cache (loop repeat 100000 collect (random ,max)))
                    (,random-function-name)))))
          (defun ,(format-fn-symbol t "1-of-~a-passes" max) ()
-           (declare (optimize (speed 3) (debug 0) (safety 0)))
+           #.nodgui.config:default-optimization
            (= (rem (the fixnum
                         (,random-function-name))
                    ,max)
@@ -188,7 +188,7 @@
   (declare (fixnum shift-spike index x y width smoke-threshold shift-down-2))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (to::desired-type time))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (let* ((shift-up             width)
          (shift-down           (to:f- width))
          (shift-left           -1)
@@ -278,7 +278,7 @@
   (declare (fixnum width height))
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (to::desired-type time))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (let ((shift-spike (truncate (abs (to:d+ 20.0
                                            (to:d* 10.0
                                                   (sin-lut-fire (to:d* 1000000.0
@@ -301,7 +301,7 @@
 (defun reinforce-fire (buffer width height howmany)
   (declare (fixnum width height howmany))
   (declare ((simple-array (unsigned-byte 32)) buffer))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (loop repeat howmany do
     (let* ((x              (random  width))
            (minimum-seed-y (random (truncate (/ height 50))))
@@ -407,13 +407,13 @@
         (ctx:push-for-updating *pixel-buffer-context*
                                (lambda (dt)
                                  (declare (fixnum dt))
-                                 (declare (optimize (speed 3) (debug 0)))
+                                 #.nodgui.config:default-optimization
                                  (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))
                                :force-push nil)
         (ctx:push-for-rendering *pixel-buffer-context*
                                 (lambda (dt)
                                   (declare (ignore dt))
-                                  (declare (optimize (speed 3) (debug 0)))
+                                  #.nodgui.config:default-optimization
                                   (draw-plasma buffer width height tick))
                                 :force-push nil))
       (format t "STOP PlASMA!~%"))))
@@ -425,7 +425,7 @@
     (ctx:push-for-updating *pixel-buffer-context*
                            (lambda (dt)
                              (declare (ignore dt))
-                             (declare (optimize (speed 3) (debug 0)))
+                             #.nodgui.config:default-optimization
                              t)
                            :force-push force)
     (ctx:push-for-rendering context
@@ -448,13 +448,13 @@
         (ctx:push-for-updating *pixel-buffer-context*
                                (lambda (dt)
                                  (declare (fixnum dt))
-                                 (declare (optimize (speed 3) (debug 0)))
+                                 #.nodgui.config:default-optimization
                                  (setf tick (to:d+ tick (to:d* 1e-6 (to:d dt)))))
                                :force-push nil)
         (ctx:push-for-rendering *pixel-buffer-context*
                                 (lambda (dt)
                                   (declare (ignore dt))
-                                  (declare (optimize (speed 3) (debug 0)))
+                                  #.nodgui.config:default-optimization
                                   (draw-fire buffer
                                              width height
                                              500
@@ -464,57 +464,57 @@
       (format t "STOP FIRE!~%"))))
 
 (let ((test-clip nil))
-(defun draw-rectangles-thread ()
-  (with-accessors ((buffer px:buffer)
-                   (width  ctx:width)
-                   (height ctx:height)) *pixel-buffer-context*
-    ;; I should  use :force-push t  in this function call  to ensure
-    ;; the  event  of clearing  the  buffer  is not  discarded,  but
-    ;; instead i prefer to leave the  key parameter as nil because it
-    ;; could  give a  nice transition,  if  the queue  is filled  by
-    ;; leftover of plasma rendering events
-    (clear-sdl-window)
-    (let ((rectangles (loop repeat 1000
-                            collect
-                            (multiple-value-list (make-blitting-rectangle width
-                                                                          height
-                                                                          test-clip)))))
-      (setf test-clip (not test-clip))
-      (mapcar (lambda (rectangle)
-                (ctx:sync *pixel-buffer-context*)
-                (ctx:push-for-updating *pixel-buffer-context*
-                                       (lambda (dt)
-                                         (declare (ignore dt))
-                                         (declare (optimize (speed 3) (debug 0)))
-                                         t)
-                                       :force-push t)
-                (ctx:push-for-rendering *pixel-buffer-context*
-                                        (lambda (dt)
-                                          (declare (ignore dt))
-                                          (let ((rectangle-buffer (first  rectangle))
-                                                (rectangle-width  (second rectangle))
-                                                (rectangle-height (third  rectangle))
-                                                (x                (fourth rectangle))
-                                                (y                (fifth  rectangle)))
-                                            ;; (assert (< (+ rectangle-width x)
-                                            ;;            width))
-                                            ;; (assert (< (+ rectangle-height y)
-                                            ;;            height))
-                                            (let ((px:*blending-function* #'px:blending-function-add))
-                                              (px:blit rectangle-buffer
-                                                       rectangle-width
-                                                       buffer
-                                                       width
-                                                       height
-                                                       0
-                                                       0
-                                                       y
-                                                       x
-                                                       rectangle-height
-                                                       rectangle-width))))
-                                        :force-push t))
+  (defun draw-rectangles-thread ()
+    (with-accessors ((buffer px:buffer)
+                     (width  ctx:width)
+                     (height ctx:height)) *pixel-buffer-context*
+      ;; I should  use :force-push t  in this function call  to ensure
+      ;; the  event  of clearing  the  buffer  is not  discarded,  but
+      ;; instead i prefer to leave the  key parameter as nil because it
+      ;; could  give a  nice transition,  if  the queue  is filled  by
+      ;; leftover of plasma rendering events
+      (clear-sdl-window)
+      (let ((rectangles (loop repeat 1000
+                              collect
+                              (multiple-value-list (make-blitting-rectangle width
+                                                                            height
+                                                                            test-clip)))))
+        (setf test-clip (not test-clip))
+        (mapcar (lambda (rectangle)
+                  (ctx:sync *pixel-buffer-context*)
+                  (ctx:push-for-updating *pixel-buffer-context*
+                                         (lambda (dt)
+                                           (declare (ignore dt))
+                                           #.nodgui.config:default-optimization
+                                           t)
+                                         :force-push t)
+                  (ctx:push-for-rendering *pixel-buffer-context*
+                                          (lambda (dt)
+                                            (declare (ignore dt))
+                                            (let ((rectangle-buffer (first  rectangle))
+                                                  (rectangle-width  (second rectangle))
+                                                  (rectangle-height (third  rectangle))
+                                                  (x                (fourth rectangle))
+                                                  (y                (fifth  rectangle)))
+                                              ;; (assert (< (+ rectangle-width x)
+                                              ;;            width))
+                                              ;; (assert (< (+ rectangle-height y)
+                                              ;;            height))
+                                              (let ((px:*blending-function* #'px:blending-function-add))
+                                                (px:blit rectangle-buffer
+                                                         rectangle-width
+                                                         buffer
+                                                         width
+                                                         height
+                                                         0
+                                                         0
+                                                         y
+                                                         x
+                                                         rectangle-height
+                                                         rectangle-width))))
+                                          :force-push t))
                 rectangles)
-      (format t "STOP RECTANGLES!~%")))))
+        (format t "STOP RECTANGLES!~%")))))
 
 (defun load-bell-sprite ()
   (let ((px (make-instance 'nodgui.pixmap:png)))
@@ -774,8 +774,8 @@
     (let* ((rectangle-width    30)
            (rectangle-height   10)
            (rectangle          (make-bouncing-rectangle rectangle-width rectangle-height))
-           (rectangle-position (vec2:vec2 (to:f (/ width 2))
-                                          (to:f (/ height 2))))
+           (rectangle-position (vec2:vec2 (to:d (/ width 2))
+                                          (to:d (/ height 2))))
            (rectangle-velocity (bouncing-rectangle-initial-velocity))
            (polygon-vertices (make-polygon-vertices))
            (polygon-color    (pixmap:assemble-color 255 0 255 255)))
@@ -791,7 +791,7 @@
         (ctx:push-for-updating *pixel-buffer-context*
                                (lambda (dt)
                                  (declare (fixnum dt))
-                                 ;;(declare (optimize (speed 3) (debug 0)))
+                                 ;;#.nodgui.config:default-optimization
                                  (when (or (to:d> (vec2:vec2-x rectangle-position)
                                                   (to:d* 2.0 (to:d width)))
                                            (to:d< (to:d+ (vec2:vec2-x rectangle-position)
@@ -817,7 +817,7 @@
         (ctx:push-for-rendering *pixel-buffer-context*
                                 (lambda (dt)
                                   (declare (ignore dt))
-                                  ;;(declare (optimize (speed 3) (debug 0)))
+                                  ;;#.nodgui.config:default-optimization
                                   (px:clear-buffer buffer width height 0 0 0)
                                   (px:fill-rectangle buffer
                                                      width
@@ -1034,16 +1034,16 @@
          (vertices (loop for i from 0 below (* 2 pi) by (/ pi 16)
                         for radius = 50.0 then (+ 50.0 (* 50 (approx-gaussian-random)))
                         collect
-                        (nodgui.vec2:uivec2+ (nodgui.vec2:uivec2 (truncate (* radius (cos i)))
-                                                                 (truncate (* radius (sin i))))
-                                             (nodgui.vec2:uivec2 100 100)))))
+                        (nodgui.vec2:vec2+ (nodgui.vec2:vec2 (* radius (cos i))
+                                                             (* radius (sin i)))
+                                           (nodgui.vec2:vec2 100f0 100f0)))))
     (px:make-polygon-vertex-array vertices)))
 
 (defun make-textured-polygon-vertices ()
-  (let* ((vertices (list (nodgui.vec2:uivec2 300 0)
-                         (nodgui.vec2:uivec2 400 100)
-                         (nodgui.vec2:uivec2 400 200)
-                         (nodgui.vec2:uivec2 300 200)))
+  (let* ((vertices (list (nodgui.vec2:vec2 300f0 0f0)
+                         (nodgui.vec2:vec2 400f0 100f0)
+                         (nodgui.vec2:vec2 400f0 200f0)
+                         (nodgui.vec2:vec2 300f0 200f0)))
          (texels   (list (nodgui.vec2:vec2 0f0 0f0)
                          (nodgui.vec2:vec2 2f0 0f0)
                          (nodgui.vec2:vec2 2f0 2f0)
@@ -1051,23 +1051,30 @@
     (values (px:make-polygon-vertex-array vertices)
             (px:make-polygon-texture-coordinates-array texels))))
 
+(defun make-textured-polygon-vertices-2 ()
+  (let* ((vertices (list (nodgui.vec2:vec2 300f0 100f0)
+                         (nodgui.vec2:vec2 400f0 100f0)
+                         (nodgui.vec2:vec2 400f0 200f0)
+                         (nodgui.vec2:vec2 300f0 200f0)))
+         (texels   (list (nodgui.vec2:vec2 0f0 0f0)
+                         (nodgui.vec2:vec2 1f0 0f0)
+                         (nodgui.vec2:vec2 1f0 1f0)
+                         (nodgui.vec2:vec2 0f0 1f0))))
+    (values (px:make-polygon-vertex-array vertices)
+            (px:make-polygon-texture-coordinates-array texels))))
+
 (defun translate-polygon-vertices (vertices offset)
   (map 'vector
-       (lambda (a)
-         (let ((v (vec2:vec2+ (vec2:vec2 (to:d (vec2:uivec2-x a))
-                                         (to:d (vec2:uivec2-y a)))
-                              offset)))
-           (vec2:uivec2 (round (vec2:vec2-x v))
-                        (round (vec2:vec2-y v)))))
+       (lambda (a) (vec2:vec2+ a offset))
        vertices))
 
 (defun demo-pixel-buffer ()
   (px:init-font-system)
   (let* ((sdl-context      nil)
-         (scaling          1.0)
-         (rotation         0.0)
-         (translating-x    0)
-         (translating-y    0)
+         (scaling          1f0)
+         (rotation         0f0)
+         (translating-x    0f0)
+         (translating-y    0f0)
          (context-buffer   nil)
          (context-width    nil)
          (context-height   nil)
@@ -1078,6 +1085,8 @@
          (polygon-color    (pixmap:assemble-color 255 0 255 255)))
     (multiple-value-bind (textured-polygon-vertices textured-polygon-texture-coords)
         (make-textured-polygon-vertices)
+      (multiple-value-bind (textured-polygon-vertices-2 textured-polygon-texture-coords-2)
+          (make-textured-polygon-vertices-2)
       (flet ((make-button (master label callback)
                (make-instance 'button
                               :master  master
@@ -1095,7 +1104,7 @@
                                          (px:clear-buffer context-buffer
                                                           context-width
                                                           context-height
-                                                          0 0 0)
+                                                          100 100 100)
                                          (px:draw-text context-buffer
                                                        context-width
                                                        context-height
@@ -1115,6 +1124,7 @@
                                                             (translate-polygon-vertices polygon-vertices
                                                                                         delta-pos)
                                                             polygon-color)
+
                                            (px:draw-texture-mapped-polygon context-buffer
                                                                            context-width
                                                                            context-height
@@ -1122,28 +1132,38 @@
                                                                                                        delta-pos)
 
                                                                            textured-polygon-texture-coords
+                                                                           *test-sprite*)
+                                           (px:draw-texture-mapped-polygon context-buffer
+                                                                           context-width
+                                                                           context-height
+                                                                           (translate-polygon-vertices textured-polygon-vertices-2
+                                                                                                       (vec2:vec2+ delta-pos
+                                                                                                                   (vec2:vec2 0f0 200f0)))
+
+                                                                           textured-polygon-texture-coords-2
                                                                            *test-sprite*))
-                                         (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
-                                                            (nodgui.pixmap:width  *bell-sprite*)
-                                                            (nodgui.pixmap:height *bell-sprite*)
-                                                            context-buffer
-                                                            context-width
-                                                            context-height
-                                                            0
-                                                            0
-                                                            (truncate (/ context-height 2))
-                                                            (truncate (/ context-width 2))
-                                                            (nodgui.pixmap:height *bell-sprite*)
-                                                            (nodgui.pixmap:width  *bell-sprite*)
-                                                            rotation
-                                                            scaling
-                                                            scaling
-                                                            (truncate (/ (nodgui.pixmap:width *bell-sprite*)
-                                                                         2))
-                                                            (truncate (/ (nodgui.pixmap:height *bell-sprite*)
-                                                                         2))
-                                                            translating-x
-                                                            translating-y)))))
+                                         (let ((px:*blending-function* (px:make-blending-fn-replace-with-transparent-color 0 0 0)))
+                                           (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
+                                                              (nodgui.pixmap:width  *bell-sprite*)
+                                                              (nodgui.pixmap:height *bell-sprite*)
+                                                              context-buffer
+                                                              context-width
+                                                              context-height
+                                                              0
+                                                              0
+                                                              (truncate (/ context-height 2))
+                                                              (truncate (/ context-width 2))
+                                                              (nodgui.pixmap:height *bell-sprite*)
+                                                              (nodgui.pixmap:width  *bell-sprite*)
+                                                              rotation
+                                                              scaling
+                                                              scaling
+                                                              (truncate (/ (nodgui.pixmap:width *bell-sprite*)
+                                                                           2))
+                                                              (truncate (/ (nodgui.pixmap:height *bell-sprite*)
+                                                                           2))
+                                                              translating-x
+                                                              translating-y))))))
         (with-nodgui ()
           (let* ((sdl-frame         (ctx:make-sdl-frame +sdl-frame-width+ +sdl-frame-height+))
                  (info              (make-instance 'label))
@@ -1155,49 +1175,49 @@
                  (button-rotate-cw  (make-button buttons-frame
                                                  "rotate clockwise"
                                                  (lambda ()
-                                                   (incf rotation 10.0)
+                                                   (incf rotation 10f0)
                                                    (update-info info)
                                                    (draw))))
                  (button-rotate-ccw (make-button buttons-frame
                                                  "rotate counterclockwise"
                                                  (lambda ()
-                                                   (incf rotation -10.0)
+                                                   (incf rotation -10f0)
                                                    (update-info info)
                                                    (draw))))
                  (button-enlarge    (make-button buttons-frame
                                                  "enlarge"
                                                  (lambda ()
-                                                   (incf scaling 0.5)
+                                                   (incf scaling 0.5f0)
                                                    (update-info info)
                                                    (draw))))
                  (button-shrink    (make-button buttons-frame
                                                 "shrink"
                                                 (lambda ()
-                                                  (incf scaling -0.5)
+                                                  (incf scaling -0.5f0)
                                                   (update-info info)
                                                   (draw))))
                  (button-move-left  (make-button buttons-frame
                                                  "move left"
                                                  (lambda ()
-                                                   (incf translating-x -5)
+                                                   (incf translating-x -5f0)
                                                    (update-info info)
                                                    (draw))))
                  (button-move-right (make-button buttons-frame
                                                  "move right"
                                                  (lambda ()
-                                                   (incf translating-x 5)
+                                                   (incf translating-x 5f0)
                                                    (update-info info)
                                                    (draw))))
                  (button-move-up    (make-button buttons-frame
                                                  "move up"
                                                  (lambda ()
-                                                   (incf translating-y -5)
+                                                   (incf translating-y -5f0)
                                                    (update-info info)
                                                    (draw))))
                  (button-move-down  (make-button buttons-frame
                                                  "move down"
                                                  (lambda ()
-                                                   (incf translating-y 5)
+                                                   (incf translating-y 5f0)
                                                    (update-info info)
                                                    (draw))))
                  (button-quit      (make-instance 'button
@@ -1236,4 +1256,48 @@
             (setf context-buffer (px:buffer sdl-context))
             (setf context-width  (ctx:width  sdl-context))
             (setf context-height (ctx:height sdl-context))
-            (draw)))))))
+            (draw))))))))
+
+(defun test-poly ()
+  (let* ((sdl-context      nil)
+         (context-buffer   nil)
+         (context-width    nil)
+         (context-height   nil)
+         (polygon-vertices (px:make-polygon-vertex-array (list (vec2:vec2 0 0)
+                                                               (vec2:vec2 10 0)
+                                                               (vec2:vec2 10 10)
+                                                               (vec2:vec2 0 10))))
+
+         (polygon-color    (pixmap:assemble-color 255 0 255 255)))
+      (flet ((draw ()
+               (ctx:push-for-rendering sdl-context
+                                       (lambda (dt)
+                                         (declare (ignore dt))
+                                         (px:clear-buffer context-buffer
+                                                          context-width
+                                                          context-height
+                                                          0 0 0)
+                                         (px:draw-polygon context-buffer
+                                                          context-width
+                                                          context-height
+                                                          polygon-vertices
+                                                          polygon-color)))))
+        (with-nodgui ()
+          (let* ((sdl-frame        (ctx:make-sdl-frame 400 400))
+                 (button-quit      (make-instance 'button
+                                                  :text    "quit"
+                                                  :command (lambda ()
+                                                             (ctx:quit-sdl sdl-context)
+                                                             (exit-nodgui)))))
+            (grid sdl-frame          1 0)
+            (grid button-quit        2 0 :sticky :s)
+            (wait-complete-redraw)
+            (setf sdl-context (make-instance 'px:pixel-buffer-context
+                                             :event-loop-type :serving
+                                             :classic-frame   sdl-frame
+                                             :buffer-width    10
+                                             :buffer-height   10))
+            (setf context-buffer (px:buffer sdl-context))
+            (setf context-width  (ctx:width  sdl-context))
+            (setf context-height (ctx:height sdl-context))
+            (draw))))))

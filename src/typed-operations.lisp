@@ -104,12 +104,12 @@
 (define-typed-op dfloor floor desired-type)
 
 (defun dlerp (w a b)
-  (declare (optimize (debug 0) (safety 0) (speed 3))
-           (type desired-type w a b))
+  #.nodgui.config:default-optimization
+  (declare (type desired-type w a b))
   (d+ a (d* w (d- b a))))
 
 (defun secure-dacos (a)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (declare (desired-type a))
   (dacos (dmin 1f0 a)))
 
@@ -118,7 +118,7 @@
 (declaim (inline degree->radians))
 
 (defun degree->radians (degree)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (declare (desired-type degree))
   (d* degree +degree->radians-factor+))
 
@@ -127,7 +127,7 @@
 (declaim (inline radians->degree))
 
 (defun radians->degree (radians)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (declare (desired-type radians))
   (d* radians +radians->degree-factor+))
 

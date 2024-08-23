@@ -31,7 +31,7 @@
   (alexandria:define-constant +decode-table+ (gen-encode-table) :test #'equalp))
 
 (defun encode (data)
-  (declare (optimize (debug 0) (safety 0) (speed 1)))
+  #.nodgui.config:default-optimization
   (declare (vector data))
   (let* ((len            (length data))
          (padding        (if (< len 3)
@@ -70,7 +70,7 @@
     res))
 
 (defun decode (s)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
   (declare (simple-string s))
   (let ((padding (count-if #'(lambda (a) (char= +padding-char+ a))
                            (subseq s (- (length s) 3))))

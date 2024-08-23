@@ -533,7 +533,6 @@
 (declaim (single-float *angle* *angle2* *angle3*))
 
 (defun rotate()
-;  (declare (optimize speed)    (single-float *angle* *angle2* *angle3*))
   (let ((*debug-tk* nil))
     (let ((lines nil)
           (dx (* 50 (sin *angle2*)))

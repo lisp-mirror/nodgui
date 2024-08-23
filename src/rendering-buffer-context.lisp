@@ -133,7 +133,7 @@
 (defgeneric sync (object))
 
 (defmethod events-polling-p ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (eq (event-loop-type object) :polling))
 
 (defun quit-sentinel (dt)
@@ -141,7 +141,7 @@
   (sdl2:push-event :quit))
 
 (defmethod quit-sdl ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (push-for-rendering object
                       #'quit-sentinel
                       :force-push t)
@@ -168,39 +168,39 @@
       (bq:emptyp queue)))
 
 (defmethod push-for-rendering ((object context) (function function) &key (force-push nil))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (push-in-queue object (rendering-queue object) function force-push))
 
 (defmethod pop-for-rendering ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (pop-from-queue object (rendering-queue object)))
 
 (defmethod rendering-must-wait-p ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (queue-empty-p object (rendering-queue object)))
 
 (defmethod push-for-updating ((object context) (function function) &key (force-push nil))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (push-in-queue object (updating-queue object) function force-push))
 
 (defmethod pop-for-updating ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (pop-from-queue object (updating-queue object)))
 
 (defmethod updating-must-wait-p ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (queue-empty-p object (updating-queue object)))
 
 (defmethod push-for-modify ((object context) (function function) &key (force-push nil))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (push-in-queue object (modifying-queue object) function force-push))
 
 (defmethod pop-for-modify ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (pop-from-queue object (modifying-queue object)))
 
 (defmethod modify-must-wait-p ((object context))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (queue-empty-p object (modifying-queue object)))
 
 (defmethod sync ((object context))

@@ -275,7 +275,7 @@
           (and end (min end (length sequence)))))
 
 (defun vector-empty-p (v)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  #.nodgui.config:default-optimization
   (declare (vector v))
   (= (length v) 0))
 

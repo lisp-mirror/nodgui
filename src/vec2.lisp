@@ -27,11 +27,20 @@
   (defun vec2p (a)
     (typep a 'vec2))
 
-  (defun vec2 (x y)
+  (defun vec2 (&optional (x 0f0) (y 0f0))
     (let ((v (make-array-frame 2 0f0 'vec2-type t)))
       (declare (vec2 v))
-      (setf (elt v 0) (->f x)
-            (elt v 1) (->f y))
+      (setf (elt v 0) (to:d x)
+            (elt v 1) (to:d y))
+      v))
+
+  (defun vec2-insecure (&optional (x 0f0) (y 0f0))
+    #.nodgui.config:default-optimization
+    (declare (to::desired-type x y))
+    (let ((v (make-array-frame 2 0f0 'vec2-type t)))
+      (declare (vec2 v))
+      (setf (elt v 0) x
+            (elt v 1) y)
       v))
 
   (defun vec2= (a b)
@@ -41,16 +50,16 @@
   (alexandria:define-constant +vec2-zero+ (vec2 0f0 0f0)
     :test #'vec2=)
 
-  (defun vec2-x (a)
-    (declare (optimize (debug 0) (safety 0) (speed 3)))
+  (u:definline vec2-x (a)
+    #.nodgui.config:default-optimization
     (declare (vec2 a))
     (elt a 0))
 
   (defsetf vec2-x (v) (new-val)
     `(setf (elt ,v 0) ,new-val))
 
-  (defun vec2-y (a)
-    (declare (optimize (debug 0) (safety 0) (speed 3)))
+  (u:definline vec2-y (a)
+    #.nodgui.config:default-optimization
     (declare (vec2 a))
     (elt a 1))
 
@@ -76,6 +85,13 @@
   (vec2 (* (elt vec 0) val)
         (* (elt vec 1) val)))
 
+(defun vec2-scaling (v scaling)
+  (declare (vec2 v scaling))
+  (vec2 (to:d* (vec2-x v)
+               (vec2-x scaling))
+        (to:d* (vec2-y v)
+               (vec2-y scaling))))
+
 (defun vec2/ (vec val)
   (declare (vec2 vec))
   (vec2 (/ (elt vec 0) val)
@@ -86,57 +102,74 @@
        (epsilon= (elt a 1) (elt b 1))))
 
 (defun vec2+ (a b)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
   (declare (vec2 a b))
   (vec2 (+ (elt a 0) (elt b 0))
         (+ (elt a 1) (elt b 1))))
 
+(defun vec2-translate (a delta-x &optional (delta-y delta-x))
+  #.nodgui.config:default-optimization
+  (declare (vec2 a))
+  (declare (to::desired-type delta-x delta-y))
+  (vec2 (to:d+ delta-x (vec2-x a))
+        (to:d+ delta-y (vec2-y a))))
+
 (defun vec2- (a b)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
   (declare (vec2 a b))
   (vec2 (- (elt a 0) (elt b 0))
         (- (elt a 1) (elt b 1))))
 
 (defun vec2-negate (a)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
   (declare (vec2 a))
   (vec2 (- (elt a 0))
         (- (elt a 1))))
 
 (defun vec2-length (a)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (vec2 a))
-  (sqrt (+ (expt (elt a 0) 2.0)
-           (expt (elt a 1) 2.0))))
+  (to:dsqrt (to:d+ (to:dexpt (the to::desired-type (vec2-x a)) 2f0)
+                   (to:dexpt (the to::desired-type (vec2-y a)) 2f0))))
 
 (defun vec2-normalize (a)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (vec2 a))
   (let ((length (vec2-length a)))
-    (vec2 (/ (elt a 0) length)
-          (/ (elt a 1) length))))
+    (declare (to::desired-type length))
+    (vec2-insecure (/ (the to::desired-type (vec2-x a))
+                      length)
+                   (/ (the to::desired-type (vec2-y a))
+                      length))))
 
 (defun vec2-dot-product (a b)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (vec2 a b))
-  (+ (* (elt a 0) (elt b 0)) (* (elt a 1) (elt b 1))))
+  (+ (* (vec2-x a) (vec2-x b))
+     (* (vec2-y a) (vec2-y b))))
 
 (defun vec2-perpendicular (a)
+  #.nodgui.config:default-optimization
+  ;;(declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (vec2 a))
-  (vec2 (- (vec2-y a)) (vec2-x a)))
+  (vec2-insecure (- (vec2-y a)) (vec2-x a)))
 
 (defun vec2-perp-dot-product (a b)
   "|v1| |v2| sin(theta)"
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
   (declare (vec2 a))
   (vec2-dot-product (vec2-perpendicular a) b))
 
 (defun vec2-rotate (v angle)
-  ;; (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (vec2 v))
   (declare (single-float angle))
-  (vec2 (- (* (vec2-x v) (cos angle)) (* (vec2-y v) (sin angle)))
-        (+ (* (vec2-x v) (sin angle)) (* (vec2-y v) (cos angle)))))
+  (vec2-insecure (- (* (vec2-x v) (cos angle)) (* (vec2-y v) (sin angle)))
+                 (+ (* (vec2-x v) (sin angle)) (* (vec2-y v) (cos angle)))))
 
 (deftype uivec2-type ()
   'fixnum)
@@ -186,19 +219,19 @@
        (epsilon= (elt a 1) (elt b 1))))
 
 (defun uivec2+ (a b)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
   (declare (uivec2 a b))
   (uivec2 (to:f+ (elt a 0) (elt b 0))
           (to:f+ (elt a 1) (elt b 1))))
 
 (defun uivec2- (a b)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
   (declare (uivec2 a b))
   (uivec2 (to:f- (elt a 0) (elt b 0))
           (to:f- (elt a 1) (elt b 1))))
 
 (defun uivec2-negate (a)
-  (declare (optimize (debug 0) (safety 0) (speed 3)))
+  #.nodgui.config:default-optimization
   (declare (uivec2 a))
   (uivec2 (to:f- (elt a 0))
           (to:f- (elt a 1))))

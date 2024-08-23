@@ -168,7 +168,7 @@
   "Apply transformation MATRIX to VEC, return result as a
 freshly allocated VEC."
   (declare (vec3 vec))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (let ((result (vec3 (to:d 0) (to:d 0) (to:d 0)))
         (a      (aref vec 0))
         (b      (aref vec 1))
@@ -189,7 +189,7 @@ freshly allocated VEC."
   "Apply transformation MATRIX to VEC ignoring the translation component,
 return result as a freshly allocated VEC."
   (declare (vec3 vec))
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  #.nodgui.config:default-optimization
   (let ((result (vec3 (to:d 0) (to:d 0) (to:d 0)))
         (a (aref vec 0))
         (b (aref vec 1))

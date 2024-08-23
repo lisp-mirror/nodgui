@@ -204,7 +204,7 @@
 (defgeneric rotate-around-y-axe (object angle))
 
 (defmethod look-at ((object camera))
-  (declare (optimize (safety 0) (speed 3) (debug 0)))
+  #.nodgui.config:default-optimization
   (with-accessors ((up  up)
                    (pos pos)
                    (target target)
@@ -555,7 +555,7 @@
   (gl:uniform-matrix location dim matrices transpose))
 
 (defmethod render ((object terrain-mesh))
-  (declare (optimize (debug 0) (speed 3) (safety 0)))
+  #.nodgui.config:default-optimization
   (with-accessors ((shader-program    shader-program)
                    (vertices-count    vertices-count)
                    (vbo               vbo)

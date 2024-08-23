@@ -139,4 +139,20 @@
                (:file "test-nodgui")))
 
 
+(defsystem nodgui/game
+  :encoding         :utf-8
+  :pathname         "game"
+  :serial           t
+  :depends-on (:nodgui
+               :clunit2)
+  :components ((:file "packages")
+               (:file "aabb2")
+               (:file "entities")
+               (:file "world")
+               (:file "main")))
+
 (pushnew :nodgui *features*)
+
+;; (pushnew :debug-game *features*)
+
+(pushnew :optimize-nodgui *features*)

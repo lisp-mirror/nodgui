@@ -40,7 +40,35 @@
 (defvar *mb-icons* (list "error" "info" "question" "warning")
   "icon names valid for message-box function")
 
-;;; see make-string-output-string/get-output-stream-string
+(a:define-constant +message-box-icons+ '("error" "info" "question" "warning")
+  :test #'equalp
+  :documentation "icon names valid for message-box function")
+
+(defmacro gen-message-box-icons ()
+  `(progn
+     ,@(loop for icon in +message-box-icons+ collect
+             `(a:define-constant ,(format-fn-symbol t "+message-box-icon-~a+" icon)
+                ,icon :test #'string=))))
+
+(gen-message-box-icons)
+
+(a:define-constant +message-box-types+ '("abortretryignore"
+                                         "ok"
+                                         "okcancel"
+                                         "retrycancel"
+                                         "yesno"
+                                         "yesnocancel")
+  :test #'equalp)
+
+(defmacro gen-message-box-type ()
+  `(progn
+     ,@(loop for type in +message-box-types+ collect
+             `(a:define-constant ,(format-fn-symbol t "+message-box-type-~a+" type)
+                ,type :test #'string=))))
+
+(gen-message-box-type)
+
+
 (defun message-box (message title type icon &key parent)
   ;;; tk_messageBox function
   (format-wish "senddatastring [tk_messageBox -message \"~a\" -title {~a} -type {~(~a~)} -icon {~(~a~)}~@[ -parent ~a~]]" message title type icon (and parent (widget-path parent)))

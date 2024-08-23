@@ -37,7 +37,7 @@
   (nodgui.utils:make-thread
    (let ((sdl-context  context))
      (lambda ()
-       (declare (optimize (speed 3) (debug 0) (safety 0)))
+       #.nodgui.config:default-optimization
        (let ((context  sdl-context))
          (with-accessors ((initialization-function ctx:initialization-function)
                           (width                   ctx:width)

@@ -1,12 +1,136 @@
+2024-08-16 cage
+
+	Merge pull request 'Add `scrollbar-get`' (#16) from
+	defaultxr/nodgui:master into development
+
+2024-08-15 modula t. worm
+
+	* src/package.lisp,
+	* src/scrollbar.lisp:
+
+	- added `scrollbar-get`
+
+2024-08-07 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp,
+	* src/vec2.lisp:
+
+	- commented out optimization.
+	- fixed return type of 'line-equation'.
+	- added dialog to demo 'animation'.
+
+2024-08-06 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- fixed polygons texturing.
+
+2024-08-04 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp,
+	* src/treeview.lisp:
+
+	- improved visual results of 'treeview-refit-columns-width'.
+	- fixed swapped texture coordinates in polygon shader.
+
+2024-08-03 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/vec2.lisp:
+
+	- added shader for texture mapped polygon.
+	- made the goal of the texture shader to modify the destination buffer
+	not only returns the texture coordinates (more effects can be
+	programmed this way)..
+	- added 'texture-shader-wrap-replace-bilinear';
+	- fixed literals to ensure single float.
+	- fixed increment, the number after the clause 'by' in a loop must be
+	a positive number.
+	- cleaned loop and prevented negative increment.
+	- used bilinear filtering for texture mapped polygons.
+	- fixed vertical clipping of texture mapped polygon.
+	- optimized calculation of starting texel in texture mapped poligons.
+	- optimized texture mapped polygon clipping.
+
+2024-07-27 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- restored all features of the animations demo.
+	- restored optimizations switches.
+
+2024-07-19 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/vec2.lisp,
+	* src/vec3.lisp:
+
+	- [pixel-buffer] added rendering function for primitives that extends
+	beyond the dimensional limits (width and height) of the buffer where
+	the primitive will be rendered.
+
+2024-07-16 cage
+
+	* src/pixels-buffer.lisp:
+
+	- optimized rasterizing of texture mapped polygon.
+
+2024-07-15 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/pixmap.lisp:
+
+	- fixed test for checking if intersections should be calculated;
+	- added an inefficient draft for texture mapped 2D polygons;
+	- fixed types for polygons vertices array.
+
+2024-07-14 cage
+
+	* README.org,
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/vec2.lisp:
+
+	- added 'nodgui.pixels-canvas:draw-polygon';
+	- mentioned new dependencies in documentation.
+	- added declaration to optimize pixel buffer related funztions.
+	- refactored out local function included in the body of
+	'draw-polygon'.
+
+2024-06-22 cage
+
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/utils.lisp:
+
+	- added 'make-tk-color'.
+
 2024-06-20 cage
 
-        * src/canvas-shapes.lisp,
-        * src/demo-tests.lisp:
+	* Changelog,
+	* nodgui.asd,
+	* src/canvas-shapes.lisp,
+	* src/demo-tests.lisp:
 
-        - fixed instance name ('canvas-polygon' to 'polygon');
-        - fixed keyword argument name in 'make-polygon' (:coords argument does
-        not exists in 'polygon' class.
-        Thanks to the person who reported this issue!
+	- fixed instance name ('canvas-polygon' to 'polygon');
+	- fixed keyword argument name in 'make-polygon' (:coords argument does
+	not exists in 'polygon' class.
+	Thanks to the person who reported this issue!
+	- increased version number;
+	- updated changelog.
+	Merge branch 'master' into development
+	- rotated pentagons coordinates in canvas demo.
 
 2024-04-28 cage
 

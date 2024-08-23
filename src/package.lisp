@@ -17,7 +17,9 @@
 (defpackage :nodgui.config
   (:use :cl
         :alexandria)
-  (:export #:+nodgui-version+))
+  (:export
+   #:+nodgui-version+
+   #:default-optimization))
 
 (defpackage :nodgui.constants
   (:use :cl
@@ -250,10 +252,12 @@
         :nodgui.constants
         :nodgui.utils)
   (:local-nicknames (:a  :alexandria)
+                    (:u  :nodgui.utils)
                     (:to :nodgui.typed-operations))
   (:export
    #:vec2-type
    #:vec2
+   #:vec2-insecure
    #:+vec2-zero+
    #:sequence->vec2
    #:make-fresh-vec2
@@ -262,10 +266,12 @@
    #:vec2-y
    #:vec2p
    #:vec2*
+   #:vec2-scaling
    #:vec2/
    #:vec2~
    #:vec2=
    #:vec2+
+   #:vec2-translate
    #:vec2-
    #:vec2-negate
    #:vec2-length
@@ -1476,14 +1482,15 @@
 (defpackage nodgui.pixels-canvas
   (:use :cl)
   (:import-from :alexandria :define-constant)
-  (:local-nicknames (:a   :alexandria)
-                    (:p   :esrap)
-                    (:bq  :syncronized-queue)
-                    (:q   :nodgui.non-blocking-queue)
-                    (:to  :nodgui.typed-operations)
-                    (:u   :nodgui.utils)
-                    (:ctx :nodgui.rendering-buffer-context)
-                    (:pix :nodgui.pixmap))
+  (:local-nicknames (:a    :alexandria)
+                    (:p    :esrap)
+                    (:bq   :syncronized-queue)
+                    (:q    :nodgui.non-blocking-queue)
+                    (:to   :nodgui.typed-operations)
+                    (:u    :nodgui.utils)
+                    (:ctx  :nodgui.rendering-buffer-context)
+                    (:pix  :nodgui.pixmap)
+                    (:vec2 :nodgui.vec2))
   (:export
    #:buffer
    #:pixel-buffer-context
@@ -1493,6 +1500,7 @@
    #:color-channel-lerp
    #:blending-function-combine
    #:blending-function-replace
+   #:make-blending-fn-replace-with-transparent-color
    #:blending-function-add
    #:*blending-function*
    #:sum-pixels
@@ -1520,7 +1528,13 @@
    #:init-font-system
    #:terminate-font-system
    #:open-font
-   #:close-font))
+   #:close-font
+   #:sprite-grid
+   #:width
+   #:height
+   #:cell-width
+   #:cell-height
+   #:blit-cell))
 
 (defpackage nodgui.opengl-frame
   (:use :cl)
@@ -1642,6 +1656,8 @@
            #:calculate-internal-time-scaling-millis
            #:*debounce-minimum-delay*
            #:lambda-debounce
+           #:*lambda-frequency*
+           #:lambda-fixed-frequency
            #:add-event-alias
            #:remove-event-alias
            #:fire-event
@@ -1860,6 +1876,18 @@
            #:menu-delete
            #:menuradiobutton
            #:message
+           #:+message-box-icons+
+           #:+message-box-icon-error+
+           #:+message-box-icon-info+
+           #:+message-box-icon-question+
+           #:+message-box-icon-warning+
+           #:+message-box-types+
+           #:+message-box-type-abortretryignore
+           #:+message-box-type-ok+
+           #:+message-box-type-okcancel+
+           #:+message-box-type-retrycancel+
+           #:+message-box-type-yesno+
+           #:+message-box-type-yesnocancel+
            #:message-box
            #:minsize
            #:move
