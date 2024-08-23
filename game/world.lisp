@@ -206,8 +206,8 @@
 (defun shield-life (difficult-level)
   (ecase difficult-level
     (:easy   10000)
-    (:medium 50000)
-    (:hard   30000)))
+    (:medium 5000)
+    (:hard   5000)))
 
 (a:define-constant +scaling-aabb-asteroid-sprite+  .65f0                :test #'=)
 
