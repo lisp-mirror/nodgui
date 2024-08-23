@@ -1,3 +1,18 @@
+* 2024-04-28 Version 0.7.0.0
+ - [new feature]
+   - added `scrollbar-get';
+   - added 'nodgui.pixels-canvas:draw-polygon';
+   - added 'make-tk-color';
+   - [pixel buffer]
+     - added clipping of primitives in pixel buffer widget;
+     - added an inefficient draft for texture mapped 2D polygons;.
+ - [improvements]
+   - improved visual results of 'treeview-refit-columns-width'.
+ - [bugfix]
+   - fixed 'treeview-refit-columns-width';
+   - fixed instance name ('canvas-polygon' to 'polygon');
+   - fixed keyword argument name in 'make-polygon' (:coords argument does
+
 * 2024-04-28 Version 0.6.2.0
  - [new feature]
    - added "listbox-index-at";

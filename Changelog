@@ -359,7 +359,7 @@
 
 	- added 'nodgui.pixels-canvas:draw-polygon';
 	- mentioned new dependencies in documentation.
-	- added declaration to optimize pixel buffer related funztions.
+	- added declaration to optimize pixel buffer related functions.
 	- refactored out local function included in the body of
 	'draw-polygon'.
 
