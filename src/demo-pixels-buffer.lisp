@@ -1068,6 +1068,30 @@
        (lambda (a) (vec2:vec2+ a offset))
        vertices))
 
+(defun make-star-polygon ()
+  (let* ((vertices (list (vec2:vec2 154.4639 483.86707)
+                         (vec2:vec2 128.5122 420)
+                         (vec2:vec2 196.59258 377)
+                         (vec2:vec2 122.62741 377)
+                         (vec2:vec2 105.23359 300.13705)
+                         (vec2:vec2 85.472305 377)
+                         (vec2:vec2 6.6419525 377)
+                         (vec2:vec2 68.393974 420)
+                         (vec2:vec2 37.06797 477.7146)
+                         (vec2:vec2 94.9941 431.60602))))
+    (px:make-polygon-vertex-array vertices)))
+
+(defun make-bulky-polygon ()
+  (let* ((vertices (list (vec2:vec2 400 400)
+                         (vec2:vec2 450 400)
+                         (vec2:vec2 500 400)
+                         (vec2:vec2 500 350)
+                         (vec2:vec2 600 350)
+                         (vec2:vec2 600 450)
+                         (vec2:vec2 500 450)
+                         (vec2:vec2 400 450))))
+    (px:make-polygon-vertex-array vertices)))
+
 (defun demo-pixel-buffer ()
   (px:init-font-system)
   (let* ((sdl-context      nil)
@@ -1124,7 +1148,11 @@
                                                             (translate-polygon-vertices polygon-vertices
                                                                                         delta-pos)
                                                             polygon-color)
-
+                                           (px:draw-polygon context-buffer
+                                                            context-width
+                                                            context-height
+                                                            (make-star-polygon)
+                                                            polygon-color)
                                            (px:draw-texture-mapped-polygon context-buffer
                                                                            context-width
                                                                            context-height
@@ -1141,7 +1169,12 @@
                                                                                                                    (vec2:vec2 0f0 200f0)))
 
                                                                            textured-polygon-texture-coords-2
-                                                                           *test-sprite*))
+                                                                           *test-sprite*)
+                                           (px:draw-polygon context-buffer
+                                                            context-width
+                                                            context-height
+                                                            (make-bulky-polygon)
+                                                            polygon-color))
                                          (let ((px:*blending-function* (px:make-blending-fn-replace-with-transparent-color 0 0 0)))
                                            (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
                                                               (nodgui.pixmap:width  *bell-sprite*)

@@ -147,7 +147,7 @@
         #$<Control-n>$
         (lambda (event)
           (declare (ignore event))
-          (new-game))))
+          (new-game (world:difficult-level *game-world*)))))
 
 (defun player-fire ()
   (world:fire-bullet *game-world* (world:player *game-world*)))
