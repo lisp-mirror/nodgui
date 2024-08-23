@@ -131,7 +131,7 @@
     :initarg  :height
     :accessor height)
    (difficult-level
-    :initform +hard-level+
+    :initform +easy-level+
     :initarg  :difficult-level
     :accessor difficult-level)
    (ticks

@@ -145,7 +145,7 @@
   :serial           t
   :depends-on (:nodgui
                :clunit2)
-  :components ((:file "packages")
+  :components ((:file "package")
                (:file "aabb2")
                (:file "entities")
                (:file "world")
