@@ -69,11 +69,13 @@
 
 (defun new-game (&optional (difficult-level :easy))
   (stop-animation)
-  (setf (world:difficult-level *game-world*) difficult-level)
-  (world:initialize-game *game-world*)
-  (setf *animation* (make-animation))
-  (setf (animation-thread *animation*)
-        (u:make-thread #'game-thread :name "game")))
+  (ctx:in-renderer-thread (*pixel-buffer-context* dt)
+                          (declare (ignore dt))
+    (setf (world:difficult-level *game-world*) difficult-level)
+    (world:initialize-game *game-world*)
+    (setf *animation* (make-animation))
+    (setf (animation-thread *animation*)
+          (u:make-thread #'game-thread :name "game"))))
 
 
 (defun initialize-menu (toplevel)
@@ -190,7 +192,9 @@
         #$<KeyPress-Up>$
         (lambda (event)
           (declare (ignore event))
-          (e:apply-thrust (world:player *game-world*) 1e-5)))
+          (ctx:in-renderer-thread (*pixel-buffer-context* dt)
+                                  (declare (ignore dt))
+            (e:apply-thrust (world:player *game-world*) 1e-5))))
   (bind sdl-frame
         #$<KeyPress-Down>$
         (lambda (event)
