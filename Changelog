@@ -1,26 +1,72 @@
+2024-08-25 cage
+
+	* src/events.lisp:
+
+	- fixed 'lambda-debounce' and 'lambda-fixed-frequency'
+	After the latest modifications those macros worked only if there was a
+	declaration in the function's body.
+
 2024-08-23 cage
 
+	* Changelog,
+	* LICENSES.org,
+	* NEWS.org,
+	* game/aabb2.lisp,
+	* game/data/bkg.png,
+	* game/data/bullet.png,
+	* game/data/explosions/explosion-15x15-6.png,
+	* game/data/explosions/explosion-32x32-6.png,
+	* game/data/explosions/explosion-96x96-12.png,
+	* game/data/meteor1.png,
+	* game/data/meteor2.png,
+	* game/data/meteor3.png,
+	* game/data/meteor4.png,
+	* game/data/player.png,
+	* game/data/shield.png,
+	* game/data/thrust.png,
+	* game/data/ufo.png,
 	* game/entities.lisp,
 	* game/main.lisp,
+	* game/package.lisp,
 	* game/packages.lisp,
 	* game/world.lisp,
 	* nodgui.asd,
+	* src/base64.lisp,
+	* src/config.lisp,
+	* src/demo-3d-window.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/demo-tests.lisp,
+	* src/events.lisp,
+	* src/message.lisp,
+	* src/opengl-frame.lisp,
 	* src/package.lisp,
 	* src/pixels-buffer.lisp,
-	* src/vec2.lisp:
+	* src/pixmap.lisp,
+	* src/rendering-buffer-context.lisp,
+	* src/typed-operations.lisp,
+	* src/ubvec4.lisp,
+	* src/utils.lisp,
+	* src/vec2.lisp,
+	* src/vec3.lisp:
 
-	- added success message;
-	- added explosion when UFO if hitted;
-	- modulated difficult levels.
-	- added sparks.
-	- added 'difficult level' menu.
-	- reduced speed at hard difficult level;
-	- switched off debugging code.
-	- modulated spasks number based on the asteroid's size.
-	- ensured a bullet can hit just one target;
-	- turned on optimizations.
-	- ensured a polygon has an even number of intersection with an
-	horizontal ray.
+	- added game;
+	- updated changelog;
+	- scaled translation in blitting transform.
+	- updated changelog.
+	- [game] kept previous difficult level when starting a new game, using
+	the GUI.
+	- increased version number.
+	- mentioned text rendering in news file.
+	- renamed file 'packages.lisp' to 'package.lisp';
+	- [game] changed default difficult level to 'easy'.
+	- increased version number.
+	- [game] prevented hitting an already destroied UFO;
+	- [game] increased UFO's frequency at hard difficult level.
+	- [game] removed race conditions.
+	- [game] fixed shield's lifetime.
+	- increased version number.
+	- added missing file.
+	- [game] ensured game over message pops up.
 
 2024-08-22 cage
 

@@ -17,7 +17,7 @@
 
 (defsystem nodgui
   :name             "nodgui"
-  :version          "0.7.0.2"
+  :version          "0.7.0.3"
   :author           "cage"
   :encoding         :utf-8
   :maintainer       "cage"

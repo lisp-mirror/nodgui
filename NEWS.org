@@ -1,3 +1,8 @@
+* 2024-08-25 Version 0.7.0.3
+ fixed 'lambda-debounce' and 'lambda-fixed-frequency'
+
+ After the latest modifications those macros worked only if there was a declaration in the function's body.
+
 * 2024-04-28 Version 0.7.0.0
  - [new feature]
    - added `scrollbar-get';
