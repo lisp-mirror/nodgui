@@ -92,38 +92,54 @@
 (defparameter *debounce-minimum-delay* 120
   "milliseconds")
 
-(defmacro lambda-debounce (args (&rest declarations) &body body)
-  (a:with-gensyms (last-fired saved-last-fired fired-time results debounce-minimum-delay)
-    `(let ((,last-fired (current-time-milliseconds))
-           (,debounce-minimum-delay *debounce-minimum-delay*))
-       (lambda ,args
-         ,declarations
-         (let ((,fired-time (current-time-milliseconds))
-               (,saved-last-fired ,last-fired)
-               (,results nil))
-           (when (> (- ,fired-time ,saved-last-fired)
-                    ,debounce-minimum-delay)
-             (setf ,results (progn ,@body)))
-           (setf ,last-fired ,fired-time)
-           ,results)))))
+(defun parse-lambda-debouce-body (body)
+  (let* ((declaration-position (position-if (lambda (a)
+                                              (and (listp a)
+                                                   (eq (first a) 'declare)))
+                                            body))
+         (declarations         (and declaration-position
+                                    (subseq body 0 (1+ declaration-position))))
+         (actual-body          (if declaration-position
+                                   (subseq body (1+ declaration-position))
+                                   body)))
+    (values declarations actual-body)))
+
+(defmacro lambda-debounce (args &body body)
+  (multiple-value-bind (declarations actual-body)
+      (parse-lambda-debouce-body body)
+    (a:with-gensyms (last-fired saved-last-fired fired-time results debounce-minimum-delay)
+      `(let ((,last-fired (current-time-milliseconds))
+             (,debounce-minimum-delay *debounce-minimum-delay*))
+         (lambda ,args
+           ,@declarations
+           (let ((,fired-time (current-time-milliseconds))
+                 (,saved-last-fired ,last-fired)
+                 (,results nil))
+             (when (> (- ,fired-time ,saved-last-fired)
+                      ,debounce-minimum-delay)
+               (setf ,results (progn ,@actual-body)))
+             (setf ,last-fired ,fired-time)
+             ,results))))))
 
 (defparameter *lambda-frequency* 120
   "milliseconds")
 
-(defmacro lambda-fixed-frequency (args (&rest declarations) &body body)
-  (a:with-gensyms (last-fired saved-last-fired fired-time results lambda-frequency)
-    `(let ((,last-fired (current-time-milliseconds))
-           (,lambda-frequency *lambda-frequency*))
-       (lambda ,args
-         ,declarations
-         (let ((,fired-time (current-time-milliseconds))
-               (,saved-last-fired ,last-fired)
-               (,results nil))
-           (when (> (- ,fired-time ,saved-last-fired)
-                    ,lambda-frequency)
-             (setf ,results (progn ,@body))
-             (setf ,last-fired ,fired-time))
-           ,results)))))
+(defmacro lambda-fixed-frequency (args &body body)
+  (multiple-value-bind (declarations actual-body)
+      (parse-lambda-debouce-body body)
+    (a:with-gensyms (last-fired saved-last-fired fired-time results lambda-frequency)
+      `(let ((,last-fired (current-time-milliseconds))
+             (,lambda-frequency *lambda-frequency*))
+         (lambda ,args
+           ,@declarations
+           (let ((,fired-time (current-time-milliseconds))
+                 (,saved-last-fired ,last-fired)
+                 (,results nil))
+             (when (> (- ,fired-time ,saved-last-fired)
+                      ,lambda-frequency)
+               (setf ,results (progn ,@actual-body))
+               (setf ,last-fired ,fired-time))
+             ,results))))))
 
 (defun add-event-alias (virtual-event &rest events)
   (assert events)
