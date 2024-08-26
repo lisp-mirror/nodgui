@@ -748,7 +748,10 @@
                                             (e:mass player))
                  (setf (e:velocity player) v-player)
                  (setf (e:velocity asteroid) v-asteroid)
-                 (return-from check-damaged-player t)))))
+                 (return-from check-damaged-player t)))
+    (when (aabb2:aabb2-intersect-p (e:aabb player)
+                                   (e:aabb ufo))
+      (player-damage world player))))
 
 (defmethod e:calculate ((object world) world dt)
   (declare (ignore world))
