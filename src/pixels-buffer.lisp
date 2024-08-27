@@ -1553,7 +1553,7 @@
      t)
     ((= ray-y end-y)
      ;; if its y *is* equal to y of the ending segment add if the y of
-     ;; the next  segment lay  both on differents  half plane  wrt the
+     ;; the next  segment lay  both on different  half plane  wrt the
      ;; ray, add the intersection
      (and (not (= before-y start-y end-y))
           (or (and (> next-y ray-y)
@@ -1658,10 +1658,18 @@
       (loop for y fixnum from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1 do
         (let ((intersections (polygon-collect-intersections actual-vertices y)))
           (declare (dynamic-extent intersections))
-          (loop for (intersection-a intersection-b) fixnum on intersections by 'cddr do
-            (when (< intersection-a 0)
+          (loop for (intersection-a intersection-b) on intersections by 'cddr
+                ;; notes that, in principle the number of intersection
+                ;; of  ray with  a  polygon is  always  even, so  this
+                ;; checks shuld not exists. :( but i found some corner
+                ;; case where the algorith i  worte fails and this patch
+                ;; prevents    crash    or   artifacts.    The    same
+                ;; considerations apply for texture mapped polygons.
+                when intersection-b
+                do
+            (when (< (the fixnum intersection-a) 0)
               (setf intersection-a 0))
-            (when (> intersection-b width)
+            (when (> (the fixnum intersection-b) width)
               (setf intersection-b width))
             (loop for pixel-x fixnum
                   from intersection-a below intersection-b
@@ -1764,6 +1772,7 @@
              (let ((intersections (polygon-collect-intersections-texture actual-vertices texels y)))
                (declare (dynamic-extent intersections))
                (loop for (intersection-a intersection-b) on intersections by 'cddr
+                     when intersection-b
                      do
                         (let* ((start-vertex-a   (polygon-intersection-start-vertex intersection-a))
                                (end-vertex-a     (polygon-intersection-end-vertex intersection-a))

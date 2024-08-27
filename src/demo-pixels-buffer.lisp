@@ -1092,6 +1092,23 @@
                          (vec2:vec2 400 450))))
     (px:make-polygon-vertex-array vertices)))
 
+(defun make-buggy-polygon ()
+  (let* ((vertices  (list (vec2:vec2 187 197)
+                          (vec2:vec2 188 221)
+                          (vec2:vec2 167 231)
+                          (vec2:vec2 152 242)
+                          (vec2:vec2 131 248)
+                          (vec2:vec2 111 238)
+                          (vec2:vec2 108 214)
+                          (vec2:vec2 103 197)
+                          (vec2:vec2 102 177)
+                          (vec2:vec2 106 150)
+                          (vec2:vec2 132 150)
+                          (vec2:vec2 152 150)
+                          (vec2:vec2 173 156)
+                          (vec2:vec2 183 176))))
+    (px:make-polygon-vertex-array vertices)))
+
 (defun demo-pixel-buffer ()
   (px:init-font-system)
   (let* ((sdl-context      nil)
@@ -1174,6 +1191,11 @@
                                                             context-width
                                                             context-height
                                                             (make-bulky-polygon)
+                                                            polygon-color)
+                                           (px:draw-polygon context-buffer
+                                                            context-width
+                                                            context-height
+                                                            (make-buggy-polygon)
                                                             polygon-color))
                                          (let ((px:*blending-function* (px:make-blending-fn-replace-with-transparent-color 0 0 0)))
                                            (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
