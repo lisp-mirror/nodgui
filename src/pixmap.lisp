@@ -26,6 +26,7 @@
 
 (define-constant +targa-stream-element-type+ '(unsigned-byte 8) :test 'equalp)
 
+#-nodgui-lite
 (define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
 
 (defun buffer-sizes->static-vector-size (width height)
@@ -938,6 +939,7 @@ from file: 'file'"
     (vector-push-extend #x0 results)
     results)))
 
+#-nodgui-lite
 (defclass jpeg (pixmap-file)
   ()
   (:documentation "A pixmap stored in JPG format"))
@@ -965,6 +967,7 @@ from file: 'file'"
       (sync-data-to-bits pixmap)
       pixmap)))
 
+#-nodgui-lite
 (defmethod pixmap-load ((object jpeg) (file string))
   (with-accessors ((data   data)
                    (width  width)
@@ -975,6 +978,7 @@ from file: 'file'"
         (let ((uncompressed-data (jpeg-turbo:decompress jpeg-handle file)))
           (fill-bits-rgb object uncompressed-data image-w image-h))))))
 
+#-nodgui-lite
 (defmethod load-from-stream ((object jpeg) (stream stream))
   (with-accessors ((data   data)
                    (width  width)
@@ -982,6 +986,7 @@ from file: 'file'"
     (let ((raw-data (slurp-stream-into-array stream)))
       (load-from-vector object raw-data))))
 
+#-nodgui-lite
 (defmethod load-from-vector ((object jpeg) (stream vector))
   (with-accessors ((data   data)
                    (width  width)
@@ -992,6 +997,7 @@ from file: 'file'"
         (let ((uncompressed-data (jpeg-turbo:decompress-from-octets jpeg-handle stream)))
           (fill-bits-rgb object uncompressed-data image-w image-h))))))
 
+#-nodgui-lite
 (defmethod save-pixmap ((object jpeg) path)
   "Save bitmap in JPG bitmap format"
   (with-accessors ((bits bits)
@@ -1001,6 +1007,7 @@ from file: 'file'"
       (jpeg-turbo:compress jpeg-handle path bits width height :rgba))
     object))
 
+#-nodgui-lite
 (defmethod save-pixmap ((object jpeg) (path stream))
   "Save bitmap in JPG bitmap format"
   (with-accessors ((bits bits)

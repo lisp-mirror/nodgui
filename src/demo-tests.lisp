@@ -167,14 +167,17 @@
                                                      :text "Paned windows"
                                                      :command (lambda ()
                                                                 (demo-paned-window))))
+           #-nodgui-lite
            (demo-animation            (make-instance 'button
                                                      :text "Pixels buffer window (animations)"
                                                      :command (lambda ()
                                                                 (demo-pixel-buffer-animation))))
+           #-nodgui-lite
            (demo-pixel-buffer         (make-instance 'button
                                                      :text "Pixels buffer window (blocking)"
                                                      :command (lambda ()
                                                                 (demo-pixel-buffer))))
+           #-nodgui-lite
            (demo-3d                   (make-instance 'button
                                                      :text "3D rendering demo"
                                                      :command (lambda ()
@@ -230,8 +233,11 @@
       (grid demo-autocomplete-entry  12 0 :sticky :nswe)
       (grid demo-multifont-listbox   12 1 :sticky :nswe)
       (grid demo-paned-window        12 2 :sticky :nswe)
+      #-nodgui-lite
       (grid demo-animation           13 0 :sticky :nswe)
+      #-nodgui-lite
       (grid demo-pixel-buffer        13 1 :sticky :nswe)
+      #-nodgui-lite
       (grid demo-3d                  13 2 :sticky :nswe)
       (grid demo-virtual-event       14 0 :sticky :nswe)
       (grid demo-virtual-event-alias 14 1 :sticky :nswe)
@@ -978,16 +984,24 @@
     (let ((b (make-instance 'button :text "load image")))
       (setf (command b)
             #'(lambda ()
-                (let ((file (get-open-file :file-types '(("JPG"     "*.jpg")
+                (let ((file (get-open-file :file-types '(#-nodgui-lite
+                                                         ("JPG"     "*.jpg")
                                                          ("PNG"     "*.png")
                                                          ("TGA"     "*.tga")
                                                          ("RGB raw" "*.data")))))
                   (cond
                     ((cl-ppcre:scan "jpg$" file)
+                     #-nodgui-lite
                      (let ((bitmap (nodgui.pixmap:scale-bilinear
                                      (nodgui.pixmap:slurp-pixmap 'nodgui.pixmap:jpeg file)
                                      0.1 0.1)))
-                       (setf (image b) (make-image bitmap))))
+                       (setf (image b) (make-image bitmap)))
+                     #+nodgui-lite
+                     (message-box "jpeg format not supported by lite version of nodgui"
+                                  "info"
+                                  +message-box-type-ok+
+                                  +message-box-icon-info+
+                                  :parent (root-toplevel)))
                     ((cl-ppcre:scan "tga$" file)
                      (let ((bitmap (nodgui.pixmap:rotate-pixmap
                                     (nodgui.pixmap:scale-bilinear
