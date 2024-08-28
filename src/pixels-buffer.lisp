@@ -1643,7 +1643,7 @@
        vertices))
 
 (defun draw-polygon (buffer width height vertices color)
-  "Note: vertices must be presented in clockwise order."
+  "Note: vertices must be presented in counterclockwise order."
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum width))
   (declare ((simple-array vec2:vec2) vertices))
@@ -1666,16 +1666,16 @@
                 ;; prevents    crash    or   artifacts.    The    same
                 ;; considerations apply for texture mapped polygons.
                 when intersection-b
-                do
-            (when (< (the fixnum intersection-a) 0)
-              (setf intersection-a 0))
-            (when (> (the fixnum intersection-b) width)
-              (setf intersection-b width))
-            (loop for pixel-x fixnum
-                  from intersection-a below intersection-b
-                  by 1
                   do
-                     (combine-pixel-colors buffer width color pixel-x y))))))))
+                     (when (< (the fixnum intersection-a) 0)
+                       (setf intersection-a 0))
+                     (when (> (the fixnum intersection-b) width)
+                       (setf intersection-b width))
+                     (loop for pixel-x fixnum
+                           from intersection-a below intersection-b
+                           by 1
+                           do
+                              (combine-pixel-colors buffer width color pixel-x y))))))))
 
 (defun polygon-collect-intersections-texture (vertices texels ray-y)
   (declare ((simple-array vec2:uivec2) vertices))
