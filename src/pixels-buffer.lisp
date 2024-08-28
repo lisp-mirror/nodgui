@@ -1930,18 +1930,18 @@
   (declare (to::desired-type translate-x translate-y rotation scaling-row scaling-column))
   (declare (function *blending-function*))
   #.nodgui.config:default-optimization
-  (let* ((tex-top-left-s            (to:d/ (to:d source-column)
+  (let* ((tex-bottom-left-s         (to:d/ (to:d source-column)
                                            (to:d buffer-source-width)))
-         (tex-top-left-t            (to:d/ (to:d source-row)
+         (tex-bottom-left-t         (to:d/ (to:d source-row)
                                            (to:d buffer-source-height)))
-         (tex-bottom-right-s        (to:d/ (to:d source-last-column)
+         (tex-top-right-s           (to:d/ (to:d source-last-column)
                                            (to:d buffer-source-width)))
-         (tex-bottom-right-t        (to:d/ (to:d source-last-row)
+         (tex-top-right-t           (to:d/ (to:d source-last-row)
                                            (to:d buffer-source-height)))
-         (texture-init-coordinates  (list (vec2:vec2-insecure tex-top-left-s tex-top-left-t)
-                                          (vec2:vec2-insecure tex-bottom-right-s tex-top-left-t)
-                                          (vec2:vec2-insecure tex-bottom-right-s tex-bottom-right-t)
-                                          (vec2:vec2-insecure tex-top-left-s tex-bottom-right-t)))
+         (texture-init-coordinates  (list (vec2:vec2-insecure tex-bottom-left-s tex-bottom-left-t)
+                                          (vec2:vec2-insecure tex-top-right-s tex-bottom-left-t)
+                                          (vec2:vec2-insecure tex-top-right-s tex-top-right-t)
+                                          (vec2:vec2-insecure tex-bottom-left-s tex-top-right-t)))
          (texture-coordinates       (make-polygon-texture-coordinates-array texture-init-coordinates))
          (polygon-width             (to:d (to:f- source-last-column source-column)))
          (polygon-height            (to:d (to:f- source-last-row source-row)))
@@ -1981,10 +1981,10 @@
                                                      (to:d* polygon-height/2 scaling-row))))
                                            vertices-init-coordinates))
          (vertices                 (make-polygon-vertex-array transformed-vertices)))
-    (declare (dynamic-extent tex-top-left-s
-                             tex-top-left-t
-                             tex-bottom-right-s
-                             tex-bottom-right-t
+    (declare (dynamic-extent tex-bottom-left-s
+                             tex-bottom-left-t
+                             tex-top-right-s
+                             tex-top-right-t
                              texture-init-coordinates
                              texture-coordinates
                              polygon-width
