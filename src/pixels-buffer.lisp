@@ -1948,13 +1948,13 @@
          (polygon-width/2           (to:d/ polygon-width 2f0))
          (polygon-height/2          (to:d/ polygon-height 2f0))
          (vertices-init-coordinates (list (vec2:vec2-insecure (to:d- polygon-width/2)
-                                                     (to:d- polygon-height/2))
+                                                              (to:d- polygon-height/2))
                                           (vec2:vec2-insecure polygon-width/2
-                                                     (to:d- polygon-height/2))
+                                                              (to:d- polygon-height/2))
                                           (vec2:vec2-insecure polygon-width/2
-                                                     polygon-height/2)
+                                                              polygon-height/2)
                                           (vec2:vec2-insecure (to:d- polygon-width/2)
-                                                     polygon-height/2)))
+                                                              polygon-height/2)))
          (scaling                  (vec2:vec2-insecure scaling-column scaling-row))
          (pivot-x                  (to:d- (to:d pivot-column)
                                           polygon-width/2))
@@ -2011,9 +2011,9 @@
              (let* ((wrapped-s (texture-border-wrap s-tex))
                     (wrapped-t (texture-border-wrap t-tex))
                     (texture-x (ceiling (to:d* wrapped-s
-                                                (1- texture-width))))
+                                               (1- texture-width))))
                     (texture-y (ceiling (to:d* wrapped-t
-                                                (1- texture-height))))
+                                               (1- texture-height))))
                     (color-source       (pixel@ texture
                                                 (truncate texture-width)
                                                 texture-x texture-y))
