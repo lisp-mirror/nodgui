@@ -169,8 +169,7 @@ outline-width: the width in pixel of the outline of this polygon"
                 for angle from 0.0 downto -1000.0 by inc collect
                   (let* ((rotated (vec2-rotate dir     angle))
                          (scaled  (vec2*       rotated (vec2-length start))))
-                    (vector (round (vec2-x scaled))
-                            (round (vec2-y scaled)))))))
+                    scaled))))
          (slice (seq num)
            (subseq seq 0 num)))
     (let* ((corners-num    (if (or draw-left-half
@@ -191,7 +190,7 @@ outline-width: the width in pixel of the outline of this polygon"
                                                 (* 2 corners)))))
            (inner-points   (make-points inner-start corners))
            (points         (alexandria:flatten (mapcar #'list
-                                                       (slice inner-points corners-num )
+                                                       (slice inner-points corners-num)
                                                        (slice ext-points   corners-num)))))
       (when (and (or draw-left-half
                      draw-right-half)
