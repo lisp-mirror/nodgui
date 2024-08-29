@@ -1,7 +1,15 @@
-* 2024-08-25 Version 0.7.0.3
- fixed 'lambda-debounce' and 'lambda-fixed-frequency'
+* 2024-08-29 Version 0.7.0.4
+ - [new feature]
+   - Added nodgui-lite system definition file.
+ - [bugfix]
+   - fixed polygon rendering;
+   - [game] ensured the UFO destroy player's ship when they crash;
+   - fixed crash in tk canvas demo.
 
- After the latest modifications those macros worked only if there was a declaration in the function's body.
+* 2024-08-25 Version 0.7.0.3
+ - [bugfix]
+   - fixed 'lambda-debounce' and 'lambda-fixed-frequency'
+     After the latest modifications those macros worked only if there was a declaration in the function's body.
 
 * 2024-04-28 Version 0.7.0.0
  - [new feature]

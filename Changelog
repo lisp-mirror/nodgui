@@ -1,10 +1,50 @@
+2024-08-29 cage
+
+	* src/pixels-buffer.lisp:
+
+	- removed patch for polygon rasterizing procedures;
+	see: 7ad3e311494538a86990dbc2717d36df0c03b0e5
+
+2024-08-28 cage
+
+	* nodgui-lite.asd,
+	* src/canvas-shapes.lisp,
+	* src/demo-tests.lisp,
+	* src/pixels-buffer.lisp,
+	* src/pixmap.lisp:
+
+	- fixed indentation;
+	- fixed docstring.
+	- fixed indentation.
+	- changed variable name.
+	- fixed type of calculated star's vertices.
+	- added system 'nodgui-lite'.
+
+2024-08-27 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- patched polygons rendering.
+
+2024-08-26 cage
+
+	* game/world.lisp:
+
+	- [game] ensured the UFO destroy player's ship when they crash
+
 2024-08-25 cage
 
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
 	* src/events.lisp:
 
 	- fixed 'lambda-debounce' and 'lambda-fixed-frequency'
 	After the latest modifications those macros worked only if there was a
 	declaration in the function's body.
+	- increased version number;
+	- updated changelog and news files.
 
 2024-08-23 cage
 
