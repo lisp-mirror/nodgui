@@ -1544,9 +1544,9 @@
                         y-intersection)
                      slope)))))
 
-(defun add-intersection-p (ray-y start-y end-y next-y before-y)
+(defun add-intersection-p (ray-y start-y end-y next-y)
   #.nodgui.config:default-optimization
-  (declare (fixnum ray-y start-y end-y next-y before-y))
+  (declare (fixnum ray-y start-y end-y next-y))
   (cond
     ((and (/= ray-y end-y)
           (/= ray-y start-y))
@@ -1555,11 +1555,10 @@
      ;; if its y *is* equal to y of the ending segment add if the y of
      ;; the next  segment lay  both on different  half plane  wrt the
      ;; ray, add the intersection
-     (and (not (= before-y start-y end-y))
-          (or (and (> next-y ray-y)
-                   (<=  start-y ray-y))
-              (and (<= next-y ray-y)
-                   (> start-y ray-y)))))
+     (or (and (> next-y ray-y)
+              (<=  start-y ray-y))
+         (and (<= next-y ray-y)
+              (> start-y ray-y))))
     (t
      nil)))
 
@@ -1584,18 +1583,14 @@
                                                  vertices-length)))
              (next-segment   (aref vertices (rem (+ 2 offset)
                                                  vertices-length)))
-             (before-segment (aref vertices (rem (+ (1- offset)
-                                                    vertices-length)
-                                                 vertices-length)))
              (start-x        (vec2:uivec2-x start-segment))
              (start-y        (vec2:uivec2-y start-segment))
              (end-x          (vec2:uivec2-x end-segment))
              (end-y          (vec2:uivec2-y end-segment))
-             (next-y         (vec2:uivec2-y next-segment))
-             (before-y       (vec2:uivec2-y before-segment)))
-        (declare (fixnum start-x start-y end-x end-y next-y before-y))
+             (next-y         (vec2:uivec2-y next-segment)))
+        (declare (fixnum start-x start-y end-x end-y next-y))
         (declare (dynamic-extent start-segment end-segment
-                                 start-x start-y end-x end-y next-y before-y))
+                                 start-x start-y end-x end-y next-y))
         ;; discard if ray does not intersects segment
         (when (exists-intersection-with-segment-p ray-y start-y end-y)
           (let ((intersection (polygon-calculate-intersection ray-y
@@ -1604,7 +1599,7 @@
                                                               end-x
                                                               end-y)))
             ;; add intersection
-            (when (add-intersection-p ray-y start-y end-y next-y before-y)
+            (when (add-intersection-p ray-y start-y end-y next-y)
               (push intersection intersections))))))
     (sort intersections #'<)))
 
@@ -1658,24 +1653,17 @@
       (loop for y fixnum from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1 do
         (let ((intersections (polygon-collect-intersections actual-vertices y)))
           (declare (dynamic-extent intersections))
-          (loop for (intersection-a intersection-b) on intersections by 'cddr
-                ;; notes that, in principle the number of intersection
-                ;; of  ray with  a  polygon is  always  even, so  this
-                ;; checks shuld not exists. :( but i found some corner
-                ;; case where the algorith i  worte fails and this patch
-                ;; prevents    crash    or   artifacts.    The    same
-                ;; considerations apply for texture mapped polygons.
-                when intersection-b
-                  do
-                     (when (< (the fixnum intersection-a) 0)
-                       (setf intersection-a 0))
-                     (when (> (the fixnum intersection-b) width)
-                       (setf intersection-b width))
-                     (loop for pixel-x fixnum
-                           from intersection-a below intersection-b
-                           by 1
-                           do
-                              (combine-pixel-colors buffer width color pixel-x y))))))))
+          (loop for (intersection-a intersection-b) fixnum  on intersections by 'cddr
+                do
+                   (when (< (the fixnum intersection-a) 0)
+                     (setf intersection-a 0))
+                   (when (> (the fixnum intersection-b) width)
+                     (setf intersection-b width))
+                   (loop for pixel-x fixnum
+                         from intersection-a below intersection-b
+                         by 1
+                         do
+                            (combine-pixel-colors buffer width color pixel-x y))))))))
 
 (defun polygon-collect-intersections-texture (vertices texels ray-y)
   (declare ((simple-array vec2:uivec2) vertices))
@@ -1692,9 +1680,6 @@
                                                 vertices-length)))
              (next-segment  (aref vertices (rem (+ 2 offset)
                                                 vertices-length)))
-             (before-segment (aref vertices (rem (+ (1- offset)
-                                                    vertices-length)
-                                                 vertices-length)))
              (start-texel   (aref texels offset))
              (end-texel     (aref texels (rem (1+ offset)
                                               texels-length)))
@@ -1702,13 +1687,12 @@
              (start-y       (vec2:uivec2-y start-segment))
              (end-x         (vec2:uivec2-x end-segment))
              (end-y         (vec2:uivec2-y end-segment))
-             (next-y        (vec2:uivec2-y next-segment))
-             (before-y      (vec2:uivec2-y before-segment)))
-        (declare (fixnum start-x start-y end-x end-y next-y before-y))
+             (next-y        (vec2:uivec2-y next-segment)))
+        (declare (fixnum start-x start-y end-x end-y next-y))
         (declare (dynamic-extent start-segment end-segment
                                  start-x start-y
                                  end-x end-y
-                                 next-y before-y))
+                                 next-y))
         ;; discard if ray does not intersects segment
         (when (exists-intersection-with-segment-p ray-y start-y end-y)
           (let ((intersection (polygon-calculate-intersection ray-y
@@ -1717,7 +1701,7 @@
                                                               end-x
                                                               end-y)))
             ;; add intersection
-            (when (add-intersection-p ray-y start-y end-y next-y before-y)
+            (when (add-intersection-p ray-y start-y end-y next-y)
               (push (make-polygon-intersection :point        intersection
                                                :start-vertex start-segment
                                                :end-vertex   end-segment
@@ -1771,8 +1755,7 @@
           do
              (let ((intersections (polygon-collect-intersections-texture actual-vertices texels y)))
                (declare (dynamic-extent intersections))
-               (loop for (intersection-a intersection-b) on intersections by 'cddr
-                     when intersection-b do
+               (loop for (intersection-a intersection-b) on intersections by 'cddr do
                        (let* ((start-vertex-a   (polygon-intersection-start-vertex intersection-a))
                               (end-vertex-a     (polygon-intersection-end-vertex intersection-a))
                               (start-vertex-b   (polygon-intersection-start-vertex intersection-b))
