@@ -107,6 +107,7 @@
            #:trim
            #:camel-case->snail-case
            #:make-adjustable-string
+           #:make-string-buffer
            #:encode-base-52
            #:split-sequence
            #:split-words

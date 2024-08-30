@@ -153,6 +153,8 @@
 
 (pushnew :nodgui *features*)
 
+(pushnew :optimize-nodgui *features*)
+
 ;; (pushnew :debug-game *features*)
 
-(pushnew :optimize-nodgui *features*)
+;; (pushnew :suppress-debug-messages *features*)

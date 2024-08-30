@@ -157,7 +157,11 @@
 
 (defparameter *buffer-for-atomic-output* nil)
 
-(defun dbg (fmt &rest args)
+(definline dbg (fmt &rest args)
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (ignorable fmt args))
+  #-suppress-debug-messages
   (when *debug-tk*
     (apply #'format *trace-output* fmt args)
     (format *trace-output* "~%")
@@ -331,14 +335,19 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
 (defparameter *max-line-length* 1000)
 
 (defun flush-wish ()
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (with-lock-held ((wish-flush-lock *wish*))
     (let ((buffer (nreverse (wish-output-buffer *wish*))))
+      (declare (list buffer))
       (when buffer
-        (let ((len (loop for s in buffer summing (length s)))
-              (*print-pretty* nil)
+        (let ((*print-pretty* nil)
+              (len    (loop for s string in buffer summing (length s)))
               (stream (wish-stream *wish*)))
+          (declare (dynamic-extent len))
+          (declare (fixnum len))
           (declare (stream stream))
-          (incf len (length buffer))
+          (incf len (the fixnum (length buffer)))
           (setf (wish-output-buffer *wish*) nil)
           (handler-bind ((stream-error (lambda (e) (handle-dead-stream e stream)))
                          #+lispworks
@@ -349,7 +358,9 @@ the data (see the TCL proc: 'callbacks_validatecommand' in tcl-glue-code.lisp)"
                          *debug-tk*)
                  (dbg "buffer size ~a~%" len))
                (dolist (string buffer)
-                 (loop while (> (length string) *max-line-length*)
+                 (declare (string string))
+                 (loop while (> (length string)
+                                (the fixnum *max-line-length*))
                     do
                       (let ((sub (subseq string 0 *max-line-length*)))
                         (setf string (subseq string *max-line-length*))

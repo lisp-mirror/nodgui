@@ -104,12 +104,23 @@
           (string-downcase res)
           res))))
 
-(defun make-adjustable-string (&optional (string ""))
-  (make-array (length string)
+(defun make-adjustable-string (&optional (string "") (fill-pointer t))
+  (if string
+      (make-array (length string)
+                  :element-type     'character
+                  :initial-contents string
+                  :adjustable       t
+                  :fill-pointer     fill-pointer)
+      (make-array 512
+                  :element-type     'character
+                  :adjustable       t
+                  :fill-pointer     0)))
+
+(defun make-string-buffer (&optional (size 128))
+  (make-array size
               :element-type     'character
-              :initial-contents string
               :adjustable       t
-              :fill-pointer     t))
+              :fill-pointer     0))
 
 (defun to-stderr (control &rest things)
    (apply #'format (append (list *error-output* (strcat "[DEBUG] " control "~%"))

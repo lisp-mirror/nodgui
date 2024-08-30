@@ -19,15 +19,21 @@
 (defun escape-~ (text)
   (cl-ppcre:regex-replace-all "~" text "~~"))
 
-(defun %tkescape (text escapable-chars)
-  (unless (stringp text)
-    (setf text (format nil "~a" text)))
-  (loop with result = (make-adjustable-string)
-     for c across text do
-       (when (member c escapable-chars)
-         (vector-push-extend #\\ result))
-       (vector-push-extend c result)
-     finally (return result)))
+(defgeneric %tkescape (object escapable-chars))
+
+(defgeneric %tkescape (object escapable-chars))
+
+(defmethod %tkescape ((object simple-string) (escapable-chars list))
+  #.nodgui.config:default-optimization
+  (loop with result = (make-string-buffer)
+        for c across object do
+          (when (member c escapable-chars)
+            (vector-push-extend #\\ result))
+          (vector-push-extend c result)
+        finally (return result)))
+
+(defmethod %tkescape (object (escapable-chars list))
+  (%tkescape (format nil "~a" object) escapable-chars))
 
 ;; Much faster version. For one test run it takes 2 seconds, where the
 ;; other implementation requires 38 minutes.
