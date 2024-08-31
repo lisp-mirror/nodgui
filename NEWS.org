@@ -1,3 +1,11 @@
+* 2024-08-31 Version 0.7.0.5
+ - [new feature]
+   - Added 'draw-spline' for pixel buffer widget.
+ - [bugfix]
+   - fixed double free on string rendering.
+ - [improvements]
+   - optimized 'flush-wish'.
+
 * 2024-08-29 Version 0.7.0.4
  - [new feature]
    - Added nodgui-lite system definition file.

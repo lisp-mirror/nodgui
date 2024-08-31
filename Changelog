@@ -1,9 +1,41 @@
+2024-08-31 cage
+
+	* game/entities.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/utils.lisp,
+	* src/vec2.lisp,
+	* src/wish-communication.lisp:
+
+	- added 'draw-spline' for pixels buffer canvas;
+	- commented out freeing of surface created by ttf rendering (the
+	surface is already freed by sdl-ttf);
+	- ensure utils package does not use alexandria package, uses
+	local-nickname instead.
+
+2024-08-30 cage
+
+	* nodgui.asd,
+	* src/package.lisp,
+	* src/sanitize.lisp,
+	* src/utils.lisp,
+	* src/wish-communication.lisp:
+
+	- optimized a bit 'flush-wish'.
+
 2024-08-29 cage
 
+	* Changelog,
+	* NEWS.org,
+	* nodgui-lite.asd,
+	* nodgui.asd,
 	* src/pixels-buffer.lisp:
 
 	- removed patch for polygon rasterizing procedures;
 	see: 7ad3e311494538a86990dbc2717d36df0c03b0e5
+	- updated changelog and news.
+	- increased version number.
 
 2024-08-28 cage
 
