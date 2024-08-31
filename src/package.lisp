@@ -89,8 +89,9 @@
 
 (defpackage :nodgui.utils
   (:use :cl
-        :alexandria
         :cl-ppcre)
+  (:local-nicknames (:a  :alexandria)
+                    (:to :nodgui.typed-operations))
   (:export #:to-stderr
            #:format-fn-symbol
            #:format-keyword
@@ -294,7 +295,8 @@
    #:uivec2=
    #:uivec2+
    #:uivec2-
-   #:uivec2-negate))
+   #:uivec2-negate
+   #:db-interpolation))
 
 (defpackage :nodgui.vec3
   (:use
@@ -1535,7 +1537,8 @@
    #:height
    #:cell-width
    #:cell-height
-   #:blit-cell))
+   #:blit-cell
+   #:draw-spline))
 
 (defpackage nodgui.opengl-frame
   (:use :cl)

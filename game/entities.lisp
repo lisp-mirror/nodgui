@@ -724,61 +724,6 @@
   (and (> (hitpoints object) 0)
        (call-next-method)))
 
-;;;; De Boor
-;;;; "A Pratical Guide to Splines" 2001,  p. 90
-
-(defun db-knot@ (knots i)
-  (elt knots (- i 1)))
-
-(defun db-w (x i k knots)
-  (let ((t-i     (db-knot@ knots i))
-        (t-i+k-1 (db-knot@ knots (+ i k -1))))
-    (if (= t-i+k-1 t-i)
-        0.0
-        (/ (- x t-i)
-           (- t-i+k-1 t-i)))))
-
-(defun db-bpol (x i k knots)
-  (let ((t-i   (db-knot@ knots i))
-        (t-i+1 (db-knot@ knots (+ i 1))))
-    (if (= k 1)
-        (if (and (>= x t-i)
-                 (<  x t-i+1))
-            1.0
-            0.0)
-        (let ((w1 (db-w x    i    k knots))
-              (w2 (db-w x (+ i 1) k knots)))
-          (+ (* w1 (db-bpol x    i    (- k 1) knots))
-             (* (- 1 w2) (db-bpol x (+ i 1) (- k 1) knots)))))))
-
-(defun db-build-knots (control-points k)
-  (loop for i from 0 below (+ (length control-points) k) collect i))
-
-(defun db-limits (control-points degree)
-  (values degree
-          (length control-points)))
-
-(defun db-interpolation (control-points &key (degree 3) (pad-control-points t))
-  (let* ((k          (1+ degree))
-         (actual-cps (if pad-control-points
-                         (append (loop repeat degree collect
-                                      (alexandria:first-elt control-points))
-                                 control-points
-                                 (loop repeat degree collect
-                                      (alexandria:last-elt control-points)))
-                         control-points))
-         (length-cp (length actual-cps))
-         (knots     (db-build-knots actual-cps k)))
-    (multiple-value-bind (from to)
-        (db-limits actual-cps degree)
-      (values (lambda (s)
-                (let ((sum-elem (loop for j from 1 to length-cp
-                                      collect
-                                      (vec2:vec2* (elt actual-cps (1- j))
-                                                  (db-bpol s j k knots)))))
-                  (reduce #'vec2:vec2+ sum-elem :initial-value vec2:+vec2-zero+)))
-              from to))))
-
 (defun make-ufo-trajectory (world ufo-w ufo-h number-of-control-points &optional (speed 0.01))
   (let* ((width          (world:width  world))
          (height         (world:height world))
@@ -798,7 +743,7 @@
       (push (end-point) control-points)
       (setf control-points (nreverse control-points))
       (multiple-value-bind (interpolator start end)
-          (db-interpolation control-points)
+          (vec2:db-interpolation control-points)
         (lambda ()
           (if (< start end)
               (prog1

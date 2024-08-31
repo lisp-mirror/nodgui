@@ -2023,7 +2023,7 @@
                                       (to:d buffer-source-height))))))
 
 (defun create-new-buffer-with-text (text font r g b a)
-  "This functionc creates a heap allocated buffer that need to be freed after use using `nodgui.pixmap:free-buffer-memory'."
+  "This function creates an, heap allocated, buffer that need to be freed after use using `nodgui.pixmap:free-buffer-memory'."
   #.nodgui.config:default-optimization
   (let* ((surface        (sdl2-ttf:render-utf8-blended font text r g b a))
          (pixels         (sdl2:surface-pixels surface))
@@ -2049,7 +2049,9 @@
                  (source-color (pix:assemble-color r g b alpha)))
             (declare (dynamic-extent raw-pixel alpha))
             (setf (elt buffer index) source-color)))
-        (sdl2:free-surface surface)
+        ;; no need to free the surface, is already callde bu sdl-ttf see macro:
+        ;; define-render-function
+        ;; (sdl2:free-surface surface)
         (values buffer surface-pixels-width buffer-height)))))
 
 (defun draw-text (buffer buffer-width buffer-height text font x y r g b a)
@@ -2162,3 +2164,32 @@
             column-destination
             source-last-row
             source-last-column))))
+
+(defun draw-spline (control-points
+                    buffer buffer-width buffer-height
+                    r g b &optional (alpha 255) (spline-granularity 0.1f0))
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (list control-points))
+  (declare (to::desired-type spline-granularity))
+  (declare (fixnum buffer-width buffer-height))
+  (declare ((unsigned-byte 8) r g b alpha))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (multiple-value-bind (interpolator start end)
+      (vec2:db-interpolation control-points)
+    (declare (function interpolator))
+    (declare (to::desired-type start end))
+    (do ((i start (to:d+ i spline-granularity)))
+        ((>= i (- end spline-granularity)))
+      (let ((start (funcall interpolator i))
+            (end   (funcall interpolator (+ i spline-granularity))))
+        (declare (vec2:vec2 start end))
+        (declare (dynamic-extent start end))
+        (draw-line buffer
+                   buffer-width
+                   buffer-height
+                   (truncate (vec2:vec2-x start))
+                   (truncate (vec2:vec2-y start))
+                   (truncate (vec2:vec2-x end))
+                   (truncate (vec2:vec2-y end))
+                   r g b alpha)))))

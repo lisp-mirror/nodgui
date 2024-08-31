@@ -16,7 +16,7 @@
 
 (in-package :nodgui.utils)
 
-(define-constant +base52-encode-table+
+(a:define-constant +base52-encode-table+
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
   :test #'string=)
 
@@ -29,11 +29,11 @@
   #-windows "/")
 
 (defmacro format-fn-symbol (package format &rest format-args)
-  `(alexandria:format-symbol ,package ,(concatenate 'string "~:@(" format "~)")
+  `(a:format-symbol ,package ,(concatenate 'string "~:@(" format "~)")
                              ,@format-args))
 
 (defun format-keyword (thing)
-  (alexandria:make-keyword (format nil "~:@(~a~)" thing)))
+  (a:make-keyword (format nil "~:@(~a~)" thing)))
 
 (defun to-s (v)
   (format nil "~a" v))
@@ -64,9 +64,9 @@
 (defun common-prefix (&rest strings)
   (let* ((prefix-count   0)
          (sorted-strings (sort strings #'(lambda (a b) (> (length a) (length b)))))
-         (pivot-string   (first-elt sorted-strings))
+         (pivot-string   (a:first-elt sorted-strings))
          (actual-strings (rest sorted-strings))
-         (res            (string (first-elt pivot-string))))
+         (res            (string (a:first-elt pivot-string))))
     (labels ((advance-res ()
                (incf prefix-count)
                (setf res (strcat res (string (elt pivot-string prefix-count)))))
@@ -213,7 +213,7 @@
                                           ((functionp el)
                                            (funcall el))
                                           ((arrayp el)
-                                           (alexandria:copy-array el))
+                                           (a:copy-array el))
                                           ((listp el)
                                            (copy-list el))
                                           (t
@@ -229,7 +229,7 @@
 
 (defun slurp-stream-into-array (stream)
   "Read all the octent from stream ad returns them as array"
-  (read-stream-content-into-byte-vector stream))
+  (a:read-stream-content-into-byte-vector stream))
 
 (defun file-exists-p (f)
   (uiop:file-exists-p f))
@@ -241,7 +241,7 @@
 (defun path-last-element (path)
   (let ((elements (split-path-elements path)))
     (and elements
-         (last-elt elements))))
+         (a:last-elt elements))))
 
 (defun directory-exists-p (d)
   (uiop:directory-exists-p d))
@@ -261,11 +261,11 @@
                (> (length path-splitted) 1))
       (do* ((path-rest (subseq path-splitted 0 (1- (length path-splitted))) (rest path-rest))
             (path-so-far "" (if (and path-rest
-                                     (not (string= "" (first-elt path-rest))))
+                                     (not (string= "" (a:first-elt path-rest))))
                                 (concatenate 'string
                                              path-so-far
                                              *directory-sep*
-                                             (first-elt path-rest)
+                                             (a:first-elt path-rest)
                                              *directory-sep*)
                                 path-so-far)))
            ((null path-rest))
@@ -290,13 +290,13 @@
   (declare (vector v))
   (= (length v) 0))
 
-(define-constant +png-magic-number+ #(#x89 #x50 #x4E #x47)             :test #'equalp)
+(a:define-constant +png-magic-number+ #(#x89 #x50 #x4E #x47)             :test #'equalp)
 
-(define-constant +gif89-magic-number+ #(#x47 #x49 #x46 #x38 #x39 #x61) :test #'equalp)
+(a:define-constant +gif89-magic-number+ #(#x47 #x49 #x46 #x38 #x39 #x61) :test #'equalp)
 
-(define-constant +gif87-magic-number+ #(#x47 #x49 #x46 #x38 #x37 #x61) :test #'equalp)
+(a:define-constant +gif87-magic-number+ #(#x47 #x49 #x46 #x38 #x37 #x61) :test #'equalp)
 
-(define-constant +jpeg-magic-number+ #(#xFF #xD8)                      :test #'equalp)
+(a:define-constant +jpeg-magic-number+ #(#xFF #xD8)                      :test #'equalp)
 
 (defun check-magic-number (data &rest magic-numbers)
   (let* ((size-magic-number (length (first magic-numbers))))
@@ -306,7 +306,7 @@
     nil))
 
 (defmacro gen-check-magic-number (name &rest magics)
-  (with-gensyms (stream data-from-file magic)
+  (a:with-gensyms (stream data-from-file magic)
     (let ((predicate-name (format-fn-symbol t "~ap" name))
           (file-test-name (format-fn-symbol t "file-~a-p" name)))
       `(progn
@@ -415,20 +415,20 @@
    `(progn
       ,@(loop for i in name-offset-size collect
              `(progn
-                (alexandria:define-constant
-                    ,(alexandria:format-symbol package "~@:(+~a-~a-offset+~)" prefix (first i))
+                (a:define-constant
+                    ,(a:format-symbol package "~@:(+~a-~a-offset+~)" prefix (first i))
                     ,(second i) :test #'=)
                 ,(when (= (length i) 3)
-                       `(alexandria:define-constant
-                            ,(alexandria:format-symbol package "~@:(+~a-~a-size+~)" prefix
+                       `(a:define-constant
+                            ,(a:format-symbol package "~@:(+~a-~a-size+~)" prefix
                                                        (first i))
                             ,(third i) :test #'=))))))
 
 (defmacro define-parse-header-chunk ((name offset size object &optional (slot name)))
-  (alexandria:with-gensyms (bytes)
+  (a:with-gensyms (bytes)
     `(progn
-       (defgeneric ,(alexandria:format-symbol t "PARSE-~:@(~a~)" name) (,object stream))
-       (defmethod ,(alexandria:format-symbol t "PARSE-~:@(~a~)" name) ((object ,object) stream)
+       (defgeneric ,(a:format-symbol t "PARSE-~:@(~a~)" name) (,object stream))
+       (defmethod ,(a:format-symbol t "PARSE-~:@(~a~)" name) ((object ,object) stream)
          (file-position stream ,offset)
          (let* ((,bytes (make-fresh-list ,size)))
            (read-sequence ,bytes stream)
@@ -448,7 +448,7 @@
     res))
 
 (defmacro gen-intn->bytes (bits)
-  (let ((function-name (alexandria:format-symbol t "~:@(int~a->bytes~)" bits)))
+  (let ((function-name (a:format-symbol t "~:@(int~a->bytes~)" bits)))
     `(defun ,function-name (val &optional (count 0) (res '()))
        (if (>= count ,(/ bits 8))
            (reverse res)
@@ -483,7 +483,7 @@
 (defun deg->rad (deg)
   (/ (* deg 2 pi) 360.0))
 
-(define-constant +valid-tcl-truth-values+ '("yes" "true") :test #'equalp)
+(a:define-constant +valid-tcl-truth-values+ '("yes" "true") :test #'equalp)
 
 (defun lisp-bool->tcl (val)
   (if val 1 0))
@@ -553,7 +553,7 @@
 (defparameter *thread-default-special-bindings* bt2:*default-special-bindings*)
 
 (defmacro definline (name arg &rest body)
-  (let* ((function-name (alexandria:format-symbol t "~:@(~a~)" name)))
+  (let* ((function-name (a:format-symbol t "~:@(~a~)" name)))
     `(progn
        (declaim (inline ,function-name))
        (defun ,function-name (,@arg) ,@body))))
@@ -594,7 +594,7 @@
   (bt2:thread-alive-p thread))
 
 (defmacro define-compiler-macro* (name &body args)
-  (with-gensyms (low-level-function-name)
+  (a:with-gensyms (low-level-function-name)
     `(progn
        (defun ,low-level-function-name (,@args)
          (,name ,@args))

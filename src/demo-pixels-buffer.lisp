@@ -1109,6 +1109,15 @@
                           (vec2:vec2 183 176))))
     (px:make-polygon-vertex-array vertices)))
 
+(defun spline-control-points ()
+  (list (vec2:vec2 -100 -100)
+        (vec2:vec2  300 -100)
+        (vec2:vec2    0    0)
+        (vec2:vec2  300   10)
+        (vec2:vec2   50   50)
+        (vec2:vec2   100  -100)
+        (vec2:vec2   200  300)))
+
 (defun demo-pixel-buffer ()
   (px:init-font-system)
   (let* ((sdl-context      nil)
@@ -1197,6 +1206,11 @@
                                                             context-height
                                                             (make-buggy-polygon)
                                                             polygon-color))
+                                         (px:draw-spline (spline-control-points)
+                                                         context-buffer
+                                                         context-width
+                                                         context-height
+                                                         0 255 0 255)
                                          (let ((px:*blending-function* (px:make-blending-fn-replace-with-transparent-color 0 0 0)))
                                            (px:blit-transform (nodgui.pixmap:bits   *bell-sprite*)
                                                               (nodgui.pixmap:width  *bell-sprite*)

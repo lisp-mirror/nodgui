@@ -235,3 +235,102 @@
   (declare (uivec2 a))
   (uivec2 (to:f- (elt a 0))
           (to:f- (elt a 1))))
+
+;;;; De Boor
+;;;; "A Pratical Guide to Splines" 2001,  p. 90
+
+(defun db-knot@ (knots i)
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (list knots))
+  (declare (fixnum i))
+  (elt knots (- i 1)))
+
+(defun db-w (x i k knots)
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (list knots))
+  (declare (fixnum i k))
+  (declare (to::desired-type x))
+  (let ((t-i     (db-knot@ knots i))
+        (t-i+k-1 (db-knot@ knots (+ i k -1))))
+    (declare (dynamic-extent t-i t-i+k-1))
+    (declare (fixnum t-i t-i+k-1))
+    (if (= t-i+k-1 t-i)
+        0f0
+        (/ (- x t-i)
+           (- t-i+k-1 t-i)))))
+
+(defun db-bpol (x i k knots)
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (list knots))
+  (declare (fixnum i k))
+  (declare (to::desired-type x))
+  (let ((t-i   (db-knot@ knots i))
+        (t-i+1 (db-knot@ knots (+ i 1))))
+    (declare (dynamic-extent t-i t-i+1))
+    (declare (fixnum t-i t-i+1))
+    (if (= k 1)
+        (if (and (>= x t-i)
+                 (<  x t-i+1))
+            1f0
+            0f0)
+        (let ((w1 (db-w x    i    k knots))
+              (w2 (db-w x (+ i 1) k knots)))
+          (declare (dynamic-extent w1 w2))
+          (declare (to::desired-type w1 w2))
+          (+ (* w1 (the to::desired-type (db-bpol x    i    (- k 1) knots)))
+             (* (- 1 w2)
+                (the to::desired-type (db-bpol x (+ i 1) (- k 1) knots))))))))
+
+(defun db-build-knots (control-points k)
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (list control-points))
+  (declare (fixnum k))
+  (loop for i fixnum from 0 below (+ (length control-points) k) collect i))
+
+(defun db-limits (control-points degree)
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (list control-points))
+  (values (to:d degree)
+          (to:d (length control-points))))
+
+(defun db-interpolation (control-points &key (degree 3) (pad-control-points t))
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (list control-points))
+  (declare (fixnum degree))
+  "2d interpolation
+   Parameter: a lust of `vec2` representing the control points of the spline (the interpolation will pass through this points with a smooth trajectory
+   Returns three values:
+   - an interpolator function
+   - the start value for interpolator
+   - the end value for interpolator
+  Calling the interpolator function returns a `vec2' wuth the interpolated points.
+"
+  (let* ((k          (1+ degree))
+         (actual-cps (if pad-control-points
+                         (nconc (loop repeat degree
+                                      collect
+                                      (a:first-elt control-points))
+                                control-points
+                                (loop repeat degree
+                                      collect
+                                      (a:last-elt control-points)))
+                         control-points))
+         (length-cp (length actual-cps))
+         (knots     (db-build-knots actual-cps k)))
+    (multiple-value-bind (from to)
+        (db-limits actual-cps degree)
+      (values (lambda (s)
+                (let ((sum-elem (loop for j from 1 to length-cp
+                                      collect
+                                      (vec2* (elt actual-cps (1- j))
+                                                         (db-bpol s j k knots)))))
+                  (reduce #'vec2+
+                          sum-elem
+                          :initial-value +vec2-zero+)))
+              from to))))

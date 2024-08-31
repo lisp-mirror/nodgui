@@ -157,7 +157,7 @@
 
 (defparameter *buffer-for-atomic-output* nil)
 
-(definline dbg (fmt &rest args)
+(defun dbg (fmt &rest args)
   #.nodgui.config:default-optimization
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (declare (ignorable fmt args))
