@@ -701,27 +701,27 @@
 (defmethod update-search ((lb searchable-listbox) searchstring)
   (with-accessors ((listbox     listbox)
                    (matching-fn matching-fn)) lb
-    (let ((data    (get-searchable-listbox-data lb)))
+    (let ((key-applied-data (get-searchable-listbox-data lb)))
       (cond
         ((= (length searchstring) 0)
          (cond
            ((remove-non-matching-p lb)
             (listbox-delete listbox)
-            (listbox-append listbox data))
+            (listbox-append listbox key-applied-data))
            (t
             (listbox-select listbox nil))))
         (t
          (let ((results (remove-if-not (lambda (item)
                                          (nodgui.conditions:with-default-on-error (t)
                                              (funcall matching-fn searchstring item)))
-                                       (data lb))))
+                                       key-applied-data)))
          (cond
            ((remove-non-matching-p lb)
             (listbox-delete listbox)
             (when results
               (listbox-append listbox results)))
            (t
-            (let ((indexes (mapcar (lambda (item) (position item (data lb) :test #'string=))
+            (let ((indexes (mapcar (lambda (item) (position item key-applied-data :test #'string=))
                                    results)))
               (listbox-select listbox nil)
               (dolist (index indexes)
@@ -752,7 +752,7 @@
       (setf (scrolled-listbox lb) scrolled
             (listbox          lb) listbox
             (entry            lb) entry)
-      (listbox-append listbox (data lb))
+      (listbox-append listbox (get-searchable-listbox-data lb))
       (when placeholder-text
         (setf (text entry) placeholder-text))
       (bind entry #$<KeyPress>$ (lambda (event)
