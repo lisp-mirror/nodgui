@@ -791,7 +791,7 @@ The function THEME-NAMES will return both the default and the custom themes.")
 (defun csv-stream (stream &key
                             (separator ",")
                             (quote-char "\""))
-  "Needs tcllib. Returns a closure that, when invoked with no argument, returns a list corresponding to a row of the table represented by the CSV data, the data are split using `separator' and each field cn be quoted using `quote-char'."
+  "Needs tcllib. Returns a closure that, when invoked with no argument, returns a list corresponding to a row of the table represented by the CSV data (or nil atfter the last row has been parsed), the data are split using `separator' and each field cn be quoted using `quote-char'."
   (lambda ()
     (a:when-let ((line (read-line stream nil nil)))
       (parse-csv-line line :separator separator :quote-char quote-char))))
