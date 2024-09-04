@@ -2086,6 +2086,7 @@
            #:theme-names
            #:current-time-milliseconds
            #:glob
+           #:match-path
            #:items
            #:image
            #:style
