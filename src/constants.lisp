@@ -17,14 +17,14 @@
 
 (in-package :nodgui.constants)
 
-(define-constant +wish-to-lisp-data-reply+      :data     :test #'eq)
+(a:define-constant +wish-to-lisp-data-reply+      :data     :test #'eq)
 
-(define-constant +wish-to-lisp-error-reply+     :error    :test #'eq)
+(a:define-constant +wish-to-lisp-error-reply+     :error    :test #'eq)
 
-(define-constant +wish-to-lisp-callback-reply+  :callback :test #'eq)
+(a:define-constant +wish-to-lisp-callback-reply+  :callback :test #'eq)
 
-(define-constant +wish-to-lisp-keepalive-reply+ :keepalive :test #'eq)
+(a:define-constant +wish-to-lisp-keepalive-reply+ :keepalive :test #'eq)
 
-(define-constant +wish-to-lisp-event-reply+     :event     :test #'eq)
+(a:define-constant +wish-to-lisp-event-reply+     :event     :test #'eq)
 
-(define-constant +2pi+                          (* 2 pi)   :test #'=)
+(a:define-constant +2pi+                          (* 2 pi)   :test #'=)

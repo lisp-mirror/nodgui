@@ -18,7 +18,7 @@
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
-(define-constant +reference-text-width-char+ "0"
+(a:define-constant +reference-text-width-char+ "0"
   :test          #'string=
   :documentation "According to the documentation this is the reference size for char width")
 

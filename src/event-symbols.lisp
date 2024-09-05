@@ -13,7 +13,7 @@
 
 (in-package :nodgui.event-symbols)
 
-(define-constant +first-non-printable-keysym+ 65288 :test #'=)
+(a:define-constant +first-non-printable-keysym+ 65288 :test #'=)
 
 (defparameter *all-event-modifier* '())
 
@@ -30,14 +30,14 @@ numerical code, printable?"
   (let* ((normalized-name (regex-replace-all "_" sym "-"))
          (const-name   (format-fn-symbol t "+~a+" normalized-name)))
     `(progn
-       (define-constant ,const-name ,sym :test #'string=)
+       (a:define-constant ,const-name ,sym :test #'string=)
        (push ,const-name ,bag))))
 
 (defmacro gen-key-capital-symbol (sym bag)
   (let* ((normalized-name (regex-replace-all "_" sym "-"))
          (const-name   (format-fn-symbol t "+capital-~a+" normalized-name)))
     `(progn
-       (define-constant ,const-name ,sym :test #'string=)
+       (a:define-constant ,const-name ,sym :test #'string=)
        (push ,const-name ,bag))))
 
 (defmacro gen-key-symbols (bag &rest syms)

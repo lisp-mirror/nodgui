@@ -34,7 +34,7 @@
 
 (define-condition tk-communication-error (tk-error) ())
 
-(define-constant +event-parsing-error-template+ "Error parsing event ~s. ~a" :test #'string=)
+(a:define-constant +event-parsing-error-template+ "Error parsing event ~s. ~a" :test #'string=)
 
 (define-condition event-parsing-error (error)
   ((message

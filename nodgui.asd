@@ -120,6 +120,7 @@
                (:file "demo-tests")
                (:file "demo-pixels-buffer")
                (:file "demo-3d-window")
+               (:file "tcl-lib-wrapped")
                (:static-file "demo/shaders/3d-demo.frag")
                (:static-file "demo/shaders/3d-demo.vert")))
 

@@ -19,7 +19,7 @@
 (defun fit-line (data errors)
   "Fit  a line  (y =  m *  x +  q) on  data with  errors, the  results
 are (values m q sigma-m^2 sigma-q^2 chi^2)."
-  (assert (length= data errors))
+  (assert (a:length= data errors))
   (flet ((sum (data)
            (loop
               for sigma across errors

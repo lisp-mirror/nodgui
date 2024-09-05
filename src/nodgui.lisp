@@ -555,7 +555,7 @@ set y [winfo y ~a]
   (let ((constant-name (string-upcase (wrap-with (camel-case->snail-case name
                                                                          :make-downcase nil)
                                                  "+"))))
-    `(define-constant   ,(alexandria:format-symbol t constant-name)
+    `(a:define-constant   ,(alexandria:format-symbol t constant-name)
          ,name
          :test          #'string=
          :documentation ,documentation)))
@@ -747,54 +747,6 @@ The function THEME-NAMES will return both the default and the custom themes.")
                     (send-wish (tclize `(senddatastrings [ ,globbing-command ])
                                        :sanitize nil))))
                 #'string<))))))
-
-(defun match-path (text &key (root-directory nil) (join nil) (path nil) (type nil))
-  (let ((chars (remove-duplicates (coerce (string-downcase (symbol-name type))
-                                          'list)
-                                  :test #'char=)))
-    (assert (or (null type)
-                (every (lambda (a) (member a
-                                           '(#\b #\c #\d #\f #\/ #\p #\s #\r #\w #\x)
-                                           :test #'char=))
-                       chars))))
-  (flet ((glob ()
-           (with-read-data ()
-             (let ((*suppress-newline-for-tcl-statements* t))
-               (format-wish (tclize `((senddatastrings [ glob
-                                        ,(empty-string-if-nil root-directory
-                                           `(-directory ,root-directory)) " "
-                                           ,(empty-string-if-nil join
-                                              `(-join))                 " "
-                                           ,(empty-string-if-nil path
-                                              `(-path ,path))           " "
-                                           ,(empty-string-if-nil type
-                                              `(-type ,type))           " "
-                                              -nocomplain                  " "
-                                              --                           " "
-                                              ,text
-                                              ]))))))))
-    (sort (glob) #'string<)))
-
-(a:define-constant +tcl-csv-libname+ "csv" :test #'string=)
-
-(defun parse-csv-line (line &key
-                              (separator ",")
-                              (quote-char "\""))
-  (require-tcl-package +tcl-csv-libname+)
-  (with-read-data ()
-    (let ((*suppress-newline-for-tcl-statements* t))
-      (format-wish (tclize `(senddatastrings [ "csv::split "
-                                             ,line " "
-                                             ,separator " "
-                                             ,quote-char ]))))))
-
-(defun csv-stream (stream &key
-                            (separator ",")
-                            (quote-char "\""))
-  "Needs tcllib. Returns a closure that, when invoked with no argument, returns a list corresponding to a row of the table represented by the CSV data (or nil atfter the last row has been parsed), the data are split using `separator' and each field cn be quoted using `quote-char'."
-  (lambda ()
-    (a:when-let ((line (read-line stream nil nil)))
-      (parse-csv-line line :separator separator :quote-char quote-char))))
 
 (defun theme-names ()
   (flet ((theme-name (dir-pathname)

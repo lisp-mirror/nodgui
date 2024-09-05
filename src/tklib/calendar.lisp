@@ -18,17 +18,17 @@
 
 (named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
-(define-constant +calendar-library-name+ "widget::calendar" :test #'string=)
+(a:define-constant +calendar-library-name+ "widget::calendar" :test #'string=)
 
-(define-constant +calendar-date-format-m/d/y+ "%m/%d/%Y"
+(a:define-constant +calendar-date-format-m/d/y+ "%m/%d/%Y"
   :test          #'string=
   :documentation "Format of this date as day (2 digits) / month (2 digits) / year (4 digits)")
 
-(define-constant +calendar-date-format-d/m/y+ "%d/%m/%Y"
+(a:define-constant +calendar-date-format-d/m/y+ "%d/%m/%Y"
   :test #'string=
   :documentation "Format of this date as month (2 digits) / day (2 digits) / year (4 digits)")
 
-(define-constant +calendar-supported-language+
+(a:define-constant +calendar-supported-language+
     '(:de :en :es
       :fr :gr :he
       :it :ja :sv

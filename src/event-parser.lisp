@@ -24,11 +24,11 @@
 ;; FILLER        := BLANK*
 ;; BLANK         := #\space | #\Tab
 
-(define-constant +field-separator+ "-" :test #'string=)
+(a:define-constant +field-separator+ "-" :test #'string=)
 
-(define-constant +left-delimiter+  "<" :test #'string=)
+(a:define-constant +left-delimiter+  "<" :test #'string=)
 
-(define-constant +right-delimiter+ ">" :test #'string=)
+(a:define-constant +right-delimiter+ ">" :test #'string=)
 
 (defparameter    *check-more-parsing-errors*   t)
 
@@ -103,7 +103,7 @@
                               field)))))
 
 (defun pattern-detail (pattern)
-  (last-elt pattern))
+  (a:last-elt pattern))
 
 (defun %find (field bag)
   (find field bag :test #'string=))

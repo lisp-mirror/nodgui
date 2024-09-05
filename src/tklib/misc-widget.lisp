@@ -18,7 +18,7 @@
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
-(define-constant +control-widget-library-name+ "controlwidget" :test #'string=)
+(a:define-constant +control-widget-library-name+ "controlwidget" :test #'string=)
 
 (defclass control-widget (widget) ())
 

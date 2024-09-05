@@ -137,7 +137,7 @@ outline-width: the width in pixel of the outline of this polygon"
                  :outline-color outline-color
                  :outline-width outline-width))
 
-(define-constant +star-bbox-fix-scale+ 0.97 :test #'=)
+(a:define-constant +star-bbox-fix-scale+ 0.97 :test #'=)
 
 (defclass star (polygon)
   ()

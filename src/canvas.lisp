@@ -19,7 +19,7 @@
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
-(define-constant +tag-all-items+ "all" :test #'string=)
+(a:define-constant +tag-all-items+ "all" :test #'string=)
 
 (defargs canvas ()
   background

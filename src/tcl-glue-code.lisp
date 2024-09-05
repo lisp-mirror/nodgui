@@ -16,7 +16,7 @@
 
 (in-package :nodgui.tcl-glue-code)
 
-(define-constant +wish-init-code-raw+
+(a:define-constant +wish-init-code-raw+
     (strcat
 
      (tcl-str (:if ([catch {package require "Ttk" } err ])
@@ -165,7 +165,7 @@
                  -format \"+ %d/%m/%y "%T" \"+ ]+ \\+ \"+ \"  > ] ]))))))
   :test #'string=)
 
-(define-constant +tcl-init-code+
+(a:define-constant +tcl-init-code+
     (strcat
 
      (tcl-str
@@ -228,7 +228,7 @@
 
   :test #'string=)
 
-(define-constant +tcl-send-data-code+
+(a:define-constant +tcl-send-data-code+
     (tcl-str (:if ([ catch {+ ~a+ } ])
                   (puts \"+ < #.+wish-to-lisp-error-reply+ \\+
                         \"+ [escape $result]+ \\+ \" > ])

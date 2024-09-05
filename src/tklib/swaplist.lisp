@@ -18,7 +18,7 @@
 
 (named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
-(define-constant +swaplist-library-name+ "swaplist" :test #'string=)
+(a:define-constant +swaplist-library-name+ "swaplist" :test #'string=)
 
 (defclass swaplist (widget tkvariable) ())
 

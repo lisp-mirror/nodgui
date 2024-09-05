@@ -27,11 +27,11 @@
 
   (defparameter *do-escape-tilde*                                t)
 
-  (define-constant +to-lisp-mode+   :lisp  :test #'eq)
+  (a:define-constant +to-lisp-mode+   :lisp  :test #'eq)
 
-  (define-constant +to-tcl-if-mode+ :if    :test #'eq)
+  (a:define-constant +to-tcl-if-mode+ :if    :test #'eq)
 
-  (define-constant +to-tcl-group+   :group :test #'eq)
+  (a:define-constant +to-tcl-group+   :group :test #'eq)
 
   (defstruct tcl/code (data))
 
@@ -105,12 +105,12 @@
              (multiple-value-bind (whole plus-signs)
                  (cl-ppcre:scan-to-strings "(\\++)%?$" key)
                (if whole
-                   (1- (length (first-elt plus-signs)))
+                   (1- (length (a:first-elt plus-signs)))
                    -1))))
       (lambda ()
         (let* ((key           (symbol-name code))
                (as-string-p   (scan "%$" key))
-               (escapep       (string= "." (first-elt key)))
+               (escapep       (string= "." (a:first-elt key)))
                (spaces-after  (if (< (calc-spaces key) 0)
                                   " "
                                   (make-string (calc-spaces key) :initial-element #\Space)))
@@ -144,8 +144,8 @@
               (format nil "~a~a" (tcl/keyword-data code) spaces)))))
 
   (defmacro %evl (body)
-    (with-gensyms (res)
-      `(let ((,res (lastcar (loop for i in (rest ,body) collect (eval i)))))
+    (a:with-gensyms (res)
+      `(let ((,res (a:lastcar (loop for i in (rest ,body) collect (eval i)))))
          (strcat* (mapcar #'funcall
                           (->tcl (if (listp ,res) ,res (list ,res))))))))
 
@@ -164,16 +164,16 @@
       ((eq (first code) +to-lisp-mode+)
        (list (lambda () (%evl code))))
       ((eq (first code)  +to-tcl-group+)
-       (list (lambda () (stringify-all (flatten (->tcl (rest code)))))))
+       (list (lambda () (stringify-all (a:flatten (->tcl (rest code)))))))
       ((eq (first code) +to-tcl-if-mode+)
        ;; (:if test pass fail)
        (list (lambda ()
                (stringify-all
-                (flatten (list (->tcl 'if)
-                               (->tcl `({ ,(stringify-all (->tcl (second code))) } {))
-                               (->tcl `(,(stringify-all (->tcl (third code)))))
-                               (->tcl '(} else {))
-                               (->tcl `(,(stringify-all (->tcl (fourth code))) }))))))))
+                (a:flatten (list (->tcl 'if)
+                                 (->tcl `({ ,(stringify-all (->tcl (second code))) } {))
+                                 (->tcl `(,(stringify-all (->tcl (third code)))))
+                                 (->tcl '(} else {))
+                                 (->tcl `(,(stringify-all (->tcl (fourth code))) }))))))))
       (t
        (->tcl (make-tcl/list :data (append code (and (not *suppress-newline-for-tcl-statements*)
                                                      (list (string #\Newline)))))))))
@@ -224,9 +224,9 @@
     (:dispatch-macro-char #\# #\[ #' force-string-read-macro))
 
   (defmacro tclize (statement &key (sanitize t))
-    (with-gensyms (unescaped)
+    (a:with-gensyms (unescaped)
     `(let* ((*sanitize* ,sanitize)
-            (,unescaped  (stringify-all (flatten (->tcl ,statement)))))
+            (,unescaped  (stringify-all (a:flatten (->tcl ,statement)))))
        (if *do-escape-tilde*
            (escape-~ ,unescaped)
            ,unescaped))))

@@ -15,15 +15,15 @@
 ;; General Public License for more details.
 
 (defpackage :nodgui.config
-  (:use :cl
-        :alexandria)
+  (:use :cl)
+  (:local-nicknames (:a  :alexandria))
   (:export
    #:+nodgui-version+
    #:default-optimization))
 
 (defpackage :nodgui.constants
-  (:use :cl
-        :alexandria)
+  (:use :cl)
+  (:local-nicknames (:a  :alexandria))
   (:export #:+wish-to-lisp-data-reply+
            #:+wish-to-lisp-error-reply+
            #:+wish-to-lisp-callback-reply+
@@ -33,6 +33,7 @@
 
 (defpackage :nodgui.typed-operations
   (:use :cl)
+  (:local-nicknames (:a :alexandria))
   (:export  #:desired
             #:d
             #:d+
@@ -220,17 +221,17 @@
 
 (defpackage :nodgui.base64
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.utils)
+  (:local-nicknames (:a  :alexandria))
   (:export #:encode
            #:decode))
 
 (defpackage :nodgui.ubvec4
   (:use :cl
-        :alexandria
         :nodgui.constants
         :nodgui.utils)
+  (:local-nicknames (:a  :alexandria))
   (:export
    #:ubvec4-type
    #:ubvec4
@@ -376,14 +377,13 @@
 
 (defpackage :nodgui.fit-line
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.vec2)
+  (:local-nicknames (:a  :alexandria))
   (:export #:fit-line))
 
 (defpackage :nodgui.pixmap
   (:use :cl
-        :alexandria
         :nodgui.constants
         :nodgui.utils
         :nodgui.ubvec4
@@ -434,10 +434,10 @@
 
 (defpackage :nodgui.sanitize
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.constants
         :nodgui.utils)
+  (:local-nicknames (:a  :alexandria))
   (:export
    #:escape-~
    #:tkescape
@@ -454,9 +454,9 @@
 
 (defpackage :nodgui.event-symbols
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.utils)
+  (:local-nicknames (:a  :alexandria))
   (:export
    #:*all-event-details*
    #:*all-event-modifier*
@@ -1368,9 +1368,9 @@
 
 (defpackage :nodgui.conditions
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.utils)
+  (:local-nicknames (:a  :alexandria))
   (:export #:out-of-bounds
            #:nodgui-error
            #:tk-error
@@ -1386,12 +1386,12 @@
 
 (defpackage :nodgui.tcl-emitter
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.config
         :nodgui.constants
         :nodgui.utils
         :nodgui.sanitize)
+  (:local-nicknames (:a  :alexandria))
   (:export #:*suppress-newline-for-tcl-statements*
            #:*add-space-after-emitted-string*
            #:*add-space-after-emitted-unspecialized-element*
@@ -1412,11 +1412,11 @@
 
 (defpackage :nodgui.tcl-glue-code
   (:use :cl
-        :alexandria
         :nodgui.config
         :nodgui.constants
         :nodgui.utils
         :nodgui.tcl-emitter)
+  (:local-nicknames (:a  :alexandria))
   (:export #:wish-init-code
            #:tcl-init-code
            #:tcl-send-data-code))
@@ -1424,7 +1424,6 @@
 (defpackage :nodgui.event-parser
   (:use
    :cl
-   :alexandria
    :cl-ppcre
    :nodgui.utils
    :nodgui.conditions
@@ -1443,9 +1442,9 @@
 
 (defpackage :nodgui.syntax
   (:use :cl
-        :alexandria
         :cl-ppcre
         :named-readtables)
+  (:local-nicknames (:a  :alexandria))
   (:export
    #:nodgui-syntax))
 
@@ -1484,7 +1483,6 @@
 
 (defpackage nodgui.pixels-canvas
   (:use :cl)
-  (:import-from :alexandria :define-constant)
   (:local-nicknames (:a    :alexandria)
                     (:p    :esrap)
                     (:bq   :syncronized-queue)
@@ -1542,7 +1540,6 @@
 
 (defpackage nodgui.opengl-frame
   (:use :cl)
-  (:import-from :alexandria :define-constant)
   (:local-nicknames (:a       :alexandria)
                     (:bq      :syncronized-queue)
                     (:q       :nodgui.non-blocking-queue)
@@ -1568,7 +1565,6 @@
         #:nodgui.event-parser
         #:nodgui.sanitize
         #:nodgui.tcl-emitter)
-  (:import-from :alexandria :define-constant)
   (:local-nicknames (:a :alexandria)
                     (:p :esrap)
                     (:q :syncronized-queue))
@@ -2086,8 +2082,6 @@
            #:theme-names
            #:current-time-milliseconds
            #:glob
-           #:match-path
-           #:csv-stream
            #:items
            #:image
            #:style
@@ -2104,7 +2098,6 @@
 (defpackage :nodgui.shapes
   (:use
    :cl
-   :alexandria
    #+(or :cmu :scl) :ext
    #:nodgui.config
    #:nodgui.constants
@@ -2117,7 +2110,7 @@
    #:nodgui.sanitize
    #:nodgui.tcl-emitter
    #:nodgui)
-  (:shadow :alexandria :rotate)
+  (:local-nicknames (:a  :alexandria))
   (:export
    #:canvas-handler-holder ()
    #:handle
@@ -2204,9 +2197,18 @@
    #:add-password-dialog
    #:password-input-dialog))
 
+(defpackage :nodgui.tcl-lib-wrapped
+  (:use :cl
+        :nodgui.tcl-emitter
+        :nodgui)
+  (:local-nicknames (:a  :alexandria)
+                    (:to :nodgui.typed-operations))
+  (:export
+   #:match-path
+   #:csv-stream))
+
 (defpackage :nodgui.demo
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.event-symbols
         :nodgui.event-parser
@@ -2214,7 +2216,6 @@
         :nodgui
         :nodgui.shapes
         :nodgui.mw)
-  (:shadow :alexandria :rotate)
   (:local-nicknames (:a      :alexandria)
                     (:q      :nodgui.non-blocking-queue)
                     (:to     :nodgui.typed-operations)

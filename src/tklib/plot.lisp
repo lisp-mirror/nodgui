@@ -18,16 +18,16 @@
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
-(define-constant +plotchart-library-name+    "Plotchart" :test #'string=)
+(a:define-constant +plotchart-library-name+    "Plotchart" :test #'string=)
 
-(define-constant +plotchart-data-tag+        "data"      :test #'string=)
+(a:define-constant +plotchart-data-tag+        "data"      :test #'string=)
 
-(define-constant +pseudo-series-item-suffix+ "-series"   :test #'string=)
+(a:define-constant +pseudo-series-item-suffix+ "-series"   :test #'string=)
 
 (defmacro gen-plot-component (type &rest values)
   `(progn
      ,@(loop for value in values collect
-            `(define-constant ,(format-fn-symbol t "+comp-~a-~a+" type value)
+            `(a:define-constant ,(format-fn-symbol t "+comp-~a-~a+" type value)
                  ,(format nil " ~a " (string-downcase value))
               :test #'string=))))
 

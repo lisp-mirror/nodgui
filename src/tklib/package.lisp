@@ -16,14 +16,13 @@
 
 (defpackage :nodgui.tklib.calendar
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.event-parser
         :nodgui.sanitize
         :nodgui.tcl-emitter
         :nodgui.utils
         :nodgui)
-  (:shadow :alexandria :rotate)
+  (:local-nicknames (:a  :alexandria))
   (:export
    :calendar
    :make-calendar
@@ -38,14 +37,13 @@ system for this wrapper to works"))
 
 (defpackage :nodgui.tklib.notify
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.event-parser
         :nodgui.sanitize
         :nodgui.tcl-emitter
         :nodgui.utils
         :nodgui)
-  (:shadow :alexandria :rotate)
+  (:local-nicknames (:a  :alexandria))
   (:export
    :notify-window)
   (:documentation "Wrapper for notify-window in tklib
@@ -56,14 +54,13 @@ system for this wrapper to works"))
 
 (defpackage :nodgui.tklib.plot
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.event-parser
         :nodgui.sanitize
         :nodgui.tcl-emitter
         :nodgui.utils
         :nodgui)
-  (:shadow :alexandria :rotate)
+  (:local-nicknames (:a  :alexandria))
   (:export
    :+plotchart-data-tag+
    :+comp-xyplot-title+
@@ -120,14 +117,13 @@ system for this wrapper to works"))
 
 (defpackage :nodgui.tklib.swaplist
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.event-parser
         :nodgui.sanitize
         :nodgui.tcl-emitter
         :nodgui.utils
         :nodgui)
-  (:shadow :alexandria :rotate)
+  (:local-nicknames (:a  :alexandria))
   (:export
    :make-swaplist)
   (:documentation "Wrapper for swaplib in tklib
@@ -137,14 +133,13 @@ system for this wrapper to works"))
 
 (defpackage :nodgui.tklib.misc-widget
   (:use :cl
-        :alexandria
         :cl-ppcre
         :nodgui.event-parser
         :nodgui.sanitize
         :nodgui.tcl-emitter
         :nodgui.utils
         :nodgui)
-  (:shadow :alexandria :rotate)
+  (:local-nicknames (:a  :alexandria))
   (:export
    :make-equalizer-bar)
   (:documentation "Wrapper for a subset of control widgets in tklib

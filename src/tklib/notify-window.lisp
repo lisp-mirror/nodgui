@@ -18,9 +18,9 @@
 
 (named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
-(define-constant +notify-library-name+ "notifywindow" :test #'string=)
+(a:define-constant +notify-library-name+ "notifywindow" :test #'string=)
 
-(define-constant +bell-icon+
+(a:define-constant +bell-icon+
     (strcat "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA7wDGACtqWfjDAA"
             "AACXBIWXMAAA7DAAAOwwHHb6hkAAABXklEQVRYw9WWPU4DQQyF7RUpo1UKGlqUioqWG+wd"
             "0uUA6RElF+AAdLlDbpCWigbECSiiUZpIkTJUg2bNeO3xzhB41f5pbH9+6xkEo54fr318v3"

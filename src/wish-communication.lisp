@@ -18,9 +18,9 @@
 
 (named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
-(define-constant +no-event-value+ (cons nil nil) :test #'equalp)
+(a:define-constant +no-event-value+ (cons nil nil) :test #'equalp)
 
-(define-constant +arg-toplevel-name+ "-name" :test #'string=)
+(a:define-constant +arg-toplevel-name+ "-name" :test #'string=)
 
 (defparameter *wish* nil
   "The current connection to an inferior wish.")
@@ -285,9 +285,9 @@
     (close (two-way-stream-output-stream stream) :abort t))
   nil)
 
-(define-constant +closing-loop-event+ :closing-wish :test #'eq)
+(a:define-constant +closing-loop-event+ :closing-wish :test #'eq)
 
-(define-constant +closing-loop-input+ "puts 1" :test #'string=)
+(a:define-constant +closing-loop-input+ "puts 1" :test #'string=)
 
 (defun indicate-stop-mainloop-threads ()
   (push-enqueued-event +closing-loop-event+)

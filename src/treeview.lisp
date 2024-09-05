@@ -18,11 +18,11 @@
 
 (named-readtables:in-readtable nodgui.tcl-emitter:nodgui-force-escape-syntax)
 
-(define-constant +treeview-root+             "{}" :test #'string=)
+(a:define-constant +treeview-root+             "{}" :test #'string=)
 
-(define-constant +treeview-last-index+      "end" :test #'string=)
+(a:define-constant +treeview-last-index+      "end" :test #'string=)
 
-(define-constant +treeview-first-column-id+  "#0"
+(a:define-constant +treeview-first-column-id+  "#0"
   :test #'string=
   :documentation "The conventional id of the primary value of each item of a treeview")
 

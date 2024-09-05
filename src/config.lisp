@@ -17,7 +17,7 @@
 
 (in-package :nodgui.config)
 
-(define-constant +nodgui-version+ "0.99" :test #'string=)
+(a:define-constant +nodgui-version+ "0.99" :test #'string=)
 
 (define-symbol-macro default-optimization
   #+optimize-nodgui `(declare (optimize (speed 3) (debug 0) (safety 0)))

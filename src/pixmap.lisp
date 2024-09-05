@@ -16,18 +16,18 @@
 
 (in-package :nodgui.pixmap)
 
-(define-constant +red-channel+   0 :test #'=)
+(a:define-constant +red-channel+   0 :test #'=)
 
-(define-constant +green-channel+ 1 :test #'=)
+(a:define-constant +green-channel+ 1 :test #'=)
 
-(define-constant +blue-channel+  2 :test #'=)
+(a:define-constant +blue-channel+  2 :test #'=)
 
-(define-constant +alpha-channel+ 3 :test #'=)
+(a:define-constant +alpha-channel+ 3 :test #'=)
 
-(define-constant +targa-stream-element-type+ '(unsigned-byte 8) :test 'equalp)
+(a:define-constant +targa-stream-element-type+ '(unsigned-byte 8) :test 'equalp)
 
 #-nodgui-lite
-(define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
+(a:define-constant +jpeg-stream-element-type+  '(unsigned-byte 8) :test 'equalp)
 
 (defun buffer-sizes->static-vector-size (width height)
   (declare (fixnum width height))
@@ -231,7 +231,7 @@ points to the same memory location (i.e. bg)."
                  :depth  (depth object)
                  :width  (width object)
                  :height (height object)
-                 :data   (copy-array (data object))))
+                 :data   (a:copy-array (data object))))
 
 (defgeneric pixel@ (object x y))
 
@@ -324,7 +324,7 @@ on the middle of the pixture as reflection plane"
 (defun interpolate (weight px1 px2)
   (map 'ubvec4
        #'(lambda (c1 c2)
-           (round (lerp weight (coerce c1 'single-float) (coerce c2 'single-float))))
+           (round (to:dlerp weight (coerce c1 'single-float) (coerce c2 'single-float))))
        px1 px2))
 
 (defmethod scale-bilinear ((object pixmap) scale-x scale-y)
@@ -722,17 +722,17 @@ from file: 'file'"
 (defgeneric pixmap-load (object file)
   (:documentation "load a fixmap form file 'file'"))
 
-(define-constant +targa-img-rgba-rle+                  10 :test 'equalp)
+(a:define-constant +targa-img-rgba-rle+                  10 :test 'equalp)
 
-(define-constant +targa-img-rgba+                       2 :test 'equalp)
+(a:define-constant +targa-img-rgba+                       2 :test 'equalp)
 
-(define-constant +targa-img-header-size+               18 :test 'equalp)
+(a:define-constant +targa-img-header-size+               18 :test 'equalp)
 
-(define-constant +targa-img-scanline-topleft+           2 :test 'equalp)
+(a:define-constant +targa-img-scanline-topleft+           2 :test 'equalp)
 
-(define-constant +targa-img-scanline-bottomleft+        0 :test 'equalp)
+(a:define-constant +targa-img-scanline-bottomleft+        0 :test 'equalp)
 
-(define-constant +targa-img-signature+ "TRUEVISION-XFILE" :test 'equalp)
+(a:define-constant +targa-img-signature+ "TRUEVISION-XFILE" :test 'equalp)
 
 (define-offset-size nodgui.pixmap
     targa-img (id-len 0 1) (type 2 1) (spec 8 10)
@@ -742,7 +742,7 @@ from file: 'file'"
   ()
   (:documentation "A file in TARGA bitmap format"))
 
-(define-constant +targa-footer-offset+ 26 :test #'=)
+(a:define-constant +targa-footer-offset+ 26 :test #'=)
 
 (defun file-tga-p (path)
   (with-open-file (stream path :direction :input :element-type '(unsigned-byte 8))
