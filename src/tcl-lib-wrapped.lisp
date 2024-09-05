@@ -103,4 +103,4 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
 (defun ip-addresses ()
   "Returns a list of IP addresses for this machines."
   (require-tcl-package +tcl-nettool-libname+)
-  (%collect-split-addresses "nettool::ip_list" "." 10))
+  (%collect-split-addresses "nettool::ip_list" "\\." 10))
