@@ -2199,6 +2199,7 @@
 
 (defpackage :nodgui.tcl-lib-wrapped
   (:use :cl
+        :nodgui.sanitize
         :nodgui.tcl-emitter
         :nodgui)
   (:local-nicknames (:a  :alexandria)
