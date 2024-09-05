@@ -87,12 +87,20 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
           (cons (a:make-keyword (string-upcase key))
                 actual-value)))))
 
-(defun mac-addresses ()
-  "Returns an alist of MAC addresses for this machines, the primary is listed first"
-  (require-tcl-package +tcl-nettool-libname+)
+(defun %collect-split-addresses (command separator radix)
   (let ((raw-data (with-read-data ()
-                    (format-wish (tclize `(senddatastrings [ "nettool::mac_list"]))))))
+                    (format-wish (tclize `(senddatastrings [ ,command ]))))))
     (loop for mac in raw-data
           collect
-          (let ((splitted (cl-ppcre:split ":" mac)))
-            (loop for octet in splitted collect (parse-integer octet :radix 16))))))
+          (let ((splitted (cl-ppcre:split separator mac)))
+            (loop for octet in splitted collect (parse-integer octet :radix radix))))))
+
+(defun mac-addresses ()
+  "Returns a list of MAC addresses for this machines, the primary is listed first"
+  (require-tcl-package +tcl-nettool-libname+)
+  (%collect-split-addresses "nettool::mac_list" ":" 16))
+
+(defun ip-addresses ()
+  "Returns a list of IP addresses for this machines."
+  (require-tcl-package +tcl-nettool-libname+)
+  (%collect-split-addresses "nettool::ip_list" "." 10))
