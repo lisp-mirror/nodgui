@@ -60,7 +60,7 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
                            (-- ,(make-bypass-escape :data (format nil "~{{~a} ~}"
                                                                   glob-paths))))))))
 
-(a:define-constant +tcl-platform-libname+ "nettool" :test #'string=)
+(a:define-constant +tcl-nettool-libname+ "nettool" :test #'string=)
 
 (defun cpu-info ()
   "Returns an alist of CPU information field (on GNU/Linux) are:
@@ -73,11 +73,10 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
 - :speed
 - :features
 - :cpus"
-  (require-tcl-package +tcl-platform-libname+)
+  (require-tcl-package +tcl-nettool-libname+)
   (let ((raw-data (with-read-data ()
                     (let ((*suppress-newline-for-tcl-statements* t))
                       (format-wish (tclize `(senddatastrings [ "nettool::cpuinfo"])))))))
-    (format t "raw ~a~%" raw-data)
     (loop for (key value) on raw-data by 'cddr
           collect
           (let ((actual-value (nodgui.utils:safe-parse-number value
@@ -87,3 +86,13 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
                                                                 value))))
           (cons (a:make-keyword (string-upcase key))
                 actual-value)))))
+
+(defun mac-addresses ()
+  "Returns an alist of MAC addresses for this machines, the primary is listed first"
+  (require-tcl-package +tcl-nettool-libname+)
+  (let ((raw-data (with-read-data ()
+                    (format-wish (tclize `(senddatastrings [ "nettool::mac_list"]))))))
+    (loop for mac in raw-data
+          collect
+          (let ((splitted (cl-ppcre:split ":" mac)))
+            (loop for octet in splitted collect (parse-integer octet :radix 16))))))
