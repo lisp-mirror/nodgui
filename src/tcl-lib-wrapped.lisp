@@ -136,3 +136,48 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
   "Returns a list of IP addresses for this machines."
   (require-tcl-package +tcl-nettool-libname+)
   (%collect-split-addresses "nettool::ip_list" "\\." 10))
+
+(a:define-constant +tcl-units-libname+ "units" :test #'string=)
+
+(defun convert-units (from to)
+  "Convert quantity to differents measure units e.g.:
+
+(convert-units \"1 mm\" \"meter\")
+
+Please see:
+
+ https://core.tcl-lang.org/tcllib/doc/trunk/embedded/md/tcllib/files/modules/units/units.md
+
+For more documentation"
+  (require-tcl-package +tcl-units-libname+)
+  (with-read-data ()
+    (format-wish (tclize `(senddata [ "units::convert " {+ ,from } {+ ,to } ])))))
+
+(defun reduce-unit (unit-string)
+  "Reduce `unit-string' to their atomic components e.g.:
+
+(reduce-units \"Joule\"); => \"1000.0 gram meter meter / second second\"
+
+Please see:
+
+ https://core.tcl-lang.org/tcllib/doc/trunk/embedded/md/tcllib/files/modules/units/units.md
+
+For more documentation."
+  (require-tcl-package +tcl-units-libname+)
+  (with-read-data ()
+    (format-wish (tclize `(senddatastring [ "units::reduce " {+ ,unit-string }])))))
+
+(defun new-unit (unit equivalent-to)
+  " Create a nes unit equivalent to `equivalent-to' e.g.
+  (with-nodgui ()
+    (new-unit \"furlong\" \"220 yards\")
+    (convert-units \"10 furlong\" \"yards\")) ; => 2200.0
+
+Please see:
+
+ https://core.tcl-lang.org/tcllib/doc/trunk/embedded/md/tcllib/files/modules/units/units.md
+
+For more documentation."
+  (require-tcl-package +tcl-units-libname+)
+  (with-read-data ()
+    (format-wish (tclize `(senddatastring [ "units::new " {+ ,unit } {+ ,equivalent-to }])))))
