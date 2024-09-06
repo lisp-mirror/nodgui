@@ -2214,7 +2214,10 @@
    #:make-zip-file
    #:cpu-info
    #:mac-addresses
-   #:ip-addresses))
+   #:ip-addresses
+   #:convert-units
+   #:reduce-unit
+   #:new-unit))
 
 (defpackage :nodgui.demo
   (:use :cl
