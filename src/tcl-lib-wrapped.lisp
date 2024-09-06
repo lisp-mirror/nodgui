@@ -60,6 +60,38 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
                            (-- ,(make-bypass-escape :data (format nil "~{{~a} ~}"
                                                                   glob-paths))))))))
 
+(a:define-constant +tcl-zip-decode-libname+ "zipfile::decode" :test #'string=)
+
+
+(defun zip-file-p (zip-filepath)
+  "Creates a zip file in `zip-filepaths' adding a list of paths contained in `glob-paths'.
+Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
+  (when (u:file-exists-p zip-filepath)
+    (require-tcl-package +tcl-zip-decode-libname+)
+    (u:tcl-bool->lisp (with-read-data ()
+                        (let ((*suppress-newline-for-tcl-statements* t))
+                          (format-wish (tclize `(senddata [ "zipfile::decode::iszip "
+                                                          {+ ,zip-filepath } ]))))))))
+
+(defun zip-file-list-contents (zip-filepath)
+  "Creates a zip file in `zip-filepaths' adding a list of paths contained in `glob-paths'.
+Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
+  (when (zip-file-p zip-filepath)
+    (with-read-data ()
+      (let ((*suppress-newline-for-tcl-statements* t))
+        (format-wish (tclize `(senddatastrings [ "zipfile::decode::content "
+                                               {+ ,zip-filepath } ])))))))
+
+(defun unzip-file (zip-filepath destination-path)
+  "Decompress a zip file in `zip-filepaths' on `destination-path'."
+  (when (zip-file-p zip-filepath)
+    (with-read-data ()
+      (let ((*suppress-newline-for-tcl-statements* t))
+        (format-wish (tclize `(senddatastrings [ "zipfile::decode::unzipfile "
+                                               {+ ,zip-filepath }
+                                               {+ ,destination-path }
+                                               ])))))))
+
 (a:define-constant +tcl-nettool-libname+ "nettool" :test #'string=)
 
 (defun cpu-info ()

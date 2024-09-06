@@ -2203,10 +2203,18 @@
         :nodgui.tcl-emitter
         :nodgui)
   (:local-nicknames (:a  :alexandria)
-                    (:to :nodgui.typed-operations))
+                    (:to :nodgui.typed-operations)
+                    (:u  :nodgui.utils))
   (:export
    #:match-path
-   #:csv-stream))
+   #:csv-stream
+   #:zip-file-p
+   #:zip-file-list-contents
+   #:unzip-file
+   #:make-zip-file
+   #:cpu-info
+   #:mac-addresses
+   #:ip-addresses))
 
 (defpackage :nodgui.demo
   (:use :cl
