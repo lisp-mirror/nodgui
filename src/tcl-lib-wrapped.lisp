@@ -56,12 +56,10 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
   (require-tcl-package +tcl-zip-libname+)
   (let ((*suppress-newline-for-tcl-statements* t))
     (format-wish (tclize `("zipfile::mkzip::mkzip "
-                           {+ ,zip-filepath } " "
-                           (-- ,(make-bypass-escape :data (format nil "~{{~a} ~}"
-                                                                  glob-paths))))))))
+                           {+ ,zip-filepath }
+                           (-- ,@glob-paths))))))
 
 (a:define-constant +tcl-zip-decode-libname+ "zipfile::decode" :test #'string=)
-
 
 (defun zip-file-p (zip-filepath)
   "Creates a zip file in `zip-filepaths' adding a list of paths contained in `glob-paths'.

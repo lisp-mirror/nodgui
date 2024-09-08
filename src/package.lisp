@@ -439,7 +439,9 @@
         :nodgui.utils)
   (:local-nicknames (:a  :alexandria))
   (:export
+   #:*in-braces*
    #:escape-~
+   #:escape-braces
    #:tkescape
    #:tkescape2
    #:make-protect-escape
@@ -447,6 +449,9 @@
    #:bypass-escape
    #:make-bypass-escape
    #:bypass-escape-data
+   #:make-escape-only-braces
+   #:escape-only-braces
+   #:escape-only-braces-data
    #:rem-trouble-chars-and-then-wrap
    #:sanitize
    #:sanitize

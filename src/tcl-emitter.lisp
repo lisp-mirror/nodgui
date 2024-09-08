@@ -25,6 +25,8 @@
 
   (defparameter *sanitize*                                       nil)
 
+  (defparameter *in-braces*                                      nil)
+
   (defparameter *do-escape-tilde*                                t)
 
   (a:define-constant +to-lisp-mode+   :lisp  :test #'eq)
@@ -78,21 +80,26 @@
     (let ((*sanitize* nil))
       (->tcl (bypass-escape-data code))))
 
+  (defun %sanitize (object)
+    (if *sanitize*
+        (if *in-braces*
+            (sanitize (make-escape-only-braces :data object))
+            (sanitize object))
+        object))
+
   (defmethod ->tcl (code)
-    (let ((actual-code (if *sanitize*
-                           (sanitize code)
-                           code)))
-      (if *add-space-after-emitted-unspecialized-element*
-          (lambda () (format nil "~a " actual-code))
-          (lambda () (format nil "~a"  actual-code)))))
+    (lambda ()
+      (if (and (not *in-braces*)
+               *add-space-after-emitted-unspecialized-element*)
+          (format nil "~a " (%sanitize code))
+          (format nil "~a"  (%sanitize code)))))
 
   (defmethod ->tcl ((code string))
-    (let ((actual-code (if *sanitize*
-                           (sanitize code)
-                           code)))
-      (if  *add-space-after-emitted-string*
-           (lambda () (format nil "~a " actual-code))
-           (lambda () (format nil "~a"  actual-code)))))
+    (lambda ()
+      (if (and (not *in-braces*)
+               *add-space-after-emitted-unspecialized-element*)
+          (format nil "~a " (%sanitize code))
+          (%sanitize code))))
 
   (defmethod ->tcl ((code tcl/<))
     (lambda () "\"(\" "))
@@ -116,12 +123,21 @@
                                   (make-string (calc-spaces key) :initial-element #\Space)))
                (keywordp      (keywordp code))
                (removed-+-res (regex-replace "\\++%?$" key ""))
-               (res-raw       (format nil "~:[~;:~]~(~a~)" keywordp removed-+-res)))
+               (res-raw       (format nil "~:[~;:~]~(~a~)" keywordp removed-+-res))
+               (rest-chars    (subseq key 1))
+               (first-char    (a:first-elt key)))
+          (declare (dynamic-extent key first-char rest-chars))
+          (when (and (not as-string-p)
+                     (char= first-char #\{))
+            (setf *in-braces* t))
+          (when (and (not as-string-p)
+                     (char= first-char #\}))
+            (setf *in-braces* nil))
           (cond
             (escapep
              (if as-string-p
-                 (format nil "\"~a\"" (regex-replace "%$" (subseq key 1) ""))
-                 (format nil "~a"     (subseq key 1))))
+                 (format nil "\"~a\"" (regex-replace "%$" rest-chars ""))
+                 (format nil "~a"     rest-chars)))
             (keywordp
              (->tcl (make-tcl/keyword :data         res-raw
                                       :raw-keyword  code

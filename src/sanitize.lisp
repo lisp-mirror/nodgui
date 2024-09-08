@@ -37,6 +37,10 @@
 
 ;; Much faster version. For one test run it takes 2 seconds, where the
 ;; other implementation requires 38 minutes.
+
+(defun escape-braces (text)
+  (%tkescape text '(#\{ #\})))
+
 (defun tkescape (text)
   (%tkescape text '(#\\ #\$ #\[ #\] #\{ #\} #\")))
 
@@ -49,6 +53,8 @@
 (defstruct protect-escape (data))
 
 (defstruct (bypass-escape (:include protect-escape)))
+
+(defstruct (escape-only-braces (:include protect-escape)))
 
 (defun rem-trouble-chars-and-then-wrap (s)
   (make-protect-escape :data (sanitize-remove s)))
@@ -63,7 +69,7 @@
   object)
 
 (defmethod sanitize ((object string))
-  (if (string= "{}" object)
+  (if (string= object "{}")
       object
       (tkescape object)))
 
@@ -75,6 +81,24 @@
 
 (defmethod sanitize ((object bypass-escape))
   (bypass-escape-data object))
+
+(defmethod sanitize ((object escape-only-braces))
+  (let* ((as-string       (to-s (escape-only-braces-data object)))
+         (balanced-braces 0))
+    (loop named balancing-test
+          with first-closing = t
+          for c across as-string do
+      (cond
+        ((char= c #\})
+         (decf balanced-braces)
+         (when first-closing
+           (return-from balancing-test nil)))
+        ((char= c #\{)
+         (setf first-closing nil)
+         (incf balanced-braces))))
+    (if (= balanced-braces 0)
+        as-string
+        (escape-braces as-string))))
 
 (defmethod sanitize ((object (eql nil)))
   nil)
