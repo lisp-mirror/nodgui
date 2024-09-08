@@ -1403,8 +1403,10 @@
            #:*stringify-keyword*
            #:with-no-emitted-newline
            #:with-no-emitted-spaces
+           #:with-emitted-spaces
            #:with-stringify-keyword
            #:with-no-escape-tilde
+           #:with-recursive-tclize
            #:tcl
            #:tcl-str
            #:with-flush-server

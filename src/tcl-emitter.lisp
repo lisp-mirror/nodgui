@@ -57,6 +57,11 @@
            (nodgui.tcl-emitter:*add-space-after-emitted-unspecialized-element* nil))
        ,@body))
 
+  (defmacro with-emitted-spaces (&body body)
+    `(let ((nodgui.tcl-emitter:*add-space-after-emitted-string* t)
+           (nodgui.tcl-emitter:*add-space-after-emitted-unspecialized-element* t))
+       ,@body))
+
   (defmacro with-stringify-keyword (&body body)
     `(let ((*stringify-keyword* t))
        ,@body))
@@ -64,6 +69,9 @@
   (defmacro with-no-escape-tilde (&body body)
     `(let ((*do-escape-tilde* nil))
        ,@body))
+
+  (defmacro with-recursive-tclize (&body body)
+    (lambda () (tclize `(,@body))))
 
   (defun tag (element)
     (cond
@@ -75,6 +83,9 @@
        element)))
 
   (defgeneric ->tcl (code))
+
+  (defmethod ->tcl ((code function))
+    code)
 
   (defmethod ->tcl ((code bypass-escape))
     (let ((*sanitize* nil))
@@ -97,7 +108,7 @@
   (defmethod ->tcl ((code string))
     (lambda ()
       (if (and (not *in-braces*)
-               *add-space-after-emitted-unspecialized-element*)
+               *add-space-after-emitted-string*)
           (format nil "~a " (%sanitize code))
           (%sanitize code))))
 
