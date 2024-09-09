@@ -728,14 +728,16 @@
    ((tree :accessor tree :initform nil :initarg :tree)))
 
 (defmethod initialize-instance :after ((object treeviewtest) &key)
-  (let ((tree (make-instance 'scrolled-treeview
+  (let* ((id-1   "c{id1")
+         (id-2   "c}id2")
+         (tree (make-instance 'scrolled-treeview
                              :master  object
                              :pack    '(:side :top :expand t :fill :both)
                              ;; the following are going  to be the ids
                              ;; of  the  column   and  theirs  default
                              ;; labels too
                              ;; note: every item has an implicit first column
-                             :columns (list "cid1" "cid2"))))
+                             :columns (list id-1 id-2))))
     (setf (tree object) tree)
     ;; a tree-item's instance represent a row, with or without parent,
     ;; of this treeview
@@ -761,13 +763,13 @@
                                     (when (> (length (items (treeview tree))) 1)
                                       (setf (children tree parent) (list child second-row))
                                       (do-msg "You clicked on column 0, row collapsed."))))
-       (treeview-heading tree     "cid1" ; or "#1"
+       (treeview-heading tree     id-1 ; or "#1"
                          :text    "column 1"
                          :command (lambda ()
                                     (when (treeview-find-item tree parent)
                                       (treeview-delete tree parent)
                                       (do-msg "First row deleted"))))
-       (treeview-heading tree     "cid2" ; or '#2' or +treeview-last-index+ in this case
+       (treeview-heading tree     id-2 ; or '#2' or +treeview-last-index+ in this case
                          :text    "column 2"
                          :command (lambda ()
                                     (do-msg "You clicked on column 2")))
