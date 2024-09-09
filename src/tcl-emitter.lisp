@@ -70,9 +70,6 @@
     `(let ((*do-escape-tilde* nil))
        ,@body))
 
-  (defmacro with-recursive-tclize (&body body)
-    (lambda () (tclize `(,@body))))
-
   (defun tag (element)
     (cond
       ((eq '< element)
@@ -250,13 +247,12 @@
     (:fuse :standard)
     (:dispatch-macro-char #\# #\[ #' force-string-read-macro))
 
-  (defmacro tclize (statement &key (sanitize t))
-    (a:with-gensyms (unescaped)
-    `(let* ((*sanitize* ,sanitize)
-            (,unescaped  (stringify-all (a:flatten (->tcl ,statement)))))
+  (defun tclize (statement &key (sanitize t))
+    (let* ((*sanitize* sanitize)
+           (unescaped  (stringify-all (a:flatten (->tcl statement)))))
        (if *do-escape-tilde*
-           (escape-~ ,unescaped)
-           ,unescaped))))
+           (escape-~ unescaped)
+           unescaped)))
 
   (defmacro empty-string-if-nil (value statement)
     `(if ,value
@@ -279,3 +275,6 @@
           (if downcase
               (string-downcase res)
               res))))))
+
+  (defmacro with-recursive-tclize (&body body)
+    `(lambda () ,@body))

@@ -70,12 +70,16 @@
 (defun send-wish-columns-data (widget switch column-ids)
   (assert (or (string= switch "columns")
               (string= switch "displaycolumns")))
-  (let ((column-list (loop for i in column-ids collect `({+ ,i }))))
+  (let ((column-list (loop for i in column-ids collect `(\"+ ,i \"))))
     (with-no-emitted-newline
-      (format-wish (tclize `(,(widget-path widget)
-                             configure
-                             ,(format nil "-~a" switch)
-                             [+ list ,@column-list ]))))))
+      (with-emitted-spaces
+        (format-wish (tclize `(,(widget-path widget)
+                               configure
+                               ,(format nil "-~a" switch)
+                               [+ list
+                               ,(with-recursive-tclize
+                                  (with-no-emitted-spaces
+                                    (tclize `(,@column-list ])))))))))))
 
 (defmethod setup-columns ((object treeview) (column-ids list)
                           &key
