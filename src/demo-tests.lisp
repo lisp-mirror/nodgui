@@ -780,7 +780,8 @@
              (treeview-insert-item tree                            ; actual second row
                                    :text          "foo"            ; first column
                                    :column-values '("bar" "baz"))) ; second and third column
-       (format t "~a~%" tree))))
+      (treeview-set-selection tree (list parent second-row))
+      (format t "~a~%" tree))))
 
 (defun demo-treeview (&key theme)
   (with-nodgui (:theme theme)

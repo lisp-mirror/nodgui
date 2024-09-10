@@ -265,16 +265,16 @@ not equal to all the others. The test is performed calling :test"
 
 (defmethod (setf text) (val (item tree-item))
   (setf (text item) val)
-  (format-wish "~a item \"~a\" -text {~A}" (widget-path (tree item)) (id item) val)
+  (format-wish "~a item \"~a\" -text \"~A\"" (widget-path (tree item)) (id item) val)
   val)
 
 (defmethod (setf image) (val (item tree-item))
   (setf (image item) val)
-  (format-wish "~a item \"~a\" -image {~A}" (widget-path (tree item)) (id item) val)
+  (format-wish "~a item \"~a\" -image \"~A\"" (widget-path (tree item)) (id item) val)
   val)
 
 (defmethod see ((tv treeview) (item tree-item))
-  (format-wish "~a see {~a}" (widget-path tv) (id item))
+  (format-wish "~a see \"~a\"" (widget-path tv) (id item))
   tv)
 
 (defgeneric children (tree item))
@@ -298,7 +298,7 @@ not equal to all the others. The test is performed calling :test"
                                                  (items tree))))
          (loop for item in items-change-parent do
               (setf (parent item) item))))
-    (format-wish "~a children \"~a\" {~{\"~a\"~^ ~}}" (widget-path tree) item (mapcar #'id val)))
+    (format-wish "~a children \"~a\" [list ~{\"~a\"~^ ~}]" (widget-path tree) item (mapcar #'id val)))
 
 (defmethod (setf children) (val (tree treeview) (item tree-item))
   (setf (children tree (id item)) val))
@@ -306,7 +306,7 @@ not equal to all the others. The test is performed calling :test"
 (defgeneric column-configure (tree column option value &rest rest))
 
 (defmethod column-configure ((tree treeview) column option value &rest rest)
-  (format-wish "{~a} column {~a} {-~(~a~)} {~a}~{ {-~(~a~)} {~(~a~)}~}"
+  (format-wish "\"~a\" column \"~a\" \"-~(~a~)\" \"~a\"~{ \"-~(~a~)\" \"~(~a~)\"~}"
                (widget-path tree) column
                option value rest))
 
@@ -367,7 +367,7 @@ not equal to all the others. The test is performed calling :test"
 (defmethod treeview-exists ((tree treeview) item)
   "Check if tree contains item"
   (with-read-data (nil)
-    (format-wish "senddata [~a exists {~a}]" (widget-path tree) item)
+    (format-wish "senddata [~a exists \"~a\"]" (widget-path tree) item)
     (tcl-bool->lisp (read-data))))
 
 (defgeneric treeview-focus (tree))
@@ -391,31 +391,31 @@ not equal to all the others. The test is performed calling :test"
 (defgeneric (setf treeview-focus) (item tree))
 
 (defmethod (setf treeview-focus) (item tree)
-  (format-wish "~a focus {~a}" (widget-path tree) item))
+  (format-wish "~a focus \"~a\"" (widget-path tree) item))
 
 (defmethod (setf treeview-focus) ((item tree-item) tree)
-  (format-wish "~a focus {~a}" (widget-path tree) (id item)))
+  (format-wish "~a focus \"~a\"" (widget-path tree) (id item)))
 
 (defun treeview-item (tree item &rest options)
   "Query or modify the options for the specified item."
   (cond
     ((second options) ;; modify
-     (format-wish "~a item {~a} ~{ {-~(~a~)} {~a}~}"
+     (format-wish "~a item \"~a\" ~{ \"-~(~a~)\" \"~a\"~}"
                   (widget-path tree) item (mapcar #'down options)))
     (t ;; query
      (with-read-data ()
-       (format-wish "senddatastring [~a item {~a} ~@[ {-~(~a~)}~]]"
+       (format-wish "senddatastring [~a item \"~a\" ~@[ \"-~(~a~)\"~]]"
                     (widget-path tree) item (car options))))))
 
 (defun treeview-column (tree column &rest options)
   "Query or modify the options for the specified column."
   (cond
     ((second options) ;; modify
-     (format-wish "~a column {~a} ~{ {-~(~a~)} {~a}~}"
+     (format-wish "~a column \"~a\" ~{ \"-~(~a~)\" \"~a\"~}"
                   (widget-path tree) column (mapcar #'down options)))
     (t ;; query
      (with-read-data ()
-       (format-wish "senddatastring [~a column {~a} ~@[ {-~(~a~)}~]]"
+       (format-wish "senddatastring [~a column \"~a\" ~@[ \"-~(~a~)\"~]]"
                     (widget-path tree) column (car options))
        (read-data)))))
 
@@ -428,7 +428,7 @@ not equal to all the others. The test is performed calling :test"
                                (anchor  nil)
                                (command nil))
   "Add properties (text, callback etc.) to the header of this treeview"
-  (let ((callback-name (format nil "~a:~a" (widget-path object) (sanitize column-id)))
+  (let ((callback-name (format nil "~a:~a" (widget-path object) column-id))
         (*suppress-newline-for-tcl-statements* t))
     (when command
       ;; register the callback
@@ -493,7 +493,10 @@ not equal to all the others. The test is performed calling :test"
 (defgeneric treeview-set-selection (w items))
 
 (defmethod treeview-set-selection ((tv treeview) items)
-  (format-wish "~a selection set {~{~a ~}}" (widget-path tv) (mapcar #'id items)))
+  (format-wish "~a selection set [list \"~a\"]" (widget-path tv) (mapcar #'id items)))
+
+(defmethod treeview-set-selection ((tv treeview) (items list))
+  (format-wish "~a selection set [list ~{\"~a\"~^ ~}]" (widget-path tv) (mapcar #'id items)))
 
 (defmethod treeview-refit-columns-width ((object treeview))
   "Note that this function works only with default fonts"
@@ -687,6 +690,10 @@ not equal to all the others. The test is performed calling :test"
 (defmethod treeview-get-selection ((object scrolled-treeview))
   (with-inner-treeview (treeview object)
     (treeview-get-selection treeview)))
+
+(defmethod treeview-set-selection ((object scrolled-treeview) items)
+  (with-inner-treeview (treeview object)
+    (treeview-set-selection treeview items)))
 
 (defmethod treeview-delete ((object scrolled-treeview) item)
   (with-inner-treeview (treeview object)
