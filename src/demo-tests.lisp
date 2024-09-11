@@ -1219,6 +1219,9 @@
                                             :callback      (funcall series-callback
                                                                     :red))))
            (plot       (make-instance 'nodgui.tklib.plot:dot-plot
+                                      :title  "Example Plot"
+                                      :x-text "x{title"
+                                      :y-text "y{title"
                                       :all-series all-series)))
       ;; as an example, fit a line on the first data series
       (setf (nodgui.tklib.plot:callback (first all-series))
@@ -1292,6 +1295,7 @@
                                             :ys     '(60 40)
                                             :legend "second")))
            (plot       (make-instance 'nodgui.tklib.plot:bar-chart
+                                      :title    "ti{tle"
                                       :x-labels '("~A label~" "B" "C")
                                       :all-series all-series)))
       (grid canvas 0 0 :sticky :news)

@@ -633,7 +633,7 @@ set y [winfo y ~a]
   (with-read-data ()
     (format-wish (tclize `(tk fontchooser configure
                               -parent {+ ,(widget-path parent) }
-                            -title  {+ ,title }
+                            -title  \"+ ,title \"
                             -command senddatastring)))
     (format-wish (tclize `(tk fontchooser show)))))
 
@@ -731,10 +731,10 @@ The function THEME-NAMES will return both the default and the custom themes.")
     (let* ((*suppress-newline-for-tcl-statements* t)
            (globbing-command (with-no-escape-tilde
                                (tclize `(glob
-                                         -directory {+ ,root-directory } " "
+                                         -directory \"+ ,root-directory \" " "
                                          ,(empty-string-if-nil type
                                                                `(-type { ,@chars })) " "
-                                                               -- {+ ,pattern })
+                                                               -- \"+ ,pattern \")
                                        :sanitize nil))))
       (let ((has-error-p (tcl-bool->lisp
                           (with-read-data ()

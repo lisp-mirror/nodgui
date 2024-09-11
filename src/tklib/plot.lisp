@@ -288,14 +288,14 @@ example: (configure-plot-style 'xyplot +comp-xyplot-bottomaxis+ 'ticklength 10)
         ;; get the handle (used below)
         (setf handle (read-data))
         ;; add title
-        (format-wish (tclize `(,handle title {+ ,title })))
+        (format-wish (tclize `(,handle title \"+ ,title \")))
         ;; add subtitle
-        (format-wish (tclize `(,handle subtitle {+ ,subtitle })))
+        (format-wish (tclize `(,handle subtitle \"+ ,subtitle \")))
         ;; axis labels
-        (format-wish (tclize `(,handle xtext    {+ ,x-text })))
-        (format-wish (tclize `(,handle vtext    {+ ,y-text })))
-        (format-wish (tclize `(,handle xsubtext {+ ,x-subtext })))
-        (format-wish (tclize `(,handle ysubtext {+ ,y-subtext })))
+        (format-wish (tclize `(,handle xtext    \"+ ,x-text \")))
+        (format-wish (tclize `(,handle vtext    \"+ ,y-text \")))
+        (format-wish (tclize `(,handle xsubtext \"+ ,x-subtext \")))
+        (format-wish (tclize `(,handle ysubtext \"+ ,y-subtext \")))
         object))))
 
 (defclass dot-plot (xy-plot)
@@ -539,7 +539,7 @@ example:
         ;; get the handle (used below)
         (setf handle (read-data))
         ;; add title
-        (format-wish (tclize `(,handle title {+ ,title })))
+        (format-wish (tclize `(,handle title \"+ ,title \")))
         (loop for series in all-series do
           (setf (handle series) (strcat "series_" (create-name)))
           (let ((*suppress-newline-for-tcl-statements* t)
