@@ -1252,7 +1252,7 @@
 
 (defun demo-tklib-swaplist (&key theme)
   (with-nodgui (:theme theme)
-    (let* ((swaplist  (nodgui.tklib.swaplist:make-swaplist '(1 2 3) '(4 5 6)
+    (let* ((swaplist  (nodgui.tklib.swaplist:make-swaplist '("[1]" "2}" "3}") '(4 "[5]" "{6")
                                                            :left-list-label  "Left"
                                                            :right-list-label "Right"))
            (ok-button (make-instance 'button
@@ -1299,11 +1299,7 @@
                                       :x-labels '("~A label~" "B" "C")
                                       :all-series all-series)))
       (grid canvas 0 0 :sticky :news)
-      (nodgui.tklib.plot:draw-on-canvas plot canvas)
-      (bind plot #$<ButtonPress-1>$ (lambda (event)
-                                      (format t "click on plot x: ~a y: ~a~%"
-                                              (event-x event)
-                                              (event-y event)))))))
+      (nodgui.tklib.plot:draw-on-canvas plot canvas))))
 
 (defun demo-validate-command (&key theme)
   (with-nodgui (:theme theme)

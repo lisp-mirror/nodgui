@@ -420,7 +420,7 @@
                          replace
                          {+ ,(parse-indices start-index) } " "
                          {+ ,(parse-indices end-index) } " "
-                         {+ ,(make-bypass-escape :data string) }))))
+                         \"+ string \"))))
 
 (defmethod line-info ((object text) &optional (coordinates (raw-coordinates object)))
   "Returns a plist of line information, keys are: :x, :y, :w, :h, :baseline."
@@ -535,7 +535,7 @@
                                         ,(empty-string-if-nil case-insensitive
                                                               '-nocase)
                                         --
-                                        {+ ,pattern }
+                                        \"+ ,pattern \"
                                         {+ ,(parse-indices start-index) }
                                         {+ ,(parse-indices end-index) }
                                         ])
@@ -589,7 +589,7 @@
 (defmethod tag-raise ((object text) tag-name &optional (on-top-of-tag nil))
   (format-wish (tclize `(,(widget-path object) " "
                          tag raise
-                         {+ ,tag-name }
+                         \"+ ,tag-name \"
                          ,(empty-string-if-nil on-top-of-tag
                                                on-top-of-tag)))))
 
@@ -597,7 +597,7 @@
   (with-read-data (nil)
     (format-wish (tclize `(senddatastring [ ,(widget-path object) " "
                                           tag ranges
-                                          {+ ,tag-name }
+                                          \"+ ,tag-name \"
                                           ])))
     (let ((indices (split-words (read-data))))
       (loop for line-char in indices
@@ -609,7 +609,7 @@
 (defmethod tag-lower ((object text) tag-name &optional (before-tag nil))
   (format-wish (tclize `(,(widget-path object) " "
                          tag lower
-                         {+ ,tag-name }
+                         \"+ ,tag-name \"
                          ,(empty-string-if-nil before-tag
                                                before-tag)))))
 

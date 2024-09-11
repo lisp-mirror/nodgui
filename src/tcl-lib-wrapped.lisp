@@ -56,7 +56,7 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
   (require-tcl-package +tcl-zip-libname+)
   (let ((*suppress-newline-for-tcl-statements* t))
     (format-wish (tclize `("zipfile::mkzip::mkzip "
-                           {+ ,zip-filepath }
+                           \"+ ,zip-filepath \"
                            (-- ,@glob-paths))))))
 
 (a:define-constant +tcl-zip-decode-libname+ "zipfile::decode" :test #'string=)
@@ -69,7 +69,7 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
     (u:tcl-bool->lisp (with-read-data ()
                         (let ((*suppress-newline-for-tcl-statements* t))
                           (format-wish (tclize `(senddata [ "zipfile::decode::iszip "
-                                                          {+ ,zip-filepath } ]))))))))
+                                                          \"+ ,zip-filepath \" ]))))))))
 
 (defun zip-file-list-contents (zip-filepath)
   "Creates a zip file in `zip-filepaths' adding a list of paths contained in `glob-paths'.
@@ -78,7 +78,7 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
     (with-read-data ()
       (let ((*suppress-newline-for-tcl-statements* t))
         (format-wish (tclize `(senddatastrings [ "zipfile::decode::content "
-                                               {+ ,zip-filepath } ])))))))
+                                               \"+ ,zip-filepath \" ])))))))
 
 (defun unzip-file (zip-filepath destination-path)
   "Decompress a zip file in `zip-filepaths' on `destination-path'."
@@ -86,8 +86,8 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
     (with-read-data ()
       (let ((*suppress-newline-for-tcl-statements* t))
         (format-wish (tclize `(senddatastrings [ "zipfile::decode::unzipfile "
-                                               {+ ,zip-filepath }
-                                               {+ ,destination-path }
+                                               \"+ ,zip-filepath \"
+                                               \"+ ,destination-path \"
                                                ])))))))
 
 (a:define-constant +tcl-nettool-libname+ "nettool" :test #'string=)
@@ -149,7 +149,7 @@ Please see:
 For more documentation"
   (require-tcl-package +tcl-units-libname+)
   (with-read-data ()
-    (format-wish (tclize `(senddata [ "units::convert " {+ ,from } {+ ,to } ])))))
+    (format-wish (tclize `(senddata [ "units::convert " \"+ ,from \" \"+ ,to \" ])))))
 
 (defun reduce-unit (unit-string)
   "Reduce `unit-string' to their atomic components e.g.:
@@ -163,7 +163,7 @@ Please see:
 For more documentation."
   (require-tcl-package +tcl-units-libname+)
   (with-read-data ()
-    (format-wish (tclize `(senddatastring [ "units::reduce " {+ ,unit-string }])))))
+    (format-wish (tclize `(senddatastring [ "units::reduce " \"+ ,unit-string \"])))))
 
 (defun new-unit (unit equivalent-to)
   " Create a nes unit equivalent to `equivalent-to' e.g.
@@ -178,4 +178,4 @@ Please see:
 For more documentation."
   (require-tcl-package +tcl-units-libname+)
   (with-read-data ()
-    (format-wish (tclize `(senddatastring [ "units::new " {+ ,unit } {+ ,equivalent-to }])))))
+    (format-wish (tclize `(senddatastring [ "units::new " \"+ ,unit \" \"+ ,equivalent-to \"])))))

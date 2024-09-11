@@ -276,5 +276,8 @@
               (string-downcase res)
               res))))))
 
-  (defmacro with-recursive-tclize (&body body)
-    `(lambda () ,@body))
+(defmacro with-recursive-tclize (&body body)
+  `(lambda () ,@body))
+
+(defun wrap-with-double-quotes (data)
+  (loop for i in data collect `(\"+ ,i \")))

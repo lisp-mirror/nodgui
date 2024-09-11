@@ -1407,6 +1407,7 @@
            #:with-stringify-keyword
            #:with-no-escape-tilde
            #:with-recursive-tclize
+           #:wrap-with-double-quotes
            #:tcl
            #:tcl-str
            #:with-flush-server

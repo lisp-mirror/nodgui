@@ -32,24 +32,26 @@
                                          (to-left-button-label  "<<")
                                          (to-up-button-label    "^")
                                          (to-down-button-label  "v")
-                                         &allow-other-keys)
+                                       &allow-other-keys)
   (require-tcl-package +swaplist-library-name+)
   (with-accessors ((widget-path widget-path)
                    (name        name)) object
-    (with-no-emitted-newline
-      (format-wish (tclize `("::swaplist::swaplist "
-                             ,widget-path  " "
-                             ,nodgui::name " "
-                             {+ ,left-list  }
-                             {+ ,right-list }
-                             -embed
-                             -reorder     true
-                             -llabel      {+ ,left-list-label       }
-                             -rlabel      {+ ,right-list-label      }
-                             -lbuttontext {+ ,to-left-button-label  }
-                             -rbuttontext {+ ,to-right-button-label }
-                             -dbuttontext {+ ,to-down-button-label  }
-                             -ubuttontext {+ ,to-up-button-label    })))))
+    (let ((actual-left-list  (wrap-with-double-quotes left-list))
+          (actual-right-list (wrap-with-double-quotes right-list)))
+      (with-no-emitted-newline
+        (format-wish (tclize `("::swaplist::swaplist "
+                               ,widget-path  " "
+                               ,nodgui::name " "
+                               [list ,actual-left-list  ]
+                               [list ,actual-right-list ]
+                               -embed
+                               -reorder     true
+                               -llabel      \"+ ,left-list-label       \"
+                               -rlabel      \"+ ,right-list-label      \"
+                               -lbuttontext \"+ ,to-left-button-label  \"
+                               -rbuttontext \"+ ,to-right-button-label \"
+                               -dbuttontext \"+ ,to-down-button-label  \"
+                               -ubuttontext \"+ ,to-up-button-label    \"))))))
   object)
 
 (defun make-swaplist (left-list right-list
