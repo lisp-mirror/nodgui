@@ -20,7 +20,11 @@
 
 (a:define-constant +swaplist-library-name+ "swaplist" :test #'string=)
 
-(defclass swaplist (widget tkvariable) ())
+(defclass swaplist (widget tkvariable)
+  ((stored-values-varname
+    :initform (create-name)
+    :initarg  :stored-values-varname
+    :accessor stored-values-varname)))
 
 (defmethod initialize-instance :after ((object swaplist)
                                        &key
@@ -34,14 +38,15 @@
                                          (to-down-button-label  "v")
                                        &allow-other-keys)
   (require-tcl-package +swaplist-library-name+)
-  (with-accessors ((widget-path widget-path)
-                   (name        name)) object
+  (with-accessors ((widget-path            widget-path)
+                   (name                  name)
+                   (stored-values-varname stored-values-varname)) object
     (let ((actual-left-list  (wrap-with-double-quotes left-list))
           (actual-right-list (wrap-with-double-quotes right-list)))
       (with-no-emitted-newline
         (format-wish (tclize `("::swaplist::swaplist "
                                ,widget-path  " "
-                               ,nodgui::name " "
+                               ,stored-values-varname " "
                                [list ,actual-left-list  ]
                                [list ,actual-right-list ]
                                -embed
@@ -53,6 +58,13 @@
                                -dbuttontext \"+ ,to-down-button-label  \"
                                -ubuttontext \"+ ,to-up-button-label    \"))))))
   object)
+
+(defmethod value ((object swaplist))
+  (with-accessors ((stored-values-varname stored-values-varname)) object
+    (with-read-data ()
+      (format-wish "global ~a; senddatastrings $~a"
+                   stored-values-varname
+                   stored-values-varname))))
 
 (defun make-swaplist (left-list right-list
                       &key

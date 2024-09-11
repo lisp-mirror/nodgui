@@ -1252,13 +1252,15 @@
 
 (defun demo-tklib-swaplist (&key theme)
   (with-nodgui (:theme theme)
-    (let* ((swaplist  (nodgui.tklib.swaplist:make-swaplist '("[1]" "2}" "3}") '(4 "[5]" "{6")
+    (let* ((swaplist  (nodgui.tklib.swaplist:make-swaplist '("[1]" "2}" "3}")
+                                                           '(4 "[5]" "{6")
                                                            :left-list-label  "Left"
                                                            :right-list-label "Right"))
            (ok-button (make-instance 'button
                                      :text    "OK"
-                                     :command (lambda () (to-stderr "~s"
-                                                                    (value swaplist))))))
+                                     :command (lambda ()
+                                                (to-stderr "~s"
+                                                           (value swaplist))))))
       (grid swaplist  0 0)
       (grid ok-button 1 0 :pady 10))))
 
