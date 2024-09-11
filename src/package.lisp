@@ -2225,7 +2225,9 @@
    #:ip-addresses
    #:convert-units
    #:reduce-unit
-   #:new-unit))
+   #:new-unit
+   #:file-writable-p
+   #:replace-in-file))
 
 (defpackage :nodgui.demo
   (:use :cl

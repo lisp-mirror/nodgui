@@ -179,3 +179,28 @@ For more documentation."
   (require-tcl-package +tcl-units-libname+)
   (with-read-data ()
     (format-wish (tclize `(senddatastring [ "units::new " \"+ ,unit \" \"+ ,equivalent-to \"])))))
+
+(a:define-constant +tcl-fileutil-libname+ "fileutil" :test #'string=)
+
+(defun file-writable-p (path)
+  "Return true if file in `path' is writable."
+  (require-tcl-package +tcl-fileutil-libname+)
+  (when (u:file-exists-p path)
+    (u:tcl-bool->lisp (with-read-data ()
+                        (let ((*suppress-newline-for-tcl-statements* t))
+                          (format-wish (tclize `(senddata [ "fileutil::test "
+                                                          \"+ ,path \"
+                                                          "w"
+                                                         ]))))))))
+
+(defun replace-in-file (path start size data)
+  "Remove `size' octets from file pointed by `path' starting at position: `start', replacing with `data', return `t' on success."
+  (require-tcl-package +tcl-fileutil-libname+)
+  (when (and (u:file-exists-p path)
+             (u:file-exists-p path))
+    (format-wish (tclize `("::fileutil::replaceInFile "
+                           \"+ ,path \"
+                           \"+ ,start \"
+                           \"+ ,size \"
+                           \"+ ,data \")))
+    t))
