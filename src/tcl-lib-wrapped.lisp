@@ -57,7 +57,7 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
   (let ((*suppress-newline-for-tcl-statements* t))
     (format-wish (tclize `("zipfile::mkzip::mkzip "
                            \"+ ,zip-filepath \"
-                           (-- ,@glob-paths))))))
+                           (-- ,@(wrap-with-double-quotes glob-paths)))))))
 
 (a:define-constant +tcl-zip-decode-libname+ "zipfile::decode" :test #'string=)
 
