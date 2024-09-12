@@ -1,6 +1,7 @@
 (in-package :nodgui.tcl-lib-wrapped)
 
 (defun match-path (text &key (root-directory nil) (join nil) (path nil) (type nil))
+  "Returns a list of filesystem paths that match template in `text' (see: glob(7) for tempalte's syntax) starting from `start-directory' (default: the current directory)"
   (let ((chars (remove-duplicates (coerce (string-downcase (symbol-name type))
                                           'list)
                                   :test #'char=)))
@@ -39,10 +40,8 @@
                                              ,separator " "
                                              ,quote-char ]))))))
 
-(defun csv-stream (stream &key
-                            (separator ",")
-                            (quote-char "\""))
-  "Needs tcllib. Returns a closure that, when invoked with no argument, returns a list corresponding to a row of the table represented by the CSV data (or nil atfter the last row has been parsed), the data are split using `separator' and each field cn be quoted using `quote-char'."
+(defun csv-stream (stream &key (separator ",") (quote-char "\""))
+  "Needs tcllib. Returns a closure that, when invoked with no argument, returns a list corresponding to a row of the table represented by the CSV data (or nil after the last row has been parsed), the data are split using `separator' and each field cn be quoted using `quote-char'."
   (require-tcl-package +tcl-csv-libname+)
   (lambda ()
     (a:when-let ((line (read-line stream nil nil)))
@@ -62,7 +61,7 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
 (a:define-constant +tcl-zip-decode-libname+ "zipfile::decode" :test #'string=)
 
 (defun zip-file-p (zip-filepath)
-  "Creates a zip file in `zip-filepaths' adding a list of paths contained in `glob-paths'.
+  "Returns non nil if the file pointed from `zip-file-path` is a zip file: note that the file must exists and readable).
 Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
   (when (u:file-exists-p zip-filepath)
     (require-tcl-package +tcl-zip-decode-libname+)
@@ -72,8 +71,7 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
                                                           \"+ ,zip-filepath \" ]))))))))
 
 (defun zip-file-list-contents (zip-filepath)
-  "Creates a zip file in `zip-filepaths' adding a list of paths contained in `glob-paths'.
-Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
+  "Returns a list of strings, each item of the list is a file contained in zipfile pointed by `zip-filepath'"
   (when (zip-file-p zip-filepath)
     (with-read-data ()
       (let ((*suppress-newline-for-tcl-statements* t))
