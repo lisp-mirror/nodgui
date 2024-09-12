@@ -1,3 +1,15 @@
+* 2024-08-31 Version 0.7.1.0
+
+ - [new feature]
+   - Wrapped a few tcclib functions;
+   - added 'draw-spline' for pixels buffer canvas.
+ - [bugfix]
+   - fixed use of 'key' slot in 'searchable-list-box' (thanks to the person who reported this issue!)
+   - 'treeview-set-selection' works also with 'scrolled-treeview'.
+   - fixed 'swaplist', 'right-list' argument was not used;
+   - the library did not work as intended when using braces on strings;
+   - commented out freeing of surface created by ttf rendering (the surface is already freed by sdl-ttf);
+
 * 2024-08-31 Version 0.7.0.5
  - [new feature]
    - Added 'draw-spline' for pixel buffer widget.

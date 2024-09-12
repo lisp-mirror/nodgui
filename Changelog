@@ -1,6 +1,132 @@
+2024-09-12 cage
+
+	* README.org,
+	* src/tcl-lib-wrapped.lisp:
+
+	- updated docs.
+
+2024-09-11 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/tcl-emitter.lisp,
+	* src/tcl-lib-wrapped.lisp,
+	* src/text.lisp,
+	* src/tklib/plot.lisp,
+	* src/tklib/swaplist.lisp:
+
+	- used double quotes instead of braces.
+	- fixed 'swaplist', 'right-list' was not used.
+	- removed escaping with braces.
+	- added 'file-writable-p' and 'replace-in-file'.
+
+2024-09-10 cage
+
+	* src/demo-tests.lisp,
+	* src/treeview.lisp:
+
+	- allowed braces in all values passed to treeview routines;
+	- specialized 'treeview-set-selection' for 'scrolled-treeview'.
+
+2024-09-09 cage
+
+	* src/demo-tests.lisp,
+	* src/tcl-emitter.lisp,
+	* src/treeview.lisp:
+
+	- fixed 'with-recursive-tclize' it is an alias for lambda;
+	- made 'tcllize' a function.
+	- allowed braces in treeview column IDs.
+
+2024-09-08 cage
+
+	* src/package.lisp,
+	* src/sanitize.lisp,
+	* src/tcl-emitter.lisp,
+	* src/tcl-lib-wrapped.lisp,
+	* src/treeview.lisp:
+
+	- prevented escaping of tcl string wrapped in braces.
+	inside a string wrapped in braces only other braces charcater are
+	escaped (prepending '\'), only if they are not balanced, for example:
+	{a{b}} -> a{b}
+	{a{b}  -> a\{b
+	- added 'with-emitted-spaces' and 'with-recursive-tclize'.
+
+2024-09-06 cage
+
+	* src/package.lisp,
+	* src/tcl-lib-wrapped.lisp:
+
+	- added routines to unzip a file, check if a file is a zip achive and
+	list a zip file's contents;
+	- exported symbols for new routines.
+	- added conversions routines.
+	- exported symbols related to unit conversion.
+
+2024-09-05 cage
+
+	* nodgui.asd,
+	* src/canvas-shapes.lisp,
+	* src/canvas.lisp,
+	* src/conditions.lisp,
+	* src/config.lisp,
+	* src/constants.lisp,
+	* src/demo-tests.lisp,
+	* src/event-parser.lisp,
+	* src/event-symbols.lisp,
+	* src/fit-line.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/pixmap.lisp,
+	* src/tcl-emitter.lisp,
+	* src/tcl-glue-code.lisp,
+	* src/tcl-lib-wrapped.lisp,
+	* src/text.lisp,
+	* src/tklib/calendar.lisp,
+	* src/tklib/misc-widget.lisp,
+	* src/tklib/notify-window.lisp,
+	* src/tklib/package.lisp,
+	* src/tklib/plot.lisp,
+	* src/tklib/swaplist.lisp,
+	* src/treeview.lisp,
+	* src/typed-operations.lisp,
+	* src/wish-communication.lisp:
+
+	- moved some tcl wrapping function to a new file;
+	- removed :use of alexandria (used local nicknames, instead).
+	- added 'make-zip-file' and 'cpu-info'.
+	- added 'mac-addresses';
+	- remove debug code.
+	- added 'ip-addresses'.
+	- fixed regex.
+
+2024-09-04 cage
+
+	* src/nodgui.lisp,
+	* src/package.lisp:
+
+	- deprecated 'glob';
+	- added 'match-path';
+	- added 'cvs-stream'.
+	- exported 'csv-stream'.
+	- updated docstring.
+
+2024-09-03 cage
+
+	* src/nodgui-mw.lisp:
+
+	- [MW] ensured, in 'searchable-list-box', that the data are always
+	mapped using the function 'key' before the actual search occurs.
+
 2024-08-31 cage
 
+	* Changelog,
+	* NEWS.org,
 	* game/entities.lisp,
+	* nodgui-lite.asd,
+	* nodgui.asd,
 	* src/demo-pixels-buffer.lisp,
 	* src/package.lisp,
 	* src/pixels-buffer.lisp,
@@ -13,6 +139,8 @@
 	surface is already freed by sdl-ttf);
 	- ensure utils package does not use alexandria package, uses
 	local-nickname instead.
+	- increased version number;
+	- updated changelog and news file.
 
 2024-08-30 cage
 
