@@ -1,7 +1,7 @@
 (in-package :nodgui.tcl-lib-wrapped)
 
 (defun match-path (text &key (root-directory nil) (join nil) (path nil) (type nil))
-  "Returns a list of filesystem paths that match template in `text' (see: glob(7) for tempalte's syntax) starting from `start-directory' (default: the current directory)"
+  "Returns a list of filesystem paths that match template in `text' (see: glob(7) for template's syntax) starting from `start-directory' (default: the current directory)"
   (let ((chars (remove-duplicates (coerce (string-downcase (symbol-name type))
                                           'list)
                                   :test #'char=)))

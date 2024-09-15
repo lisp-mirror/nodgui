@@ -945,7 +945,8 @@
                                       (funcall (close-window-cb entry))))
             (grid label  0 0 :sticky :n :padx padding-x :pady padding-y)
             (grid entry  1 0 :sticky :n :padx padding-x :pady padding-y)
-            (grid button 2 0 :sticky :n :padx padding-x :pady padding-y)))))
+            (grid button 2 0 :sticky :n :padx padding-x :pady padding-y)
+            (focus entry)))))
     res))
 
 (alexandria:define-constant +selection-mode-allow-double-click+ '(:single :browse) :test #'equalp)

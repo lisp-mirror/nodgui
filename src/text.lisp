@@ -539,7 +539,7 @@
                                         {+ ,(parse-indices start-index) }
                                         {+ ,(parse-indices end-index) }
                                         ])
-                                 :sanitize nil)))
+                                 :sanitize t)))
       (let ((indices (read-data)))
         (when (not (string-empty-p indices))
           (format-wish "global ~a; senddata $~a"
