@@ -1,9 +1,25 @@
+2024-09-15 cage
+
+        * NEWS.org,
+        * src/nodgui-mw.lisp,
+        * src/tcl-lib-wrapped.lisp,
+        * src/text.lisp:
+
+        - sanitized regex replace in text widget;
+        - force focus to entry widget in text entry dialog.
+
 2024-09-12 cage
 
-	* README.org,
-	* src/tcl-lib-wrapped.lisp:
+        * Changelog,
+        * NEWS.org,
+        * README.org,
+        * nodgui-lite.asd,
+        * nodgui.asd,
+        * src/tcl-lib-wrapped.lisp:
 
-	- updated docs.
+        - updated docs.
+        - increased version number;
+        - updated news and changelog.
 
 2024-09-11 cage
 
