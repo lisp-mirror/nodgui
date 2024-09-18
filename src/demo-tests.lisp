@@ -1661,7 +1661,8 @@
                            (format nil
                                    "[~a] virtual event fired~%" (event-timestamp e)))))
       (configure button-insert
-                 :command (lambda () (fire-event text-area insert-event))))))
+                 :command (lambda () (fire-event text-area insert-event)))
+      (focus text-area))))
 
 (defun demo-virtual-event (&key theme)
   (setf *debug-tk* t)
