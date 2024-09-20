@@ -88,15 +88,22 @@
 (defclass menubar (widget) ())
 
 (defun make-menubar (&optional (master nil))
- (make-instance 'menubar :master master :name "menubar"))
+  (let ((menu-bar (make-instance 'menubar :master master :name "menubar")))
+    #-darwin (%add-menubar menu-bar)
+    menu-bar))
 
-;(defmethod create ((mb menubar))
-(defmethod initialize-instance :after ((mb menubar) &key)
-  (format-wish "menu ~a -tearoff 0 -type menubar" (widget-path mb))
-  (format-wish "~a configure -menu ~a" (if (master mb)
-                                           (widget-path (master mb))
+(defun %add-menubar (menu-bar)
+  (format-wish "~a configure -menu ~a" (if (master menu-bar)
+                                           (widget-path (master menu-bar))
                                            (widget-path (root-toplevel)))
-               (widget-path mb)))
+               (widget-path menu-bar)))
+
+(defun add-menubar (menu-bar)
+  #+darwin (%add-menubar menu-bar)
+  menu-bar)
+
+(defmethod initialize-instance :after ((mb menubar) &key)
+  (format-wish "menu ~a -tearoff 0 -type menubar" (widget-path mb)))
 
 ;;; method to pop up a menue at the root window coordinates x and y
 

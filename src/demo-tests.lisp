@@ -312,7 +312,7 @@
   (finish-output))
 
 (defun demo-widget(&key theme)
-  (setf *debug-tk* t)
+  (setf *debug-tk* nil)
   (with-nodgui (:debug-tcl nil
                 :theme theme)
     (flet ((write-postscript (canvas)
@@ -441,7 +441,7 @@
              (sep4 (add-separator mfile))
              (mf-exit (make-menubutton mfile "Exit" (lambda () (exit-wish))
                                        :underline 1
-                                       :accelerator "Alt Q"))
+                                       :accelerator "Alt q/Control q"))
              (mp (make-menu nil "Popup"))
              (mp-1 (make-menubutton mp "Option 1" (lambda ()
                                                     (format t "Popup 1~&")
@@ -455,12 +455,13 @@
         (declare (ignore mf-print mf-exit mfe-gif mfe-jpg mf-save mf-load sep1 sep2 sep3 sep4
                          mp-1 mp-2 mp-3 mfs-1 mfs-2 mfs-3 mfs-4))
         (setf (value progress) 10)
+        (add-menubar mb)
         (configure scale :orient :horizontal)
-        (bind (root-toplevel)
-              #$<Alt-q>$
-              (lambda (event)
-                (declare (ignore event))
-                (exit-wish)))
+        (flet ((quit-demo (event)
+                 (declare (ignore event))
+                 (exit-nodgui)))
+          (bind (root-toplevel) #$<Control-q>$ #'quit-demo)
+          (bind (root-toplevel) #$<Alt-q>$ #'quit-demo))
         (bind c
               #$<1>$
               (lambda (event)

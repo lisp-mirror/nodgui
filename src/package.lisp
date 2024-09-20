@@ -1865,6 +1865,7 @@
            #:make-label
            #:make-menu
            #:make-menubar
+           #:add-menubar
            #:make-menubutton
            #:make-scrollbar
            #:make-scrolled-canvas
