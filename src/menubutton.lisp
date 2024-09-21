@@ -47,7 +47,7 @@ e.g. 'configure'."))
   (format-wish "~A add command -label {~A}  -command {callback ~A}~@[ -underline {~a} ~]~@[ -accelerator {~a} ~]~@[ -state {~(~a~)}~]"
                (widget-path (master m)) (text m) (name m) underline accelerator state))
 
-(defun make-menubutton(menu text command &key underline accelerator state)
+(defun make-menubutton (menu text command &key underline accelerator state)
   (let* ((mb (make-instance 'menubutton
                             :master      menu
                             :text        text

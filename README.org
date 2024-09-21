@@ -95,8 +95,11 @@ All of the above libraries are available on quicklisp.
 
 ** C Libraries
 
-- turboJpeg (high level api for libjpeg-turbo)
-  https://www.libjpeg-turbo.org/
+ - libsdl2
+   https://www.libsdl.org/
+
+ - turboJpeg (high level api for libjpeg-turbo)
+   https://www.libjpeg-turbo.org/
 
 ** TCL/TK libraries (optional)
 
@@ -112,35 +115,50 @@ All of the above libraries are available on quicklisp.
 * Installing
 
   1. install the tk interpreter (example on a Debian system follows)
-
-: # apt-get install tk
+    #+BEGIN_SRC sh
+    # apt-get install tk
+    #+END_SRC
 
   2. optionally install tklib
+    #+BEGIN_SRC sh
+    # apt-get install tklib
+    #+END_SRC
 
-: # apt-get install tklib
-
-  3. optionally install tclib
-
-: # apt-get install tklib
+  3. optionally install tcllib
+    #+BEGIN_SRC sh
+    # apt-get install tcllib
+    #+END_SRC
 
   4. optionally install tkimg
+    #+BEGIN_SRC sh
+    # apt-get install libtk-img
+    #+END_SRC
 
-: # apt-get install libtk-img
+  5. install libsd2
+    #+BEGIN_SRC sh
+    # apt-get install libsdl2-dev
+    #+END_SRC
 
-  5. open a REPL and type
+  6. install liblibturbojpeg
+    #+BEGIN_SRC sh
+    # apt-get install libturbojpeg0-dev
+    #+END_SRC
 
-: (ql:quickload "nodgui")
+  7. open a REPL and type
+    #+BEGIN_SRC sh
+      (ql:quickload "nodgui")
+    #+END_SRC
 
-  6. try it!
+  8. try it!
+    #+BEGIN_SRC sh
+      (nodgui.demo:demo)
+    #+END_SRC
 
-  #+BEGIN_SRC sh
-    (nodgui.demo:demo)
-  #+END_SRC
-
-  #+BEGIN_SRC sh
-    (asdf:make nodgui/game)
-    (main::main)
-  #+END_SRC
+   also try the minigame, it is fun!
+   #+BEGIN_SRC sh
+     (asdf:make nodgui/game)
+     (main::main)
+   #+END_SRC
 
 * Documentation
    please follow

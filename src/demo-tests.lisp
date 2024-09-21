@@ -311,7 +311,7 @@
             (3 "cooked")))
   (finish-output))
 
-(defun demo-widget(&key theme)
+(defun demo-widget (&key theme)
   (setf *debug-tk* nil)
   (with-nodgui (:debug-tcl nil
                 :theme theme)
