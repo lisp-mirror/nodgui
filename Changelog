@@ -1,12 +1,48 @@
+2024-09-21 cage
+
+        * README.org,
+        * src/demo-tests.lisp,
+        * src/menubutton.lisp:
+
+        - fixed typos in installation steps.
+
+2024-09-20 cage
+
+        * src/demo-tests.lisp,
+        * src/menu.lisp,
+        * src/package.lisp:
+
+        - split function to add a menu bar into two distinct functions.
+        Before a menu bar a single call to: `make-menu-bar' would suffice.
+        But turned out that this code does not works on macos X so the right
+        way to add a menu is now:
+        (let ((mb (make-menubar)))
+        (make-menu mb "File")
+        ;; add other menu or menu buttons or separators ...
+        (add-menu-bar mb))
+        Notes that even if this modification breaks user API no code changes
+        are needed for program under OS different from mac os X.
+
+2024-09-18 cage
+
+        * src/demo-tests.lisp:
+
+        - moved focus to text widget in event alias demo.
+
 2024-09-15 cage
 
+        * Changelog,
         * NEWS.org,
+        * nodgui-lite.asd,
+        * nodgui.asd,
         * src/nodgui-mw.lisp,
         * src/tcl-lib-wrapped.lisp,
         * src/text.lisp:
 
         - sanitized regex replace in text widget;
         - force focus to entry widget in text entry dialog.
+        - updated changelog and news files.
+        - increased version number.
 
 2024-09-12 cage
 

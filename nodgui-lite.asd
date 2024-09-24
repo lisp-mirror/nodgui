@@ -23,7 +23,7 @@
 
 (defsystem nodgui-lite
   :name             "nodgui-lite"
-  :version          "0.7.1.1"
+  :version          "0.7.1.2"
   :author           "cage"
   :encoding         :utf-8
   :maintainer       "cage"

@@ -101,6 +101,8 @@ All of the above libraries are available on quicklisp.
  - turboJpeg (high level api for libjpeg-turbo)
    https://www.libjpeg-turbo.org/
 
+ - opengl headers
+
 ** TCL/TK libraries (optional)
 
 - TKlib
@@ -139,17 +141,22 @@ All of the above libraries are available on quicklisp.
     # apt-get install libsdl2-dev
     #+END_SRC
 
-  6. install liblibturbojpeg
+  6. install opengl
+    #+BEGIN_SRC sh
+    # apt-get install libg-dev
+    #+END_SRC
+
+  7. install liblibturbojpeg
     #+BEGIN_SRC sh
     # apt-get install libturbojpeg0-dev
     #+END_SRC
 
-  7. open a REPL and type
+  8. open a REPL and type
     #+BEGIN_SRC sh
       (ql:quickload "nodgui")
     #+END_SRC
 
-  8. try it!
+  9. try it!
     #+BEGIN_SRC sh
       (nodgui.demo:demo)
     #+END_SRC
