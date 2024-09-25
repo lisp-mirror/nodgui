@@ -146,7 +146,7 @@ All of the above libraries are available on quicklisp.
     # apt-get install libg-dev
     #+END_SRC
 
-  7. install liblibturbojpeg
+  7. install libturbojpeg
     #+BEGIN_SRC sh
     # apt-get install libturbojpeg0-dev
     #+END_SRC
@@ -161,11 +161,11 @@ All of the above libraries are available on quicklisp.
       (nodgui.demo:demo)
     #+END_SRC
 
-   also try the minigame, it is fun!
-   #+BEGIN_SRC sh
-     (asdf:make nodgui/game)
-     (main::main)
-   #+END_SRC
+    also try the minigame, it is fun!
+    #+BEGIN_SRC sh
+      (asdf:make nodgui/game)
+      (main::main)
+    #+END_SRC
 
 * Documentation
    please follow
