@@ -284,11 +284,11 @@ not equal to all the others. The test is performed calling :test"
   (children tree (id item)))
 
 (defmethod children ((tree treeview) (item string))
-  (format-wish (tclize `(senddatastrings [,(widget-path tree) " "
-                                         children
-                                         ,(escape-node-if-not-root item)
-                                         ])))
-  (read-data :expected-list-as-data t))
+  (with-read-data ()
+    (format-wish (tclize `(senddatastrings [,(widget-path tree) " "
+                                           children
+                                           ,(escape-node-if-not-root item)
+                                           ])))))
 
 (defgeneric (setf children) (val tree item))
 
