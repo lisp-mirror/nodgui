@@ -254,6 +254,8 @@
 
 (a:define-constant +font-h2+ "sans 15 bold" :test #'string=)
 
+(a:define-constant +font-h3+ "sans 12 bold" :test #'string=)
+
 (defun main ()
   (globally-set-blending-function)
   (with-nodgui ()
@@ -300,7 +302,13 @@
                                         :font +font-h2+
                                         :text (format nil
                                                       "~a"
-                                                      (world:player-teleports *game-world*)))))
+                                                      (world:player-teleports *game-world*))))
+           (instructions      (make-instance 'label
+                                        :master frame
+                                        :font   +font-h3+
+                                        :text
+                                        (format nil
+                                                "instruction:~%←→ rotate~%↑↓ apply/remove thrust~%a teleport~%s shield~%d fire"))))
       (setf *nodgui-points* points)
       (setf *nodgui-player-lives* lives)
       (setf *nodgui-player-shields* shields)
@@ -316,6 +324,7 @@
       (grid shields                  6 0 :sticky :n)
       (grid teleports-label          7 0 :sticky :n)
       (grid teleports                8 0 :sticky :n)
+      (grid instructions             9 0 :sticky :s :pady 15)
       (wait-complete-redraw)
       (setf *pixel-buffer-context*
             (make-instance 'px:pixel-buffer-context
