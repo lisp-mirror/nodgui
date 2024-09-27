@@ -23,13 +23,13 @@
 
 (defsystem nodgui-lite
   :name             "nodgui-lite"
-  :version          "0.7.1.2"
+  :version          "0.7.1.3"
   :author           "cage"
   :encoding         :utf-8
   :maintainer       "cage"
   :bug-tracker      "https://codeberg.org/cage/nodgui/issues"
   :licence          "LLGPL"
-  :description      "Lisp bindings for the Tk toolkit"
+  :description      "Lisp bindings for the Tk toolkit, lite version"
   :pathname         "src"
   :serial           t
   :depends-on (:alexandria
