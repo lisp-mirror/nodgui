@@ -136,6 +136,9 @@
            #:file-gif-p
            #:jpgp
            #:file-jpg-p
+           #:svgp
+           #:octets->string
+           #:file-svg-p
            #:rgb->tk
            #:make-tk-color
            #:safe-parse-number

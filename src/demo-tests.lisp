@@ -1079,9 +1079,12 @@
                 (let ((file (get-open-file :file-types '(#-nodgui-lite
                                                          ("JPG"     "*.jpg")
                                                          ("PNG"     "*.png")
+                                                         ("SVG"     "*.svg")
                                                          ("TGA"     "*.tga")
                                                          ("RGB raw" "*.data")))))
                   (cond
+                    ((cl-ppcre:scan "svg$" file)
+                     (setf (image b) (make-image file)))
                     ((cl-ppcre:scan "jpg$" file)
                      #-nodgui-lite
                      (let ((bitmap (nodgui.pixmap:scale-bilinear

@@ -334,6 +334,30 @@
 
 (gen-check-magic-number jpg +jpeg-magic-number+)
 
+(defgeneric svgp (object))
+
+(defmethod svgp ((object string))
+  (cl-ppcre:scan "=\\s*\"http://www.w3.org/2000/svg\"" object))
+
+(defmethod svgp ((object vector))
+  (svgp (map 'string #'code-char (subseq object 0 (min (length object) 8192)))))
+
+(defun file-svg-p (file-path)
+  (ignore-errors
+   (with-open-file (stream file-path :direction :input)
+     (loop for count-line from 0
+           for line = (read-line stream nil nil nil) then (read-line stream nil nil nil)
+           while (and line
+                      (< count-line 50))
+           do
+              (when (svgp line)
+                (return-from file-svg-p t)))
+     nil)))
+
+(defun octets->string (data)
+  #+sbcl (sb-ext:octets-to-string data)
+  #-sbcl (mapcar 'string #'code-char data))
+
 ;;; colors
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

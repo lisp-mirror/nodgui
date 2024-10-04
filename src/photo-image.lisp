@@ -131,6 +131,9 @@ respects the alpha channel" )
            (make-image (load-from-vector (make-instance 'png) object))))
       ((jpgp object)
        (make-image (load-from-vector (make-instance 'jpeg) object)))
+      ((svgp object)
+       (make-instance 'photo-image
+                      :data (octets->string object)))
       (t
        (make-image-in-tcl)))))
 
