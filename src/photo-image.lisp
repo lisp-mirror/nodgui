@@ -101,7 +101,7 @@ GIF are supported but if tk-img is used more format are available!"
   "Set this variable to non null to force decoding the PNGs with TK and
 respects the alpha channel" )
 
-(defmethod make-image ((object vector) &optional (w nil) (h nil) (channels 3))
+(defmethod make-image ((object vector) &optional (w nil) (h nil) (channels 4))
   (flet ((make-image-in-tcl ()
            (with-read-data (nil)
              (let ((*max-line-length* nil)
@@ -141,10 +141,12 @@ respects the alpha channel" )
       (let* ((pixel (elt bits-pixmap pixmap-index))
              (r     (extract-red-component   pixel))
              (g     (extract-green-component pixel))
-             (b     (extract-blue-component  pixel)))
+             (b     (extract-blue-component  pixel))
+             (a     (extract-alpha-component pixel)))
         (setf (elt bytes    octet-index)    r
               (elt bytes (+ octet-index 1)) g
-              (elt bytes (+ octet-index 2)) b)))
+              (elt bytes (+ octet-index 2)) b
+              (elt bytes (+ octet-index 3)) a)))
     bytes))
 
 (defmethod make-image ((object pixmap) &optional (w nil) (h nil) (channels 4))
@@ -156,11 +158,11 @@ respects the alpha channel" )
             (data-bits (make-image-data (bits-pixmap->bits-octets (bits object)
                                                                   (width  object)
                                                                   (height object)
-                                                                  3)
+                                                                  4)
                                         (width  object)
                                         (height object)
-                                        3
-                                        :column-offset 3)))
+                                        4
+                                        :column-offset 4)))
         (with-send-batch
             (format-wish (tclize `(senddatastring [ ,(sanitize (name res)) " "
                                                   put
