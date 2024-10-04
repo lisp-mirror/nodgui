@@ -33,6 +33,16 @@
   (dbg "remove-callback (~A)~%" sym)
   (setf (gethash sym (wish-callbacks *wish*)) nil))
 
+(defun unistall-callback (sym)
+  (remove-callback sym))
+
+(defun install-callback (function)
+  "generate an handle to call lisp `function' from tcl, returns the handle that can be used as argumento for tcl commands (e.g. \"-callback\" ot \"tag-bind\")."
+  (let ((name (create-name)))
+    (dbg "install-callback (~a)~%" name)
+    (add-callback name function)
+    name))
+
 (defun callback (sym arg)
   "perform the call of the function associated with sym and the args arg"
   (let ((fun (gethash sym (wish-callbacks *wish*))))

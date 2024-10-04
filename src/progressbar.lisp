@@ -27,6 +27,7 @@
   mode
   maximum
   phase
-  value)
+  value
+  text)
 
 (defwrapper progressbar (widget tkvariable) () "ttk::progressbar")

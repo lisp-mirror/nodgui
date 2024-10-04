@@ -396,6 +396,7 @@
              (fprogress (make-instance 'frame :master bar))
              (lprogress (make-instance 'label :master fprogress :text "Progress:"))
              (progress (make-instance 'progressbar
+                                      :text "text superimposed"
                                       :master fprogress
                                       :value    0
                                       :length 150))

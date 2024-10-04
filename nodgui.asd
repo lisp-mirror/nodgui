@@ -97,6 +97,7 @@
                (:file "spinbox")
                (:file "text")
                (:file "frame")
+               (:file "systray")
                (:file "canvas")
                (:file "canvas-shapes")
                (:file "toplevel")
