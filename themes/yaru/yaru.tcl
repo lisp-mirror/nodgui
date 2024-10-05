@@ -3,7 +3,7 @@
 # Derived from Ubuntu Yaru theme, Copyright (c) 2018-2020 The Yaru theme authors
 # See <https://github.com/ubuntu/yaru/blob/master/AUTHORS> for a list of authors for the Yaru theme
 
-package require Tk 8.6
+package require Tk 9.0
 
 namespace eval ttk::theme::yaru {
 
@@ -60,7 +60,7 @@ namespace eval ttk::theme::yaru {
             Button.button -children {
                 Button.padding -children {
                     Button.label -side left -expand true
-                } 
+                }
             }
         }
 
@@ -68,7 +68,7 @@ namespace eval ttk::theme::yaru {
             Toolbutton.button -children {
                 Toolbutton.padding -children {
                     Toolbutton.label -side left -expand true
-                } 
+                }
             }
         }
 
@@ -132,8 +132,8 @@ namespace eval ttk::theme::yaru {
         ttk::style layout TSpinbox {
             Spinbox.field -children {
                 null -side right -children {
-                	Spinbox.uparrow -side top -sticky e
-                	Spinbox.downarrow -side bottom -sticky s
+                        Spinbox.uparrow -side top -sticky e
+                        Spinbox.downarrow -side bottom -sticky s
                 }
                 Spinbox.padding -expand 0 -children {
                     Spinbox.textarea
@@ -163,7 +163,7 @@ namespace eval ttk::theme::yaru {
                     Notebook.label -side top -sticky {}
                 }
             }
-        }        
+        }
 
         ttk::style layout Treeview.Item {
             Treeitem.padding -sticky nswe -children {
@@ -201,7 +201,7 @@ namespace eval ttk::theme::yaru {
                 disabled $I(button-disabled) \
                 pressed $I(button-pressed) \
                 active $I(button-basic) \
-            ] -border 4 -sticky news 
+            ] -border 4 -sticky news
 
         ttk::style element create Menubutton.indicator image $I(arrow-down-basic) -width 25 -sticky e
 
@@ -222,7 +222,7 @@ namespace eval ttk::theme::yaru {
 
         ttk::style element create Checkbutton.indicator \
             image [list $I(checkbox-basic) \
-            	disabled $I(checkbox-basic) \
+                disabled $I(checkbox-basic) \
                 {selected disabled} $I(checkbox-selected-dis) \
                 {pressed selected} $I(checkbox-selected) \
                 {active selected} $I(checkbox-selected) \
@@ -236,7 +236,7 @@ namespace eval ttk::theme::yaru {
 
         ttk::style element create Radiobutton.indicator \
             image [list $I(radio-basic) \
-            	disabled $I(radio-basic) \
+                disabled $I(radio-basic) \
                 {selected disabled} $I(radio-selected-dis) \
                 {pressed selected} $I(radio-selected) \
                 {active selected} $I(radio-selected) \
@@ -247,7 +247,7 @@ namespace eval ttk::theme::yaru {
 
         # Scrollbar
         ttk::style element create Horizontal.Scrollbar.trough image $I(scrollbar-hor-trough) \
-        	-border 2 -sticky ew
+                -border 2 -sticky ew
 
         ttk::style element create Horizontal.Scrollbar.thumb \
              image [list $I(scrollbar-hor-gray) \
@@ -257,7 +257,7 @@ namespace eval ttk::theme::yaru {
             ] -border 1 -sticky ew
 
         ttk::style element create Vertical.Scrollbar.trough image $I(scrollbar-vert-trough) \
-        	-border 2 -sticky ns
+                -border 2 -sticky ns
 
         ttk::style element create Vertical.Scrollbar.thumb \
             image [list $I(scrollbar-vert-gray) \
@@ -268,9 +268,9 @@ namespace eval ttk::theme::yaru {
 
         # Scale
         ttk::style element create Horizontal.Scale.trough \
-        	image [ list $I(scale-trough) \
-        		disabled $I(scale-trough-disabled)
-        	] -border 9 -padding 0
+                image [ list $I(scale-trough) \
+                        disabled $I(scale-trough-disabled)
+                ] -border 9 -padding 0
 
         ttk::style element create Horizontal.Scale.slider \
             image [list $I(scale-slider) \
@@ -280,9 +280,9 @@ namespace eval ttk::theme::yaru {
             ] -sticky news
 
         ttk::style element create Vertical.Scale.trough \
-        	image [ list $I(scale-trough) \
-        		disabled $I(scale-trough-disabled)
-        	] -border 9 -padding 0
+                image [ list $I(scale-trough) \
+                        disabled $I(scale-trough-disabled)
+                ] -border 9 -padding 0
 
         ttk::style element create Vertical.Scale.slider \
             image [list $I(scale-slider) \
@@ -319,7 +319,7 @@ namespace eval ttk::theme::yaru {
             {!focus} $colors(-selectbg) \
             {readonly hover} $colors(-selectbg) \
             {readonly focus} $colors(-selectbg)]
-            
+
         ttk::style map TCombobox -selectforeground [list \
             {!focus} $colors(-selectfg) \
             {readonly hover} $colors(-selectfg) \
@@ -340,7 +340,7 @@ namespace eval ttk::theme::yaru {
             ] -border 4 -padding 8
 
         ttk::style element create Combobox.downarrow image $I(arrow-down-basic) \
-        	-width 25 -sticky e
+                -width 25 -sticky e
 
         # Spinbox
         ttk::style element create Spinbox.field \
@@ -366,7 +366,7 @@ namespace eval ttk::theme::yaru {
 
         # Sizegrip
         ttk::style element create Sizegrip.sizegrip image $I(sizegrip) \
-        	-sticky news
+                -sticky news
 
         # Separator
         ttk::style element create Horizontal.separator image $I(separator)
@@ -376,7 +376,7 @@ namespace eval ttk::theme::yaru {
         # Labelframe
         ttk::style element create Labelframe.border image $I(checkbox-basic) \
             -border 4 -padding 4 -sticky news
-        
+
         # Notebook
         ttk::style element create Notebook.client \
             image $I(checkbox-basic) -border 4
@@ -395,7 +395,7 @@ namespace eval ttk::theme::yaru {
             image [list $I(tree-basic) \
                 pressed $I(tree-pressed)
             ] -border 10 -padding 4 -sticky news
-        
+
         ttk::style element create Treeitem.indicator \
             image [list $I(plus) \
                 user2 $I(empty) \
