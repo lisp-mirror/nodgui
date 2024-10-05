@@ -31,7 +31,7 @@
   variable-radio-button
   width)
 
-(defwrapper radio-button (tktextvariable widget)
+(defwrapper radio-button (widget)
   ((val
     :accessor radio-button-value
     :initarg  :value
@@ -40,7 +40,9 @@
     :accessor radio-button-variable
     :initarg :variable
     :initform nil))
-  "ttk::radiobutton")
+  "ttk::radiobutton"
+  (setf (value widget)
+        (radio-button-value widget)))
 
 (defmethod value ((rb radio-button))
   "reads the content of the shared variable of the radio button set"

@@ -29,7 +29,7 @@
   variable
   width)
 
-(defwrapper check-button (tktextvariable widget tkvariable) () "ttk::checkbutton")
+(defwrapper check-button (widget tkvariable) () "ttk::checkbutton")
 
 (defmethod (setf command) (val (check-button check-button))
   (add-callback (name check-button) val)
