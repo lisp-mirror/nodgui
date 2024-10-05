@@ -471,14 +471,15 @@
              (sep1 (add-separator mfile))
              (mf-export (make-menu mfile "Export..."))
              (sep2 (add-separator mfile))
-             (mf-print (make-menubutton mfile "Print" (write-postscript c)))
-             (sep3 (add-separator mfile))
-             (mfe-jpg (make-menubutton mf-export "jpeg" (lambda ()
+             (mf-postscript (make-menubutton mf-export "PostScript" (write-postscript c)))
+             (mfe-jpg (make-menubutton mf-export "jpeg (dummy)" (lambda ()
                                                           (format t "Jpeg pressed~&")
                                                           (finish-output))))
-             (mfe-gif (make-menubutton mf-export "png" (lambda ()
+             (mfe-gif (make-menubutton mf-export "png (dummy)" (lambda ()
                                                          (format t "Png pressed~&")
-                                                         (finish-output))))
+                                                                 (finish-output))))
+             (mf-print (make-menubutton mfile "Print" (lambda () (print-dialog sc))))
+             (sep3 (add-separator mfile))
              (mf-scale (make-menu mfile "Scale..."))
              (mfs-1 (make-menubutton mf-scale "0.5" (lambda ()
                                                       (scale c 0.5))))
@@ -530,8 +531,8 @@
              (mp-3 (make-menubutton mp "Option 3" (lambda ()
                                                     (format t "Popup 3~&")
                                                     (finish-output)))))
-        (declare (ignore mf-print
-                         mf-exit mfe-gif mfe-jpg mf-save mf-load sep1 sep2 sep3 sep4 sep5
+        (declare (ignore mf-postscript mf-print
+                         mf-exit mfe-gif mfe-jpg mf-save mf-load sep1 sep2 sep3 sep4
                          mp-1 mp-2 mp-3 mfs-1 mfs-2 mfs-3 mfs-4))
         (setf (value progress) 10)
         (add-menubar mb)

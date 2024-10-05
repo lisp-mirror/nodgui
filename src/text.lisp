@@ -848,6 +848,9 @@
                        (first ranges)
                        (second ranges)))))
 
+(defmethod print-dialog ((object text))
+  (%print-dialog object))
+
 ;;; scrolled-text
 
 (defclass scrolled-text (frame)
@@ -1448,3 +1451,7 @@ splitted (i.e. no hyphenation)"
                                    (append splitted-so-far splitted)))
                      splitted-so-far)))
         (join-with-strings (%subdivide words '()) "")))))
+
+(defmethod print-dialog ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (print-dialog text-widget)))

@@ -1808,6 +1808,9 @@
            #:font-measure
            #:font-families
            #:font-actual
+           #:font-chooser-show
+           #:font-chooser-hide
+           #:print-dialog
            #:force-focus
            #:forget-pane
            #:format-wish

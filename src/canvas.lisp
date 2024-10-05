@@ -892,3 +892,9 @@
   (configure (canvas sc)
              "yscrollcommand"
              (concatenate 'string (widget-path (vscroll sc)) " set")))
+
+(defmethod print-dialog ((object canvas))
+  (%print-dialog object))
+
+(defmethod print-dialog ((object scrolled-canvas))
+  (%print-dialog (canvas object)))

@@ -674,6 +674,14 @@ set y [winfo y ~a]
 (defun font-chooser-hide ()
   (format-wish (tclize `(tk fontchooser hide))))
 
+(defgeneric print-dialog (object)
+  (:documentation "Open a dialog window to print the widget on a physical printer, if an error occurred (e.g. no printer is available or installed), `nil' is returned."))
+
+(defun %print-dialog (widget)
+  (tcl-bool->lisp
+   (with-read-data ()
+       (format-wish (tclize `(senddata [print_dialog ,(widget-path widget) ]))))))
+
 ;;; misc functions
 
 (defvar *default-theme* "default"

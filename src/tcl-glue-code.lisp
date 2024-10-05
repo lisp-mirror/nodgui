@@ -185,6 +185,13 @@
              (".nodgui.debug" \ configure -yscrollcommand {".nodgui.vs" \ set})
              (pack ".nodgui.vs" \ -side right -fill y))))
 
+     (defproc print_dialog (widget)
+       (global buffer)
+       (global server)
+       (:if ([catch {tk print $widget}] .> 0)
+            (return 0)
+            (return 1)))
+
      (defproc nodguidebug (text)
        (global tclside_nodguidebug)
        (:if ($tclside_nodguidebug)
