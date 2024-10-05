@@ -160,7 +160,8 @@
        (and command
             (progn
               (add-callback (name widget) command)
-              (name widget)))"")
+              (name widget)))
+       "")
       (cols cols "~@[ -cols ~d~]" cols "")
       (compound compound "~@[ -compound {~(~a~)}~]" compound "")
       (confine
@@ -363,7 +364,12 @@
       (xscrollcommand xscrollcommand "~@[ -xscrollcommand {~(~a~)}~]" xscrollcommand "")
       (xscrollincrement xscrollincrement "~@[ -xscrollincrement {~(~a~)}~]" xscrollincrement "")
       (yscrollcommand yscrollcommand "~@[ -yscrollcommand {~(~a~)}~]" yscrollcommand "")
-      (yscrollincrement yscrollincrement "~@[ -yscrollincrement {~(~a~)}~]" yscrollincrement "")))
+      (yscrollincrement yscrollincrement "~@[ -yscrollincrement {~(~a~)}~]" yscrollincrement "")
+      (tile                                 ; name
+       tile                                 ; key
+       " -tile ~a"                          ; format control string
+       (lisp-bool->tcl tile)                ; code
+       "")))                                ; comment
 
   (defparameter *class-args* '())
 

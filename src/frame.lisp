@@ -33,7 +33,9 @@
   pady
   takefocus
   visual
-  width)
+  width
+  backgroundimage
+  tile)
 
 (defargs frame ()
   borderwidth
