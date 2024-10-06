@@ -27,7 +27,7 @@
     (setf *default-theme* theme))
   (with-nodgui (:debug-tcl nil)
     (let* ((widget          (make-instance 'button
-                                           :text    "widget"
+                                           :text    "A few widgets overview"
                                            :command (lambda () (demo-widget))))
            (eyes            (make-instance 'button
                                            :text    "eyes"
@@ -190,6 +190,18 @@
                                                      :text "Virtual event aliasing"
                                                      :command (lambda ()
                                                                 (demo-virtual-event-aliasing))))
+           (demo-radio-buttons (make-instance 'button
+                                              :text "radio buttons (mutually exclusive)"
+                                              :command (lambda ()
+                                                         (demo-radio-buttons))))
+           (demo-menu-check-buttons (make-instance 'button
+                                                   :text "menu check button"
+                                                   :command (lambda ()
+                                                              (demo-menu-check-buttons))))
+           (demo-menu-radio-buttons (make-instance 'button
+                                                   :text "menu radio button"
+                                                   :command (lambda ()
+                                                         (demo-menu-radio-buttons))))
            (b-quit                    (make-instance 'button
                                                      :text    "Quit lisp 🙂"
                                                      :command (lambda ()
@@ -241,7 +253,10 @@
       (grid demo-3d                  13 2 :sticky :nswe)
       (grid demo-virtual-event       14 0 :sticky :nswe)
       (grid demo-virtual-event-alias 14 1 :sticky :nswe)
-      (grid b-quit                   15 0 :sticky :nswe :columnspan 3)
+      (grid demo-radio-buttons       15 0 :sticky :nswe)
+      (grid demo-menu-check-buttons  15 1 :sticky :nswe)
+      (grid demo-menu-radio-buttons  15 2 :sticky :nswe)
+      (grid b-quit                   16 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
 
@@ -312,7 +327,7 @@
   (finish-output))
 
 (defun demo-widget (&key theme)
-  (setf *debug-tk* nil)
+  (setf *debug-tk* t)
   (with-nodgui (:debug-tcl nil
                 :theme theme)
     (flet ((write-postscript (canvas)
@@ -328,17 +343,17 @@
              (r1 (make-instance 'radio-button
                                 :master   fradio
                                 :text     "fried"
-                                :value    1
+                                :value    11
                                 :variable "eggs"))
              (r2 (make-instance 'radio-button
                                 :master   fradio
                                 :text     "stirred"
-                                :value    2
+                                :value    12
                                 :variable "eggs"))
              (r3 (make-instance 'radio-button
                                 :master   fradio
                                 :text     "cooked"
-                                :value    3
+                                :value    13
                                 :variable "eggs"))
              (combo (make-instance 'combobox
                                    :master fradio
@@ -439,6 +454,34 @@
              (mfs-4 (make-menubutton mf-scale "0.5/2" (lambda ()
                                                         (scale c 0.5 2))))
              (sep4 (add-separator mfile))
+             (mf-checkbuttons (make-menu mfile "Check buttons"))
+             (ck-1 (make-instance 'menucheckbutton
+                                  :master mf-checkbuttons
+                                  :text "Check 1"))
+             (ck-2 (make-instance 'menucheckbutton
+                                  :master mf-checkbuttons
+                                  :text "Check 2"))
+             (ck-3 (make-instance 'menucheckbutton
+                                  :master mf-checkbuttons
+                                  :text "Check 3"))
+             (mf-radiobuttons (make-menu mfile "Radio buttons"))
+             ;; radio buttons must share the same value for the slot `variable'
+             (radio-1 (make-instance 'menuradiobutton
+                                     :value :radio-1
+                                     :variable "menu-radio"
+                                     :master mf-radiobuttons
+                                     :text "Radio 1"))
+             (radio-2 (make-instance 'menuradiobutton
+                                     :value :radio-2
+                                     :variable "menu-radio"
+                                     :master mf-radiobuttons
+                                     :text "Radio 2"))
+             (radio-3 (make-instance 'menuradiobutton
+                                     :value :radio-3
+                                     :variable "menu-radio"
+                                     :master mf-radiobuttons
+                                     :text "Radio 3"))
+             (sep5 (add-separator mfile))
              (mf-exit (make-menubutton mfile "Exit" (lambda () (exit-wish))
                                        :underline 1
                                        :accelerator "Alt q/Control q"))
@@ -452,7 +495,8 @@
              (mp-3 (make-menubutton mp "Option 3" (lambda ()
                                                     (format t "Popup 3~&")
                                                     (finish-output)))))
-        (declare (ignore mf-print mf-exit mfe-gif mfe-jpg mf-save mf-load sep1 sep2 sep3 sep4
+        (declare (ignore mf-print
+                         mf-exit mfe-gif mfe-jpg mf-save mf-load sep1 sep2 sep3 sep4 sep5
                          mp-1 mp-2 mp-3 mfs-1 mfs-2 mfs-3 mfs-4))
         (setf (value progress) 10)
         (add-menubar mb)
@@ -529,7 +573,15 @@
               (push x lines))))
         (setf *demo-line* (create-line c lines))
         (setf *demo-canvas* c)
-        (create-text c 10 10 "Nodgui Demonstration")))))
+        (create-text c 10 10 "Nodgui Demonstration")
+        (format t
+                "checkbuttons ~s ~s ~s radiobuttons ~s ~s ~s~%"
+                (value ck-1)
+                (value ck-2)
+                (value ck-3)
+                (value radio-1)
+                (value radio-2)
+                (value radio-3))))))
 
 (defvar *angle* 0.0f0)
 
@@ -1684,3 +1736,75 @@
             (lambda (e)
               (declare (ignore e))
               (fire-event text-area insert-event))))))
+
+(defun demo-radio-buttons ()
+  (with-nodgui ()
+    ;; radio buttons must share the same value for the slot `variable'
+    (let* ((ck1 (make-instance 'radio-button
+                               :value :a
+                               :text "a"
+                               :variable "ck"))
+           (ck2 (make-instance 'radio-button
+                               :value :b
+                               :text "b"
+                               :variable "ck"))
+           (button (make-instance 'button
+                                  :text "get radiobuttons value"
+                                  :command
+                                  (lambda ()
+                                    (message-box (format nil
+                                                         "check-value ~a"
+                                                         (value ck2))
+                                                 "info"
+                                                 +message-box-type-ok+
+                                                 +message-box-icon-info+)))))
+      (pack ck1)
+      (pack ck2)
+      (pack button))))
+
+(defun demo-menu-check-buttons ()
+  (with-nodgui ()
+    (let* ((mb (make-menubar))
+           (mfile (make-menu mb "File" ))
+           (ck-1 (make-instance 'menucheckbutton
+                                :master mfile
+                                :text "Check 1"))
+           (button (make-instance 'button
+                                  :text "get menu button value"
+                                  :command
+                                  (lambda ()
+                                    (message-box (format nil
+                                                         "check-value ~a"
+                                                         (value ck-1))
+                                                 "info"
+                                                 +message-box-type-ok+
+                                                 +message-box-icon-info+)))))
+      (pack button))))
+
+(defun demo-menu-radio-buttons ()
+  (with-nodgui ()
+    ;; radio buttons must share the same value for the slot `variable'
+    (let* ((mb (make-menubar))
+           (mfile (make-menu mb "File" ))
+           (ck1 (make-instance 'menuradiobutton
+                               :master mfile
+                               :value :a
+                               :text "a"
+                               :variable "ck"))
+           (ck2 (make-instance 'menuradiobutton
+                               :master mfile
+                               :value :b
+                               :text "b"
+                               :variable "ck"))
+           (button (make-instance 'button
+                                  :text "get menuradiobuttons value"
+                                  :command
+                                  (lambda ()
+                                    (message-box (format nil
+                                                         "check-value ~a"
+                                                         (value ck2))
+                                                 "info"
+                                                 +message-box-type-ok+
+                                                 +message-box-icon-info+)))))
+      (declare (ignore ck1))
+      (pack button))))

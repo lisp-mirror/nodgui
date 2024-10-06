@@ -26,20 +26,35 @@
     :initarg :group
     :initform nil)))
 
-(defmethod initialize-instance :after ((m menuradiobutton) &key)
-  (when (command m)
-    (add-callback (name m) (command m)))
-  (unless (group m)
-    (setf (group m)
-          (name m)))
-  (format-wish "~A add radiobutton -label {~A} -value ~a -variable ~a ~@[ -command {callback ~a}~]"
-               (widget-path (master m)) (text m) (name m) (group m)
-               (and (command m) (name m))))
+(defmethod initialize-instance :after ((object menuradiobutton)
+                                       &key
+                                         (variable nil)
+                                         (value nil) &allow-other-keys)
+  (with-accessors ((group   group)
+                   (name    name)
+                   (text    text)
+                   (master  master)
+                   (command command)) object
+    (let ((master-widget-path (widget-path master)))
+      (when variable
+        (setf group variable))
+      (when command
+        (add-callback name command))
+      (when (not group)
+        (setf group name))
+      (format-wish "~a add radiobutton -label \"~a\" -variable \"~a\" -value \"~a\" ~@[ -command {callback ~a}~]"
+                   master-widget-path
+                   text
+                   group
+                   value
+                   (and command
+                        name))
+      (setf (value object) value))))
 
 (defmethod value ((cb menuradiobutton))
   (with-read-data ()
-    (format-wish "global ~a; senddata ${~a}" (group cb) (group cb))))
+    (format-wish "global \"~a\"; senddatastring ${~a}" (group cb) (group cb))))
 
 (defmethod (setf value) (val (cb menuradiobutton))
-  (format-wish "global ~a; set ~a {~a}" (group cb) (group cb) val)
+  (format-wish "global \"~a\"; set \"~a\" \"~a\"" (group cb) (group cb) val)
   val)

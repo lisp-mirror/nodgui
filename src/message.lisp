@@ -68,7 +68,6 @@
 
 (gen-message-box-type)
 
-
 (defun message-box (message title type icon &key parent)
   ;;; tk_messageBox function
   (format-wish "senddatastring [tk_messageBox -message \"~a\" -title {~a} -type {~(~a~)} -icon {~(~a~)}~@[ -parent ~a~]]" message title type icon (and parent (widget-path parent)))

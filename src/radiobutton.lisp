@@ -25,7 +25,7 @@
   state
   style
   takefocus
-  textvariable
+  text
   underline
   value-radio-button
   variable-radio-button
