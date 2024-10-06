@@ -191,6 +191,10 @@
                                                      :text "Virtual event aliasing"
                                                      :command (lambda ()
                                                                 (demo-virtual-event-aliasing))))
+           (demo-classic-frame-background (make-instance 'button
+                                                         :text "Not supporting ttk themes (classic) frame with background"
+                                                         :command (lambda ()
+                                                                    (demo-classic-frame-background))))
            (demo-radio-buttons (make-instance 'button
                                               :text "radio buttons (mutually exclusive)"
                                               :command (lambda ()
@@ -532,7 +536,7 @@
                                                     (format t "Popup 3~&")
                                                     (finish-output)))))
         (declare (ignore mf-postscript mf-print
-                         mf-exit mfe-gif mfe-jpg mf-save mf-load sep1 sep2 sep3 sep4
+                         mf-exit mfe-gif mfe-jpg mf-save mf-load sep1 sep2 sep3 sep4 sep5
                          mp-1 mp-2 mp-3 mfs-1 mfs-2 mfs-3 mfs-4))
         (setf (value progress) 10)
         (add-menubar mb)
@@ -1812,6 +1816,15 @@
             (lambda (e)
               (declare (ignore e))
               (fire-event text-area insert-event))))))
+
+(defun demo-radio-buttons ()
+  (with-nodgui ()
+    (pack (make-instance 'classic-frame
+                         :width           320
+                         :height          240
+                         :background      (make-tk-color :beige)
+                         :backgroundimage (name (make-image +bell-icon+))
+                         :tile            t))))
 
 (defun demo-radio-buttons ()
   (with-nodgui ()
