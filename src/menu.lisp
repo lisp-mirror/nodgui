@@ -55,19 +55,12 @@
                  (widget-path (master m)) (text m) (widget-path m) underline)))
 
 (defun make-menu (menu text &key underline name (tearoff 0))
-  (if name
-      (make-instance 'menu
-                     :master    menu
-                     :text      text
-                     :underline underline
-                     :name      name
-                     :tearoff   tearoff)
-      (make-instance 'menu
-                     :master    menu
-                     :text      text
-                     :underline underline
-                     :name      name
-                     :tearoff tearoff)))
+  (make-instance 'menu
+                 :master    menu
+                 :text      text
+                 :underline underline
+                 :name      name
+                 :tearoff   tearoff))
 
 (defun add-separator (menu)
   (format-wish "~A add separator" (widget-path menu))
