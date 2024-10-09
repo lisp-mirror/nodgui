@@ -2,6 +2,8 @@
 #+AUTHOR:
 #+TITLE: NODGUI
 
+** note: you need TK version 9 to run this code
+
 * NODGUI
 
   /"No Drama GUI"/
