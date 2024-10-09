@@ -467,10 +467,10 @@ package require Tk
 # set ::notksvg to true for testing purposes
 # package vcompare is technically correct, not useful,
 # so use 8.6.99
-if { (! [info exists ::notksvg] || ! $::notksvg) &&
-    [package vcompare 8.6.99 $::tk_version] > 0 } {
-  catch { package require tksvg }
-}
+# if { (! [info exists ::notksvg] || ! $::notksvg) &&
+#     [package vcompare 8.6.99 $::tk_version] > 0 } {
+#   catch { package require tksvg }
+# }
 
 try {
   set iscript [info script]
