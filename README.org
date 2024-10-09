@@ -10,10 +10,9 @@
 
 ** important notes
 
-*** note: you need TK version 9 to run this code
+***  you need TK version 9 to run this code
 
-***   Version ~0.4.0~ broke the user API, see
-   [[https://www.autistici.org/interzona/nodgui.html#orgb574adf][here]] for more information about how your code is affected and how to fix it.
+***   Version ~0.4.0~ broke the user API, see [[https://www.autistici.org/interzona/nodgui.html#orgb574adf][here]] for more information about how your code is affected and how to fix it.
 
 ** Features
 
