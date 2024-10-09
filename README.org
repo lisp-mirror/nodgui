@@ -2,17 +2,17 @@
 #+AUTHOR:
 #+TITLE: NODGUI
 
-** note: you need TK version 9 to run this code
-
 * NODGUI
 
   /"No Drama GUI"/
 
   Common Lisp bindings for the Tk GUI toolkit.
 
-** important note:
+** important notes
 
-   Version ~0.4.0~ broke the user API, see
+*** note: you need TK version 9 to run this code
+
+***   Version ~0.4.0~ broke the user API, see
    [[https://www.autistici.org/interzona/nodgui.html#orgb574adf][here]] for more information about how your code is affected and how to fix it.
 
 ** Features
