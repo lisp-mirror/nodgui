@@ -142,11 +142,37 @@
 ;; if set to t, nodgui will report the buffer size sent to tk
 (defparameter *debug-buffers* nil)
 
+(defun which-wish (search-for)
+  (trim (with-output-to-string (stream)
+          (uiop:wait-process (uiop:launch-program (list "which" search-for)
+                                                  :input        nil
+                                                  :output       stream
+                                                  :error-output nil)))))
+
+(defun guess-wish-interpreter-path ()
+  (cond
+    ((not (string-empty-p (which-wish "wish9.0")))
+     (which-wish "wish9.0"))
+    ((not (string-empty-p (which-wish "wish")))
+     (which-wish "wish"))
+    ((file-exists-p "/usr/bin/wish9.0")
+     "/usr/bin/wish9.0")
+    ((file-exists-p "/usr/bin/wish")
+     "/usr/bin/wish")
+    ((file-exists-p "/usr/local/bin/wish9.0")
+     "/usr/local/bin/wish9.0")
+    ((file-exists-p "/usr/local/bin/wish")
+     "/usr/local/bin/wish")
+    ((file-exists-p "./wish9.0")
+     "./wish9.0")
+    ((file-exists-p "./wish8.6")
+     "./wish")))
+
 (defvar *wish-pathname*
   #+freebsd "wish8.6"
   #-freebsd "wish")
 
-(defparameter *default-toplevel-name* "NODGUI")
+(defparameter *default-toplevel-name* "nodgui")
 
 (defvar *wish-args* '())
 

@@ -1607,6 +1607,7 @@
            #:wish-variable
            #:wish-variables
            #:*wish-args*
+           #:guess-wish-interpreter-path
            #:*wish-pathname*
            #:*default-nodgui-debugger*
            #:*force-sync-data-multifont-listbox*
