@@ -150,6 +150,16 @@
                                                   :error-output nil)))))
 
 (defun guess-wish-interpreter-path ()
+  "This function try to guess the path to the wish interpreter and returns said path, if no interpreter is found, returns nil.
+
+Used in conjunction with *wish-pathname* e.g.
+
+(setf *wish-pathname* (guess-wish-interpreter-path))
+
+(when *wish-pathname*
+ ...
+
+"
   (cond
     ((not (string-empty-p (which-wish "wish9.0")))
      (which-wish "wish9.0"))
@@ -166,7 +176,9 @@
     ((file-exists-p "./wish9.0")
      "./wish9.0")
     ((file-exists-p "./wish8.6")
-     "./wish")))
+     "./wish")
+    (t
+     nil)))
 
 (defvar *wish-pathname*
   #+freebsd "wish8.6"
