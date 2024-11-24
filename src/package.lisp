@@ -1987,6 +1987,8 @@
            #:text
            #:scrolled-text
            #:make-scrolled-text
+           #:x-visible-portion
+           #:y-visible-portion
            #:textbox
            #:tkobject
            #:title
@@ -2082,6 +2084,7 @@
            #:self
            #:reset-scroll
            #:scroll-to-top
+           #:scroll-to
            #:tagbind
            #:handle
            #:column-values

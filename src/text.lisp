@@ -195,6 +195,8 @@
 
 (defgeneric scroll-until-line-on-top (object line-index &optional column-index))
 
+(defgeneric scroll-to (object coordinates))
+
 (defgeneric index->line-char-coordinates (object index))
 
 (defun make-indices-xy (x y)
@@ -809,6 +811,11 @@
     (format-wish (tclize `(,(widget-path object) " " yview {+ ,indices })))
     object))
 
+(defmethod scroll-to ((object text) coordinates)
+  (let ((indices (parse-indices coordinates)))
+    (format-wish (tclize `(,(widget-path object) " " yview {+ ,indices })))
+    object))
+
 (defmethod index->line-char-coordinates ((object text) coordinates)
   (with-read-data (nil)
     (format-wish (tclize `(senddatastring [ ,(widget-path object)      " "
@@ -1118,6 +1125,11 @@
     (scroll-until-line-on-top text-widget line-index column-index)
     object))
 
+(defmethod scroll-to ((object scrolled-text) coordinates)
+  (with-inner-text (text-widget object)
+    (scroll-to text-widget coordinates)
+    object))
+
 (defmethod index->line-char-coordinates ((object scrolled-text) coordinates)
   (with-inner-text (text-widget object)
     (index->line-char-coordinates text-widget coordinates)))
@@ -1323,6 +1335,27 @@ the size of the default one"
                      :end-index        end-index
                      :case-insensitive case-insensitive
                      :accum            accum)))
+
+(defun visible-portion (scrollbar)
+  (with-read-data (nil)
+    (format-wish "senddata \"([~a get])\"" (widget-path scrollbar))
+    (let ((raw (read-data)))
+      (list :start (first raw)
+            :end   (second raw)))))
+
+(defgeneric y-visible-portion (object))
+
+(defmethod y-visible-portion ((object scrolled-text))
+  "Return a plist list of normalized (from 0 to 1) portion of currently visible document.
+ e.g: (:start 0.0 :end 0.5)"
+  (visible-portion (vscroll object)))
+
+(defgeneric x-visible-portion (object))
+
+(defmethod x-visible-portion ((object scrolled-text))
+  "Return a plist list of normalized (from 0 to 1) portion of currently visible document.
+ e.g: (:start 0.0 :end 0.5)"
+  (visible-portion (hscroll object)))
 
 (defgeneric fit-words-to-text-widget (object text font))
 

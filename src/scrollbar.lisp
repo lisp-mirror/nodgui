@@ -30,6 +30,8 @@
 (defun make-scrollbar (master &key (orientation "vertical"))
   (make-instance 'scrollbar :master master :orientation orientation))
 
-(defmethod scrollbar-get ((scrollbar scrollbar))
-  (format-wish "senddata \"([~a get])\"" (widget-path scrollbar))
-  (read-data))
+(defgeneric scrollbar-get (object))
+
+(defmethod scrollbar-get ((object scrollbar))
+  (with-read-data ()
+    (format-wish "senddata \"([~a get])\"" (widget-path object))))
