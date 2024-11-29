@@ -143,11 +143,11 @@
 (defparameter *debug-buffers* nil)
 
 (defun which-wish (search-for)
-  (trim (with-output-to-string (stream)
-          (uiop:wait-process (uiop:launch-program (list "which" search-for)
-                                                  :input        nil
-                                                  :output       stream
-                                                  :error-output nil)))))
+  (ignore-errors (trim (with-output-to-string (stream)
+                         (uiop:wait-process (uiop:launch-program (list "which" search-for)
+                                                                 :input        nil
+                                                                 :output       stream
+                                                                 :error-output nil))))))
 
 (defun guess-wish-interpreter-path ()
   "This function try to guess the path to the wish interpreter and returns said path, if no interpreter is found, returns nil.
@@ -180,9 +180,7 @@ Used in conjunction with *wish-pathname* e.g.
     (t
      nil)))
 
-(defvar *wish-pathname*
-  #+freebsd "wish8.6"
-  #-freebsd "wish")
+(defparameter *wish-pathname* nil)
 
 (defparameter *default-toplevel-name* "nodgui")
 
@@ -741,6 +739,7 @@ error-strings) are ignored."
                         &key
                           (title   "")
                           (debug    :development)
+                          (wish-shell-path (guess-wish-interpreter-path))
                           (main-loop-thread-special-bindings *thread-default-special-bindings*)
                           (stream nil)
                         &allow-other-keys)
@@ -758,7 +757,9 @@ error-strings) are ignored."
   With :name (or :title as a synonym) you can set both title and class
   name of this window"
   (declare (ignore debug stream title main-loop-thread-special-bindings))
-  `(call-with-nodgui (lambda () ,@body) ,@keys))
+  `(progn
+     (setf *wish-pathname* ,wish-shell-path)
+     (call-with-nodgui (lambda () ,@body) ,@keys)))
 
 (defun wait-mainloop-threads ()
   (join-thread (wish-main-loop-thread *wish*))
