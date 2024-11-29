@@ -801,9 +801,17 @@
       (write-sequence data stream)))
   object)
 
-(defmethod load-text ((object text) filename)
-  "load the content of the file <filename>"
-  (setf (text object) (alexandria:read-file-into-string filename))
+(a:define-constant +newline-as-string+ (format nil "~%") :test #'string=)
+
+(defmethod load-text ((object text) file-path)
+  "load the content of the file `file-path'"
+  (if (file-exists-p file-path)
+      (with-open-file (stream file-path :direction :input :if-does-not-exist :error)
+        (loop for line = (read-line stream nil nil nil)
+              while line
+              do
+                 (append-text object (strcat line +newline-as-string+))))
+      (error "File ~a does not exists" file-path))
   object)
 
 (defmethod scroll-until-line-on-top ((object text) line-index &optional (column-index 0))
@@ -1082,6 +1090,10 @@
                filename
                :if-exists if-exists
                :if-does-not-exist if-does-not-exist)))
+
+(defmethod load-text ((object scrolled-text) file-path)
+  (with-inner-text (text-widget object)
+    (load-text text-widget file-path)))
 
 (defmethod sync-text-metrics ((object scrolled-text))
   (with-inner-text (text-widget object)
