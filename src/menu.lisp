@@ -105,7 +105,7 @@
 (defmethod initialize-instance :after ((mb menubar) &key)
   (format-wish "menu ~a -tearoff 0 -type menubar" (widget-path mb)))
 
-;;; method to pop up a menue at the root window coordinates x and y
+;;; method to pop up a menu at the root window coordinates x and y
 
 (defgeneric popup (menu x y))
 
