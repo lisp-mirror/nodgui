@@ -1,3 +1,82 @@
+2024-12-01 cage
+
+	* src/menu.lisp:
+
+	- fixed typo.
+
+2024-11-29 cage
+
+	* src/text.lisp,
+	* src/wish-communication.lisp:
+
+	- specialized (and optimized a bit) 'load-text' on 'scrolled-text'
+	widget.
+	- removed hardcoded wish shell path.
+
+2024-11-24 cage
+
+	* src/package.lisp,
+	* src/scrollbar.lisp,
+	* src/text.lisp:
+
+	- added more functions for text widget: 'x/y-visible-portion' and
+	'scroll-to'.
+
+2024-10-13 cage
+
+	* src/package.lisp,
+	* src/wish-communication.lisp:
+
+	- added 'guess-wish-interpreter-path'.
+	- added docstring;
+	- ensured 'guess-wish-interpreter-path' return nil when no path has
+	been found.
+
+2024-10-09 cage
+
+	* src/demo-tests.lisp:
+
+	- improved visuals of 'demo-widgets'.
+
+2024-10-08 cage
+
+	* src/menu.lisp:
+
+	- removed useless code.
+
+2024-10-06 cage
+
+	* src/demo-tests.lisp,
+	* src/menucheckbutton.lisp,
+	* src/menuradiobutton.lisp,
+	* src/message.lisp,
+	* src/radiobutton.lisp:
+
+	- fixed radio and check buttons.
+
+2024-10-05 cage
+
+	* src/checkbutton.lisp,
+	* src/radiobutton.lisp,
+	* src/wish-communication.lisp:
+
+	- prevented radiobuttons to be in 'undefined' because its variable has
+	not been initialized
+	Accessing the value of a radiobutton before clicking on it wold access
+	a non initialized TK variable, leading to a crash.
+	- wrapped 'guess-wish-interpreter-path' in 'eval-when' to allow
+	macroexpansion of 'with-nodgui'.
+
+2024-09-27 cage
+
+	* Changelog,
+	* NEWS.org,
+	* nodgui-lite.asd,
+	* nodgui.asd:
+
+	- increased version number;
+	- updated README and Changelog.
+
 2024-09-26 cage
 
 	* game/main.lisp,
