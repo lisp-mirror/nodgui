@@ -294,6 +294,7 @@
       (grid demo-molecule-viewer     16 2 :sticky :nswe)
       (grid demo-selfcheck-entry     17 0 :sticky :nswe)
       (grid demo-non-local-exit      17 1 :sticky :nswe)
+      (grid demo-classic-frame-background 17 2 :sticky :nswe)
       (grid b-quit                   18 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
@@ -1817,7 +1818,7 @@
               (declare (ignore e))
               (fire-event text-area insert-event))))))
 
-(defun demo-radio-buttons ()
+(defun demo-classic-frame-background ()
   (with-nodgui ()
     (pack (make-instance 'classic-frame
                          :width           320
