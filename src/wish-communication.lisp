@@ -177,9 +177,11 @@ Used in conjunction with *wish-pathname* e.g.
       ((file-exists-p "./wish9.0")
        "./wish9.0")
       ((file-exists-p "./wish8.6")
+       "./wish8.6")
+      ((file-exists-p "./wish")
        "./wish")
       (t
-       nil))))
+       "wish"))))
 
 (defparameter *wish-pathname* nil)
 
