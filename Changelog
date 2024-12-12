@@ -1,3 +1,29 @@
+2024-12-12 cage
+
+	* nodgui.asd,
+	* src/wish-communication.lisp:
+
+	- fixed default return value of 'guess-wish-interpreter-path', return
+	'wish', instead of nil. Also fixed and added a couple of checks in the
+	same function's body.
+	- updated version number.
+
+2024-12-05 cage
+
+	* NEWS.org:
+
+	- fixed NEWS file.
+
+2024-12-04 cage
+
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
+	* src/demo-tests.lisp:
+
+	- updated changelog and news file;
+	- fixed demo's buttons layout.
+
 2024-12-01 cage
 
 	* src/menu.lisp:
