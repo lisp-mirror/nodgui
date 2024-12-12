@@ -164,7 +164,7 @@ For more documentation."
     (format-wish (tclize `(senddatastring [ "units::reduce " \"+ ,unit-string \"])))))
 
 (defun new-unit (unit equivalent-to)
-  " Create a nes unit equivalent to `equivalent-to' e.g.
+  " Create a new unit equivalent to `equivalent-to' e.g.
   (with-nodgui ()
     (new-unit \"furlong\" \"220 yards\")
     (convert-units \"10 furlong\" \"yards\")) ; => 2200.0
