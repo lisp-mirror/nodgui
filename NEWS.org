@@ -1,3 +1,7 @@
+* 2024-12-12 version 0.7.2.1
+
+  - fixed a bug that prevented to start the GUI on some systems.
+
 * 2024-12-04 Version 0.7.2.0
  - [new feature]
    - added more functions for text widget: 'x/y-visible-portion' and 'scroll-to'.
