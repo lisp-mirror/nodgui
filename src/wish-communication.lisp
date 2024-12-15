@@ -776,8 +776,7 @@ error-strings) are ignored."
               (member (getf keys :debug) '(:deploy :development))))
   (flet ((start-wish ()
            (apply #'start-wish
-                  (append (filter-keys '(:stream)
-                                       keys)))))
+                  (filter-keys '(:debug-tcl) keys))))
     (let* ((class-name  (or (getf keys :class)
                             (getf keys :name)))
            (title-value (getf keys :title))
