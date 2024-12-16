@@ -149,6 +149,8 @@
 
 (defgeneric itemconfigure (widget item option value))
 
+(defgeneric item-configure (widget item option value))
+
 (defgeneric itemlower (w i &optional below))
 
 (defgeneric itemraise (w i &optional above))
@@ -168,6 +170,8 @@
 (defgeneric item-move-to (object item-handle x y))
 
 (defgeneric tagbind  (canvas tag event fun &key exclusive))
+
+(defgeneric add-tag (canvas tags search-spec &rest args))
 
 (defgeneric move-to (object x y))
 
@@ -309,12 +313,29 @@
   (tag-bind canvas tag event fun :exclusive exclusive))
 
 (defmethod tag-bind ((canvas canvas) tag event fun &key exclusive)
-  "bind fun to event of the widget w"
+  "bind `fun' as `event' of `tag'"
   (let ((name (create-name)))
     (add-callback name fun)
     (format-wish "~a bind {~(~a~)} {~a} {sendevent ~a %x %y %N %k %K %w %h %X %Y %b {??} {??} {??} ~:[~;;break~]}"
                  (widget-path canvas) tag event name exclusive))
   canvas)
+
+(defmethod add-tag ((object canvas) tags search-spec &rest args)
+  "Add tags to elements sepcified by `search-spec'"
+  (assert (member search-spec
+                  '(:above :all :below :closest :enclosed :overlapping :withtag)))
+  (format-wish "~a addtag {~(~a~)} {~(~a~)} ~{{~a}~}"
+               (widget-path object)
+               tags
+               search-spec
+               args)
+  object)
+
+(defmethod add-tag ((object canvas) (tags list) search-spec &rest args)
+  "Add tags to elements sepcified by `search-spec'"
+  (loop for tag in tags do
+    (apply #'add-tag object tag search-spec args))
+  object)
 
 (defmethod bind ((w canvas-item) event fun &key append exclusive)
   (declare (ignore append exclusive))
@@ -706,6 +727,28 @@
                (if (stringp value) ;; There may be values that need to be passed as
                    value           ;; unmodified strings, so do not downcase strings
                    (format nil "~(~a~)" value))) ;; if its not a string, print it downcased
+  widget)
+
+(defmethod item-configure ((widget canvas) item option (value string))
+  (format-wish "~A itemconfigure {~A} {-~(~A~)} {~A}"
+               (widget-path widget)
+               item
+               option
+               value)           ;; unmodified strings, so do not downcase strings
+  widget)
+
+(defmethod item-configure ((widget canvas) item option (value symbol))
+  (format-wish "~A itemconfigure {~A} {-~(~A~)} {~A}"
+               (widget-path widget)
+               item
+               option
+               (format nil "~(~a~)" value))
+  widget)
+
+(defmethod item-configure ((widget canvas) item option (value sequence))
+  (map nil
+       (lambda (a) (item-configure widget item option a))
+       value)
   widget)
 
 ;;; for tkobjects, the name of the widget is taken

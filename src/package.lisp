@@ -1830,6 +1830,7 @@
            #:item-delete
            #:item-move-to
            #:item-raise
+           #:add-tag
            #:move-to
            #:process-coords
            #:label
