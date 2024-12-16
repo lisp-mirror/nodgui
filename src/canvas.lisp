@@ -171,7 +171,9 @@
 
 (defgeneric tagbind  (canvas tag event fun &key exclusive))
 
-(defgeneric add-tag (canvas tags search-spec &rest args))
+(defgeneric item-add-tag (canvas tags search-spec &rest args))
+
+(defgeneric item-remove-tag (canvas item &rest tags))
 
 (defgeneric move-to (object x y))
 
@@ -320,7 +322,7 @@
                  (widget-path canvas) tag event name exclusive))
   canvas)
 
-(defmethod add-tag ((object canvas) tags search-spec &rest args)
+(defmethod item-add-tag ((object canvas) tags search-spec &rest args)
   "Add tags to elements sepcified by `search-spec'"
   (assert (member search-spec
                   '(:above :all :below :closest :enclosed :overlapping :withtag)))
@@ -331,10 +333,17 @@
                args)
   object)
 
-(defmethod add-tag ((object canvas) (tags list) search-spec &rest args)
+(defmethod item-add-tag ((object canvas) (tags list) search-spec &rest args)
   "Add tags to elements sepcified by `search-spec'"
   (loop for tag in tags do
-    (apply #'add-tag object tag search-spec args))
+    (apply #'item-add-tag object tag search-spec args))
+  object)
+
+(defmethod item-remove-tag ((object canvas) item &rest tags)
+  (format-wish "~a dtag {~(~a~)} ~{{~a}~}"
+               (widget-path object)
+               item
+               tags)
   object)
 
 (defmethod bind ((w canvas-item) event fun &key append exclusive)
