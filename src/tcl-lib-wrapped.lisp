@@ -73,6 +73,7 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
 (defun zip-file-list-contents (zip-filepath)
   "Returns a list of strings, each item of the list is a file contained in zipfile pointed by `zip-filepath'"
   (when (zip-file-p zip-filepath)
+    (require-tcl-package +tcl-zip-decode-libname+)
     (with-read-data ()
       (let ((*suppress-newline-for-tcl-statements* t))
         (format-wish (tclize `(senddatastrings [ "zipfile::decode::content "
@@ -81,6 +82,7 @@ Each element of `glob-paths' uses globs e.g '(\"*.zip\" \"foo.*\")"
 (defun unzip-file (zip-filepath destination-path)
   "Decompress a zip file in `zip-filepaths' on `destination-path'."
   (when (zip-file-p zip-filepath)
+    (require-tcl-package +tcl-zip-decode-libname+)
     (with-read-data ()
       (let ((*suppress-newline-for-tcl-statements* t))
         (format-wish (tclize `(senddatastrings [ "zipfile::decode::unzipfile "

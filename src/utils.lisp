@@ -94,7 +94,7 @@
 (defun join-with-strings* (junction &rest strings)
   (reduce #'(lambda (a b) (strcat a junction b)) strings))
 
-(defun trim (s &optional (bag '(#\Space #\tab #\Newline)))
+(defun trim (s &optional (bag '(#\Space #\tab #\Newline #\Return)))
   (string-trim bag s))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
