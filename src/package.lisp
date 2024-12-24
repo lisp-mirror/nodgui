@@ -1832,6 +1832,8 @@
            #:item-raise
            #:item-add-tag
            #:item-remove-tag
+           #:item-get-tag
+           #:item-find-items
            #:move-to
            #:process-coords
            #:label

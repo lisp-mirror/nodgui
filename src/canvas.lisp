@@ -173,7 +173,11 @@
 
 (defgeneric item-add-tag (canvas tags search-spec &rest args))
 
-(defgeneric item-remove-tag (canvas item &rest tags))
+(defgeneric item-find-items (canvas search-spec &rest args))
+
+(defgeneric item-remove-tag (object tags-or-handlers &rest tags))
+
+(defgeneric item-get-tag (object tag-or-handle))
 
 (defgeneric move-to (object x y))
 
@@ -322,10 +326,13 @@
                  (widget-path canvas) tag event name exclusive))
   canvas)
 
+(defmacro assert-legal-search-spec (search-spec)
+ `(assert (member ,search-spec
+                  '(:above :all :below :closest :enclosed :overlapping :withtag))))
+
 (defmethod item-add-tag ((object canvas) tags search-spec &rest args)
   "Add tags to elements sepcified by `search-spec'"
-  (assert (member search-spec
-                  '(:above :all :below :closest :enclosed :overlapping :withtag)))
+  (assert-legal-search-spec search-spec)
   (format-wish "~a addtag {~(~a~)} {~(~a~)} ~{{~a}~}"
                (widget-path object)
                tags
@@ -339,12 +346,30 @@
     (apply #'item-add-tag object tag search-spec args))
   object)
 
-(defmethod item-remove-tag ((object canvas) item &rest tags)
+(defmethod item-remove-tag ((object canvas) tags-or-handlers &rest tags)
   (format-wish "~a dtag {~(~a~)} ~{{~a}~}"
                (widget-path object)
-               item
+               tags-or-handlers
                tags)
   object)
+
+(defmethod item-get-tag ((object canvas) tag-or-handle)
+  (with-read-data ()
+    (format-wish "senddatastrings [~a gettags {~(~a~)}]"
+                 (widget-path object)
+                 tag-or-handle)))
+
+(defmethod item-find-items ((object canvas) search-spec &rest args)
+  "Find items matching `search-spec' criteria."
+  (assert-legal-search-spec search-spec)
+  (with-read-data (nil)
+    (format-wish "senddatastrings [~a find {~(~a~)} ~{{~a}~}]"
+                 (widget-path object)
+                 search-spec
+                 args)
+    ;; according to documentation item ids are always number (integer, i guess)
+    (mapcar #'parse-integer
+            (read-data))))
 
 (defmethod bind ((w canvas-item) event fun &key append exclusive)
   (declare (ignore append exclusive))
