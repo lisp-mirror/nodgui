@@ -333,6 +333,8 @@
 (defmethod item-add-tag ((object canvas) tags search-spec &rest args)
   "Add tags to elements sepcified by `search-spec'"
   (assert-legal-search-spec search-spec)
+  ;; according to documentation tags can not contains digits only (base 10, i guess)
+  (assert (notevery #'digit-char-p tags))
   (format-wish "~a addtag {~(~a~)} {~(~a~)} ~{{~a}~}"
                (widget-path object)
                tags
