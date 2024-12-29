@@ -782,7 +782,7 @@
   (text-in-range text (make-indices-start) (make-indices-end)))
 
 (defmethod (setf text) (val (text text))
-  (format-wish "~A delete 0.0 end; ~A insert end {~A}"
+  (format-wish "~a delete 0.0 end; ~a insert end \"~a\""
                (widget-path text)
                (widget-path text)
                val)

@@ -772,7 +772,7 @@
   (with-nodgui (:theme theme)
     (let ((b (make-instance 'button :text " a button [a] :)")))
       (pack b)
-      (setf (text b) " )} ~[eee]~ ")
+      (setf (text b) " )} ~[e\"e\"e]~ ")
       (flush-wish))))
 
 ;;; treeview tests
@@ -1459,12 +1459,11 @@
                                        :padding    0
                                        :font      "times 20"))
              (red-corner   (make-image +red-corner+))
-
              (blue-corner  (make-image +blue-corner+))
              (red-style    (make-style red-style (:action :element-create)
-                               :image (name red-corner)))
+                                       :image (name red-corner)))
              (blue-style   (make-style blue-style (:action :element-create)
-                               :image (name blue-corner)))
+                                       :image (name blue-corner)))
              (red-layout   (insert-layout (fetch-layout :corner-style)
                                                      '(:red-style
                                                        :side "right"
