@@ -37,71 +37,72 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; ops
 
-(define-typed-op d+ + desired-type)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (define-typed-op d+ + desired-type)
 
-(define-typed-op d* * desired-type)
+  (define-typed-op d* * desired-type)
 
-(define-typed-op d- - desired-type)
+  (define-typed-op d- - desired-type)
 
-(define-typed-op d/ / desired-type)
+  (define-typed-op d/ / desired-type)
 
-(define-typed-op dsqrt sqrt desired-type)
+  (define-typed-op dsqrt sqrt desired-type)
 
-(define-typed-op daref aref desired-type :input-value-on nil)
+  (define-typed-op daref aref desired-type :input-value-on nil)
 
-(define-typed-op dmin min desired-type)
+  (define-typed-op dmin min desired-type)
 
-(define-typed-op dmax max desired-type)
+  (define-typed-op dmax max desired-type)
 
-(define-typed-op d> > desired-type :return-value-on nil)
+  (define-typed-op d> > desired-type :return-value-on nil)
 
-(define-typed-op d< < desired-type :return-value-on nil)
+  (define-typed-op d< < desired-type :return-value-on nil)
 
-(define-typed-op d>= >= desired-type :return-value-on nil)
+  (define-typed-op d>= >= desired-type :return-value-on nil)
 
-(define-typed-op d<= <= desired-type :return-value-on nil)
+  (define-typed-op d<= <= desired-type :return-value-on nil)
 
-(define-typed-op d= = desired-type :return-value-on nil)
+  (define-typed-op d= = desired-type :return-value-on nil)
 
-(define-typed-op drandom random desired-type)
+  (define-typed-op drandom random desired-type)
 
-(define-typed-op dslot-value slot-value desired-type :input-value-on nil)
+  (define-typed-op dslot-value slot-value desired-type :input-value-on nil)
 
-(define-typed-op dsetf setf desired-type :input-value-on nil)
+  (define-typed-op dsetf setf desired-type :input-value-on nil)
 
-(define-typed-op dabs abs desired-type :return-value-on nil)
+  (define-typed-op dabs abs desired-type :return-value-on nil)
 
-(define-typed-op dplusp plusp desired-type :return-value-on nil)
+  (define-typed-op dplusp plusp desired-type :return-value-on nil)
 
-(define-typed-op dminusp minusp desired-type :return-value-on nil)
+  (define-typed-op dminusp minusp desired-type :return-value-on nil)
 
-(define-typed-op dzerop zerop desired-type :return-value-on nil)
+  (define-typed-op dzerop zerop desired-type :return-value-on nil)
 
-(define-typed-op dcos cos desired-type)
+  (define-typed-op dcos cos desired-type)
 
-(define-typed-op dsin sin desired-type)
+  (define-typed-op dsin sin desired-type)
 
-(define-typed-op dtan tan desired-type)
+  (define-typed-op dtan tan desired-type)
 
-(define-typed-op dcosh cosh desired-type)
+  (define-typed-op dcosh cosh desired-type)
 
-(define-typed-op dsinh sinh desired-type)
+  (define-typed-op dsinh sinh desired-type)
 
-(define-typed-op dtanh tanh desired-type)
+  (define-typed-op dtanh tanh desired-type)
 
-(define-typed-op dacos acos desired-type)
+  (define-typed-op dacos acos desired-type)
 
-(define-typed-op dasin asin desired-type)
+  (define-typed-op dasin asin desired-type)
 
-(define-typed-op datan atan desired-type)
+  (define-typed-op datan atan desired-type)
 
-(define-typed-op dexp exp desired-type)
+  (define-typed-op dexp exp desired-type)
 
-(define-typed-op dexpt expt desired-type)
+  (define-typed-op dexpt expt desired-type)
 
-(define-typed-op dlog log desired-type)
+  (define-typed-op dlog log desired-type)
 
-(define-typed-op dfloor floor desired-type)
+  (define-typed-op dfloor floor desired-type))
 
 (defun dlerp (w a b)
   #.nodgui.config:default-optimization
