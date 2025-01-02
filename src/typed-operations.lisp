@@ -133,8 +133,7 @@
 
 ;;;; constants
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (a:define-constant +2pi+ (d* 2.0f0 (desired pi)) :test #'=))
+(a:define-constant +2pi+ (d* 2.0f0 (desired pi)) :test #'=)
 
 ;; parsing helper
 
