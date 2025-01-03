@@ -727,11 +727,12 @@ error-strings) are ignored."
                                              (dbg "read input ~a" input)
                                              (manage-wish-output input))
                                          (error (e)
-                                           (exit-wish)
                                            (if (eq (wish-debug-level *wish*)
                                                    :deploy)
                                                (show-debugger e)
-                                               (error e)))))
+                                               (progn
+                                                 (exit-wish)
+                                                 (error e))))))
                               (dbg "read input thread terminated")))
                           :name "read loop"
                           :initial-bindings thread-special-bindings))))
