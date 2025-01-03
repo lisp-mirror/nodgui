@@ -346,7 +346,7 @@ not equal to all the others. The test is performed calling :test"
   (setf (items tree)
         (remove-if (lambda (a) (treeview-test-item (parent a) item))
                    (items tree)))
-  (format-wish "~a delete \"~a\"" (widget-path tree) item))
+  (format-wish "~a delete [list \"~a\"]" (widget-path tree) item))
 
 (defmethod treeview-delete ((tree treeview) (item tree-item))
   (treeview-delete tree (id item)))
