@@ -141,7 +141,6 @@
                (:file "test-nodgui"))
   :perform (test-op (op c) (symbol-call :all-tests :run-all-tests)))
 
-
 (defsystem nodgui/game
   :encoding         :utf-8
   :pathname         "game"

@@ -77,7 +77,6 @@
     (setf (animation-thread *animation*)
           (u:make-thread #'game-thread :name "game"))))
 
-
 (defun initialize-menu (toplevel)
   (let* ((bar       (make-menubar toplevel))
          (game      (make-menu bar  "Game"))
