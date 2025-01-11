@@ -597,6 +597,7 @@
   (a:with-gensyms (low-level-function-name)
     `(progn
        (defun ,low-level-function-name (,@args)
+         (declare (notinline ,name))
          (,name ,@args))
        (define-compiler-macro ,name (&whole form ,@args)
          (let ((low-funname ',low-level-function-name))
