@@ -768,97 +768,101 @@ from file: 'file'"
 (defgeneric load-from-vector (object data))
 
 (define-parse-header-chunk (image-id-len +targa-img-id-len-offset+
-                                              +targa-img-id-len-size+ tga nil))
+                            +targa-img-id-len-size+ tga nil))
 
 (define-parse-header-chunk (image-type +targa-img-type-offset+
-                                            +targa-img-type-size+ tga nil))
+                            +targa-img-type-size+ tga nil))
 
 (define-parse-header-chunk (image-specs +targa-img-spec-offset+
-                                            +targa-img-spec-size+ tga nil))
+                            +targa-img-spec-size+ tga nil))
 
 (define-parse-header-chunk (colormap-specs +targa-img-colormap-spec-offset+
-                                            +targa-img-colormap-spec-size+ tga nil))
+                            +targa-img-colormap-spec-size+ tga nil))
 
-(defun load-rearrange-raw-packet (bgra data)
-  (loop for i from 0 below (length bgra) by 4 do
-       (let ((b (elt bgra i))
-             (g (elt bgra (+ i 1)))
-             (r (elt bgra (+ i 2)))
-             (a (elt bgra (+ i 3))))
-         (vector-push-extend r data)
-         (vector-push-extend g data)
-         (vector-push-extend b data)
-         (vector-push-extend a data))))
+(defun load-rearrange-raw-packet (offset bgra bits)
+  (loop for data-ct from 0 below (length bgra) by 4
+        for bits-ct from 0 do
+          (let ((b (elt bgra data-ct))
+                (g (elt bgra (+ data-ct 1)))
+                (r (elt bgra (+ data-ct 2)))
+                (a (elt bgra (+ data-ct 3))))
+            (format t "assemble rgba ~x ~x ~x ~x -> ~x~%" r g b a (assemble-color r g b a))
+            (setf (elt bits (+ offset bits-ct))
+                  (assemble-color r g b a)))))
 
 (defmethod load-from-stream ((object tga) (stream stream))
-  (let ((type (first (parse-image-type object stream))))
-    (if (or (= type +targa-img-rgba+)
-            (= type +targa-img-rgba-rle+))
-        (let* ((id-len (first (parse-image-id-len object stream)))
-               (colormap-specs (parse-colormap-specs object stream))
-               (colormap-len (byte->int (subseq colormap-specs 2 4)))
-               (img-specs (parse-image-specs object stream))
-               ;;(x-origin  (byte->int (subseq img-specs 0 2)))
-               ;;(y-origin  (byte->int (subseq img-specs 2 4)))
-               (width     (byte->int (subseq img-specs 4 6)))
-               (height    (byte->int (subseq img-specs 6 8)))
-               (depth     (/ (byte->int (subseq img-specs 8 9)) 8))
-               (img-descr (first (subseq img-specs 9 10)))
-               (alpha-size (boole boole-and img-descr #x0e))
-               (scanline-origin (ash (boole boole-and img-descr #x30) -4))
-               (scanline-offset (+ +targa-img-header-size+ id-len colormap-len))
-               (scanline-size (* width height depth))
-               (bgra (make-array-frame (* width depth))))
-          (if (/= 8 alpha-size)
-              (push (format nil "Alpha bitsize should be 8 instead of ~x" alpha-size)
-                    (errors object))
-              (progn
-                (setf (width object)  width
-                      (height object) height
-                      (depth object) depth)
-                (file-position stream scanline-offset)
-                (if (= type +targa-img-rgba+)
-                    (progn
-                      (loop for i from 0 below height do
-                           (read-sequence bgra stream)
-                           (load-rearrange-raw-packet bgra (bits object))))
-                    (loop for i from 0 below (/ scanline-size depth) do
-                         (let* ((packet-head (read-byte stream))
-                                (packet-type (boole boole-and packet-head #x80))
-                                (packet-count (boole boole-and packet-head #x7f)))
-                           (if (= packet-type #x80) ;; rle packet
-                               (let ((b (read-byte stream))
-                                     (g (read-byte stream))
-                                     (r (read-byte stream))
-                                     (a (read-byte stream)))
-                                 (loop for px from 0 to packet-count do
-                                      (vector-push-extend r (bits object))
-                                      (vector-push-extend g (bits object))
-                                      (vector-push-extend b (bits object))
-                                      (vector-push-extend a (bits object))))
-                               (loop for px from 0 to packet-count do ;; raw packet
-                                    (let ((b (read-byte stream))
-                                          (g (read-byte stream))
-                                          (r (read-byte stream))
-                                          (a (read-byte stream)))
-                                      (vector-push-extend r (bits object))
-                                      (vector-push-extend g (bits object))
-                                      (vector-push-extend b (bits object))
-                                      (vector-push-extend a (bits object)))))
-                           (incf i packet-count))))
-                (rearrange-scanline-by-pixmap-origin object scanline-origin)
-                (sync-bits-to-data object)
-                object)))
-        (push "Image type not supported: only rgba and compressed rgba allowed."
-              (errors object)))))
+  (with-accessors ((bits bits)) object
+    (let ((type (first (parse-image-type object stream))))
+      (if (or (= type +targa-img-rgba+)
+              (= type +targa-img-rgba-rle+))
+          (let* ((id-len          (first (parse-image-id-len object stream)))
+                 (colormap-specs  (parse-colormap-specs object stream))
+                 (colormap-len    (byte->int (subseq colormap-specs 2 4)))
+                 (img-specs       (parse-image-specs object stream))
+                 ;;(x-origin  (byte->int (subseq img-specs 0 2)))
+                 ;;(y-origin  (byte->int (subseq img-specs 2 4)))
+                 (width           (byte->int (subseq img-specs 4 6)))
+                 (height          (byte->int (subseq img-specs 6 8)))
+                 (depth           (/ (byte->int (subseq img-specs 8 9)) 8))
+                 (img-descr       (first (subseq img-specs 9 10)))
+                 (alpha-size      (boole boole-and img-descr #x0e))
+                 (scanline-origin (ash (boole boole-and img-descr #x30) -4))
+                 (scanline-offset (+ +targa-img-header-size+ id-len colormap-len))
+                 (scanlines-size  (* width height depth))
+                 (bgra-scanline   (make-array-frame (* width depth))))
+            (if (/= 8 alpha-size)
+                (push (format nil "Alpha bitsize should be 8 instead of ~x" alpha-size)
+                      (errors object))
+                (progn
+                  (setf (width object)  width
+                        (height object) height
+                        (depth object) depth)
+                  (make-bits-array object (width object) (height object))
+                  (file-position stream scanline-offset)
+                  (let ((bits-offset-count 0))
+                    (if (= type +targa-img-rgba+) ;; no compression RLE
+                        (loop for i from 0 below height do
+                          (read-sequence bgra-scanline stream)
+                          (load-rearrange-raw-packet (* i width) bgra-scanline (bits object)))
+                        (loop for i from 0 below (/ scanlines-size depth) do
+                          (let* ((packet-head (read-byte stream))
+                                 (packet-type (boole boole-and packet-head #x80))
+                                 (packet-count (boole boole-and packet-head #x7f)))
+                            (if (= packet-type #x80) ;; rle packet
+                                (let ((b (read-byte stream))
+                                      (g (read-byte stream))
+                                      (r (read-byte stream))
+                                      (a (read-byte stream)))
+                                  (loop for px from 0 to packet-count do
+                                    (setf (elt bits (+ bits-offset-count px))
+                                          (assemble-color r g b a)))
+                                  (incf bits-offset-count (1+ packet-count)))
+                                (progn
+                                  (loop for px from 0 to packet-count
+                                        do ;; raw packet
+                                           (let ((b (read-byte stream))
+                                                 (g (read-byte stream))
+                                                 (r (read-byte stream))
+                                                 (a (read-byte stream)))
+                                             (setf (elt bits (+ bits-offset-count px))
+                                                   (assemble-color r g b a))))
+                                  (incf bits-offset-count (1+ packet-count))))
+                            (incf i packet-count)))))
+                  (rearrange-scanline-by-pixmap-origin object scanline-origin)
+                  (sync-bits-to-data object)
+                  object)))
+          (push "Image type not supported: only rgba and compressed rgba allowed."
+                (errors object))))))
 
 (defmethod pixmap-load ((object tga) (file string))
   (with-open-file (stream file :element-type +targa-stream-element-type+
-                          :if-does-not-exist :error)
+                               :if-does-not-exist :error)
     (load-from-stream object stream)))
 
 (defmethod rearrange-scanline-by-pixmap-origin ((object tga) origin)
-  (with-accessors ((height height) (bits bits) (width width)
+  (with-accessors ((height height)
+                   (bits bits)
+                   (width width)
                    (depth depth)) object
     (macrolet ((swap-bits (a b)
                  `(rotatef (elt bits ,a) (elt bits ,b))))
@@ -866,7 +870,7 @@ from file: 'file'"
         ((= origin +targa-img-scanline-topleft+)
          t)
         ((= origin +targa-img-scanline-bottomleft+)
-         (let ((scanline-length (* depth width)))
+         (let ((scanline-length width))
            (loop for y from 0 below (floor (/ height 2)) do
                 (loop for x from 0 below scanline-length do
                      (let ((sup (+ x (* y scanline-length)))
