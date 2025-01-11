@@ -18,17 +18,17 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
-  (a:define-constant +sin-lut-step-per-degrees+ 20 :test #'=)
+  (a:define-constant +sin-lut-step-per-degree+ 20 :test #'=)
 
-  (a:define-constant +float-sin-lut-step-per-degrees+ (to:d +sin-lut-step-per-degrees+)
+  (a:define-constant +float-sin-lut-step-per-degree+ (to:d +sin-lut-step-per-degree+)
     :test #'=)
 
   (defun populate-sin-lut ()
-    (let ((lut (make-fresh-array (* +sin-lut-step-per-degrees+ 360)
+    (let ((lut (make-fresh-array (* +sin-lut-step-per-degree+ 361)
                                  0.01f0
                                  'to::desired-type
                                  t)))
-      (loop for angle from 0f0 below 359.9 by (/ 1f0 +sin-lut-step-per-degrees+)
+      (loop for angle from 0f0 to 360.0f0 by (/ 1f0 +sin-lut-step-per-degree+)
             for i from 0
             do
                (setf (aref lut i) (to:dsin (to:degree->radians angle))))
@@ -38,14 +38,16 @@
 
 (a:define-constant +1/2pi+ (to:d (/ 1 to:+2pi+)) :test #'=)
 
-(definline sin-lut (angle)
+(a:define-constant +pi/2+ (to:d (/ pi 2)) :test #'=)
+
+(defun sin-lut (angle)
   (declare (to::desired-type angle))
   #.nodgui.config:default-optimization
   (let* ((normalized-angle (to:d* to:+2pi+ (nth-value 1 (truncate (to:d* angle +1/2pi+)))))
          (actual-angle     (if (< normalized-angle 0)
-                               (to:d+ normalized-angle to:+2pi+)
-                               normalized-angle))
-         (index            (truncate (to:d* +float-sin-lut-step-per-degrees+
+                              (to:d+ normalized-angle to:+2pi+)
+                              normalized-angle))
+         (index            (truncate (to:d* +float-sin-lut-step-per-degree+
                                             (to:radians->degree actual-angle)))))
     (declare (dynamic-extent normalized-angle actual-angle index))
     (aref +sin-lut+ index)))
@@ -54,24 +56,24 @@
   (declare (to::desired-type angle))
   #.nodgui.config:default-optimization
   (let* ((normalized-angle (to:d* to:+2pi+ (nth-value 1 (truncate (to:d* angle +1/2pi+)))))
-         (index            (to:f* +sin-lut-step-per-degrees+
+         (index            (to:f* +sin-lut-step-per-degree+
                              (the fixnum (truncate (to:radians->degree normalized-angle))))))
     (declare (dynamic-extent normalized-angle index))
     (aref +sin-lut+ index)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
-  (a:define-constant +cos-lut-step-per-degrees+ 20 :test #'=)
+  (a:define-constant +cos-lut-step-per-degree+ 20 :test #'=)
 
-  (a:define-constant +float-cos-lut-step-per-degrees+ (to:d +cos-lut-step-per-degrees+)
+  (a:define-constant +float-cos-lut-step-per-degree+ (to:d +cos-lut-step-per-degree+)
     :test #'=)
 
   (defun populate-cos-lut ()
-    (let ((lut (make-fresh-array (* +cos-lut-step-per-degrees+ 360)
+    (let ((lut (make-fresh-array (* +cos-lut-step-per-degree+ 360)
                                  0.01f0
                                  'to::desired-type
                                  t)))
-      (loop for angle from 0.0f0 below 359.9 by (/ 1f0 +cos-lut-step-per-degrees+)
+      (loop for angle from 0.0f0 below 359.9 by (/ 1f0 +cos-lut-step-per-degree+)
             for i from 0
             do
                (setf (aref lut i) (to:dcos (to:degree->radians angle))))
@@ -85,7 +87,7 @@
   (declare (to::desired-type angle))
   #.nodgui.config:default-optimization
   (let* ((normalized-angle (to:d* to:+2pi+ (nth-value 1 (truncate (to:d* angle +1/2pi+)))))
-         (index            (truncate (to:d* +float-cos-lut-step-per-degrees+
+         (index            (truncate (to:d* +float-cos-lut-step-per-degree+
                                             (to:radians->degree normalized-angle)))))
     (declare (dynamic-extent normalized-angle normalized-angle index))
     (aref +cos-lut+ index)))
