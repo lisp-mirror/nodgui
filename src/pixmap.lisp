@@ -786,7 +786,6 @@ from file: 'file'"
                 (g (elt bgra (+ data-ct 1)))
                 (r (elt bgra (+ data-ct 2)))
                 (a (elt bgra (+ data-ct 3))))
-            (format t "assemble rgba ~x ~x ~x ~x -> ~x~%" r g b a (assemble-color r g b a))
             (setf (elt bits (+ offset bits-ct))
                   (assemble-color r g b a)))))
 
