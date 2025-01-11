@@ -555,7 +555,7 @@
 (defmacro definline (name arg &rest body)
   (let* ((function-name (a:format-symbol t "~:@(~a~)" name)))
     `(progn
-       (declaim (inline ,function-name))
+       #+optimize-nodgui (declaim (inline ,function-name))
        (defun ,function-name (,@arg) ,@body))))
 
 (definline make-thread (function &key (name nil) (initial-bindings *thread-default-special-bindings*))
