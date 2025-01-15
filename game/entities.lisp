@@ -400,9 +400,10 @@
     (draw-aabbs object destination destination-width destination-height)))
 
 (defun approx-gaussian-random ()
-  (/ (- 6
-        (loop repeat 12 sum (random 1.0)))
-     6))
+  #.nodgui.config:default-optimization
+  (to:d/ (to:d- 6.0f0
+                (loop repeat 12 sum (random 1.0)))
+         6.0f0))
 
 (defun make-asteroid-vertices (average-radius vertices-number)
   (let* (;;#+sbcl           (*random-state* (sb-kernel::seed-random-state 147437))
@@ -785,21 +786,26 @@
     #+debug-game
     (draw-aabbs object destination destination-width destination-height)))
 
+(defun sentinel-no-event-after ()
+  t)
+
 (defclass after-trigger ()
   ((event-after
-    :initform (constantly t)
+    :initform #'sentinel-no-event-after
     :initarg  :event-after
     :accessor event-after
     :type function)))
 
 (defmethod calculate :after ((object after-trigger) world dt)
+  #.nodgui.config:default-optimization
   (declare (ignore world dt))
   (with-accessors ((event-after event-after)) object
-    (when (and event-after
-               (not (alivep object)))
+    (declare (function event-after))
+    (when (not (or (eq event-after #'sentinel-no-event-after)
+                   (alivep object)))
     (prog1
         (funcall event-after)
-      (setf event-after nil)))))
+      (setf event-after #'sentinel-no-event-after)))))
 
 (defclass animated-sprite (occupy-space with-life)
   ((atlas
@@ -872,6 +878,7 @@
         (decf explosion-delay dt))))
 
 (defmethod draw ((object explosion) world destination destination-width destination-height)
+   #.nodgui.config:default-optimization
   (declare (ignore world))
   (with-accessors ((atlas           atlas)
                    (ticks           ticks)
@@ -879,6 +886,7 @@
                    (frame-index     frame-index)
                    (frame-number    frame-number)
                    (pos             pos)) object
+    (declare (fixnum explosion-delay))
     (when (and (alivep object)
                (< explosion-delay 0))
       (px:blit-cell (atlas object)
@@ -897,18 +905,20 @@
     :accessor particle-children)))
 
 (defmethod calculate ((object particle) world dt)
-  ;;#.nodgui.config:default-optimization
+  #.nodgui.config:default-optimization
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (with-accessors ((particle-children particle-children)) object
     (loop for child in particle-children do
       (calculate child world dt))))
 
 (defmethod draw ((object particle) world destination destination-width destination-height)
+  #.nodgui.config:default-optimization
   (with-accessors ((particle-children particle-children)) object
     (loop for child in particle-children do
       (draw child world destination destination-width destination-height))))
 
 (defmethod alivep ((object particle))
+  #.nodgui.config:default-optimization
   (some #'alivep (particle-children object)))
 
 (defclass spark (with-direction physical-object)
@@ -971,12 +981,13 @@
                                          (number 50)
                                          (master-direction (vec2:vec2 0 1))
                                        &allow-other-keys)
-  (loop repeat number do
+  #.nodgui.config:default-optimization
+  (loop for i fixnum from 0 below number do
     (let* ((color   (pixmap:assemble-color #xff (random #xff) #x00))
-           (angle   (* (to:degree->radians 300f0)
-                       (approx-gaussian-random)))
+           (angle   (to:d* (to:degree->radians 300f0)
+                           (approx-gaussian-random)))
            (dir     (vec2:vec2-rotate master-direction angle))
-           (size    (+ 1f0 (random 10f0)))
+           (size    (to:d+ 1f0 (random 10f0)))
            (spark (make-instance 'spark
                                    :velocity  (vec2:vec2* dir 0.4f0)
                                    :extension size

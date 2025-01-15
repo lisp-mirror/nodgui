@@ -467,6 +467,30 @@ set y [winfo y ~a]
                                      `(-ipady ,ipady " "))))))
   w)
 
+(defgeneric grid-implicit (widgets &key columnspan ipadx ipady padx pady rowspan sticky))
+
+(defmethod grid-implicit ((widgets list) &key columnspan ipadx ipady padx pady rowspan sticky)
+  (let ((*suppress-newline-for-tcl-statements* t))
+    (format-wish (tclize `(grid ,(format nil
+                                         "~{~a ~}"
+                                         (mapcar #'widget-path widgets))
+                                  ,(empty-string-if-nil columnspan
+                                    `(-columnspan ,(tk-number columnspan) " "))
+                                  ,(empty-string-if-nil rowspan
+                                     `(-rowspan ,(tk-number rowspan) " "))
+                                  ,(empty-string-if-nil sticky
+                                     `(-sticky ,(keyword->tcl sticky :downcase t)
+                                               " "))
+                                  ,(empty-string-if-nil padx
+                                     (tclize-pad '-padx padx))
+                                  ,(empty-string-if-nil pady
+                                     (tclize-pad '-pady pady))
+                                  ,(empty-string-if-nil ipadx
+                                     `(-ipadx ,ipadx " "))
+                                  ,(empty-string-if-nil ipady
+                                     `(-ipady ,ipady " "))))))
+  widgets)
+
 (defgeneric grid-columnconfigure (widget c o v))
 
 (defmethod grid-columnconfigure (widget column option value)

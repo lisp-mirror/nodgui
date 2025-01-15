@@ -1505,6 +1505,7 @@
    #:pixel-buffer-context
    #:pixel@
    #:set-pixel@
+   #:set-pixel-color@
    #:with-displace-pixel
    #:color-channel-lerp
    #:blending-function-combine
@@ -1533,7 +1534,11 @@
    #:texture-shader-wrap-replace
    #:texture-shader-wrap-replace-bilinear
    #:*texture-shader*
+   #:*multi-texture-shader*
    #:draw-texture-mapped-polygon
+   #:draw-texture-mapped-polygon*
+   #:draw-multi-texture-mapped-polygon
+   #:draw-multi-texture-mapped-polygon*
    #:init-font-system
    #:terminate-font-system
    #:open-font
@@ -1793,6 +1798,7 @@
            #:busy-forget
            #:with-busy
            #:grid
+           #:grid-implicit
            #:grid-columnconfigure
            #:grid-configure
            #:grid-forget

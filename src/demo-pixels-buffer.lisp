@@ -540,10 +540,13 @@
 ;;   "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVQI12P4z8DA8J+BkYHh/6pVqwEd+AT+DoCjJQAAAABJRU5ErkJggg=="
 ;;   :test #'string=)
 
-(defun load-test-sprite ()
+(defun load-encoded-sprite (encoded-data)
   (let ((px (make-instance 'nodgui.pixmap:png)))
-    (nodgui.pixmap:load-from-vector px (nodgui.base64:decode +test-sprite+))
+    (nodgui.pixmap:load-from-vector px (nodgui.base64:decode encoded-data))
     px))
+
+(defun load-test-sprite ()
+  (load-encoded-sprite  +test-sprite+))
 
 (defparameter *test-sprite* (load-test-sprite))
 
@@ -1340,35 +1343,91 @@
                                                                (vec2:vec2 0 10))))
 
          (polygon-color    (pixmap:assemble-color 255 0 255 255)))
-      (flet ((draw ()
-               (ctx:push-for-rendering sdl-context
-                                       (lambda (dt)
-                                         (declare (ignore dt))
-                                         (px:clear-buffer context-buffer
-                                                          context-width
-                                                          context-height
-                                                          0 0 0)
-                                         (px:draw-polygon context-buffer
-                                                          context-width
-                                                          context-height
-                                                          polygon-vertices
-                                                          polygon-color)))))
-        (with-nodgui ()
-          (let* ((sdl-frame        (ctx:make-sdl-frame 400 400))
-                 (button-quit      (make-instance 'button
-                                                  :text    "quit"
-                                                  :command (lambda ()
-                                                             (ctx:quit-sdl sdl-context)
-                                                             (exit-nodgui)))))
-            (grid sdl-frame          1 0)
-            (grid button-quit        2 0 :sticky :s)
-            (wait-complete-redraw)
-            (setf sdl-context (make-instance 'px:pixel-buffer-context
-                                             :event-loop-type :serving
-                                             :classic-frame   sdl-frame
-                                             :buffer-width    10
-                                             :buffer-height   10))
-            (setf context-buffer (px:buffer sdl-context))
-            (setf context-width  (ctx:width  sdl-context))
-            (setf context-height (ctx:height sdl-context))
-            (draw))))))
+    (flet ((draw ()
+             (ctx:push-for-rendering sdl-context
+                                     (lambda (dt)
+                                       (declare (ignore dt))
+                                       (px:clear-buffer context-buffer
+                                                        context-width
+                                                        context-height
+                                                        0 0 0)
+                                       (px:draw-polygon context-buffer
+                                                        context-width
+                                                        context-height
+                                                        polygon-vertices
+                                                        polygon-color)))))
+      (with-nodgui ()
+        (let* ((sdl-frame        (ctx:make-sdl-frame 400 400))
+               (button-quit      (make-instance 'button
+                                                :text    "quit"
+                                                :command (lambda ()
+                                                           (ctx:quit-sdl sdl-context)
+                                                           (exit-nodgui)))))
+          (grid sdl-frame          1 0)
+          (grid button-quit        2 0 :sticky :s)
+          (wait-complete-redraw)
+          (setf sdl-context (make-instance 'px:pixel-buffer-context
+                                           :event-loop-type :serving
+                                           :classic-frame   sdl-frame
+                                           :buffer-width    10
+                                           :buffer-height   10))
+          (setf context-buffer (px:buffer sdl-context))
+          (setf context-width  (ctx:width  sdl-context))
+          (setf context-height (ctx:height sdl-context))
+          (draw))))))
+
+(a:define-constant +texture-vertical-strips+ "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAdnJLH8AAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABlJREFUCNdjePf/wH8GBgYGGM3EgAYICwAAxM8HX7Z6mmoAAAAASUVORK5CYII="
+  :test #'string=)
+
+(a:define-constant +texture-horizontal-strips+ "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAdnJLH8AAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABNJREFUCNdjPPD/3X8GfICRoAoAZDkHW6rgqKsAAAAASUVORK5CYII="
+  :test #'string=)
+
+(defun test-multi-texture-polygon ()
+  (let* ((sdl-context      nil)
+         (context-buffer   nil)
+         (context-width    nil)
+         (context-height   nil)
+         (polygon-vertices (px:make-polygon-vertex-array (list (vec2:vec2 0 0)
+                                                               (vec2:vec2 10 0)
+                                                               (vec2:vec2 10 10)
+                                                               (vec2:vec2 0 10))))
+         (polygon-tex-coordinates (px:make-polygon-texture-coordinates-array
+                                   (list (vec2:vec2 0 0)
+                                         (vec2:vec2 1 0)
+                                         (vec2:vec2 1 1)
+                                         (vec2:vec2 0 1))))
+         (textures                (list (load-encoded-sprite +texture-vertical-strips+)
+                                        (load-encoded-sprite +texture-horizontal-strips+))))
+    (flet ((draw ()
+             (ctx:push-for-rendering sdl-context
+                                     (lambda (dt)
+                                       (declare (ignore dt))
+                                       (px:clear-buffer context-buffer
+                                                        context-width
+                                                        context-height
+                                                        255 0 255)
+                                       (px:draw-multi-texture-mapped-polygon context-buffer
+                                                                             context-width
+                                                                             context-height
+                                                                             polygon-vertices
+                                                                             polygon-tex-coordinates
+                                                                             textures)))))
+      (with-nodgui ()
+        (let* ((sdl-frame   (ctx:make-sdl-frame 600 600))
+               (button-quit (make-instance 'button
+                                           :text    "quit"
+                                           :command (lambda ()
+                                                      (ctx:quit-sdl sdl-context)
+                                                      (exit-nodgui)))))
+          (grid sdl-frame 1 0)
+          (grid button-quit 2 0 :sticky :s)
+          (wait-complete-redraw)
+          (setf sdl-context (make-instance 'px:pixel-buffer-context
+                                           :event-loop-type :serving
+                                           :classic-frame   sdl-frame
+                                           :buffer-width    10
+                                           :buffer-height   10))
+          (setf context-buffer (px:buffer sdl-context))
+          (setf context-width  (ctx:width  sdl-context))
+          (setf context-height (ctx:height sdl-context))
+          (draw))))))

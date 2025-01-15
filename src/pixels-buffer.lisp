@@ -1338,6 +1338,44 @@
 
 (defparameter *texture-shader* #'texture-shader-wrap-replace)
 
+(defun multi-texture-shader-wrap-replace-exclude-fully-transparent (s-tex
+                                                                    t-tex
+                                                                    textures
+                                                                    texture-width
+                                                                    texture-height
+                                                                    buffer
+                                                                    buffer-width
+                                                                    buffer-height
+                                                                    x-buffer
+                                                                    y-buffer)
+  #.nodgui.config:default-optimization
+  (declare (ignore buffer-height))
+  (declare (to::desired-type texture-width texture-height))
+  (declare (fixnum buffer-width buffer-height))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (list textures))
+  (let* ((wrapped-s (texture-border-wrap s-tex))
+         (wrapped-t (texture-border-wrap t-tex))
+         (pixmap-x (truncate (to:d* wrapped-s
+                                    (1- texture-width))))
+         (pixmap-y (truncate (to:d* wrapped-t
+                                    (1- texture-height))))
+         (pixels   (mapcar (lambda (a)
+                             (pixel@ a
+                                     (truncate texture-width)
+                                     pixmap-x
+                                     pixmap-y))
+                           textures)))
+    (declare (fixnum pixmap-x pixmap-y))
+    (declare (list pixels))
+    (declare (to::desired-type wrapped-s wrapped-t))
+    (loop for pixel in pixels when (/= (pix:extract-alpha-component pixel)
+                                       0)
+          do
+             (set-pixel-color@ buffer buffer-width x-buffer y-buffer pixel))))
+
+(defparameter *multi-texture-shader* #'multi-texture-shader-wrap-replace-exclude-fully-transparent)
+
 (defstruct polygon-intersection
   point
   start-vertex
@@ -1745,6 +1783,68 @@
   (declare ((simple-array vec2:vec2) vertices texels))
   (declare (function *texture-shader*))
   (declare ((simple-array (unsigned-byte 32)) texture))
+  (let ((*multi-texture-shader* (lambda (s-tex
+                                         t-tex
+                                         textures
+                                         texture-width
+                                         texture-height
+                                         buffer
+                                         buffer-width
+                                         buffer-height
+                                         x-buffer
+                                         y-buffer)
+                                  (funcall *texture-shader*
+                                           s-tex
+                                           t-tex
+                                           (first textures)
+                                           texture-width
+                                           texture-height
+                                           buffer
+                                           buffer-width
+                                           buffer-height
+                                           x-buffer
+                                           y-buffer))))
+    (declare (function *multi-texture-shader*))
+    (draw-multi-texture-mapped-polygon* buffer
+                                        width
+                                        height
+                                        vertices
+                                        texels
+                                        (list texture)
+                                        texture-width
+                                        texture-height)))
+
+(defun draw-multi-texture-mapped-polygon (buffer width height vertices texels pixmaps)
+  "Note: vertices must be provided in counterclockwise order. `PIXMAP' must be a list of nodgui.pixmap:pixmap."
+  #.nodgui.config:default-optimization
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum width))
+  (declare ((simple-array vec2:vec2) vertices texels))
+  (declare (function *texture-shader*))
+  (declare (list pixmaps))
+  (let ((textures        (mapcar #'pix:bits pixmaps))
+        (pixmap-width    (to:d (the fixnum  (pix:width (first pixmaps)))))
+        (pixmap-height   (to:d (the fixnum  (pix:height(first pixmaps))))))
+    (declare (list textures))
+    (declare (to::desired-type pixmap-width pixmap-height))
+    (declare (dynamic-extent textures pixmap-width pixmap-height))
+    (draw-multi-texture-mapped-polygon* buffer width height vertices texels
+                                        textures
+                                        pixmap-width
+                                        pixmap-height)))
+
+(defun draw-multi-texture-mapped-polygon* (buffer width height vertices texels
+                                           textures
+                                           texture-width
+                                           texture-height)
+  "Note: vertices must be provided in counterclockwise order. `TEXTURES` must be a list of bitmap data (see 'nodgui.pixmap:make-buffer') with the same width and heights."
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum width))
+  (declare ((simple-array vec2:vec2) vertices texels))
+  (declare (function *multi-texture-shader*))
+  (declare (list textures))
   (let* ((actual-vertices (float-vertices->fixnum-vertices vertices))
          (aabb            (polygon-create-aabb actual-vertices)))
     (declare ((simple-array fixnum) aabb))
@@ -1864,10 +1964,10 @@
                                    then (to:d+ interpolated-s
                                                s-increment)
                                  do
-                                    (funcall *texture-shader*
+                                    (funcall *multi-texture-shader*
                                              interpolated-s
                                              interpolated-t
-                                             texture
+                                             textures
                                              texture-width
                                              texture-height
                                              buffer
