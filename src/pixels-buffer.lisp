@@ -1270,7 +1270,7 @@
   (declare (to::desired-type v))
   (cond
     ((< v 0f0)
-     (to:d- 1f0 (nth-value 1 (truncate v))))
+     (to:d+ 1f0 (nth-value 1 (truncate v))))
     ((> v 1f0)
      (nth-value 1 (truncate v)))
     (t
