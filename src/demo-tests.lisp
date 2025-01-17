@@ -1816,6 +1816,8 @@
 (defun demo-label-spinbox ()
   (with-nodgui ()
     (let ((spinbox (make-instance 'label-spinbox
+                                  :relief :sunken
+                                  :borderwidth 3
                                   :label-text "Monday"
                                   :near-values-generator
                                   (let ((dow '("Monday"
@@ -1845,5 +1847,4 @@
                                                    "info"
                                                    :parent (root-toplevel))))
             1 0
-            :sticky :news
-            :columnspan 3))))
+            :sticky :news))))

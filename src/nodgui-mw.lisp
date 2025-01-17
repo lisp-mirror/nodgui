@@ -2251,11 +2251,13 @@ will shift the selected item up o down respectively."))
                    (label                 label)) object
     (setf label label-text)
     (let* ((data-label  (make-instance 'label
+                                       :master object
                                        :anchor :center
                                        :width 10
                                        :font label-font
                                        :text label-text))
            (button-left (make-instance 'button
+                                       :master object
                                        :width 3
                                        :text (left-button-text object)
                                        :command
@@ -2265,6 +2267,7 @@ will shift the selected item up o down respectively."))
                                            (setf (text data-label) (format nil "~a" new-value))
                                            (setf label new-value)))))
            (button-right (make-instance 'button
+                                        :master object
                                         :width 3
                                         :text (right-button-text object)
                                         :command
@@ -2276,7 +2279,7 @@ will shift the selected item up o down respectively."))
                                             (setf label new-value))))))
       (grid button-left  0 0 :sticky :news)
       (grid data-label   0 1 :sticky :news :padx 3)
-      (grid button-right 0 2 :sticky :news))))
+      (grid button-right 0 3 :sticky :news))))
 
 (defmethod text ((object label-spinbox))
   (label object))
