@@ -75,28 +75,28 @@
                                           :text    "text widget"
                                           :command (lambda () (demo-text))))
            (demo-treelist  (make-instance  'button
-                                           :text    "(mw) treelist"
+                                           :text    "(MW) treelist"
                                            :command (lambda () (nodgui.mw::treelist-test))))
            (demo-tooltip   (make-instance  'button
-                                           :text    "(mw) tooltip"
+                                           :text    "(MW) tooltip"
                                            :command (lambda () (nodgui.mw::tooltip-test))))
            (demo-gtree     (make-instance  'button
-                                           :text    "(mw) graphical tree"
+                                           :text    "(MW) graphical tree"
                                            :command (lambda () (nodgui.mw::gtree-demo))))
            (demo-auto-listbox (make-instance 'button
-                                             :text    "(mw) autocomplete listbox"
+                                             :text    "(MW) autocomplete listbox"
                                              :command (lambda ()
                                                         (nodgui.mw::autocomplete-listbox-demo))))
            (demo-search-listbox (make-instance 'button
-                                               :text    "(mw) searchable listbox"
+                                               :text    "(MW) searchable listbox"
                                                :command (lambda ()
                                                           (nodgui.mw::searchable-listbox-demo))))
            (demo-list-select    (make-instance 'button
-                                               :text    "(mw) list select demo"
+                                               :text    "(MW) list select demo"
                                                :command (lambda ()
                                                           (nodgui.mw::list-select-demo))))
            (demo-listbox-dialog (make-instance 'button
-                                               :text    "(mw) listbox dialog"
+                                               :text    "(MW) listbox dialog"
                                                :command (lambda ()
                                                           (let ((chosen (nodgui.mw:listbox-dialog
                                                                          (root-toplevel)
@@ -111,18 +111,18 @@
                                                                          "info"
                                                                          :parent (root-toplevel))))))
            (demo-date-picker   (make-instance 'button
-                                              :text    "(mw) date picker"
+                                              :text    "(MW) date picker"
                                               :command (lambda ()
                                                          (nodgui.mw::date-picker-demo))))
            (demo-password      (make-instance 'button
-                                              :text    "(mw) password widgets"
+                                              :text    "(MW) password widgets"
                                               :command #'demo-password-widgets))
            (demo-star-progress (make-instance 'button
-                                              :text    "(mw) star progress bar"
+                                              :text    "(MW) star progress bar"
                                               :command (lambda ()
                                                          (nodgui.mw::star-progress-demo))))
            (demo-timeout-dialog (make-instance 'button
-                                               :text    "(mw) message dialog with timeout"
+                                               :text    "(MW) message dialog with timeout"
                                                :command (lambda () (demo-message-timeout (root-toplevel)))))
            (demo-tklib-calendar (make-instance 'button
                                                :text    "(tklib) calendar"
@@ -156,11 +156,11 @@
                                                     :command (lambda ()
                                                                (demo-custom-style))))
            (demo-autocomplete-entry  (make-instance 'button
-                                                    :text "(mw) Entry with auto completion"
+                                                    :text "(MW) Entry with auto completion"
                                                     :command (lambda ()
                                                                (demo-autocomplete-entry))))
            (demo-multifont-listbox    (make-instance 'button
-                                                     :text "(mw) multifont listbox"
+                                                     :text "(MW) multifont listbox"
                                                      :command (lambda ()
                                                                 (demo-multifont-listbox))))
            (demo-paned-window         (make-instance 'button
@@ -169,17 +169,17 @@
                                                                 (demo-paned-window))))
            #-nodgui-lite
            (demo-animation            (make-instance 'button
-                                                     :text "Pixels buffer window (animations)"
+                                                     :text "(SDL)Pixels buffer window (animations)"
                                                      :command (lambda ()
                                                                 (demo-pixel-buffer-animation))))
            #-nodgui-lite
            (demo-pixel-buffer         (make-instance 'button
-                                                     :text "Pixels buffer window (blocking)"
+                                                     :text "(SDL) Pixels buffer window (blocking)"
                                                      :command (lambda ()
                                                                 (demo-pixel-buffer))))
            #-nodgui-lite
            (demo-3d                   (make-instance 'button
-                                                     :text "3D rendering demo"
+                                                     :text "(SDL) 3D rendering demo"
                                                      :command (lambda ()
                                                                 (demo-terrain))))
            (demo-virtual-event  (make-instance 'button
@@ -201,7 +201,11 @@
            (demo-menu-radio-buttons (make-instance 'button
                                                    :text "menu radio button"
                                                    :command (lambda ()
-                                                         (demo-menu-radio-buttons))))
+                                                              (demo-menu-radio-buttons))))
+           (demo-label-spinbox      (make-instance 'button
+                                                   :text "(MW) label spinbox"
+                                                   :command (lambda ()
+                                                              (demo-label-spinbox))))
            (b-quit                    (make-instance 'button
                                                      :text    "Quit lisp 🙂"
                                                      :command (lambda ()
@@ -256,6 +260,7 @@
       (grid demo-radio-buttons       14 2 :sticky :nswe)
       (grid demo-menu-check-buttons  15 0 :sticky :nswe)
       (grid demo-menu-radio-buttons  15 1 :sticky :nswe)
+      (grid demo-label-spinbox       15 2 :sticky :nswe)
       (grid b-quit                   16 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
@@ -1807,3 +1812,38 @@
                                                  +message-box-icon-info+)))))
       (declare (ignore ck1))
       (pack button))))
+
+(defun demo-label-spinbox ()
+  (with-nodgui ()
+    (let ((spinbox (make-instance 'label-spinbox
+                                  :label-text "Monday"
+                                  :near-values-generator
+                                  (let ((dow '("Monday"
+                                               "Tuesday"
+                                               "Wednesday"
+                                               "Thursday"
+                                               "Friday"
+                                               "Saturday"
+                                               "Sunday")))
+                                    (lambda (value)
+                                      (let* ((index (position value dow :test #'string=))
+                                             (previous-index (if (< (1- index)
+                                                                    0)
+                                                                 (1- (length dow))
+                                                                 (1- index)))
+                                             (next-index     (rem (1+ index)
+                                                                  (length dow))))
+                                        (values (elt dow previous-index)
+                                                (elt dow next-index))))))))
+      (grid spinbox 0 0)
+      (grid (make-instance 'button
+                           :text "get value"
+                           :command (lambda ()
+                                      (message-box (format nil "chosen ~s~%" (text spinbox))
+                                                   "info"
+                                                   :ok
+                                                   "info"
+                                                   :parent (root-toplevel))))
+            1 0
+            :sticky :news
+            :columnspan 3))))

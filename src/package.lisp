@@ -2218,7 +2218,12 @@
    #:autocomplete-function
    #:change-password-dialog
    #:add-password-dialog
-   #:password-input-dialog))
+   #:password-input-dialog
+   #:label-spinbox
+   #:left-button-text
+   #:right-button-text
+   #:label
+   #:near-values-generator))
 
 (defpackage :nodgui.tcl-lib-wrapped
   (:use :cl

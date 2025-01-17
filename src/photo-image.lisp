@@ -99,7 +99,7 @@ GIF are supported but if tk-img is used more format are available!"
 
 (defparameter *use-tk-for-decoding-png* nil
   "Set this variable to non null to force decoding the PNGs with TK and
-repscts the alpha channnel" )
+respects the alpha channel" )
 
 (defmethod make-image ((object vector) &optional (w nil) (h nil) (channels 3))
   (flet ((make-image-in-tcl ()

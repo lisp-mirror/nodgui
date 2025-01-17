@@ -2221,3 +2221,62 @@ will shift the selected item up o down respectively."))
     (bind (root-toplevel)
           #$<KeyPress>$
           (lambda (e) (format *error-output* "~s~%" e)))))
+
+(defclass label-spinbox (frame)
+  ((left-button-text
+    :initform (string (code-char 11013))
+    :initarg  :left-button-text
+    :accessor  left-button-text)
+   (right-button-text
+    :initform (string (code-char 11157))
+    :initarg  :right-button-text
+    :accessor  right-button-text)
+   (label
+    :initform "0"
+    :initarg  :label
+    :accessor label)
+   (near-values-generator
+    :initform (lambda (a)
+                (let ((value (parse-integer a)))
+                  (values (1- value) (1+ value))))
+    :initarg  :near-values-generator
+    :accessor near-values-generator)))
+
+(defmethod initialize-instance :after ((object label-spinbox)
+                                       &key
+                                         (label-text "0")
+                                         (label-font nil)
+                                       &allow-other-keys)
+  (with-accessors ((near-values-generator near-values-generator)
+                   (label                 label)) object
+    (setf label label-text)
+    (let* ((data-label  (make-instance 'label
+                                       :anchor :center
+                                       :width 10
+                                       :font label-font
+                                       :text label-text))
+           (button-left (make-instance 'button
+                                       :width 3
+                                       :text (left-button-text object)
+                                       :command
+                                       (lambda ()
+                                         (let ((new-value (funcall near-values-generator
+                                                                   (text data-label))))
+                                           (setf (text data-label) (format nil "~a" new-value))
+                                           (setf label new-value)))))
+           (button-right (make-instance 'button
+                                        :width 3
+                                        :text (right-button-text object)
+                                        :command
+                                        (lambda ()
+                                          (let ((new-value (nth-value 1
+                                                                      (funcall near-values-generator
+                                                                               (text data-label)))))
+                                            (setf (text data-label) (format nil "~a" new-value))
+                                            (setf label new-value))))))
+      (grid button-left  0 0 :sticky :news)
+      (grid data-label   0 1 :sticky :news :padx 3)
+      (grid button-right 0 2 :sticky :news))))
+
+(defmethod text ((object label-spinbox))
+  (label object))

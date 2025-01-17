@@ -491,7 +491,7 @@ set y [winfo y ~a]
                                      `(-ipady ,ipady " "))))))
   widgets)
 
-(defgeneric grid-columnconfigure (widget c o v))
+(defgeneric grid-columnconfigure (widget column option value))
 
 (defmethod grid-columnconfigure (widget column option value)
   ;; TODO use tclize
@@ -499,7 +499,7 @@ set y [winfo y ~a]
                (down widget) (down column) option value)
   widget)
 
-(defgeneric grid-rowconfigure (widget r o v))
+(defgeneric grid-rowconfigure (widget row option value))
 
 (defmethod grid-rowconfigure (widget row option value)
   (format-wish "grid rowconfigure {~a} {~a} {-~(~a~)} {~a}"
