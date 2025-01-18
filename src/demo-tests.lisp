@@ -1465,7 +1465,7 @@
       (let* ((b            (make-instance 'button :text "Click to change style"))
              (corner-state 0)
              (corner-style (make-style corner-style (:extend "TButton")
-                                       :foreground #%dim-gray%
+                                       :foreground (make-tk-color :dim-gray)
                                        :padding    0
                                        :font      "times 20"))
              (red-corner   (make-image +red-corner+))
