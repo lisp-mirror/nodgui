@@ -2375,7 +2375,7 @@ will shift the selected item up o down respectively."))
                                           (lambda ()
                                             (incf index)
                                             (if (= (rem index 2)
-                                                   0)
+                                                   1)
                                                 (add-frame-layout layout-frame-shift
                                                                   layout-frame)
                                                 (add-frame-layout layout-frame

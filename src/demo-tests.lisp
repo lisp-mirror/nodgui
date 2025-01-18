@@ -1856,16 +1856,19 @@
 
 (defun demo-virtual-keyboard ()
   (with-nodgui ()
-    (let* ((output (make-instance 'entry))
+    (let* ((info     (make-instance 'label
+                                    :text "Click on the text entry below, to open the virtual keyboard"))
+           (output   (make-instance 'entry))
            (keyboard (make-instance 'virtual-keyboard
                                     :output output
-                                    :borderwidth 10
-                                    :relief :solid)))
-      (grid output 0 0 :sticky :nws)
+                                    :borderwidth 5
+                                    :relief :sunken)))
+      (grid info   0 0 :sticky :nws)
+      (grid output 1 0 :sticky :nws)
       (bind output
             #$<1>$
             (lambda (e)
               (declare (ignore e))
-              (grid keyboard 1 0 :sticky :news)
+              (grid keyboard 2 0 :sticky :news)
               (grid-columnconfigure (root-toplevel) 0 :weight 1)
-              (grid-rowconfigure    (root-toplevel) 1 :weight 1))))))
+              (grid-rowconfigure    (root-toplevel) 2 :weight 1))))))
