@@ -2222,6 +2222,8 @@
    #:label-spinbox
    #:left-button-text
    #:right-button-text
+   #:left-button-image
+   #:right-button-image
    #:label
    #:near-values-generator
    #:virtual-keyboard

@@ -2231,6 +2231,14 @@ will shift the selected item up o down respectively."))
     :initform (string (code-char 11157))
     :initarg  :right-button-text
     :accessor  right-button-text)
+   (left-button-image
+    :initform nil
+    :initarg  :left-button-image
+    :accessor  left-button-image)
+   (right-button-image
+    :initform nil
+    :initarg  :right-button-image
+    :accessor  right-button-image)
    (label
     :initform nil
     :initarg  :label
@@ -2262,6 +2270,7 @@ will shift the selected item up o down respectively."))
                                       :master object
                                       :width 3
                                       :text (left-button-text object)
+                                      :image (left-button-image object)
                                       :command
                                       (lambda ()
                                         (let ((new-value (funcall near-values-generator
@@ -2272,6 +2281,7 @@ will shift the selected item up o down respectively."))
                                        :master object
                                        :width 3
                                        :text (right-button-text object)
+                                       :image (right-button-image object)
                                        :command
                                        (lambda ()
                                          (let ((new-value (nth-value 1
@@ -2350,7 +2360,10 @@ will shift the selected item up o down respectively."))
     :type     function
     :documentation "This function must return two values: the first is a list of buttons rows for the normal keyboard layout, the second value is a list of button rows for the secondary layout, see the default layout defined in function: 'virtual-keyboard-default-layout'.")))
 
-(defmethod initialize-instance :after ((object virtual-keyboard) &key &allow-other-keys)
+(defmethod initialize-instance :after ((object virtual-keyboard)
+                                       &key
+                                         (on-close-callback (constantly t))
+                                       &allow-other-keys)
   (with-accessors ((output             output)
                    (preview            preview)
                    (layouts            layouts)
@@ -2388,7 +2401,8 @@ will shift the selected item up o down respectively."))
                                         :command (lambda ()
                                                    (setf (text output)
                                                          (text preview))
-                                                   (grid-forget object))))
+                                                   (grid-forget object)
+                                                   (funcall on-close-callback))))
       (grid preview 0 0 :sticky :news)
       (grid shift-button 0 1 :sticky :news)
       (grid close-button 0 2 :sticky :news)
