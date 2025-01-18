@@ -2223,7 +2223,15 @@
    #:left-button-text
    #:right-button-text
    #:label
-   #:near-values-generator))
+   #:near-values-generator
+   #:virtual-keyboard
+   #:output
+   #:preview
+   #:layout-frame
+   #:layout-frame-shift
+   #:shift-button
+   #:close-button
+   #:layouts))
 
 (defpackage :nodgui.tcl-lib-wrapped
   (:use :cl

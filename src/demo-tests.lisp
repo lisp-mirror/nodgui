@@ -206,6 +206,10 @@
                                                    :text "(MW) label spinbox"
                                                    :command (lambda ()
                                                               (demo-label-spinbox))))
+           (demo-virtual-keyboard   (make-instance 'button
+                                                   :text "(MW) virtual keyboard"
+                                                   :command (lambda ()
+                                                              (demo-virtual-keyboard))))
            (b-quit                    (make-instance 'button
                                                      :text    "Quit lisp 🙂"
                                                      :command (lambda ()
@@ -261,7 +265,8 @@
       (grid demo-menu-check-buttons  15 0 :sticky :nswe)
       (grid demo-menu-radio-buttons  15 1 :sticky :nswe)
       (grid demo-label-spinbox       15 2 :sticky :nswe)
-      (grid b-quit                   16 0 :sticky :nswe :columnspan 3)
+      (grid demo-virtual-keyboard    16 0 :sticky :nswe)
+      (grid b-quit                   17 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
 
@@ -1848,3 +1853,19 @@
                                                    :parent (root-toplevel))))
             1 0
             :sticky :news))))
+
+(defun demo-virtual-keyboard ()
+  (with-nodgui ()
+    (let* ((output (make-instance 'entry))
+           (keyboard (make-instance 'virtual-keyboard
+                                    :output output
+                                    :borderwidth 10
+                                    :relief :solid)))
+      (grid output 0 0 :sticky :nws)
+      (bind output
+            #$<1>$
+            (lambda (e)
+              (declare (ignore e))
+              (grid keyboard 1 0 :sticky :news)
+              (grid-columnconfigure (root-toplevel) 0 :weight 1)
+              (grid-rowconfigure    (root-toplevel) 1 :weight 1))))))

@@ -2283,3 +2283,123 @@ will shift the selected item up o down respectively."))
 
 (defmethod text ((object label-spinbox))
   (label object))
+
+(defun make-virtual-keyboard-key (key output-entry master)
+  (make-instance 'button
+                 :master  master
+                 :text    key
+                 :command (lambda ()
+                            (setf (text output-entry)
+                                  (strcat (text output-entry) key)))))
+
+(defun virtual-keyboard-row (keys output-entry master)
+  (loop for key across keys
+        collect
+        (make-virtual-keyboard-key (string key) output-entry master)))
+
+(defun make-virtual-keyboard-rows (output-entry master &rest rows)
+  (loop for row in rows
+        collect
+        (virtual-keyboard-row row output-entry master)))
+
+(defun virtual-keyboard-default-layout (output-entry master master-shift)
+  (values (make-virtual-keyboard-rows output-entry
+                                      master
+                                      "\\1234567890'ì"
+                                      "qwertyuiopè+"
+                                      "asdfghjklòàù"
+                                      "<zxcvbnm,.-")
+          (make-virtual-keyboard-rows output-entry
+                                      master-shift
+                                      "|!\"£$%&/()=?^"
+                                      "QWERTYUIOPé*"
+                                      "ASDFGHJKLç°§"
+                                      ">ZXCVBNM;:_")))
+
+(defclass virtual-keyboard (frame)
+  ((output
+    :initform nil
+    :initarg  :output
+    :accessor output)
+   (preview
+    :initform nil
+    :initarg  :preview
+    :accessor preview)
+   (layout-frame
+    :initform nil
+    :initarg  :layout-frame
+    :accessor layout-frame)
+   (layout-frame-shift
+    :initform nil
+    :initarg  :layout-frame-shift
+    :accessor layout-frame-shift)
+   (shift-button
+    :initform nil
+    :initarg  :shift-button
+    :accessor shift-button)
+   (close-button
+    :initform nil
+    :initarg  :close-button
+    :accessor close-button)
+   (layouts
+    :initform #'virtual-keyboard-default-layout
+    :initarg  :layouts
+    :accessor layouts
+    :type     function
+    :documentation "This function must return two values: the first is a list of buttons rows for the normal keyboard layout, the second value is a list of button rows for the secondary layout, see the default layout defined in function: 'virtual-keyboard-default-layout'.")))
+
+(defmethod initialize-instance :after ((object virtual-keyboard) &key &allow-other-keys)
+  (with-accessors ((output             output)
+                   (preview            preview)
+                   (layouts            layouts)
+                   (layout-frame       layout-frame)
+                   (layout-frame-shift layout-frame-shift)
+                   (shift-button       shift-button)
+                   (close-button       close-button)) object
+    (setf layout-frame       (make-instance 'frame :master object)
+          layout-frame-shift (make-instance 'frame :master object))
+    (setf preview       (make-instance 'entry :master object))
+    (flet ((add-frame-layout (frame-to-add frame-to-forget)
+             (grid-forget frame-to-forget)
+             (grid frame-to-add
+                   1 0
+                   :sticky :news
+                   :columnspan 3)
+             (grid-columnconfigure frame-to-add :all :weight 1)
+             (grid-rowconfigure    frame-to-add :all :weight 1)))
+      (setf shift-button (make-instance 'button
+                                        :master object
+                                        :text "shift"
+                                        :command
+                                        (let ((index 0))
+                                          (lambda ()
+                                            (incf index)
+                                            (if (= (rem index 2)
+                                                   0)
+                                                (add-frame-layout layout-frame-shift
+                                                                  layout-frame)
+                                                (add-frame-layout layout-frame
+                                                                  layout-frame-shift))))))
+      (setf close-button (make-instance 'button
+                                        :master object
+                                        :text "close"
+                                        :command (lambda ()
+                                                   (setf (text output)
+                                                         (text preview))
+                                                   (grid-forget object))))
+      (grid preview 0 0 :sticky :news)
+      (grid shift-button 0 1 :sticky :news)
+      (grid close-button 0 2 :sticky :news)
+      (multiple-value-bind (rows rows-shift)
+          (funcall layouts preview layout-frame layout-frame-shift)
+        (loop for row in rows do
+          (grid-implicit row :padx 1 :pady 1 :sticky :news))
+        (loop for row in rows-shift do
+          (grid-implicit row :padx 1 :pady 1 :sticky :news)))
+      (grid layout-frame 1 0 :sticky :news :columnspan 3)
+      (grid-columnconfigure layout-frame :all :weight 1)
+      (grid-rowconfigure    layout-frame :all :weight 1)
+      (grid-rowconfigure    object 0 :weight 1)
+      (grid-columnconfigure object 0 :weight 1)
+      (grid-rowconfigure    object 1 :weight 2)
+      (grid-columnconfigure object 0 :weight 2))))
