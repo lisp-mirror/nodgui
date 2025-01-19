@@ -2228,7 +2228,7 @@ will shift the selected item up o down respectively."))
     :initarg  :left-button-text
     :accessor  left-button-text)
    (right-button-text
-    :initform (string (code-char 11157))
+    :initform (string (code-char 10145))
     :initarg  :right-button-text
     :accessor  right-button-text)
    (left-button-image
