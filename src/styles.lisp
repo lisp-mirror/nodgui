@@ -99,39 +99,50 @@
 (defun parse-layout (widget-layout)
   (p:parse 'layout widget-layout :junk-allowed nil))
 
-(defparameter *styles* '())
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-(defclass style ()
-  ((name
-    :initform nil
-    :initarg  :name
-    :accessor name)
-   (parent
-    :initform nil
-    :initarg  :parent
-    :accessor parent)
-   (options
-    :initform nil
-    :initarg  :options
-    :accessor options)
-   (applied
-    :initform nil
-    :initarg  :applied
-    :reader   appliedp
-    :writer   (setf applied))
-   (action
-    :initform nil
-    :initarg :action
-    :reader action)
-   (pre-application-function
-    :initform (constantly t)
-    :initarg :pre-application-function
-    :accessor pre-application-function
-    :type function)))
+  (defparameter *styles* '())
 
-(defmethod initialize-instance :after ((object style) &key &allow-other-keys)
-  (setf *styles* (remove-if (lambda (a) (string= (name a) (name object))) *styles*))
-  (push object *styles*))
+  (defclass style ()
+    ((name
+      :initform nil
+      :initarg  :name
+      :accessor name)
+     (parent
+      :initform nil
+      :initarg  :parent
+      :accessor parent)
+     (options
+      :initform nil
+      :initarg  :options
+      :accessor options)
+     (applied
+      :initform nil
+      :initarg  :applied
+      :reader   appliedp
+      :writer   (setf applied))
+     (action
+      :initform nil
+      :initarg :action
+      :reader action)
+     (pre-application-function
+      :initform (constantly t)
+      :initarg :pre-application-function
+      :accessor pre-application-function
+      :type function)))
+
+  (defmethod initialize-instance :after ((object style)
+                                         &key
+                                           (push-to-styles t)
+                                         &allow-other-keys)
+    (when push-to-styles
+      (setf *styles* (remove-if (lambda (a) (string= (name a) (name object))) *styles*))
+      (push object *styles*))
+    object)
+
+  (defmethod print-object ((object style) stream)
+    (print-unreadable-object (object stream :type t :identity t)
+      (format stream "name: ~s options: ~a" (name object) (options object)))))
 
 (defmethod (setf action) ((object style) val)
   (assert (or (eq val :configure)
@@ -144,9 +155,19 @@
   (null (parent object)))
 
 (defmacro create-root-styles (&rest names)
-  `(list ,@(loop for name in names
-                 collect
-                 `(make-instance 'style :applied t :name ,name))))
+  `(progn
+     ,@(loop for name in names
+             collect
+             (a:with-gensyms (style)
+               `(let ((,style (make-instance 'style
+                                             :applied nil
+                                             :name ,name
+                                             :push-to-styles nil)))
+                  (a:define-constant
+                      ,(nodgui.utils:format-fn-symbol t  "~:@(+~a+~)" name)
+                      ,style
+                    :test (lambda (a b) (string= (name a) (name b))))
+                  (push ,style *styles*))))))
 
 (create-root-styles "TButton"
                     "TCheckbutton"
@@ -203,16 +224,29 @@
             (format-wish "ttk::style configure ~a ~{-~(~a~) ~({~a}~) ~}"
                          actual-name options))))))
 
-(defun symbol->stylename (a)
-  (and a
-       (symbol-name a)))
+(defgeneric symbol->stylename (object))
+
+(defmethod symbol->stylename ((object string))
+  (if (string-empty-p object)
+      (error "A style name can not be the empty string")
+      object))
+
+(defmethod symbol->stylename ((a symbol))
+  (symbol-name a))
+
+(defmethod symbol->stylename ((a null))
+  (error "A style name can not be null"))
 
 (defmacro make-style (name (&key (extend nil) (action nil)) &rest options-pairs)
   `(make-instance 'style
                   :name    ,(symbol->stylename name)
-                  :parent  ,(if (symbolp extend)
-                                (symbol->stylename extend)
-                                (to-s extend))
+                  :parent  ,(cond
+                              ((null extend)
+                               nil)
+                              ((symbolp extend)
+                               (symbol->stylename extend))
+                              (t
+                               (to-s extend)))
                   :action  ,action
                   :options (list ,@options-pairs)))
 

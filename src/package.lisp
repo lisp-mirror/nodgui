@@ -2107,6 +2107,26 @@
            #:glob
            #:items
            #:image
+           #:+tbutton+
+           #:+tcheckbutton+
+           #:+tcombobox+
+           #:+tentry+
+           #:+tframe+
+           #:+tlabel+
+           #:+tlabelframe+
+           #:+tmenubutton+
+           #:+tnotebook+
+           #:+tpanedwindow+
+           #:+horizontal.tprogressbar+
+           #:+vertical.tprogressbar+
+           #:+tradiobutton+
+           #:+horizontal.tscale+
+           #:+vertical.tscale+
+           #:+horizontal.tscrollbar+
+           #:+vertical.tscrollbar+
+           #:+tseparator+
+           #:+tsizegrip+
+           #:+treeview+
            #:style
            #:apply-style
            #:make-style

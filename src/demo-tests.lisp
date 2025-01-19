@@ -210,6 +210,10 @@
                                                    :text "(MW) virtual keyboard"
                                                    :command (lambda ()
                                                               (demo-virtual-keyboard))))
+           (demo-custom-theme       (make-instance 'button
+                                                   :text "custom theme"
+                                                   :command (lambda ()
+                                                              (demo-custom-theme))))
            (b-quit                    (make-instance 'button
                                                      :text    "Quit lisp 🙂"
                                                      :command (lambda ()
@@ -266,6 +270,7 @@
       (grid demo-menu-radio-buttons  15 1 :sticky :nswe)
       (grid demo-label-spinbox       15 2 :sticky :nswe)
       (grid demo-virtual-keyboard    16 0 :sticky :nswe)
+      (grid demo-custom-theme        16 1 :sticky :nswe)
       (grid b-quit                   17 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
@@ -1465,7 +1470,7 @@
       (let* ((b            (make-instance 'button :text "Click to change style"))
              (corner-state 0)
              (corner-style (make-style corner-style (:extend "TButton")
-                                       :foreground (make-tk-color :dim-gray)
+                                       :foreground (make-tk-color :magenta)
                                        :padding    0
                                        :font      "times 20"))
              (red-corner   (make-image +red-corner+))
@@ -1496,6 +1501,18 @@
                     (layout-configure corner-style blue-layout))
                 (incf corner-state)))
         (pack b)))))
+
+(defun demo-custom-theme (&key theme)
+  (let ((*debug-tk* t))
+    (with-nodgui (:theme theme)
+      (setf (options +tbutton+) (list :font "times 20" :foreground (make-tk-color :red)))
+      (apply-style +tbutton+)
+      (let ((label (make-instance 'label
+                              :text "The button's font has been permanently changed")))
+        (pack label)
+        (loop for i from 0 below 5 do
+          (pack (make-instance 'button :text (format nil "button ~a" i))))))))
+
 
 (defun demo-autocomplete-entry (&key theme)
   (with-nodgui (:theme theme)
