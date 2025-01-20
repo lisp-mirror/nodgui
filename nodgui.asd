@@ -111,18 +111,19 @@
                (:file "pixels-buffer")
                (:file "opengl-frame")
                (:module tklib
-                        :components ((:file "package")
-                                     (:file "calendar")
-                                     (:file "notify-window")
-                                     (:file "plot")
-                                     (:file "swaplist")
-                                     (:file "misc-widget")))
+                :components ((:file "package")
+                             (:file "calendar")
+                             (:file "notify-window")
+                             (:file "plot")
+                             (:file "swaplist")
+                             (:file "misc-widget")))
                (:file "demo-tests")
                (:file "demo-pixels-buffer")
                (:file "demo-3d-window")
                (:file "tcl-lib-wrapped")
                (:static-file "demo/shaders/3d-demo.frag")
-               (:static-file "demo/shaders/3d-demo.vert")))
+               (:static-file "demo/shaders/3d-demo.vert"))
+  :in-order-to ((test-op (test-op :nodgui/test))))
 
 (defsystem nodgui/test
   :encoding         :utf-8
@@ -137,7 +138,8 @@
                (:file "test-event-parser")
                (:file "test-styles")
                (:file "test-text-indices")
-               (:file "test-nodgui")))
+               (:file "test-nodgui"))
+  :perform (test-op (op c) (symbol-call :all-tests :run-all-tests)))
 
 
 (defsystem nodgui/game
