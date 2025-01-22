@@ -2296,10 +2296,10 @@ will shift the selected item up o down respectively."))
 (defmethod text ((object label-spinbox))
   (text (label object)))
 
-(defun make-virtual-keyboard-key (key output-entry master)
+(defun make-virtual-keyboard-key (key output-entry master &key (text key))
   (make-instance 'button
                  :master  master
-                 :text    key
+                 :text    text
                  :command (lambda ()
                             (setf (text output-entry)
                                   (strcat (text output-entry) key)))))
@@ -2315,18 +2315,27 @@ will shift the selected item up o down respectively."))
         (virtual-keyboard-row row output-entry master)))
 
 (defun virtual-keyboard-default-layout (output-entry master master-shift)
-  (values (make-virtual-keyboard-rows output-entry
-                                      master
-                                      "\\1234567890'ì"
-                                      "qwertyuiopè+"
-                                      "asdfghjklòàù"
-                                      "<zxcvbnm,.-")
-          (make-virtual-keyboard-rows output-entry
-                                      master-shift
-                                      "|!\"£$%&/()=?^"
-                                      "QWERTYUIOPé*"
-                                      "ASDFGHJKLç°§"
-                                      ">ZXCVBNM;:_")))
+  (values (append (make-virtual-keyboard-rows output-entry
+                                              master
+                                              "\\1234567890'ì"
+                                              "qwertyuiopè+"
+                                              "asdfghjklòàù"
+                                              "<zxcvbnm,.-")
+                  (list (list (make-virtual-keyboard-key (string #\Space)
+                                                         output-entry
+                                                         master
+                                                         :text "Space"))))
+          (append (make-virtual-keyboard-rows output-entry
+                                              master-shift
+                                              "|!\"£$%&/()=?^"
+                                              "QWERTYUIOPé*"
+                                              "ASDFGHJKLç°§"
+                                              ">ZXCVBNM;:_")
+                  (list (list (make-virtual-keyboard-key (string #\Space)
+                                                         output-entry
+                                                         master-shift
+                                                         :text "Space"))))
+          t))
 
 (defclass virtual-keyboard (frame)
   ((output
@@ -2353,6 +2362,10 @@ will shift the selected item up o down respectively."))
     :initform nil
     :initarg  :close-button
     :accessor close-button)
+   (cancel-button
+    :initform nil
+    :initarg  :cancel-button
+    :accessor cancel-button)
    (layouts
     :initform #'virtual-keyboard-default-layout
     :initarg  :layouts
@@ -2363,6 +2376,7 @@ will shift the selected item up o down respectively."))
 (defmethod initialize-instance :after ((object virtual-keyboard)
                                        &key
                                          (on-close-callback (constantly t))
+                                         (on-cancel-callback (constantly t))
                                        &allow-other-keys)
   (with-accessors ((output             output)
                    (preview            preview)
@@ -2370,7 +2384,8 @@ will shift the selected item up o down respectively."))
                    (layout-frame       layout-frame)
                    (layout-frame-shift layout-frame-shift)
                    (shift-button       shift-button)
-                   (close-button       close-button)) object
+                   (close-button       close-button)
+                   (cancel-button      cancel-button)) object
     (setf layout-frame       (make-instance 'frame :master object)
           layout-frame-shift (make-instance 'frame :master object))
     (setf preview       (make-instance 'entry :master object))
@@ -2379,7 +2394,7 @@ will shift the selected item up o down respectively."))
              (grid frame-to-add
                    1 0
                    :sticky :news
-                   :columnspan 3)
+                   :columnspan 4)
              (grid-columnconfigure frame-to-add :all :weight 1)
              (grid-rowconfigure    frame-to-add :all :weight 1)))
       (setf shift-button (make-instance 'button
@@ -2403,16 +2418,42 @@ will shift the selected item up o down respectively."))
                                                          (text preview))
                                                    (grid-forget object)
                                                    (funcall on-close-callback))))
+      (setf cancel-button (make-instance 'button
+                                         :master object
+                                         :text "cancel"
+                                         :command (lambda ()
+                                                    (grid-forget object)
+                                                    (funcall on-cancel-callback))))
       (grid preview 0 0 :sticky :news)
       (grid shift-button 0 1 :sticky :news)
       (grid close-button 0 2 :sticky :news)
-      (multiple-value-bind (rows rows-shift)
+      (grid cancel-button 0 3 :sticky :news)
+      (multiple-value-bind (rows rows-shift last-key-is-space-p)
           (funcall layouts preview layout-frame layout-frame-shift)
-        (loop for row in rows do
-          (grid-implicit row :padx 1 :pady 1 :sticky :news))
-        (loop for row in rows-shift do
-          (grid-implicit row :padx 1 :pady 1 :sticky :news)))
-      (grid layout-frame 1 0 :sticky :news :columnspan 3)
+        (if last-key-is-space-p
+            (progn
+              (loop for row in (subseq rows 0
+                                       (1- (length rows)))
+                    do
+                       (grid-implicit row :padx 1 :pady 1 :sticky :news))
+              (grid (first (a:last-elt rows))
+                    (length rows)
+                    0
+                    :columnspan 3)
+              (loop for row in (subseq rows-shift 0
+                                       (1- (length rows-shift)))
+                    do
+                       (grid-implicit row :padx 1 :pady 1 :sticky :news))
+              (grid (first (a:last-elt rows-shift))
+                    (length rows-shift)
+                    0
+                    :columnspan 3))
+            (progn
+              (loop for row in rows do
+                (grid-implicit row :padx 1 :pady 1 :sticky :news))
+              (loop for row in rows-shift do
+                (grid-implicit row :padx 1 :pady 1 :sticky :news)))))
+      (grid layout-frame 1 0 :sticky :news :columnspan 4)
       (grid-columnconfigure layout-frame :all :weight 1)
       (grid-rowconfigure    layout-frame :all :weight 1)
       (grid-rowconfigure    object 0 :weight 1)
