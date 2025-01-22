@@ -2375,6 +2375,9 @@ will shift the selected item up o down respectively."))
 
 (defmethod initialize-instance :after ((object virtual-keyboard)
                                        &key
+                                         (close-button-text  "close")
+                                         (cancel-button-text "cancel")
+                                         (shift-button-text  "shift")
                                          (on-close-callback (constantly t))
                                          (on-cancel-callback (constantly t))
                                        &allow-other-keys)
@@ -2399,7 +2402,7 @@ will shift the selected item up o down respectively."))
              (grid-rowconfigure    frame-to-add :all :weight 1)))
       (setf shift-button (make-instance 'button
                                         :master object
-                                        :text "shift"
+                                        :text shift-button-text
                                         :command
                                         (let ((index 0))
                                           (lambda ()
@@ -2412,15 +2415,15 @@ will shift the selected item up o down respectively."))
                                                                   layout-frame-shift))))))
       (setf close-button (make-instance 'button
                                         :master object
-                                        :text "close"
+                                        :text close-button-text
                                         :command (lambda ()
                                                    (setf (text output)
                                                          (text preview))
                                                    (grid-forget object)
                                                    (funcall on-close-callback))))
       (setf cancel-button (make-instance 'button
-                                         :master object
-                                         :text "cancel"
+                                         :master  object
+                                         :text    cancel-button-text
                                          :command (lambda ()
                                                     (grid-forget object)
                                                     (funcall on-cancel-callback))))
@@ -2431,7 +2434,9 @@ will shift the selected item up o down respectively."))
       (multiple-value-bind (rows rows-shift last-key-is-space-p)
           (funcall layouts preview layout-frame layout-frame-shift)
         (if last-key-is-space-p
-            (progn
+            (let ((columnspan-space (if (first rows)
+                                        (length (first rows))
+                                        1)))
               (loop for row in (subseq rows 0
                                        (1- (length rows)))
                     do
@@ -2439,7 +2444,8 @@ will shift the selected item up o down respectively."))
               (grid (first (a:last-elt rows))
                     (length rows)
                     0
-                    :columnspan 3)
+                    :columnspan columnspan-space
+                    :sticky :news)
               (loop for row in (subseq rows-shift 0
                                        (1- (length rows-shift)))
                     do
@@ -2447,7 +2453,8 @@ will shift the selected item up o down respectively."))
               (grid (first (a:last-elt rows-shift))
                     (length rows-shift)
                     0
-                    :columnspan 3))
+                    :columnspan columnspan-space
+                    :sticky :news))
             (progn
               (loop for row in rows do
                 (grid-implicit row :padx 1 :pady 1 :sticky :news))
@@ -2456,6 +2463,8 @@ will shift the selected item up o down respectively."))
       (grid layout-frame 1 0 :sticky :news :columnspan 4)
       (grid-columnconfigure layout-frame :all :weight 1)
       (grid-rowconfigure    layout-frame :all :weight 1)
+      (grid-columnconfigure layout-frame-shift :all :weight 1)
+      (grid-rowconfigure    layout-frame-shift :all :weight 1)
       (grid-rowconfigure    object 0 :weight 1)
       (grid-columnconfigure object 0 :weight 1)
       (grid-rowconfigure    object 1 :weight 2)
