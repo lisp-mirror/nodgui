@@ -102,7 +102,8 @@
                                                                          (root-toplevel)
                                                                          "listbox dialog"
                                                                          "Choose an entry"
-                                                                         '("hello" "world"))))
+                                                                         '("hello" "world")
+                                                                         :select-mode :extended)))
                                                             (message-box (format nil
                                                                                  "chosen ~s~%"
                                                                                  chosen)

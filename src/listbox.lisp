@@ -286,7 +286,7 @@ alternatively a list of numbers may be given"
   (configure (listbox object) "xscrollcommand" (strcat (widget-path (hscroll object)) " set"))
   (configure (listbox object) "yscrollcommand" (strcat (widget-path (vscroll object)) " set"))
   (listbox-export-selection object export-selection)
-  (listbox-select-mode object (or select-mode selectmode)))
+  (listbox-select-mode object selectmode))
 
 (defmethod listbox-append ((l scrolled-listbox) values)
   (listbox-append (listbox l) values)
