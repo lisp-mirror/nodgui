@@ -1254,7 +1254,7 @@
   #.nodgui.config:default-optimization
   (truncate (the to::desired-type (float-coordinate-scale (to:d coordinate) factor))))
 
-(defun texture-border-clamp (v)
+(u:definline texture-border-clamp (v)
   #.nodgui.config:default-optimization
   (declare (to::desired-type v))
   (cond
@@ -1265,7 +1265,7 @@
     (t
      v)))
 
-(defun texture-border-wrap (v)
+(u:definline texture-border-wrap (v)
   #.nodgui.config:default-optimization
   (declare (to::desired-type v))
   (cond
