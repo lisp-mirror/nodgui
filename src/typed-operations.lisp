@@ -134,7 +134,9 @@
 
 ;;;; constants
 
-(a:define-constant +2pi+ (d* 2.0f0 (desired pi)) :test #'=)
+(a:define-constant +2pi+ (d (* 2.0f0 pi)) :test #'=)
+
+(a:define-constant +pi/2+ (d (* 1/2 pi)) :test #'=)
 
 ;; parsing helper
 

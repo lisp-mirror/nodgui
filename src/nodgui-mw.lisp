@@ -619,7 +619,7 @@
 (defgeneric selected-elements (select))
 
 (defmethod selected-elements ((select list-select))
-  (let ((selection (listbox-get-selection select)))
+  (let ((selection (listbox-get-selection-index select)))
     (when selection
       (mapcar (lambda (index)
                 (nth index (data select)))
@@ -886,7 +886,7 @@
 
 (defun make-list-select-demo (&optional (master nil))
   (let* ((f (make-instance 'frame :master master))
-         (ls (make-instance 'list-select :master f :selectmode :multiple))
+         (ls (make-instance 'list-select :master f :selectmode :extended))
          (f2 (make-instance 'frame :master f))
          (lsize (make-instance 'label :master f2 :text "Total Size:"))
          (bsize (make-instance 'button

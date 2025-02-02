@@ -74,6 +74,7 @@
             #:degree->radians
             #:radians->degree
             #:+2pi+
+            #:+pi/2+
             #:parse-number->desired
             #:f
             #:f*
