@@ -2391,7 +2391,9 @@ will shift the selected item up o down respectively."))
                    (cancel-button      cancel-button)) object
     (setf layout-frame       (make-instance 'frame :master object)
           layout-frame-shift (make-instance 'frame :master object))
-    (setf preview       (make-instance 'entry :master object))
+    (setf preview (make-instance 'entry
+                                 :master object
+                                 :text   (text output)))
     (flet ((add-frame-layout (frame-to-add frame-to-forget)
              (grid-forget frame-to-forget)
              (grid frame-to-add

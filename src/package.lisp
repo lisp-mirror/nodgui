@@ -411,6 +411,7 @@
    #:data
    #:bits
    #:errors
+   #:buffer->pixmap
    #:pixel@
    #:sync-bits-to-data
    #:sync-data-to-bits

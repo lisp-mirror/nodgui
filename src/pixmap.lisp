@@ -233,6 +233,15 @@ points to the same memory location (i.e. bg)."
                  :height (height object)
                  :data   (a:copy-array (data object))))
 
+(defun buffer->pixmap (buffer buffer-width buffer-height)
+  (let ((pixmap (make-instance 'pixmap
+                               :depth 4
+                               :height buffer-height
+                               :width  buffer-width
+                               :bits   buffer)))
+    (sync-bits-to-data pixmap)
+    pixmap))
+
 (defgeneric pixel@ (object x y))
 
 (defgeneric (setf pixel@) (colorlist object x y))
