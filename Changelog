@@ -1,12 +1,204 @@
+2025-02-05 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/pixmap.lisp:
+
+	- [MW] filled the preview entry of virtual keyboard with the contents
+	of the entry the former is attached to;
+	- added buffer->pixmap.
+
+2025-02-02 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/typed-operations.lisp:
+
+	- fixed 'make-list-select-demo';
+	- added pi/2 constant.
+
+2025-01-29 cage
+
+	* src/pixels-buffer.lisp:
+
+	- [pixel-buffer] inlining texture border functions.
+
+2025-01-23 cage
+
+	* src/demo-tests.lisp,
+	* src/listbox.lisp:
+
+	- fixed selection mode keyword argument in scrolled-listbox.
+
+2025-01-22 cage
+
+	* src/nodgui-mw.lisp:
+
+	- added missing 'space' key to default virtual keyboard layout;
+	- added cancel operation button to virtual keyboard.
+	- made the button's text of the operations keys ('close', 'shift',
+	'cancel'), configurable.
+
+2025-01-20 Colin Woodbury
+
+	* nodgui.asd:
+
+	- enable use of `asdf:test-system`
+	Merge pull request 'Enable use of `asdf:test-system`' (#21) from
+	fosskers/nodgui:colin/tests into master
+
+2025-01-19 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/styles.lisp:
+
+	- permitted the style to be applied to all the widgets that uses a
+	type class, for example all the buttons;
+	- added handles for default class style (+tbutton+ etc.).
+	- fixed right arrow to match the visual of the left one, in
+	label-spinbox.
+
+2025-01-18 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- [MW] added virtual keyboard widget.
+	- [MW] fixed callback when clicking on the "shift" button on the
+	virtual keyboard;
+	- improved virtual keyboard demo.
+	- made the label of the label-spinbox a slot of the class.
+	- added configurable images to button of a label-spinbox;
+	- allowed to run more code in the 'close' callback of the virtual
+	keyboard.
+
+2025-01-17 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/photo-image.lisp:
+
+	[MW] added 'label-spinbox'.
+	- fixed master assign of label-spinbox's contents.
+
+2025-01-16 cage
+
+	* src/pixels-buffer.lisp:
+
+	- fixed texture coordinates wrapping for negative values.
+
+2025-01-15 cage
+
+	* game/entities.lisp,
+	* src/demo-pixels-buffer.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp:
+
+	- fixed crash in game (entity:event-after slot declared function but
+	assumed value 'nil' somtimes);
+	- added more optimization declarations;
+	- [pixel-buffer] added multitexture polygon rendering
+	- added grid-implicit, a function that fill the next available row
+	with widgets in a single call, without specify columns.
+
+2025-01-11 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixmap.lisp,
+	* src/utils.lisp:
+
+	- prevent definline macro to actually inlining a function when running
+	the library without optimizations.
+	- fixed out of bound access to sin function LUT when angle was a small
+	negative value.
+	- removed warning about call a function before the compiler macro has
+	been defined for the same function.
+	- fixed regression: restored TGA file format support.
+	- removed debug code.
+
+2025-01-04 cage
+
+	* game/main.lisp,
+	* nodgui.asd:
+
+	- removed empty lines.
+
+2025-01-03 cage
+
+	* src/treeview.lisp,
+	* src/wish-communication.lisp:
+
+	- ensured wish is closed only if error should not be shown to the user
+	using the GUI.
+	- prevented crash when deleting treeview node with spaces in its ID.
+
+2025-01-02 cage
+
+	* src/typed-operations.lisp:
+
+	- removed 'eval-when' around +2pi+ definition to prevent error when
+	compiling code, without loading the source.
+	- wrapped in 'eval-when' all typed operations.
+
+2024-12-29 cage
+
+	* src/demo-tests.lisp,
+	* src/text.lisp:
+
+	- fixed escaping of string that replace all the data in a text widget;
+	- fixed indentation;
+	- added more escaping test.
+
+2024-12-24 cage
+
+	* src/canvas.lisp,
+	* src/package.lisp,
+	* src/tcl-lib-wrapped.lisp,
+	* src/utils.lisp:
+
+	- added missing TCL library loading on some functions that wraps
+	tcllib;
+	- ensured also carriage return char is removed by the function "trim".
+	- added "item-get-tag" and "item-find-items".
+	- enforced tags format in "item-add-tag".
+
+2024-12-16 cage
+
+	* src/canvas.lisp,
+	* src/package.lisp:
+
+	- added 'add-tag';
+	- specialized 'item-configure' on sequence for argument 'value'.
+	- renamed 'add-tag' to 'item-add-tag';
+	- added 'item-remove-tag'.
+
+2024-12-15 cage
+
+	* src/wish-communication.lisp:
+
+	- fixed filtering of keys passed as argument to: 'start-wish'.
+
 2024-12-12 cage
 
+	* Changelog,
+	* NEWS.org,
 	* nodgui.asd,
+	* src/tcl-lib-wrapped.lisp,
 	* src/wish-communication.lisp:
 
 	- fixed default return value of 'guess-wish-interpreter-path', return
 	'wish', instead of nil. Also fixed and added a couple of checks in the
 	same function's body.
 	- updated version number.
+	- updated Changelog.
+	- updated news file.
+	- fixed typo in a docstring.
 
 2024-12-05 cage
 
