@@ -1,3 +1,16 @@
+* 2025-02-15 version 0.7.3.0
+- [new feature]
+  - added virtual keyboard widget;
+  - added label spinbox widget;
+  - [pixel-buffer] added multitexture polygon rendering;
+  - added function to manipulate tags in canvas items (add/remove tags and find items by tags)
+  - added grid-implicit, a function that fill the next available row with widgets in a single call, without specify columns.
+- [improvements]
+   -Enable use of `asdf:test-system`, thanks fosskers!
+- [bugfix]
+  - fixed regression: restored support for TGA bitmap file format
+  - removed 'eval-when' around ~+2pi+~ definition to prevent error when compiling code, without loading the source (thanks to the person that reported this issue!).
+
 * 2024-12-12 version 0.7.2.1
 
   - fixed a bug that prevented to start the GUI on some systems.
