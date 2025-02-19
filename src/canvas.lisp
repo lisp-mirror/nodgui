@@ -125,7 +125,7 @@
 
 (defgeneric set-coords (canvas item coords))
 
-(defgeneric coords (item))
+(defgeneric coords (canvas item))
 
 (defgeneric scrollregion (canvas x0 y0 x1 y1))
 
@@ -264,8 +264,17 @@
 (defmethod set-coords* ((canvas canvas) (item canvas-item) &rest coords)
   (funcall #'set-coords canvas (handle item) coords))
 
-(defmethod coords ((item canvas-item))
-  (error "not implemented, patches welcome! :)"))
+(defmethod coords ((object canvas) (item canvas-item))
+  (coords object (handle item)))
+
+(defmethod coords ((object canvas) tag-or-item-id)
+  (with-read-data (nil)
+    (format-wish "senddatastrings [~a coords ~a]"
+                 (widget-path object)
+                 tag-or-item-id)
+    (let ((data (read-data)))
+      (mapcar (lambda (a) (parse-integer a :junk-allowed t))
+              data))))
 
 (defun format-number (stream number)
   (cond

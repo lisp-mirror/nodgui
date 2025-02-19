@@ -976,79 +976,80 @@
   (flet ((bind-red (e)
            (declare (ignore e))
            (do-msg "You clicked on red!"))
-         (bind-green (canvas item)
+         (bind-green (canvas green-arc item)
            (lambda (e)
              (declare (ignore e))
              (item-delete canvas item)
-             (do-msg "You clicked on green and the blue arc disappeared!"))))
-    (let ((*debug-tk* t))
-      (with-nodgui (:theme theme)
-        (let* ((size         500)
-               (canvas       (make-canvas nil :width size :height size))
-               (arc1         (create-arc canvas
-                                         (/ size 4) (/ size 4)
-                                         (* size 3/4) (* size 3/4) :start 0 :extent 180))
-               (arc2         (create-arc canvas
-                                         (/ size 4) (/ size 4)
-                                         (* size 3/4) (* size 3/4) :start 180 :extent 180))
-               (ball         (create-arc canvas
-                                         0 0
-                                         (* size 1/10) (* size 1/10)
-                                         :start 0
-                                         :extent 359
-                                         :style :pieslice
-                                         :fill  "#0000ff"))
-               (star         (make-star canvas 80 0.5 "#ff0000" "#000000" 5))
-               (bicolor-star (make-two-color-star canvas 80 0.5
-                                                  "#FFFF00" "#FFFF00"
-                                                  "#BEBEBE"   "#FFFF00"
-                                                  10
-                                                  :outline-width 10))
-               (rotated-text (create-text canvas 0 20
-                                          (strcat (format nil "Text can be rotated~%at an ")
-                                                  "arbitrary angle like this!")
-                                          :angle -80))
-               (pentagon-radius 20)
-               (pentagon-coords (mapcar #'truncate
-                                        (a:flatten (loop for i from (- (/ pi 2))
+             (do-msg (format nil
+                             "You clicked on green (coords ~a) and the blue arc disappeared!"
+                             (coords canvas green-arc))))))
+    (with-nodgui (:theme theme)
+      (let* ((size         500)
+             (canvas       (make-canvas nil :width size :height size))
+             (arc1         (create-arc canvas
+                                       (/ size 4) (/ size 4)
+                                       (* size 3/4) (* size 3/4) :start 0 :extent 180))
+             (arc2         (create-arc canvas
+                                       (/ size 4) (/ size 4)
+                                       (* size 3/4) (* size 3/4) :start 180 :extent 180))
+             (ball         (create-arc canvas
+                                       0 0
+                                       (* size 1/10) (* size 1/10)
+                                       :start 0
+                                       :extent 359
+                                       :style :pieslice
+                                       :fill  "#0000ff"))
+             (star         (make-star canvas 80 0.5 "#ff0000" "#000000" 5))
+             (bicolor-star (make-two-color-star canvas 80 0.5
+                                                "#FFFF00" "#FFFF00"
+                                                "#BEBEBE"   "#FFFF00"
+                                                10
+                                                :outline-width 10))
+             (rotated-text (create-text canvas 0 20
+                                        (strcat (format nil "Text can be rotated~%at an ")
+                                                "arbitrary angle like this!")
+                                        :angle -80))
+             (pentagon-radius 20)
+             (pentagon-coords (mapcar #'truncate
+                                      (a:flatten (loop for i from (- (/ pi 2))
                                                          below (- (* 2 pi)
                                                                   (/ pi 2))
                                                        by (/ (* 2 pi) 5)
                                                        collect
                                                        (list (* pentagon-radius (cos i))
                                                              (* pentagon-radius (sin i)))))))
-               (pentagon     (make-polygon canvas
-                                           pentagon-coords
-                                           :fill-color    (make-tk-color :green)
-                                           :outline-color (make-tk-color :ff00ff)))
-               (aabb-rotated-text (canvas-item-bbox canvas rotated-text)))
-          (item-move    canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0)
-          (shape-move-to  bicolor-star (/ size 2) (/ size 2))
-          (shape-move-to  star 30 30)
-          (shape-move-to  pentagon
-                          (- size (* 2
-                                     pentagon-radius))
-                          (* 2 pentagon-radius))
-          (create-text    canvas 0 0  "Slices of the pie are clickable")
-          (item-configure canvas arc1 "fill"  "#ff0000") ;; using x11-colors via cl-colors2
-          (item-configure canvas arc2 "fill"  "#00ff00") ;; strings are accepted, though
-          (item-configure canvas arc1 "tag"   "red")
-          (item-configure canvas arc2 "tag"   "green")
-          (tag-bind       canvas      "red"   #$<ButtonPress-1>$ #'bind-red)
-          (tag-bind       canvas      "green" #$<ButtonPress-1>$ (bind-green canvas ball))
-          (item-move-to   canvas ball (* size 9/10) (* size 9/10))
-          (item-raise     canvas ball arc1)
-          (make-rectangle canvas
-                          0  (* 3/4 size)
-                          50 (+ (/ size 2) 50)
-                          :fill    "#ff0000"
-                          :outline "#0000ff")
-          (make-items canvas `((:rectangle 0  ,(/ size 2) 50 ,(+ (/ size 2) 50))
-                               (:arc       0  ,(+ (/ size 2) 10)
-                                           50 ,(+ (/ size 2) 60)
-                                           :start 0 :extent 180 :fill "#A020F0")
-                               (:line      0 ,size ,size ,(- size 10) :width 5)))
-          (pack canvas))))))
+             (pentagon     (make-polygon canvas
+                                         pentagon-coords
+                                         :fill-color    (make-tk-color :green)
+                                         :outline-color (make-tk-color :ff00ff)))
+             (aabb-rotated-text (canvas-item-bbox canvas rotated-text)))
+        (item-move    canvas rotated-text (- (bbox-min-x aabb-rotated-text)) 0)
+        (shape-move-to  bicolor-star (/ size 2) (/ size 2))
+        (shape-move-to  star 30 30)
+        (shape-move-to  pentagon
+                        (- size (* 2
+                                   pentagon-radius))
+                        (* 2 pentagon-radius))
+        (create-text    canvas 0 0  "Slices of the pie are clickable")
+        (item-configure canvas arc1 "fill"  (make-tk-color :red)) ; using x11-colors via cl-colors2
+        (item-configure canvas arc2 "fill"  "#00ff00") ; strings are accepted, though
+        (item-configure canvas arc1 "tag"   "red")
+        (item-configure canvas arc2 "tag"   "green")
+        (tag-bind       canvas      "red"   #$<ButtonPress-1>$ #'bind-red)
+        (tag-bind       canvas      "green" #$<ButtonPress-1>$ (bind-green canvas arc2 ball))
+        (item-move-to   canvas ball (* size 9/10) (* size 9/10))
+        (item-raise     canvas ball arc1)
+        (make-rectangle canvas
+                        0  (* 3/4 size)
+                        50 (+ (/ size 2) 50)
+                        :fill    "#ff0000"
+                        :outline "#0000ff")
+        (make-items canvas `((:rectangle 0  ,(/ size 2) 50 ,(+ (/ size 2) 50))
+                             (:arc       0  ,(+ (/ size 2) 10)
+                                         50 ,(+ (/ size 2) 60)
+                                         :start 0 :extent 180 :fill "#A020F0")
+                             (:line      0 ,size ,size ,(- size 10) :width 5)))
+        (pack canvas)))))
 
 (defun demo-image (&key theme)
   (setf *debug-tk* t)
