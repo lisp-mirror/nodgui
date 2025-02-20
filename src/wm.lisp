@@ -253,7 +253,7 @@
                             -default  ,(widget-path photo))))
   object)
 
-(defmethod set-wm-attrib ((toplevel toplevel) (attributes wm-attrib))
+(defmethod set-wm-attrib ((toplevel widget) (attributes wm-attrib))
   (set-wm-attrib (widget-path toplevel) attributes))
 
 (defmethod set-wm-attrib ((toplevel string) (attributes wm-attrib))

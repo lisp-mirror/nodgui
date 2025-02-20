@@ -1816,6 +1816,7 @@
            #:wm-attrib-topmost
            #:wm-attrib-type
            #:wm-attrib-zoomed
+           #:set-wm-attrib
            #:image-load
            #:image-scale
            #:image-setpixel
