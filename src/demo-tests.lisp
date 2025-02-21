@@ -170,7 +170,7 @@
                                                                 (demo-paned-window))))
            #-nodgui-lite
            (demo-animation            (make-instance 'button
-                                                     :text "(SDL)Pixels buffer window (animations)"
+                                                     :text "(SDL) Pixels buffer window (animations)"
                                                      :command (lambda ()
                                                                 (demo-pixel-buffer-animation))))
            #-nodgui-lite
@@ -215,10 +215,10 @@
                                                    :text "custom theme"
                                                    :command (lambda ()
                                                               (demo-custom-theme))))
-           (b-quit                    (make-instance 'button
-                                                     :text    "Quit lisp 🙂"
-                                                     :command (lambda ()
-                                                                (exit-nodgui)))))
+           (b-quit                  (make-instance 'button
+                                                   :text    "Quit lisp 🙂"
+                                                   :command (lambda ()
+                                                              (exit-nodgui)))))
       (grid widget                   0 0  :sticky :nswe)
       (grid eyes                     0 1  :sticky :nswe)
       (grid modal                    0 2  :sticky :nswe)

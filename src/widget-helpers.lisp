@@ -230,7 +230,7 @@
        "~@[ -increment {~(~a~)}~]"
        increment
        "size of the increment of the widget")
-      (indicatorOn indicatorOn "~@[ -indicatorOn {~(~a~)}~]" indicatorOn "")
+      (indicatoron indicatoron "~@[ -indicatoron {~(~a~)}~]" indicatoron "")
       (insertbackground insertbackground "~@[ -insertbackground {~(~a~)}~]" insertbackground "")
       (insertborderWidth insertborderWidth "~@[ -insertborderWidth {~(~a~)}~]" insertborderWidth "")
       (insertofftime insertofftime "~@[ -insertofftime {~(~a~)}~]" insertofftime "")

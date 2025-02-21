@@ -1712,6 +1712,10 @@
            #:canvas-h
            #:cget
            #:check-button
+           #:classic-check-button
+           #:image-check-button
+           #:image-selected
+           #:image-unselected
            #:choose-color
            #:choose-directory
            #:clear-text

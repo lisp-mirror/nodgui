@@ -207,6 +207,28 @@
                                                            (name parent)))))))
     (concat-name style)))
 
+(defgeneric serialize-style-option (object))
+
+(defmethod serialize-style-option (object)
+  (format nil "~(~a~)" object))
+
+(defmethod serialize-style-option ((object list))
+  (format nil "~{~(~a~)~^ ~}" (mapcar #'serialize-style-option object)))
+
+(defun serialize-style-options (options &key (create nil))
+  (with-output-to-string (stream)
+    (loop for (option-key option-value) on options by 'cddr
+          do
+             (if create
+                 (format stream
+                         " ~(~a~) ~a"
+                         option-key
+                         (serialize-style-option option-value))
+                 (format stream
+                         " -~(~a~) {~a}"
+                         option-key
+                         (serialize-style-option option-value))))))
+
 (defmethod apply-style ((object style))
   (with-accessors ((parent                   parent)
                    (options                  options)
@@ -219,10 +241,12 @@
       (let ((actual-name (serialize-style-name object)))
         (funcall pre-application-function)
         (if (eq action :element-create)
-            (format-wish "ttk::style element create ~a ~{~(~a~) ~({~a}~) ~}"
-                         actual-name options)
-            (format-wish "ttk::style configure ~a ~{-~(~a~) ~({~a}~) ~}"
-                         actual-name options))))))
+            (send-wish (format nil
+                               "ttk::style element create ~a ~a"
+                               actual-name (serialize-style-options options)))
+            (send-wish (format nil
+                               "ttk::style configure ~a ~a"
+                               actual-name (serialize-style-options options))))))))
 
 (defgeneric symbol->stylename (object))
 
