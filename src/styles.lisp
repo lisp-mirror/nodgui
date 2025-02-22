@@ -131,6 +131,12 @@
       :accessor pre-application-function
       :type function)))
 
+  (defmethod make-load-form ((object style) &optional env)
+    (declare (ignore env))
+    `(make-instance 'style
+                    :name ',(slot-value object 'name)
+                    :push-to-styles nil))
+
   (defmethod initialize-instance :after ((object style)
                                          &key
                                            (push-to-styles t)
