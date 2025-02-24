@@ -1457,40 +1457,51 @@
 
 
 (a:define-constant +red-corner+
-  (strcat "R0lGODlhEAAQAIABAP8AAGdqcSH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAEALAAAAAAQABAA"
-          "AAIqjAOAyWy6VksH0knrU/i8LWWexTneF5knAoorya5aJI9gPUM4utv9jysAADs=")
+    (strcat "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IB2cksfwAAAARnQU1BAACx"
+            "jwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAFZJREFU"
+            "OMu1kTEOACAIxHr+/886kRiDRFA7HQMVUCx06AACWY5oXqPVliO0vj4LTiaRt0JG4o6YkWx3PJWE"
+            "R6rchN23WrZ6zleS60lSfJFQodz4XPKEAaCES9fFpbL2AAAAAElFTkSuQmCC")
   :test #'string=)
 
 (a:define-constant +blue-corner+
-  (strcat "R0lGODlhEAAQAIABAAAA/2dqcSH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAEALAAAAAAQABAA"
-          "AAIqjAOAyWy6VksH0knrU/i8LWWexTneF5knAoorya5aJI9gPUM4utv9jysAADs=")
+  (strcat "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IB2cksfwAAAARnQU1BAACx"
+          "jwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAFZJREFU"
+          "OMtjZMAA//9DaEZGBBs3YMKuEcaHsXEDRkzbkQ0g7BJG7F4g3hAcTiTeEDx+JM4QAoFEepgw4I5W"
+          "GBvGR2ZTZAjFLiEJ0MQQsgDZGqluCBUAAFS2S9cICRa5AAAAAElFTkSuQmCC")
   :test #'string=)
 
 (defun demo-custom-style (&key theme)
   (let ((*debug-tk* t))
     (with-nodgui (:theme theme)
-      (let* ((b            (make-instance 'button :text "Click to change style"))
-             (corner-state 0)
-             (corner-style (make-style corner-style (:extend "TButton")
-                                       :foreground (make-tk-color :magenta)
-                                       :padding    0
-                                       :font      "times 20"))
-             (red-corner   (make-image +red-corner+))
-             (blue-corner  (make-image +blue-corner+))
-             (red-style    (make-style red-style (:action :element-create)
-                                       :image (name red-corner)))
-             (blue-style   (make-style blue-style (:action :element-create)
-                                       :image (name blue-corner)))
-             (red-layout   (insert-layout (fetch-layout :corner-style)
-                                                     '(:red-style
-                                                       :side "right"
-                                                       :sticky "ne")
-                                                     "Button.label"))
-             (blue-layout  (insert-layout (fetch-layout :corner-style)
-                                                      '(:blue-style
-                                                        :side "right"
-                                                        :sticky "ne")
-                                                      "Button.label")))
+      (let* ((b                (make-instance 'button :text "Click to change style"))
+             (reference-pixmap (make-instance 'nodgui.pixmap:png))
+             (corner-state     0)
+             (corner-style     (make-style corner-style (:extend "TButton")
+                                          :foreground (make-tk-color :magenta)
+                                          :padding    0
+                                          :font      "times 20"))
+             (red-corner       (make-image +red-corner+))
+             (blue-corner      (make-image +blue-corner+))
+             (red-style        (make-style red-style (:action :element-create)
+                                          :image (name red-corner)))
+             (blue-style       (make-style blue-style (:action :element-create)
+                                          :image (name blue-corner)))
+             (red-layout       '("Button.border" :sticky "nswe" :border "1"
+                                 ("Button.focus" :sticky "nswe"
+                                  ("Button.padding" :sticky "nswe"
+                                   ("Button.label"
+                                    :red-style
+                                    :side "right"
+                                    :sticky "ne")))))
+             (blue-layout      '("Button.border" :sticky "nswe" :border "1"
+                                 ("Button.focus" :sticky "nswe"
+                                  ("Button.padding" :sticky "nswe"
+                                   ("Button.label"
+                                    :blue-style
+                                    :side "right"
+                                    :sticky "ne"))))))
+        (nodgui.pixmap:load-from-vector reference-pixmap
+                                        (nodgui.base64:decode +blue-corner+))
         (apply-style corner-style)
         (apply-style red-style)
         (apply-style blue-style)
@@ -1498,11 +1509,14 @@
         (style-configure b corner-style)
         (setf (command b)
               (lambda ()
-                (if (= (rem corner-state 2) 0)
+                (if (= (rem corner-state 2)
+                       0)
                     (layout-configure corner-style red-layout)
                     (layout-configure corner-style blue-layout))
                 (incf corner-state)))
-        (pack b)))))
+        (pack b
+              :ipadx (pixmap:width  reference-pixmap)
+              :ipady (pixmap:height reference-pixmap))))))
 
 (defun demo-custom-theme (&key theme)
   (let ((*debug-tk* t))
