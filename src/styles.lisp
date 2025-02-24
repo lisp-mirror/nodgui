@@ -249,7 +249,7 @@
         (if (eq action :element-create)
             (send-wish (format nil
                                "ttk::style element create ~a ~a"
-                               actual-name (serialize-style-options options)))
+                               actual-name (serialize-style-options options :create t)))
             (send-wish (format nil
                                "ttk::style configure ~a ~a"
                                actual-name (serialize-style-options options))))))))
