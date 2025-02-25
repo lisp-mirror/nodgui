@@ -1260,8 +1260,8 @@
   (cond
     ((< v 0f0)
      0f0)
-    ((> v 1f0)
-     1f0)
+    ((>= v 1f0)
+     0.99999) ; never 1.0
     (t
      v)))
 
@@ -1274,7 +1274,7 @@
     ((> v 1f0)
      (nth-value 1 (truncate v)))
     (t
-     v)))
+     (to:d- v 1e-12)))) ; never 1.0
 
 (defun texture-shader-wrap-replace (s-tex
                                     t-tex
