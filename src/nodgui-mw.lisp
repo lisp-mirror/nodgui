@@ -2378,6 +2378,7 @@ will shift the selected item up o down respectively."))
                                          (close-button-text  "close")
                                          (cancel-button-text "cancel")
                                          (shift-button-text  "shift")
+                                         (backspace-button-text "backspace")
                                          (on-close-callback (constantly t))
                                          (on-cancel-callback (constantly t))
                                        &allow-other-keys)
@@ -2397,7 +2398,7 @@ will shift the selected item up o down respectively."))
     (flet ((add-frame-layout (frame-to-add frame-to-forget)
              (grid-forget frame-to-forget)
              (grid frame-to-add
-                   1 0
+                   2 0
                    :sticky :news
                    :columnspan 4)
              (grid-columnconfigure frame-to-add :all :weight 1)
@@ -2429,45 +2430,57 @@ will shift the selected item up o down respectively."))
                                          :command (lambda ()
                                                     (grid-forget object)
                                                     (funcall on-cancel-callback))))
-      (grid preview 0 0 :sticky :news)
-      (grid shift-button 0 1 :sticky :news)
-      (grid close-button 0 2 :sticky :news)
-      (grid cancel-button 0 3 :sticky :news)
-      (multiple-value-bind (rows rows-shift last-key-is-space-p)
-          (funcall layouts preview layout-frame layout-frame-shift)
-        (if last-key-is-space-p
-            (let ((columnspan-space (if (first rows)
-                                        (length (first rows))
-                                        1)))
-              (loop for row in (subseq rows 0
-                                       (1- (length rows)))
-                    do
-                       (grid-implicit row :padx 1 :pady 1 :sticky :news))
-              (grid (first (a:last-elt rows))
-                    (length rows)
-                    0
-                    :columnspan columnspan-space
-                    :sticky :news)
-              (loop for row in (subseq rows-shift 0
-                                       (1- (length rows-shift)))
-                    do
-                       (grid-implicit row :padx 1 :pady 1 :sticky :news))
-              (grid (first (a:last-elt rows-shift))
-                    (length rows-shift)
-                    0
-                    :columnspan columnspan-space
-                    :sticky :news))
-            (progn
-              (loop for row in rows do
-                (grid-implicit row :padx 1 :pady 1 :sticky :news))
-              (loop for row in rows-shift do
-                (grid-implicit row :padx 1 :pady 1 :sticky :news)))))
-      (grid layout-frame 1 0 :sticky :news :columnspan 4)
-      (grid-columnconfigure layout-frame :all :weight 1)
-      (grid-rowconfigure    layout-frame :all :weight 1)
-      (grid-columnconfigure layout-frame-shift :all :weight 1)
-      (grid-rowconfigure    layout-frame-shift :all :weight 1)
-      (grid-rowconfigure    object 0 :weight 1)
-      (grid-columnconfigure object 0 :weight 1)
-      (grid-rowconfigure    object 1 :weight 2)
-      (grid-columnconfigure object 0 :weight 2))))
+      (let ((backspace-button (make-instance 'button
+                                             :master object
+                                             :text backspace-button-text
+                                             :command
+                                             (lambda ()
+                                               (let ((text-preview (text preview)))
+                                                 (when (not (string-empty-p text-preview))
+                                                   (setf (text preview)
+                                                         (subseq text-preview
+                                                                 0
+                                                                 (1- (length text-preview))))))))))
+        (grid preview 0 0 :sticky :news :columnspan 4)
+        (grid shift-button 1 0 :sticky :news)
+        (grid close-button 1 1 :sticky :news)
+        (grid cancel-button 1 2 :sticky :news)
+        (grid backspace-button 1 3 :sticky :news)
+        (multiple-value-bind (rows rows-shift last-key-is-space-p)
+            (funcall layouts preview layout-frame layout-frame-shift)
+          (if last-key-is-space-p
+              (let ((columnspan-space (if (first rows)
+                                          (length (first rows))
+                                          1)))
+                (loop for row in (subseq rows 0
+                                         (1- (length rows)))
+                      do
+                         (grid-implicit row :padx 1 :pady 1 :sticky :news))
+                (grid (first (a:last-elt rows))
+                      (length rows)
+                      0
+                      :columnspan columnspan-space
+                      :sticky :news)
+                (loop for row in (subseq rows-shift 0
+                                         (1- (length rows-shift)))
+                      do
+                         (grid-implicit row :padx 1 :pady 1 :sticky :news))
+                (grid (first (a:last-elt rows-shift))
+                      (length rows-shift)
+                      0
+                      :columnspan columnspan-space
+                      :sticky :news))
+              (progn
+                (loop for row in rows do
+                  (grid-implicit row :padx 1 :pady 1 :sticky :news))
+                (loop for row in rows-shift do
+                  (grid-implicit row :padx 1 :pady 1 :sticky :news)))))
+        (grid layout-frame 2 0 :sticky :news :columnspan 4)
+        (grid-columnconfigure layout-frame :all :weight 1)
+        (grid-rowconfigure    layout-frame :all :weight 1)
+        (grid-columnconfigure layout-frame-shift :all :weight 1)
+        (grid-rowconfigure    layout-frame-shift :all :weight 1)
+        (grid-rowconfigure    object 0 :weight 1)
+        (grid-columnconfigure object :all :weight 1)
+        (grid-rowconfigure    object 1 :weight 1)
+        (grid-rowconfigure    object 2 :weight 2)))))
