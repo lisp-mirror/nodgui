@@ -141,6 +141,10 @@
           (the fixnum (ash g 16))
           (the fixnum (ash r 24))))
 
+(u:definline set-color-alpha-channel (color alpha-channel)
+  (logior (logand color #x00)
+          alpha-channel))
+
 (defun make-bits-array (pixmap width height)
   (let ((buffer (make-buffer width height)))
     (setf (slot-value pixmap 'bits) buffer)
@@ -186,9 +190,9 @@
     :accessor bits
     :initarg :bits
     :documentation "This  is the same  of 'data'  slots but as  a flat
-    vector  (ex: #(RGBA  R_1G_2B_1 ...))   Notes that  this must  be a
-    simple-array of (unsigned-byte 8), use 'make-bits-array' to ensure
-    that this vector has the correct type."))
+    vector (ex: #(RRGGBBAA R1R1G1G1B1B1A1A1 ...)) Notes that this must
+    be a simple-array of  (unsigned-byte 32), use 'make-bits-array' to
+    ensure that this vector has the correct type."))
   (:documentation "This  class represent a  pixmap image, a  matrix of
    pixel element, each pixel's value is described by a variable number
    of color  channel; in the  RGB spaces the  color is described  by a
@@ -634,7 +638,7 @@ range (0-1.0]), scaling use nearest-neighbor."
 (defun %offset-bits (w x y)
   #.nodgui.config:default-optimization
   (declare (fixnum w x y))
-  (the fixnum (* 4 (+ (the fixnum (* w y)) x))))
+  (the fixnum (+ (the fixnum (* w y)) x)))
 
 (defmethod bits-pixel@ ((object pixmap) x y)
   "Get the color of pixel at specified coordinate from 'bits' slot"
@@ -643,42 +647,46 @@ range (0-1.0]), scaling use nearest-neighbor."
   (with-accessors ((bits  bits)
                    (width width)) object
     (declare (fixnum width))
-    (declare ((simple-array fixnum) bits))
+    (declare ((simple-array (unsigned-byte 32)) bits))
     (let* ((offset (%offset-bits width x y)))
       (declare (fixnum offset))
-      (ubvec4 (elt bits      offset)
-              (elt bits (+ 1 offset))
-              (elt bits (+ 2 offset))
-              (elt bits (+ 3 offset))))))
+      (elt bits offset))))
 
 (defmethod (setf bits-pixel@) (color (object pixmap) x y)
   "Set the color of pixel at specified coordinate for 'bits' slot"
+  #.nodgui.config:default-optimization
   (declare (fixnum x y))
   (declare (ubvec4 color))
   (with-accessors ((bits  bits)
                    (width width)) object
     (declare (fixnum width))
-    (declare ((simple-array fixnum) bits))
+    (declare ((simple-array (unsigned-byte 32)) bits))
     (let* ((offset (%offset-bits width x y)))
       (declare (fixnum offset))
-      (setf (elt bits      offset)  (elt color 0)
-            (elt bits (+ 1 offset)) (elt color 1)
-            (elt bits (+ 2 offset)) (elt color 2)
-            (elt bits (+ 3 offset)) (elt color 3)))
+      (setf (elt bits offset)
+            (assemble-color (elt color +red-channel+)
+                            (elt color +green-channel+)
+                            (elt color +blue-channel+)
+                            (elt color +alpha-channel+))))
     object))
 
 (defmethod (setf alpha-bits@) (alpha-value (object pixmap) x y)
   "Set  the alpha  component  for  the 'bits'  slot  only; value  is
 an (unsigned-byte 8)"
+  #.nodgui.config:default-optimization
   (declare (fixnum x y))
   (declare ((unsigned-byte 8) alpha-value))
   (with-accessors ((bits  bits)
                    (width width)) object
     (declare (fixnum width))
-    (let* ((offset (%offset-bits width x y)))
+    (let* ((offset (%offset-bits width x y))
+           (color  (elt bits offset)))
       (declare (fixnum offset))
-      (setf (elt bits (+ 3 offset)) alpha-value))
-    object))
+      (declare ((unsigned-byte 32) color))
+      (declare (dynamic-extent offset color))
+      (setf (elt bits offset)
+            (set-color-alpha-channel color alpha-value))
+      object)))
 
 (defun pixel-to-grayscale (pixel)
   (let ((value (floor (to:d+ (to:d* 0.2126f0 (to:d (elt pixel +red-channel+)))

@@ -1431,3 +1431,198 @@
           (setf context-width  (ctx:width  sdl-context))
           (setf context-height (ctx:height sdl-context))
           (draw))))))
+
+(defun test-clipped-multi-texture-polygon ()
+  (let* ((sdl-context      nil)
+         (context-buffer   nil)
+         (context-width    nil)
+         (context-height   nil)
+         (polygon-vertices (px:make-polygon-vertex-array (list (vec2:vec2 0 0)
+                                                               (vec2:vec2 600 0)
+                                                               (vec2:vec2 600 600)
+                                                               (vec2:vec2 0 600))))
+         (polygon-tex-coordinates (px:make-polygon-texture-coordinates-array
+                                   (list (vec2:vec2 0 0)
+                                         (vec2:vec2 1 0)
+                                         (vec2:vec2 1 1)
+                                         (vec2:vec2 0 1))))
+         (textures                (list (load-encoded-sprite +texture-vertical-strips+)
+                                        (load-encoded-sprite +texture-horizontal-strips+))))
+    (flet ((draw ()
+             (ctx:push-for-rendering sdl-context
+                                     (lambda (dt)
+                                       (declare (ignore dt))
+                                       (px:clear-buffer context-buffer
+                                                        context-width
+                                                        context-height
+                                                        255 0 255)
+                                       (let ((aabb-clipping (px:make-iaabb2 100 200 125 235)))
+                                         (px:draw-multi-texture-mapped-polygon context-buffer
+                                                                               context-width
+                                                                               context-height
+                                                                               polygon-vertices
+                                                                               polygon-tex-coordinates
+                                                                               textures
+                                                                               :aabb-clipping
+                                                                               aabb-clipping))))))
+      (with-nodgui ()
+        (let* ((sdl-frame   (ctx:make-sdl-frame 600 600))
+               (button-quit (make-instance 'button
+                                           :text    "quit"
+                                           :command (lambda ()
+                                                      (ctx:quit-sdl sdl-context)
+                                                      (exit-nodgui)))))
+          (grid sdl-frame 1 0)
+          (grid button-quit 2 0 :sticky :s)
+          (wait-complete-redraw)
+          (setf sdl-context (make-instance 'px:pixel-buffer-context
+                                           :event-loop-type :serving
+                                           :classic-frame   sdl-frame
+                                           :buffer-width    600
+                                           :buffer-height   600))
+          (setf context-buffer (px:buffer sdl-context))
+          (setf context-width  (ctx:width  sdl-context))
+          (setf context-height (ctx:height sdl-context))
+          (draw))))))
+
+(defun multi-texture-shader-wrap-replace (s-tex
+                                          t-tex
+                                          textures
+                                          texture-width
+                                          texture-height
+                                          buffer
+                                          buffer-width
+                                          buffer-height
+                                          x-buffer
+                                          y-buffer)
+  #.nodgui.config:default-optimization
+  (declare (ignore buffer-height))
+  (declare (to::desired-type texture-width texture-height))
+  (declare (fixnum buffer-width buffer-height))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (list textures))
+  (let* ((wrapped-s (px:texture-border-wrap s-tex))
+         (wrapped-t (px:texture-border-wrap t-tex))
+         (pixmap-x (truncate (to:d* wrapped-s
+                                    (1- texture-width))))
+         (pixmap-y (truncate (to:d* wrapped-t
+                                    (1- texture-height)))))
+    (declare (fixnum pixmap-x pixmap-y))
+    (declare (to::desired-type wrapped-s wrapped-t))
+    (declare (dynamic-extent wrapped-s wrapped-t pixmap-x pixmap-y))
+    (let ((pixel-out (pixmap:assemble-color 0 0 0 0)))
+      (declare ((unsigned-byte 32) pixel-out))
+      (loop for texture in textures do
+        (let ((pixel (px:pixel@ texture
+                                (truncate texture-width)
+                                pixmap-x
+                                pixmap-y)))
+          (declare ((unsigned-byte 32) pixel))
+          (declare (dynamic-extent pixel))
+          (setf pixel-out pixel)))
+      (px:set-pixel-color@ buffer buffer-width x-buffer y-buffer pixel-out))))
+
+(defun profile-clipped-multi-texture-polygon ()
+  (setf px:*multi-texture-shader* #'multi-texture-shader-wrap-replace)
+  (let* ((sdl-context      nil)
+         (context-buffer   nil)
+         (context-width    nil)
+         (context-height   nil)
+         (polygon-vertices (px:make-polygon-vertex-array (list (vec2:vec2 0 0)
+                                                               (vec2:vec2 600 0)
+                                                               (vec2:vec2 600 600)
+                                                               (vec2:vec2 0 600))))
+         (polygon-tex-coordinates (px:make-polygon-texture-coordinates-array
+                                   (list (vec2:vec2 0 0)
+                                         (vec2:vec2 1 0)
+                                         (vec2:vec2 1 1)
+                                         (vec2:vec2 0 1))))
+         (textures                (list (load-encoded-sprite +texture-vertical-strips+)
+                                        (load-encoded-sprite +texture-horizontal-strips+)
+                                        (load-encoded-sprite +texture-vertical-strips+)
+                                        (load-encoded-sprite +texture-horizontal-strips+)
+                                        (load-encoded-sprite +texture-vertical-strips+)
+                                        (load-encoded-sprite +texture-horizontal-strips+)))
+
+         (aabbs-clipping (list (px:make-iaabb2 0 0   600 100)
+                               (px:make-iaabb2 0 100 600 200)
+                               (px:make-iaabb2 0 200 600 300)
+                               (px:make-iaabb2 0 300 600 400)
+                               (px:make-iaabb2 0 400 600 500)
+                               (px:make-iaabb2 0 500 600 600))))
+    (flet ((draw-multi ()
+               (loop while (not (stop-drawing-thread-p *animation*)) do
+                 (ctx:sync *pixel-buffer-context*)
+                 (ctx:push-for-updating *pixel-buffer-context*
+                                        (lambda (dt)
+                                          (declare (ignore dt))
+                                          t)
+                                        :force-push nil)
+                 (ctx:push-for-rendering *pixel-buffer-context*
+                                         (lambda (dt)
+                                           (declare (ignore dt))
+                                           (time
+                                           (px:draw-multi-texture-mapped-polygon context-buffer
+                                                                                 context-width
+                                                                                 context-height
+                                                                                 polygon-vertices
+                                                                                 polygon-tex-coordinates
+                                                                                 textures))))))
+       (draw-single ()
+         (loop while (not (stop-drawing-thread-p *animation*)) do
+           (ctx:sync *pixel-buffer-context*)
+           (ctx:push-for-updating *pixel-buffer-context*
+                                  (lambda (dt)
+                                    (declare (ignore dt))
+                                    t)
+                                  :force-push nil)
+            (ctx:push-for-rendering *pixel-buffer-context*
+                                    (lambda (dt)
+                                      (declare (ignore dt))
+                                      (time
+                                       (loop for texture in textures
+                                             for clipping in aabbs-clipping do
+                                        (px:draw-texture-mapped-polygon context-buffer
+                                                                        context-width
+                                                                        context-height
+                                                                        polygon-vertices
+                                                                        polygon-tex-coordinates
+                                                                        texture
+                                                                        :aabb-clipping
+                                                                        clipping))))))))
+      (with-nodgui ()
+        (let* ((sdl-frame   (ctx:make-sdl-frame 600 600))
+               (button-quit (make-instance 'button
+                                           :text    "quit"
+                                           :command (lambda ()
+                                                      (stop-animation)
+                                                      (ctx:quit-sdl *pixel-buffer-context*)
+                                                      (exit-nodgui))))
+               (button-change (make-instance 'button
+                                             :text    "to single"
+                                             :command
+                                             (lambda ()
+                                               (stop-animation)
+                                               (setf *animation* (make-animation))
+                                               (setf (animation-thread *animation*)
+                                                     (make-thread #'draw-single
+                                                                  :name "single"))))))
+          (grid sdl-frame 1 0)
+          (grid button-quit 2 0 :sticky :s)
+          (grid button-change 3 0 :sticky :s)
+          (wait-complete-redraw)
+          (setf sdl-context (make-instance 'px:pixel-buffer-context
+                                           :minimum-delta-t (ctx:fps->delta-t 30)
+                                           :non-blocking-queue-maximum-size 16
+                                           :event-loop-type :polling
+                                           :classic-frame   sdl-frame
+                                           :buffer-width    600
+                                           :buffer-height   600))
+          (setf context-buffer (px:buffer sdl-context))
+          (setf context-width  (ctx:width  sdl-context))
+          (setf context-height (ctx:height sdl-context))
+          (setf *pixel-buffer-context*  sdl-context)
+          (stop-animation)
+          (setf *animation*
+                (make-animation :thread
+                                (make-thread #'draw-multi))))))))

@@ -426,10 +426,10 @@
                      (window          ctx:window)
                      (window-id       ctx::window-id)
                      (rendering-queue rendering-queue)) object
-      (setf width     (or buffer-width
-                          (nodgui:window-width  classic-frame))
-            height    (or buffer-height
-                          (nodgui:window-height classic-frame))
+      (setf width  (or buffer-width
+                       (nodgui:window-width  classic-frame))
+            height (or buffer-height
+                       (nodgui:window-height classic-frame))
             buffer (pix:make-buffer width height))
       (tg:finalize object
                    (lambda () (pix:free-buffer-memory buffer)))
@@ -1359,20 +1359,23 @@
          (pixmap-x (truncate (to:d* wrapped-s
                                     (1- texture-width))))
          (pixmap-y (truncate (to:d* wrapped-t
-                                    (1- texture-height))))
-         (pixels   (mapcar (lambda (a)
-                             (pixel@ a
-                                     (truncate texture-width)
-                                     pixmap-x
-                                     pixmap-y))
-                           textures)))
+                                    (1- texture-height)))))
     (declare (fixnum pixmap-x pixmap-y))
-    (declare (list pixels))
     (declare (to::desired-type wrapped-s wrapped-t))
-    (loop for pixel in pixels when (/= (pix:extract-alpha-component pixel)
-                                       0)
-          do
-             (set-pixel-color@ buffer buffer-width x-buffer y-buffer pixel))))
+    (declare (dynamic-extent wrapped-s wrapped-t pixmap-x pixmap-y))
+    (let ((pixel-out (pix:assemble-color 0 0 0 0)))
+      (declare ((unsigned-byte 32) pixel-out))
+      (loop for texture in textures do
+        (let ((pixel (pixel@ texture
+                             (truncate texture-width)
+                             pixmap-x
+                             pixmap-y)))
+          (declare ((unsigned-byte 32) pixel))
+          (declare (dynamic-extent pixel))
+          (when (/= (pix:extract-alpha-component pixel)
+                    0)
+            (setf pixel-out pixel))))
+      (set-pixel-color@ buffer buffer-width x-buffer y-buffer pixel-out))))
 
 (defparameter *multi-texture-shader* #'multi-texture-shader-wrap-replace-exclude-fully-transparent)
 
@@ -1420,7 +1423,11 @@
 (defun make-polygon-texture-coordinates-array (initial-contents)
   (make-polygon-vertex-array initial-contents))
 
-(defun make-iaabb2 (min-x min-y max-x max-y)
+(defun make-iaabb2 (&optional
+                      (min-x most-positive-fixnum)
+                      (min-y most-positive-fixnum)
+                      (max-x most-negative-fixnum)
+                      (max-y most-negative-fixnum))
   (make-array 4
               :element-type 'fixnum
               :initial-contents (list min-x min-y max-x max-y)
@@ -1708,7 +1715,7 @@
   (declare ((simple-array vec2:vec2) texels))
   (declare (fixnum ray-y))
   #.nodgui.config:default-optimization
-  ;;(declare (optimize (speed 3) (debug 3) (safety 3)))
+  ;; (declare (optimize (speed 3) (debug 3) (safety 3)))
   (let ((intersections '())
         (vertices-length (length vertices))
         (texels-length   (length texels)))
@@ -1751,13 +1758,15 @@
             (<= (the fixnum (polygon-intersection-point a))
                 (the fixnum (polygon-intersection-point b)))))))
 
-(defun draw-texture-mapped-polygon (buffer width height vertices texels pixmap)
+(defun draw-texture-mapped-polygon (buffer width height vertices texels pixmap
+                                    &key (aabb-clipping nil))
   "Note: vertices must be provided in counterclockwise order."
   #.nodgui.config:default-optimization
   (declare ((simple-array (unsigned-byte 32)) buffer))
   (declare (fixnum width))
   (declare ((simple-array vec2:vec2) vertices texels))
   (declare (function *texture-shader*))
+  (declare ((or null (simple-array fixnum)) aabb-clipping))
   (let ((texture         (pix:bits pixmap))
         (pixmap-width    (to:d (the fixnum (pix:width pixmap))))
         (pixmap-height   (to:d (the fixnum (pix:height pixmap)))))
@@ -1767,14 +1776,16 @@
     (draw-texture-mapped-polygon* buffer width height vertices texels
                                   texture
                                   pixmap-width
-                                  pixmap-height)))
+                                  pixmap-height
+                                  :aabb-clipping aabb-clipping)))
 
 (a:define-constant +epsilon-delta+ 1e-12 :test #'=)
 
 (defun draw-texture-mapped-polygon* (buffer width height vertices texels
                                      texture
                                      texture-width
-                                     texture-height)
+                                     texture-height
+                                     &key (aabb-clipping nil))
   "Note: vertices must be provided in counterclockwise order."
   #.nodgui.config:default-optimization
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
@@ -1783,6 +1794,7 @@
   (declare ((simple-array vec2:vec2) vertices texels))
   (declare (function *texture-shader*))
   (declare ((simple-array (unsigned-byte 32)) texture))
+  (declare ((or null (simple-array fixnum)) aabb-clipping))
   (let ((*multi-texture-shader* (lambda (s-tex
                                          t-tex
                                          textures
@@ -1805,16 +1817,18 @@
                                            x-buffer
                                            y-buffer))))
     (declare (function *multi-texture-shader*))
-    (draw-multi-texture-mapped-polygon* buffer
-                                        width
-                                        height
-                                        vertices
-                                        texels
-                                        (list texture)
-                                        texture-width
-                                        texture-height)))
+     (draw-multi-texture-mapped-polygon* buffer
+                                         width
+                                         height
+                                         vertices
+                                         texels
+                                         (list texture)
+                                         texture-width
+                                         texture-height
+                                         :aabb-clipping aabb-clipping)))
 
-(defun draw-multi-texture-mapped-polygon (buffer width height vertices texels pixmaps)
+(defun draw-multi-texture-mapped-polygon (buffer width height vertices texels pixmaps
+                                          &key (aabb-clipping nil))
   "Note: vertices must be provided in counterclockwise order. `PIXMAP' must be a list of nodgui.pixmap:pixmap."
   #.nodgui.config:default-optimization
   (declare ((simple-array (unsigned-byte 32)) buffer))
@@ -1822,21 +1836,24 @@
   (declare ((simple-array vec2:vec2) vertices texels))
   (declare (function *texture-shader*))
   (declare (list pixmaps))
+  (declare ((or null (simple-array fixnum)) aabb-clipping))
   (let ((textures        (mapcar #'pix:bits pixmaps))
         (pixmap-width    (to:d (the fixnum  (pix:width (first pixmaps)))))
         (pixmap-height   (to:d (the fixnum  (pix:height(first pixmaps))))))
     (declare (list textures))
     (declare (to::desired-type pixmap-width pixmap-height))
     (declare (dynamic-extent textures pixmap-width pixmap-height))
-    (draw-multi-texture-mapped-polygon* buffer width height vertices texels
-                                        textures
-                                        pixmap-width
-                                        pixmap-height)))
+     (draw-multi-texture-mapped-polygon* buffer width height vertices texels
+                                         textures
+                                         pixmap-width
+                                         pixmap-height
+                                         :aabb-clipping aabb-clipping)))
 
 (defun draw-multi-texture-mapped-polygon* (buffer width height vertices texels
                                            textures
                                            texture-width
-                                           texture-height)
+                                           texture-height
+                                           &key (aabb-clipping nil))
   "Note: vertices must be provided in counterclockwise order. `TEXTURES` must be a list of bitmap data (see 'nodgui.pixmap:make-buffer') with the same width and heights."
   #.nodgui.config:default-optimization
   ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
@@ -1845,10 +1862,20 @@
   (declare ((simple-array vec2:vec2) vertices texels))
   (declare (function *multi-texture-shader*))
   (declare (list textures))
+  (declare ((or null (simple-array fixnum)) aabb-clipping))
   (let* ((actual-vertices (float-vertices->fixnum-vertices vertices))
-         (aabb            (polygon-create-aabb actual-vertices)))
+         (aabb            (or aabb-clipping
+                              (polygon-create-aabb actual-vertices)))
+         (x-rendering-max-limit (min width
+                                     (the fixnum (iaabb2-max-x aabb))))
+         (x-rendering-min-limit (max 0
+                                     (the fixnum (iaabb2-min-x aabb)))))
+    (declare ((simple-array vec2:uivec2) vertices texels))
     (declare ((simple-array fixnum) aabb))
-    (declare (dynamic-extent aabb))
+    (declare (fixnum x-rendering-max-limit x-rendering-min-limit))
+    (declare (dynamic-extent aabb actual-vertices
+                             x-rendering-max-limit
+                             x-rendering-min-limit))
     (clip-y-polygon-aabb aabb height)
     (loop for y fixnum
           from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1
@@ -1942,8 +1969,10 @@
                                                     texel2-s))
                          (let ((range (- intersection-b-x intersection-a-x)))
                            (declare (fixnum range))
-                           (loop for x fixnum from (max 0 intersection-a-x)
-                                   below (min intersection-b-x width)
+                           (loop for x fixnum from (max intersection-a-x
+                                                        x-rendering-min-limit)
+                                   below (min intersection-b-x
+                                               x-rendering-max-limit)
                                  by 1
                                  with delta-t = (to:d- texel2-t texel1-t)
                                  with delta-s = (to:d- texel2-s texel1-s)

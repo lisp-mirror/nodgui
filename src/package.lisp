@@ -413,6 +413,7 @@
    #:errors
    #:buffer->pixmap
    #:pixel@
+   #:bits-pixel@
    #:sync-bits-to-data
    #:sync-data-to-bits
    #:tga
@@ -1529,6 +1530,26 @@
    #:draw-text
    #:make-polygon-vertex-array
    #:make-polygon-texture-coordinates-array
+   #:make-iaabb2
+   #:iaabb2-min-y
+   #:iaabb2-max-y
+   #:iaabb2-min-x
+   #:iaabb2-max-x
+   #:iaabb2=
+   #:valid-iaabb2-p
+   #:copy-iaabb2
+   #:expand-iaabb2
+   #:union-iaabb2
+   #:iaabb2->irect2
+   #:irect2->iaabb2
+   #:irect2->iaabb2*
+   #:inside-iaabb2-p
+   #:iaabb2-intersect-p
+   #:iaabb2-inglobe-p
+   #:iaabb2-null-p
+   #:trasl-iaabb2
+   #:trasl-irect2
+   #:center-iaabb2
    #:draw-polygon
    #:texture-border-clamp
    #:texture-border-wrap
