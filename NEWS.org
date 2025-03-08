@@ -1,3 +1,14 @@
+* 2025-03-08 version 0.7.3.1
+
+- [improvements]
+  - [pixel-buffer] optimized (no consing) the default shader for multitexture;
+  - [pixel-buffer] added parameter (`aabb-clipping') for textured polygon to clip rendering area.
+  - added method 'coords' to retrieve coordinates of canvas items or tags; thanks dismas!
+  - [bugfix]
+    - [pixmap classes] fixed functions that manibulate the slot `bits' (e.g. `bits-pixel@');
+    - added backspace key to virtual keyboard widget.
+    - added 'make-load-form' specialized on 'style' to prevent library failing on CCL, thanks dansommers!
+
 * 2025-02-15 version 0.7.3.0
 - [new feature]
   - added virtual keyboard widget;

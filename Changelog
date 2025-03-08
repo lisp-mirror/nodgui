@@ -1,3 +1,81 @@
+2025-03-07 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/pixmap.lisp:
+
+	- [pixel-buffer] optimized (no consing) the default shader for
+	multitexture;
+	- [pixel-buffer] added parameter (`aabb-clipping') for textured
+	polygon to clip rendering area;
+	- [pixmap classes] fixed functions that manibulate the slot `bits'
+	(e.g. `bits-pixel@').
+
+2025-03-02 cage
+
+	* src/nodgui-mw.lisp:
+
+	- added backspace key to virtual keyboard widget.
+
+2025-02-25 cage
+
+	* src/pixels-buffer.lisp:
+
+	- fixed wrapping and clamping of texture coordinates.
+
+2025-02-24 cage
+
+	* src/demo-tests.lisp,
+	* src/styles.lisp:
+
+	- fixed serialization of styles options.
+	- improved demo style.
+
+2025-02-22 cage
+
+	* src/styles.lisp:
+
+	- added 'make-load-form' specialized on 'style' to prevent library
+	failing on CCL, thanks dansommers!
+
+2025-02-21 cage
+
+	* src/checkbutton.lisp,
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/styles.lisp,
+	* src/widget-helpers.lisp:
+
+	- added image-check-button;
+	- added classi-check-button;
+	- improved styles serialization.
+
+2025-02-20 cage
+
+	* src/package.lisp,
+	* src/wm.lisp:
+
+	- exported 'set-wm-attrb' and specialized on 'widget'.
+
+2025-02-19 cage
+
+	* src/canvas.lisp,
+	* src/demo-tests.lisp:
+
+	- added method 'coords' to retrieve coordinates of canvas items or
+	tags; thanks dismas!
+
+2025-02-15 cage
+
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd:
+
+	- updated changelog.
+	- increased version number;
+	- updated NEWS.
+
 2025-02-05 cage
 
 	* src/nodgui-mw.lisp,
