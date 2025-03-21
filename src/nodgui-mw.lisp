@@ -2296,6 +2296,10 @@ will shift the selected item up o down respectively."))
 (defmethod text ((object label-spinbox))
   (text (label object)))
 
+(defstruct virtual-key-row
+  (widgets)
+  (columnspan))
+
 (defun make-virtual-keyboard-key (key output-entry master &key (text key))
   (make-instance 'button
                  :master  master
@@ -2304,10 +2308,23 @@ will shift the selected item up o down respectively."))
                             (setf (text output-entry)
                                   (strcat (text output-entry) key)))))
 
-(defun virtual-keyboard-row (keys output-entry master)
-  (loop for key across keys
-        collect
-        (make-virtual-keyboard-key (string key) output-entry master)))
+(defun virtual-keyboard-row (keys output-entry master
+                             &key
+                               (columnspan 1)
+                               (texts (map 'list
+                                           (lambda (key)
+                                             (if (stringp key)
+                                                 key
+                                                 (string key)))
+                                           keys)))
+  (make-virtual-key-row :widgets (loop for key across keys
+                                       for text in texts
+                                       collect
+                                       (make-virtual-keyboard-key (string key)
+                                                                  output-entry
+                                                                  master
+                                                                  :text text))
+                        :columnspan columnspan))
 
 (defun make-virtual-keyboard-rows (output-entry master &rest rows)
   (loop for row in rows
@@ -2315,27 +2332,31 @@ will shift the selected item up o down respectively."))
         (virtual-keyboard-row row output-entry master)))
 
 (defun virtual-keyboard-default-layout (output-entry master master-shift)
-  (values (append (make-virtual-keyboard-rows output-entry
-                                              master
-                                              "\\1234567890'ì"
-                                              "qwertyuiopè+"
-                                              "asdfghjklòàù"
-                                              "<zxcvbnm,.-")
-                  (list (list (make-virtual-keyboard-key (string #\Space)
-                                                         output-entry
-                                                         master
-                                                         :text "Space"))))
-          (append (make-virtual-keyboard-rows output-entry
-                                              master-shift
-                                              "|!\"£$%&/()=?^"
-                                              "QWERTYUIOPé*"
-                                              "ASDFGHJKLç°§"
-                                              ">ZXCVBNM;:_")
-                  (list (list (make-virtual-keyboard-key (string #\Space)
-                                                         output-entry
-                                                         master-shift
-                                                         :text "Space"))))
-          t))
+  (let ((space-row (list (virtual-keyboard-row " "
+                                               output-entry
+                                               master
+                                               :columnspan 11
+                                               :texts '("Space"))))
+        (space-row-shift (list (virtual-keyboard-row " "
+                                                     output-entry
+                                                     master-shift
+                                                     :columnspan 11
+                                                     :texts '("Space")))))
+    (values (append (make-virtual-keyboard-rows output-entry
+                                                master
+                                                "\\1234567890'ì"
+                                                "qwertyuiopè+"
+                                                "asdfghjklòàù"
+                                                "<zxcvbnm,.-")
+                    space-row)
+            (append (make-virtual-keyboard-rows output-entry
+                                                master-shift
+                                                "|!\"£$%&/()=?^"
+                                                "QWERTYUIOPé*"
+                                                "ASDFGHJKLç°§"
+                                                ">ZXCVBNM;:_")
+                    space-row-shift)
+            t)))
 
 (defclass virtual-keyboard (frame)
   ((output
@@ -2346,7 +2367,7 @@ will shift the selected item up o down respectively."))
     :initform nil
     :initarg  :preview
     :accessor preview)
-   (layout-frame
+   (layoutq-frame
     :initform nil
     :initarg  :layout-frame
     :accessor layout-frame)
@@ -2371,7 +2392,7 @@ will shift the selected item up o down respectively."))
     :initarg  :layouts
     :accessor layouts
     :type     function
-    :documentation "This function must return two values: the first is a list of buttons rows for the normal keyboard layout, the second value is a list of button rows for the secondary layout, see the default layout defined in function: 'virtual-keyboard-default-layout'.")))
+    :documentation "This function must return two values: the first is a list of buttons rows for the normal keyboard layout, the second value is a list of button rows for the secondary layout; see the default layout defined in function: 'virtual-keyboard-default-layout'.")))
 
 (defmethod initialize-instance :after ((object virtual-keyboard)
                                        &key
@@ -2446,35 +2467,20 @@ will shift the selected item up o down respectively."))
         (grid close-button 1 1 :sticky :news)
         (grid cancel-button 1 2 :sticky :news)
         (grid backspace-button 1 3 :sticky :news)
-        (multiple-value-bind (rows rows-shift last-key-is-space-p)
+        (multiple-value-bind (rows rows-shift)
             (funcall layouts preview layout-frame layout-frame-shift)
-          (if last-key-is-space-p
-              (let ((columnspan-space (if (first rows)
-                                          (length (first rows))
-                                          1)))
-                (loop for row in (subseq rows 0
-                                         (1- (length rows)))
-                      do
-                         (grid-implicit row :padx 1 :pady 1 :sticky :news))
-                (grid (first (a:last-elt rows))
-                      (length rows)
-                      0
-                      :columnspan columnspan-space
-                      :sticky :news)
-                (loop for row in (subseq rows-shift 0
-                                         (1- (length rows-shift)))
-                      do
-                         (grid-implicit row :padx 1 :pady 1 :sticky :news))
-                (grid (first (a:last-elt rows-shift))
-                      (length rows-shift)
-                      0
-                      :columnspan columnspan-space
-                      :sticky :news))
-              (progn
-                (loop for row in rows do
-                  (grid-implicit row :padx 1 :pady 1 :sticky :news))
-                (loop for row in rows-shift do
-                  (grid-implicit row :padx 1 :pady 1 :sticky :news)))))
+          (loop for row in rows do
+            (grid-implicit (virtual-key-row-widgets row)
+                           :padx 1
+                           :pady 1
+                           :sticky :news
+                           :columnspan (virtual-key-row-columnspan row)))
+          (loop for row in rows-shift do
+            (grid-implicit (virtual-key-row-widgets row)
+                           :padx 1
+                           :pady 1
+                           :sticky :news
+                           :columnspan (virtual-key-row-columnspan row))))
         (grid layout-frame 2 0 :sticky :news :columnspan 4)
         (grid-columnconfigure layout-frame :all :weight 1)
         (grid-rowconfigure    layout-frame :all :weight 1)

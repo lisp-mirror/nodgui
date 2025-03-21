@@ -2274,6 +2274,10 @@
    #:right-button-image
    #:label
    #:near-values-generator
+   #:make-virtual-keyboard-key
+   #:virtual-keyboard-row
+   #:make-virtual-keyboard-rows
+   #:virtual-keyboard-default-layout
    #:virtual-keyboard
    #:output
    #:preview
