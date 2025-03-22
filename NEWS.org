@@ -1,3 +1,8 @@
+* 2025-03-08 version 0.7.3.2
+
+- [improvements]
+  - [breaks API] reworked virtual keyboard layout API to allow to specify columnspan for a buttons row.
+
 * 2025-03-08 version 0.7.3.1
 
 - [improvements]

@@ -1,3 +1,20 @@
+2025-03-21 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- reworked virtual keyboard layout API to allow to specify columnspan
+	for a buttons row.
+
+2025-03-08 cage
+
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd:
+
+	- increased version number;
+	- updated changelog and NEWS.
+
 2025-03-07 cage
 
 	* src/demo-pixels-buffer.lisp,
