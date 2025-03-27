@@ -1261,7 +1261,7 @@
     ((< v 0f0)
      0f0)
     ((>= v 1f0)
-     0.99999) ; never 1.0
+     0.99999f0) ; never 1.0
     (t
      v)))
 
@@ -1269,12 +1269,16 @@
   #.nodgui.config:default-optimization
   (declare (to::desired-type v))
   (cond
+    ((= v 0f0)
+     0f0)
+    ((= v 1f0)
+     0.99999f0) ; never 1.0
     ((< v 0f0)
      (to:d+ 1f0 (nth-value 1 (truncate v))))
     ((> v 1f0)
      (nth-value 1 (truncate v)))
     (t
-     (to:d- v 1e-12)))) ; never 1.0
+     v)))
 
 (defun texture-shader-wrap-replace (s-tex
                                     t-tex
