@@ -28,8 +28,8 @@
   (loop with result = (make-string-buffer)
         for c across object do
           (when (member c escapable-chars)
-            (vector-push-extend #\\ result))
-          (vector-push-extend c result)
+            (vector-push-extend #\\ (the (array character (*)) result)))
+          (vector-push-extend c (the (array character (*)) result))
         finally (return result)))
 
 (defmethod %tkescape (object (escapable-chars list))

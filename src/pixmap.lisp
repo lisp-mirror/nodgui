@@ -133,6 +133,17 @@
   #.nodgui.config:default-optimization
   (logand color #xff))
 
+(defun not-inline-assemble-color (r g b &optional (a 255))
+  (declare (notinline assemble-color))
+  (assemble-color r g b a))
+
+(define-compiler-macro assemble-color (&whole form r g b &optional (a 255))
+  (let ((low-funname 'not-inline-assemble-color))
+    (if (and (every #'constantp (list r g b a))
+             (every #'numberp (list r g b a)))
+        (funcall (symbol-function low-funname) r g b a)
+        form)))
+
 (u:definline assemble-color (r g b &optional (a 255))
   (declare ((unsigned-byte 8) r g b a))
   #.nodgui.config:default-optimization
