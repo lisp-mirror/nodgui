@@ -1258,9 +1258,9 @@
   #.nodgui.config:default-optimization
   (declare (to::desired-type v))
   (cond
-    ((< v 0f0)
+    ((to:d< v 0f0)
      0f0)
-    ((>= v 1f0)
+    ((to:d>= v 1f0)
      0.99999f0) ; never 1.0
     (t
      v)))
@@ -1268,17 +1268,9 @@
 (u:definline texture-border-wrap (v)
   #.nodgui.config:default-optimization
   (declare (to::desired-type v))
-  (cond
-    ((= v 0f0)
-     0f0)
-    ((= v 1f0)
-     0.99999f0) ; never 1.0
-    ((< v 0f0)
-     (to:d+ 1f0 (nth-value 1 (truncate v))))
-    ((> v 1f0)
-     (nth-value 1 (truncate v)))
-    (t
-     v)))
+  (if (to:d< v 0f0)
+      (nth-value 1 (to:d+ 1f0 (nth-value 1 (truncate v))))
+      (nth-value 1 (truncate v))))
 
 (defun texture-shader-wrap-replace (s-tex
                                     t-tex
