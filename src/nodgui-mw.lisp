@@ -2490,3 +2490,15 @@ will shift the selected item up o down respectively."))
         (grid-columnconfigure object :all :weight 1)
         (grid-rowconfigure    object 1 :weight 1)
         (grid-rowconfigure    object 2 :weight 2)))))
+
+(defgeneric (setf on-close-callback) (fn object))
+
+(defmethod (setf on-close-callback) (fn (object virtual-keyboard))
+  (setf (command (close-button object))
+        fn))
+
+(defgeneric (setf on-cancel-callback) (fn object))
+
+(defmethod (setf on-cancel-callback) (fn (object virtual-keyboard))
+  (setf (command (cancel-button object))
+        fn))

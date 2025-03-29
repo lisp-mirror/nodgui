@@ -2285,7 +2285,9 @@
    #:layout-frame-shift
    #:shift-button
    #:close-button
-   #:layouts))
+   #:layouts
+   #:on-close-callback
+   #:on-cancel-callback))
 
 (defpackage :nodgui.tcl-lib-wrapped
   (:use :cl
