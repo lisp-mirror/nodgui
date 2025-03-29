@@ -1,3 +1,16 @@
+2025-03-29 cage
+
+        * Changelog,
+        * NEWS.org,
+        * nodgui.asd,
+        * src/nodgui-mw.lisp,
+        * src/package.lisp:
+
+        - increased version number;
+        - updated Changelog and News files.
+        - added functions to customize commands of cance and close buttons in
+        a virtual-keyboard widget.
+
 2025-03-28 cage
 
 	* src/pixels-buffer.lisp:

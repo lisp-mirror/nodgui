@@ -1,3 +1,8 @@
+* 2025-03-29 version 0.7.3.4
+
+- [improvements]
+  - added functions to customize commands of cance and close buttons in a virtual-keyboard widget.
+
 * 2025-03-29 version 0.7.3.3
 
 - [improvements]
