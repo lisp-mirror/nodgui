@@ -1,3 +1,10 @@
+* 2025-03-29 version 0.7.3.3
+
+- [improvements]
+  - added a compiler macro for 'pixmap:assemble-color';
+  - added hints to optimize 'nodgui.sanitize:%tkescape';
+  - [pixel buffer] fixed clamping and wrapping of texture coordinates.
+
 * 2025-03-08 version 0.7.3.2
 
 - [improvements]

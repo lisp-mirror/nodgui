@@ -1,3 +1,28 @@
+2025-03-28 cage
+
+	* src/pixels-buffer.lisp:
+
+	- [pixel buffer] optimized wrapping of texture coordinates.
+
+2025-03-27 cage
+
+	* src/pixels-buffer.lisp,
+	* src/pixmap.lisp,
+	* src/sanitize.lisp:
+
+	- added a compiler macro for 'pixmap:assemble-color';
+	- added hints to optimize 'nodgui.sanitize:%tkescape'.
+	- [pixel buffer] fixed clamping and wrapping of texture coordinates.
+
+2025-03-22 cage
+
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd:
+
+	- increased version number;
+	- updated news and changelog files.
+
 2025-03-21 cage
 
 	* src/nodgui-mw.lisp,
