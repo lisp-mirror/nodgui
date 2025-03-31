@@ -1,7 +1,7 @@
 * 2025-03-29 version 0.7.3.4
 
 - [improvements]
-  - added functions to customize commands of cance and close buttons in a virtual-keyboard widget.
+  - added functions to customize commands of chance and close buttons in a virtual-keyboard widget.
 
 * 2025-03-29 version 0.7.3.3
 
@@ -22,7 +22,7 @@
   - [pixel-buffer] added parameter (`aabb-clipping') for textured polygon to clip rendering area.
   - added method 'coords' to retrieve coordinates of canvas items or tags; thanks dismas!
   - [bugfix]
-    - [pixmap classes] fixed functions that manibulate the slot `bits' (e.g. `bits-pixel@');
+    - [pixmap classes] fixed functions that manipulate the slot `bits' (e.g. `bits-pixel@');
     - added backspace key to virtual keyboard widget.
     - added 'make-load-form' specialized on 'style' to prevent library failing on CCL, thanks dansommers!
 
