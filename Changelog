@@ -1,15 +1,30 @@
+2025-04-02 cage
+
+	* src/message.lisp,
+	* src/wish-communication.lisp:
+
+	- wrapped message-box's body with 'with-read-data' macro, to prevent
+	race conditions.
+
+2025-03-31 cage
+
+	* NEWS.org:
+
+	- fixed typos in NEWS file.
+
 2025-03-29 cage
 
-        * Changelog,
-        * NEWS.org,
-        * nodgui.asd,
-        * src/nodgui-mw.lisp,
-        * src/package.lisp:
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
 
-        - increased version number;
-        - updated Changelog and News files.
-        - added functions to customize commands of cance and close buttons in
-        a virtual-keyboard widget.
+	- increased version number;
+	- updated Changelog and News files.
+	- added functions to customize commands of cance and close buttons in
+	a virtual-keyboard widget.
+	- updated version number, NEWS file and changelog.
 
 2025-03-28 cage
 
