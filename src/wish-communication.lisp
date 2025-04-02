@@ -588,14 +588,14 @@ error-strings) are ignored."
         data)))
 
 (defun read-keyword ()
-  (with-read-data (nil)
-    (let ((string (read-data)))
-      (when (> (length string) 0)
-        (values (intern #-scl (string-upcase string)
-                        #+scl (if (eq ext:*case-mode* :upper)
-                                  (string-upcase string)
-                                  (string-downcase string))
-                        :keyword))))))
+  ;; note, if used, must be wrapped with (with-read-data (nil) ...)
+  (let ((string (read-data)))
+    (when (> (length string) 0)
+      (values (intern #-scl (string-upcase string)
+                      #+scl (if (eq ext:*case-mode* :upper)
+                                (string-upcase string)
+                                (string-downcase string))
+                      :keyword)))))
 
 ;;;; main event loop, runs until stream is closed by wish (wish exited) or
 ;;;; the slot break-mainloop is non nil

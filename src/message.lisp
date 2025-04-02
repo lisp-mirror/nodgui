@@ -70,8 +70,9 @@
 
 (defun message-box (message title type icon &key parent)
   ;;; tk_messageBox function
-  (format-wish "senddatastring [tk_messageBox -message \"~a\" -title {~a} -type {~(~a~)} -icon {~(~a~)}~@[ -parent ~a~]]" message title type icon (and parent (widget-path parent)))
-  (read-keyword))
+  (with-read-data (nil)
+    (format-wish "senddatastring [tk_messageBox -message \"~a\" -title {~a} -type {~(~a~)} -icon {~(~a~)}~@[ -parent ~a~]]" message title type icon (and parent (widget-path parent)))
+    (read-keyword)))
 
 (defun ask-yesno (message &key (title "") parent)
   (equal (message-box message title "yesno" "question" :parent parent) :yes))
