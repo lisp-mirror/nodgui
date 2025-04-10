@@ -215,6 +215,11 @@
                                                    :text "custom theme"
                                                    :command (lambda ()
                                                               (demo-custom-theme))))
+           (demo-molecule-viewer    (make-instance 'button
+                                                   :text "Molecule viewer (requires glut library)"
+                                                   :command
+                                                   (lambda ()
+                                                     (demo-molecule-viewer))))
            (b-quit                  (make-instance 'button
                                                    :text    "Quit lisp 🙂"
                                                    :command (lambda ()
@@ -272,6 +277,8 @@
       (grid demo-label-spinbox       15 2 :sticky :nswe)
       (grid demo-virtual-keyboard    16 0 :sticky :nswe)
       (grid demo-custom-theme        16 1 :sticky :nswe)
+      #-nodgui-lite
+      (grid demo-molecule-viewer     16 2 :sticky :nswe)
       (grid b-quit                   17 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
@@ -1905,3 +1912,8 @@
               (grid keyboard 2 0 :sticky :news)
               (grid-columnconfigure (root-toplevel) 0 :weight 1)
               (grid-rowconfigure    (root-toplevel) 2 :weight 1))))))
+
+(defun demo-molecule-viewer ()
+  (let ((path (asdf:system-relative-pathname :nodgui
+                                             "src/molecule-viewer.lisp")))
+    (load path)))
