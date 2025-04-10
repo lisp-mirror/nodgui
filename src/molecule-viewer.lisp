@@ -595,9 +595,9 @@
       (grid-implicit (list x-rot-label x-rot-slider))
       (grid-implicit (list y-rot-label y-rot-slider))
       (grid-implicit (list z-rot-label z-rot-slider))
-      (grid wireframe-check 0 0 :sticky :w)
-      (grid walk-check 1 0 :sticky :w)
-      (grid molecule-combo 2 0 :sticky :w)
+      (grid wireframe-check 0 0 :sticky :w  :columnspan 2)
+      (grid walk-check 1 0 :sticky :w  :columnspan 2)
+      (grid molecule-combo 2 0 :sticky :w  :columnspan 2)
       (bind molecule-combo
             #$<<ComboboxSelected>>$
             (lambda (event)
