@@ -2287,7 +2287,10 @@
    #:close-button
    #:layouts
    #:on-close-callback
-   #:on-cancel-callback))
+   #:on-cancel-callback
+   #:selfcheck-entry
+   #:selfcheck-test-predicate
+   #:shelfcheck-passed-p))
 
 (defpackage :nodgui.tcl-lib-wrapped
   (:use :cl

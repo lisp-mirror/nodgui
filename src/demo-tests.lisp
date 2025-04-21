@@ -212,7 +212,7 @@
                                                    :command (lambda ()
                                                               (demo-virtual-keyboard))))
            (demo-custom-theme       (make-instance 'button
-                                                   :text "custom theme"
+                                                   :text "Custom theme"
                                                    :command (lambda ()
                                                               (demo-custom-theme))))
            (demo-molecule-viewer    (make-instance 'button
@@ -220,6 +220,11 @@
                                                    :command
                                                    (lambda ()
                                                      (demo-molecule-viewer))))
+           (demo-selfcheck-entry    (make-instance 'button
+                                                   :text "Selfcheck text entry widget"
+                                                   :command
+                                                   (lambda ()
+                                                     (demo-selfcheck-entry))))
            (b-quit                  (make-instance 'button
                                                    :text    "Quit lisp 🙂"
                                                    :command (lambda ()
@@ -279,7 +284,8 @@
       (grid demo-custom-theme        16 1 :sticky :nswe)
       #-nodgui-lite
       (grid demo-molecule-viewer     16 2 :sticky :nswe)
-      (grid b-quit                   17 0 :sticky :nswe :columnspan 3)
+      (grid demo-selfcheck-entry     17 0 :sticky :nswe)
+      (grid b-quit                   18 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
 
@@ -1917,3 +1923,43 @@
   (let ((path (asdf:system-relative-pathname :nodgui
                                              "src/molecule-viewer.lisp")))
     (load path)))
+
+(defun demo-selfcheck-entry ()
+  (with-nodgui ()
+    (let* ((simple-entry    (make-instance 'entry))
+           (button          (make-instance 'button
+                                           :state :disabled
+                                           :text "OK"))
+           (selfcheck-entry (make-instance 'selfcheck-entry
+                                           :error-label-font "Sans 14"
+                                           :selfcheck-test-predicate
+                                           (lambda (text)
+                                             (configure button :state :enabled)
+                                             (when (or (string-empty-p text)
+                                                       (not (cl-ppcre:scan "^\\+?[0-9]+$"
+                                                                           text)))
+                                               (configure button :state :disabled)
+                                               "Positive integer number allowed only")))))
+      (configure button
+                 :command
+                 (lambda ()
+                   (if (shelfcheck-passed-p selfcheck-entry)
+                       (message-box (format nil
+                                            "input: ~s"
+                                            (text selfcheck-entry))
+                                    "info"
+                                    :ok
+                                    "info"
+                                    :parent (root-toplevel))
+                       (message-box (format nil
+                                            "input invalid: ~s"
+                                            (text selfcheck-entry))
+                                    "error"
+                                    :ok
+                                    +message-box-icon-error+
+                                    :parent (root-toplevel)))))
+      (grid-implicit (list (make-instance 'label :text "Normal entry")
+                           (make-instance 'label :text "Selfcheck entry"))
+                     :sticky :n)
+      (grid-implicit (list simple-entry selfcheck-entry) :sticky :n)
+      (grid-implicit (list button) :sticky :news :columnspan 2))))
