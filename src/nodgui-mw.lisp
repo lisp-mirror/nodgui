@@ -2516,23 +2516,23 @@ will shift the selected item up o down respectively."))
     :accessor selfcheck-test-predicate
     :type     function
     :documentation "A function that accepts a single parameter: the text typed in the entry widget. Returns the error message (a string) or nil if the test passed.")
-  (error-label
+  (selfcheck-error-label
    :initform nil
-   :initarg  :error-label
-   :accessor error-label))
+   :initarg  :selfcheck-error-label
+   :accessor selfcheck-error-label))
   (:documentation
-   "A text  entry that show an eror if the text typed does not match apredicate function."))
+   "A text entry that shows an error if the text typed does not match a predicate function."))
 
 (defmethod initialize-instance :after ((object selfcheck-entry)
                                        &key (error-label-font nil)
                                        &allow-other-keys)
   (with-accessors ((selfcheck-entry-widget selfcheck-entry-widget)
-                   (error-label            error-label)
+                   (selfcheck-error-label            selfcheck-error-label)
                    (selfcheck-test-predicate         selfcheck-test-predicate)) object
     (setf selfcheck-entry-widget (make-instance 'entry :master object)
-          error-label            (make-instance 'label
-                                                :master object
-                                                :font   error-label-font))
+          selfcheck-error-label  (make-label object
+                                             ""
+                                             :font error-label-font))
     (grid selfcheck-entry-widget 0 0 :sticky :news :padx 0 :pady 0 :ipadx 0 :ipady 0)
     (grid-columnconfigure object :all :weight 1)
     (grid-rowconfigure    object :all :weight 1)
@@ -2540,12 +2540,18 @@ will shift the selected item up o down respectively."))
           #$<KeyPress>$
           (lambda (e)
             (declare (ignore e))
-            (grid-forget error-label)
+            (grid-forget selfcheck-error-label)
             (let ((entry-text (text selfcheck-entry-widget)))
               (a:when-let ((error-message (funcall selfcheck-test-predicate
                                                    entry-text)))
-                (setf (text error-label) error-message)
-                (grid error-label 1 0 :sticky :news :padx 0 :pady 0 :ipadx 0 :ipady 0))))
+                (setf (text selfcheck-error-label) error-message)
+                (grid selfcheck-error-label
+                      1 0
+                      :sticky :news
+                      :padx 0
+                      :pady 0
+                      :ipadx 0
+                      :ipady 0))))
           :append t)))
 
 (defgeneric shelfcheck-passed-p (object))
@@ -2562,3 +2568,8 @@ will shift the selected item up o down respectively."))
 
 (defmethod (setf text) (new-text (object selfcheck-entry))
   (setf (text (selfcheck-entry-widget object)) new-text))
+
+(defgeneric label (object))
+
+(defmethod label ((object selfcheck-entry))
+  (selfcheck-error-label object))

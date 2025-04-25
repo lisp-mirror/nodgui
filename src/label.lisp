@@ -38,5 +38,8 @@
 
 (defwrapper label (tktextvariable widget) () "ttk::label")
 
-;(defun make-label (master text)
-;  (make-instance 'label :master master  :text text))
+(defun make-label (master text &rest args)
+  (apply #'make-instance 'label
+         :master master
+         :text text
+         args))
