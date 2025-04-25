@@ -1942,6 +1942,7 @@
                                                "Positive integer number allowed only")))))
       (configure (label selfcheck-entry)
                  :foreground (make-tk-color :red))
+      (wrap-length (label selfcheck-entry) "100")
       (configure button
                  :command
                  (lambda ()

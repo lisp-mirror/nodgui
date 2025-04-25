@@ -43,3 +43,14 @@
          :master master
          :text text
          args))
+
+;; according to documentation, ttk::label only accepts length in pixels units
+
+(defmethod wrap-length ((object label) (length-specification string))
+  (assert (ignore-errors (parse-integer length-specification))
+          (length-specification)
+          (format nil
+                  (strcat "According to documentation, ttk::label only accepts length in pixels units: "
+                          "~a can not be parsed as an integer")
+                  length-specification))
+  (configure object :wraplength length-specification))

@@ -66,6 +66,16 @@ giving the path of tkobjects."
   (unless (name w) ; generate name if not given
     (setf (name w) (create-name))))
 
+(defgeneric wrap-length (object widget))
+
+(defmethod wrap-length ((object widget) (length-specification number))
+  (configure object :wraplength (truncate (max length-specification 0))))
+
+(defmethod wrap-length ((object widget) (length-specification string))
+  (assert (cl-ppcre:scan "[0-9]+[cimp]?" length-specification))
+  (configure object :wraplength length-specification))
+
+
 ;; around - initializer
 
 (defmethod initialize-instance :around ((w widget) &key pack place grid)

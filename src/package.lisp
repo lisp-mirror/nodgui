@@ -1902,6 +1902,7 @@
            #:*use-tk-for-decoding-png*
            #:make-image
            #:make-label
+           #:wrap-length
            #:make-menu
            #:make-menubar
            #:add-menubar
