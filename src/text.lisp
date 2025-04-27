@@ -22,6 +22,10 @@
   :test          #'string=
   :documentation "According to the documentation this is the reference size for char width")
 
+(a:define-constant +text-selection-tag+ "sel"
+  :test          #'string=
+  :documentation "According to the documentation this is name of the tag qith selected text")
+
 (defargs text ()
   autoseparators
   background
@@ -198,6 +202,8 @@
 (defgeneric scroll-to (object coordinates))
 
 (defgeneric index->line-char-coordinates (object index))
+
+(defgeneric selected-text (object))
 
 (defun make-indices-xy (x y)
   (format nil "@~a,~a" x y))
@@ -835,6 +841,12 @@
           (parse-line-char-index raw-index)
         (values lines chars raw-index)))))
 
+(defmethod selected-text ((object text))
+  (let ((ranges (tag-ranges object +text-selection-tag+)))
+    (text-in-range object
+                   (first ranges)
+                   (second ranges))))
+
 ;;; scrolled-text
 
 (defclass scrolled-text (frame)
@@ -1145,6 +1157,10 @@
 (defmethod index->line-char-coordinates ((object scrolled-text) coordinates)
   (with-inner-text (text-widget object)
     (index->line-char-coordinates text-widget coordinates)))
+
+(defmethod selected-text ((object scrolled-text))
+  (with-inner-text (text-widget object)
+    (selected-text text-widget)))
 
 (defmethod insert-window ((object scrolled-text) obj
                           &optional (coordinates (raw-coordinates object)))

@@ -1893,6 +1893,7 @@
            #:load-text
            #:scroll-until-line-on-top
            #:index->line-char-coordinates
+           #:selected-text
            #:lower
            #:mainloop
            #:make-items
