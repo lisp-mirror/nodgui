@@ -84,6 +84,7 @@
   (flush-lock               (make-lock "flush"))
   (read-lock                (make-lock "read"))
   (accept-garbage-for-next-event  nil)
+  (discard-send-wish        nil)
   ;; This is should be a function that takes a thunk, and calls it in
   ;; an environment with some condition handling in place.  It is what
   ;; allows the user to specify error-handling in START-WISH, and have
@@ -341,6 +342,7 @@ Used in conjunction with *wish-pathname* e.g.
       (setf (nodgui::wish-accept-garbage-for-next-event *wish*) t)
       (indicate-stop-mainloop-threads)
       (send-wish "exit")
+      (setf (wish-discard-send-wish *wish*) t)
       ;;(close-process-stream stream))
       (setf (wish-stream *wish*) nil)
       #+:allegro (system:reap-os-subprocess)
@@ -351,9 +353,12 @@ Used in conjunction with *wish-pathname* e.g.
 
 (defun send-wish (text)
   (with-lock-held ((wish-lock *wish*))
-    (push text (wish-output-buffer *wish*))
-    (unless *buffer-for-atomic-output*
-      (flush-wish))))
+    (if (not (wish-discard-send-wish *wish*))
+        (progn
+          (push text (wish-output-buffer *wish*))
+          (unless *buffer-for-atomic-output*
+            (flush-wish)))
+        (dbg "discarding ~a" text))))
 
 (defun send-wish-line (data)
   "Send data  to wish  shell. data  are not processed  so they  must be
@@ -602,6 +607,7 @@ error-strings) are ignored."
 (defun break-mainloop ()
   (let ((lock (mainloop-coordination-stop-lock (wish-main-loop-coordination-data *wish*))))
     (with-lock-held (lock)
+      (dbg "setting mainloop to stop")
       (setf (mainloop-coordination-stop (wish-main-loop-coordination-data *wish*))
             t))))
 

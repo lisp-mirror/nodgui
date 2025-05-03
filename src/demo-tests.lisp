@@ -225,6 +225,10 @@
                                                    :command
                                                    (lambda ()
                                                      (demo-selfcheck-entry))))
+           (demo-non-local-exit     (make-instance 'button
+                                                   :text "Non local mainloop exit"
+                                                   :command
+                                                   (lambda () (demo-non-local-exit-mainloop))))
            (b-quit                  (make-instance 'button
                                                    :text    "Quit lisp 🙂"
                                                    :command (lambda ()
@@ -285,6 +289,7 @@
       #-nodgui-lite
       (grid demo-molecule-viewer     16 2 :sticky :nswe)
       (grid demo-selfcheck-entry     17 0 :sticky :nswe)
+      (grid demo-non-local-exit      17 1 :sticky :nswe)
       (grid b-quit                   18 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
@@ -1149,15 +1154,12 @@
                                                 :text "Copy selected text to clipboard"
                                                 :command
                                                 (lambda ()
-                                                  (progn
-                                                    (clipboard-clear)
-                                                    (handler-case
-                                                        (clipboard-get)
-                                                      (error ()
-                                                        (format t
-                                                                "clipboard error trapped")))
-                                                    (clipboard-append (selected-text text-widget))))))
-
+                                                  (clipboard-clear)
+                                                  (handler-case
+                                                      (clipboard-get)
+                                                    (error ()
+                                                      (nodgui::dbg "clipboard error trapped")))
+                                                    (clipboard-append (selected-text text-widget)))))
            (default-font         (font-create   "default"
                                                 :family "Sans"
                                                 :size   "14")) ; positive number = units in points
@@ -1980,3 +1982,22 @@
                      :sticky :n)
       (grid-implicit (list simple-entry selfcheck-entry) :sticky :n)
       (grid-implicit (list button) :sticky :news :columnspan 2))))
+
+(defun demo-non-local-exit-mainloop (&key theme)
+  (with-nodgui (:theme theme)
+    (let ((button (make-instance 'button
+                                 :text
+                                 "simulate a read error, capture it and and exit from nodgui"
+                                 :command
+                                  (lambda ()
+                                    (block exit
+                                      (clipboard-clear)
+                                      (handler-case
+                                          (clipboard-get)
+                                        (error ()
+                                          (exit-nodgui)
+                                          (format *error-output*
+                                                  "clipboard error trapped")
+                                          (return-from exit nil)))
+                                      (clipboard-append "Never reached"))))))
+      (grid-implicit (list button)))))
