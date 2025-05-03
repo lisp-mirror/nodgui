@@ -1145,6 +1145,19 @@
     (let* ((text-widget          (make-instance 'scrolled-text
                                                 :read-only                  nil
                                                 :use-horizontal-scrolling-p nil))
+           (copy-button          (make-instance 'button
+                                                :text "Copy selected text to clipboard"
+                                                :command
+                                                (lambda ()
+                                                  (progn
+                                                    (clipboard-clear)
+                                                    (handler-case
+                                                        (clipboard-get)
+                                                      (error ()
+                                                        (format t
+                                                                "clipboard error trapped")))
+                                                    (clipboard-append (selected-text text-widget))))))
+
            (default-font         (font-create   "default"
                                                 :family "Sans"
                                                 :size   "14")) ; positive number = units in points
@@ -1162,6 +1175,7 @@
       (configure text-widget :font default-font)
       (configure text-widget :wrap :word)
       (grid text-widget 0 0 :sticky :news)
+      (grid copy-button 1 0 :sticky :news)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure (root-toplevel) :all :weight 1)
       (append-line text-widget

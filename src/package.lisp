@@ -2003,7 +2003,7 @@
            #:send-lazy
            #:with-flush
            #:with-lazy
-           #:with-send-wish-atomic
+           #:with-send-wish-stream-atomic
            #:with-accept-garbage-as-event
            #:*with-read-data-no-lock*
            #:with-read-data

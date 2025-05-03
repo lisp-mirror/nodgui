@@ -211,7 +211,7 @@ Used in conjunction with *wish-pathname* e.g.
      ,@body
      (flush-wish)))
 
-(defmacro with-send-wish-atomic ((stream) &body body)
+(defmacro with-send-wish-stream-atomic ((stream) &body body)
   (a:with-gensyms (results)
     `(with-lock-held ((wish-lock *wish*))
        (let ((,results (with-output-to-string (,stream) ,@body)))
@@ -315,7 +315,7 @@ Used in conjunction with *wish-pathname* e.g.
 
 (defun close-process-stream (stream)
   "Close a 'stream open by 'do-execute."
-  (dbg "Closing wish stream: ~S~%" stream)
+  (dbg "Closing wish stream: ~a~%" stream)
   (ignore-errors (close stream))
   #+(or :cmu :scl :sbcl)
   (when (typep stream 'two-way-stream)
@@ -566,8 +566,7 @@ error-strings) are ignored."
     (if (listp data)
         (cond
           ((event-got-error-p data)
-           (exit-wish)
-           (return-from read-data nil))
+           (error (second data)))
           ((null data)
            (exit-wish)
            (return-from read-data nil))
@@ -658,7 +657,8 @@ error-strings) are ignored."
     ((null event)
      (error "Wish interpreter returned a null event"))
     ((event-got-error-p event)
-     (error (second event)))
+     (dbg "error from wish-interpreter ~a" event)
+     (push-enqueued-data event))
     ((eq (first event) :data)
      (push-enqueued-data event))
     ((or (eql event +no-event-value+)

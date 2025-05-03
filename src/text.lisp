@@ -524,7 +524,7 @@
                             (tag-matching-region nil))
   (with-read-data (nil)
     (let ((count-variable-name (create-name "rect")))
-      (with-send-wish-atomic (stream)
+      (with-send-wish-stream-atomic (stream)
         (format-for-wish stream
                          "global ~a; set ~a {};"
                          count-variable-name
