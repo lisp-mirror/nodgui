@@ -386,7 +386,6 @@
 (defpackage :nodgui.pixmap
   (:use :cl
         :nodgui.constants
-        :nodgui.utils
         :nodgui.ubvec4
         :nodgui.vec2)
   (:local-nicknames (:a  :alexandria)

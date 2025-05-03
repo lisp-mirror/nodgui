@@ -70,10 +70,10 @@
         (offset-destination (to:f+ x-destination (the fixnum
                                                       (to:f* y-destination
                                                         destination-buffer-width)))))
-    (copy-ffi-vector (cffi:inc-pointer source-buffer-pointer (* offset-source 4))
-                     (cffi:inc-pointer (static-vectors:static-vector-pointer destination)
-                                       (* offset-destination 4))
-                     (to:f* pixels-count 4))))
+    (u:copy-ffi-vector (cffi:inc-pointer source-buffer-pointer (* offset-source 4))
+                       (cffi:inc-pointer (static-vectors:static-vector-pointer destination)
+                                         (* offset-destination 4))
+                       (to:f* pixels-count 4))))
 
 (defun copy-buffer-row (source
                         destination
@@ -171,7 +171,7 @@
 (defclass pixmap ()
   ((data
     :initarg :data
-    :initform (make-array-frame 0)
+    :initform (u:make-array-frame 0)
     :accessor data
     :type vector
     :documentation "A  vector of 'nodgui.ubvec4:ubvec4',  each element
@@ -228,7 +228,7 @@ points to the same memory location (i.e. bg)."
                  :depth  4
                  :height h
                  :width  w
-                 :data   (make-array-frame (* h w) bg 'ubvec4 t)))
+                 :data   (u:make-array-frame (* h w) bg 'ubvec4 t)))
 
 (defun make-pixmap (w h &optional (bg (ubvec4 0 0 0 0)))
   "Instantiate a pixmap object of width 'w' and height 'h' filled with
@@ -238,7 +238,7 @@ points to the same memory location (i.e. bg)."
                  :depth  4
                  :height h
                  :width  w
-                 :data   (make-fresh-array (* h w) bg 'ubvec4 t)))
+                 :data   (u:make-fresh-array (* h w) bg 'ubvec4 t)))
 
 (defun copy-pixmap (object)
   "Make a copy of a pixmap"
@@ -379,7 +379,7 @@ range (0-1.0]), scaling use bilinear filtering"
               (inter-x1 (interpolate wx a d))
               (inter-x2 (interpolate wx b c))
               (inter-y  (interpolate wy inter-x1 inter-x2)))
-         (setf (pixel@ res x y) (round-all inter-y))))
+         (setf (pixel@ res x y) (u:round-all inter-y))))
     (change-class res (class-of object))
     res))
 
@@ -496,8 +496,8 @@ range (0-1.0]), scaling use nearest-neighbor."
 (defmethod rotate-pixmap ((object pixmap) angle
                           &key
                             (fill-value  (ubvec4 0 0 0 0))
-                            (pivot (vec2 (->f (/ (width object)  2))
-                                         (->f (/ (height object) 2))))
+                            (pivot (vec2 (u:->f (/ (width object)  2))
+                                         (u:->f (/ (height object) 2))))
                             (repeat nil)
                             (rounding-fn #'round))
   "Rotate a  pixmap about an  arbitrary angle and around  an arbitrary
@@ -508,18 +508,18 @@ range (0-1.0]), scaling use nearest-neighbor."
   (cond
     ;; using  the next tree functions because  the  usual  approach below  for
     ;; rotating did not worked for me
-    ((epsilon= (->f angle) 90.0)
+    ((u:epsilon= (u:->f angle) 90.0)
      (rotate-pixmap-90-degree-ccw object fill-value pivot))
-    ((epsilon= (->f angle) -90.0)
+    ((u:epsilon= (u:->f angle) -90.0)
      (rotate-pixmap-90-degree-cw object fill-value pivot))
-    ((epsilon= (abs (->f angle)) 180.0)
+    ((u:epsilon= (abs (u:->f angle)) 180.0)
      (rotate-pixmap-180-degree object fill-value pivot))
     (repeat
         (rotate-pixmap-w-repeat object angle :fill-value fill-value :pivot pivot
                                 :rounding-fn rounding-fn))
     (t
      (let ((res (make-pixmap-frame (width object) (height object) fill-value))
-           (act-angle (->f (deg->rad angle))))
+           (act-angle (u:->f (u:deg->rad angle))))
        (loop-matrix (res x y)
          (let* ((new-pixel (vec2+ (vec2-rotate (vec2+ (vec2 x y)
                                                       (vec2-negate pivot))
@@ -538,7 +538,7 @@ range (0-1.0]), scaling use nearest-neighbor."
                                                   :interpolate-fn #'interpolate)))
                  (setf (pixel@ res x y)
                        (if rounding-fn
-                           (round-all px :rounding-function rounding-fn)
+                           (u:round-all px :rounding-function rounding-fn)
                            px)))))))
        (change-class res (class-of object))
        res))))
@@ -549,7 +549,7 @@ range (0-1.0]), scaling use nearest-neighbor."
                                                   (/ (height object) 2)))
                                      (rounding-fn #'round))
   (let ((res       (make-pixmap-frame (width object) (height object) fill-value))
-        (act-angle (->f (deg->rad angle))))
+        (act-angle (u:->f (u:deg->rad angle))))
     (loop-matrix (res x y)
        (let* ((new-pixel (vec2+ (vec2-rotate (vec2+ (vec2 x y)
                                                     (vec2 (- (vec2-x pivot))
@@ -564,7 +564,7 @@ range (0-1.0]), scaling use nearest-neighbor."
                                              :behaivour-on-border-fn #'repeat-periodic-coord)))
            (setf (pixel@ res x y)
                  (if rounding-fn
-                     (round-all px :rounding-function rounding-fn)
+                     (u:round-all px :rounding-function rounding-fn)
                      px)))))
     (change-class res (class-of object))
     res))
@@ -597,7 +597,7 @@ range (0-1.0]), scaling use nearest-neighbor."
     (let ((data-size (* width height)))
       (when (/= (length data)
                 (length bits))
-        (setf data (make-array-frame data-size +ubvec4-zero+ 'ubvec4 t)))
+        (setf data (u:make-array-frame data-size +ubvec4-zero+ 'ubvec4 t)))
       (loop for i from 0 below (length bits) do
         (let* ((pixel (elt bits i))
                (r     (extract-red-component   pixel))
@@ -762,9 +762,9 @@ from file: 'file'"
 
 (a:define-constant +targa-img-signature+ "TRUEVISION-XFILE" :test 'equalp)
 
-(define-offset-size nodgui.pixmap
-    targa-img (id-len 0 1) (type 2 1) (spec 8 10)
-    (id +targa-img-header-size+) (colormap-spec 3 5))
+(u:define-offset-size nodgui.pixmap
+  targa-img (id-len 0 1) (type 2 1) (spec 8 10)
+  (id +targa-img-header-size+) (colormap-spec 3 5))
 
 (defclass tga (pixmap-file)
   ()
@@ -795,17 +795,17 @@ from file: 'file'"
 
 (defgeneric load-from-vector (object data))
 
-(define-parse-header-chunk (image-id-len +targa-img-id-len-offset+
-                            +targa-img-id-len-size+ tga nil))
+(u:define-parse-header-chunk (image-id-len +targa-img-id-len-offset+
+                              +targa-img-id-len-size+ tga nil))
 
-(define-parse-header-chunk (image-type +targa-img-type-offset+
-                            +targa-img-type-size+ tga nil))
+(u:define-parse-header-chunk (image-type +targa-img-type-offset+
+                              +targa-img-type-size+ tga nil))
 
-(define-parse-header-chunk (image-specs +targa-img-spec-offset+
-                            +targa-img-spec-size+ tga nil))
+(u:define-parse-header-chunk (image-specs +targa-img-spec-offset+
+                              +targa-img-spec-size+ tga nil))
 
-(define-parse-header-chunk (colormap-specs +targa-img-colormap-spec-offset+
-                            +targa-img-colormap-spec-size+ tga nil))
+(u:define-parse-header-chunk (colormap-specs +targa-img-colormap-spec-offset+
+                              +targa-img-colormap-spec-size+ tga nil))
 
 (defun load-rearrange-raw-packet (offset bgra bits)
   (loop for data-ct from 0 below (length bgra) by 4
@@ -824,19 +824,20 @@ from file: 'file'"
               (= type +targa-img-rgba-rle+))
           (let* ((id-len          (first (parse-image-id-len object stream)))
                  (colormap-specs  (parse-colormap-specs object stream))
-                 (colormap-len    (byte->int (subseq colormap-specs 2 4)))
+                 (colormap-len    (u:byte->int (subseq colormap-specs 2 4)))
                  (img-specs       (parse-image-specs object stream))
-                 ;;(x-origin  (byte->int (subseq img-specs 0 2)))
-                 ;;(y-origin  (byte->int (subseq img-specs 2 4)))
-                 (width           (byte->int (subseq img-specs 4 6)))
-                 (height          (byte->int (subseq img-specs 6 8)))
-                 (depth           (/ (byte->int (subseq img-specs 8 9)) 8))
+                 ;;(x-origin  (u:byte->int (subseq img-specs 0 2)))
+                 ;;(y-origin  (u:byte->int (subseq img-specs 2 4)))
+                 (width           (u:byte->int (subseq img-specs 4 6)))
+                 (height          (u:byte->int (subseq img-specs 6 8)))
+                 (depth           (/ (u:byte->int (subseq img-specs 8 9))
+                                     8))
                  (img-descr       (first (subseq img-specs 9 10)))
                  (alpha-size      (boole boole-and img-descr #x0e))
                  (scanline-origin (ash (boole boole-and img-descr #x30) -4))
                  (scanline-offset (+ +targa-img-header-size+ id-len colormap-len))
                  (scanlines-size  (* width height depth))
-                 (bgra-scanline   (make-array-frame (* width depth))))
+                 (bgra-scanline   (u:make-array-frame (* width depth))))
             (if (/= 8 alpha-size)
                 (push (format nil "Alpha bitsize should be 8 instead of ~x" alpha-size)
                       (errors object))
@@ -941,7 +942,7 @@ from file: 'file'"
   (labels ((write-bytes (vector bytes)
              (loop for i in bytes do (vector-push-extend i vector))
              vector))
-  (let ((results (make-array-frame 0 +targa-stream-element-type+)))
+  (let ((results (u:make-array-frame 0 +targa-stream-element-type+)))
     (vector-push-extend #x0 results) ; image id has zero length
     (vector-push-extend #x0 results) ; no colormap
     (vector-push-extend #x0a results) ; we use only truecolor image also we want them compressed
@@ -949,8 +950,8 @@ from file: 'file'"
                                                       ; all zero for true color image
     (setf results (write-bytes results '(#x00 #x00))) ; x-origin
     (setf results (write-bytes results '(#x00 #x00))) ; y-origin
-    (setf results (write-bytes results (int16->bytes (width object))))
-    (setf results (write-bytes results (int16->bytes (height object))))
+    (setf results (write-bytes results (u:int16->bytes (width object))))
+    (setf results (write-bytes results (u:int16->bytes (height object))))
     (vector-push-extend #x20 results) ; 32 bpp plus alpha channel
     (vector-push-extend #x28 results) ; image origin top-left alpha channel, important
     (loop for i from 0 below (length (data object)) by (width object) do
@@ -983,7 +984,7 @@ from file: 'file'"
   (with-accessors ((data   data)
                    (width  width)
                    (height height)) pixmap
-    (let ((new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
+    (let ((new-data (u:make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
           (loop
             for i from 0 below (length uncompressed-data) by 3
             for j from 0 below (length new-data) by 1 do
@@ -1014,7 +1015,7 @@ from file: 'file'"
   (with-accessors ((data   data)
                    (width  width)
                    (height height)) object
-    (let ((raw-data (slurp-stream-into-array stream)))
+    (let ((raw-data (u:slurp-stream-into-array stream)))
       (load-from-vector object raw-data))))
 
 #-nodgui-lite
@@ -1072,7 +1073,7 @@ from file: 'file'"
   (with-accessors ((data   data)
                    (width  width)
                    (height height)) pixmap
-    (let ((new-data (make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
+    (let ((new-data (u:make-array-frame (* image-w image-h) (ubvec4 0 0 0 0) 'ubvec4 t)))
       (loop
         for i from 0 below (length uncompressed-data) by 4
         for j from 0 below (length new-data) by 1 do
@@ -1195,10 +1196,10 @@ from file: 'file'"
                    (height        height)) fm
       (multiple-value-bind (block-counts elements-left)
           (calc-file-matrix-size-elements fm)
-        (let ((buff (make-array-frame +file-matrix-buff-size+
-                                      0
-                                      +file-matrix-element-type+
-                                      t)))
+        (let ((buff (u:make-array-frame +file-matrix-buff-size+
+                                        0
+                                        +file-matrix-element-type+
+                                        t)))
           (loop repeat block-counts do
                (write-sequence buff stream-handle))
           (loop repeat elements-left do
@@ -1216,7 +1217,7 @@ from file: 'file'"
                      (stream-handle stream-handle)
                      (width         width)
                      (height        height)) res
-      (if (file-exists-p file) ; file exists
+      (if (u:file-exists-p file) ; file exists
           (let ((new-stream (open file
                                   :direction         :io
                                   :if-exists         :overwrite
@@ -1230,7 +1231,7 @@ from file: 'file'"
             (file-position stream-handle 0)
             res)
           (progn                                 ; create and fill a new file
-            (create-file file)
+            (u:create-file file)
             (make-file-matrix file
                               width
                               height
