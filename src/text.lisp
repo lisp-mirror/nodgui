@@ -842,10 +842,11 @@
         (values lines chars raw-index)))))
 
 (defmethod selected-text ((object text))
-  (let ((ranges (tag-ranges object +text-selection-tag+)))
-    (text-in-range object
-                   (first ranges)
-                   (second ranges))))
+  (with-send-wish-atomic
+      (let ((ranges (tag-ranges object +text-selection-tag+)))
+        (text-in-range object
+                       (first ranges)
+                       (second ranges)))))
 
 ;;; scrolled-text
 

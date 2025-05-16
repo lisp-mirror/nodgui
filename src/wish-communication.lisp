@@ -351,14 +351,25 @@ Used in conjunction with *wish-pathname* e.g.
 (defun exit-nodgui ()
   (exit-wish))
 
+(defparameter *send-atomic* nil)
+
+(defmacro with-send-wish-atomic (&rest body)
+  `(with-lock-held ((wish-lock *wish*))
+     (let ((*send-atomic* t))
+       ,@body)))
+
 (defun send-wish (text)
-  (with-lock-held ((wish-lock *wish*))
-    (if (not (wish-discard-send-wish *wish*))
-        (progn
-          (push text (wish-output-buffer *wish*))
-          (unless *buffer-for-atomic-output*
-            (flush-wish)))
-        (dbg "discarding ~a" text))))
+  (flet ((send ()
+           (if (not (wish-discard-send-wish *wish*))
+               (progn
+                 (push text (wish-output-buffer *wish*))
+                 (unless *buffer-for-atomic-output*
+                   (flush-wish)))
+               (dbg "discarding ~a" text))))
+    (if *send-atomic*
+        (send)
+        (with-lock-held ((wish-lock *wish*))
+          (send)))))
 
 (defun send-wish-line (data)
   "Send data  to wish  shell. data  are not processed  so they  must be

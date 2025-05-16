@@ -502,7 +502,7 @@ range (0-1.0]), scaling use nearest-neighbor."
                             (rounding-fn #'round))
   "Rotate a  pixmap about an  arbitrary angle and around  an arbitrary
   pivot (the center  of the image by default), The  'void' part of the
-  image  vill be  filled with  'fill-value' (a  'nodgui.ubvec4:ubvec4'
+  image  will be  filled with  'fill-value' (a  'nodgui.ubvec4:ubvec4'
   vector) or with repeated parial clone  of the same image if `repeat'
   is non nil"
   (cond
