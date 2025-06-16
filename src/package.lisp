@@ -1788,6 +1788,8 @@
            #:event-unicode-char
            #:event-timestamp
            #:event-delta
+           #:event-others
+           #:event-user-data
            #:root-toplevel
            #:root-toplevel-title
            #:set-root-toplevel-title

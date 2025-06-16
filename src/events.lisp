@@ -34,30 +34,32 @@
 
 (defun construct-tk-event (properties)
   "create an event structure from a list of values as read from tk"
-  (make-event
-   :x            (first properties)                ; 0
-   :y            (second properties)               ; 1
-   :char-code    (third properties)                ; 2
-   :keycode      (fourth properties)               ; 3
-   :char         (fifth properties)                ; 4
-   :width        (sixth properties)                ; 5
-   :height       (seventh properties)              ; 6
-   :root-x       (eighth properties)               ; 7
-   :root-y       (ninth properties)                ; 8
-   :mouse-button (tenth properties)                ; 9
-   :unicode-char (elt   properties 10)             ; 10
-   :timestamp    (let ((data (elt properties 11))) ; 11
-                   (if (numberp data)
-                       data
-                       nil))
-   :delta        (let ((data (elt properties 12))) ; 12
-                   (if (numberp data)
-                       data
-                       nil))
-   :others       (if (string= (elt properties 12)  ; 12
-                              "")
-                     nil
-                     (elt properties 12))))
+  (make-event :x            (first properties)                ; 0
+              :y            (second properties)               ; 1
+              :char-code    (third properties)                ; 2
+              :keycode      (fourth properties)               ; 3
+              :char         (fifth properties)                ; 4
+              :width        (sixth properties)                ; 5
+              :height       (seventh properties)              ; 6
+              :root-x       (eighth properties)               ; 7
+              :root-y       (ninth properties)                ; 8
+              :mouse-button (tenth properties)                ; 9
+              :unicode-char (elt   properties 10)             ; 10
+              :timestamp    (let ((data (elt properties 11))) ; 11
+                              (if (numberp data)
+                                  data
+                                  nil))
+              :delta        (let ((data (elt properties 12))) ; 12
+                              (if (numberp data)
+                                  data
+                                  nil))
+              :others       (if (string= (elt properties 13)  ; 13
+                                         "")
+                                nil
+                                (elt properties 13))))
+
+(defun event-user-data (event)
+  (event-others event))
 
 (defgeneric bind (w event fun &key append exclusive))
 
@@ -65,7 +67,7 @@
   "bind fun to event of the widget object"
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "bind  ~a {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A %t %D ~:[~;;break~]}"
+    (format-wish "bind  ~a {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A %t %D %d ~:[~;;break~]}"
                  (widget-path object) event append name exclusive)
     object))
 
@@ -73,7 +75,7 @@
   "bind fun to event within context indicated by string ie. 'all' or 'Button'"
   (let ((name (create-name)))
     (add-callback name fun)
-    (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A %t %D ~:[~;;break~]}"
+    (format-wish "bind  {~a} {~a} {~:[~;+~]sendevent ~A %x %y %N %k %K %w %h %X %Y %b %A %t %D %d ~:[~;;break~]}"
                  object event append name exclusive)
     object))
 
@@ -155,11 +157,58 @@
                                         events
                                         :initial-value "")))))
 
-(defun fire-event (window virtual-event &rest options)
-  (format-wish (tclize `(event generate
-                               ,(widget-path window) " "
-                               ,virtual-event ,@options))))
+(a:define-constant +legals-event-options+
+    '(:when
+      :above
+      :borderwidth
+      :button
+      :count
+      :data
+      :delta
+      :detail
+      :focus
+      :height
+      :keycode
+      :keysym
+      :mode
+      :override
+      :place
+      :root
+      :rootx
+      :rooty
+      :sendevent
+      :serial
+      :state
+      :subwindow
+      :time
+      :warp
+      :width
+      :window
+      :x
+      :y)
+  :test #'equalp)
 
+(defun fire-event (window virtual-event &rest options)
+  (setf options
+        (loop for element in options
+              for ct from 1
+              collect (if (oddp ct)
+                          (cond
+                            ((member element '(:others :user-data) :test #'eq)
+                             :data)
+                            ((member element +legals-event-options+)
+                             element)
+                            (t
+                             (error "Illegal event option value: ~s" element)))
+                          element)))
+  (let ((*suppress-newline-for-tcl-statements* t))
+    (format-wish (tclize `(event generate
+                                 ,(widget-path window) " "
+                                 ,virtual-event " "
+                                 ,@(loop for (option value) on options by 'cddr
+                                         collect `(,(format nil "-~(~a~)" option)
+                                                       " "
+                                                   \"+ ,value \")))))))
 (defun event-alias-info (virtual-event)
   (with-read-data ()
     (format-wish "senddatastring [event info {~a}]" virtual-event)))

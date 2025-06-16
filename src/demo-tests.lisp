@@ -1811,12 +1811,21 @@
             (lambda (e)
               (insert-text text-area
                            (format nil
-                                   "[~a] virtual event fired~%" (event-timestamp e)))))
+                                   "[~a] (~a,~a) virtual event fired. User data: \"~a\"~%"
+                                   (event-timestamp e)
+                                   (event-x e)
+                                   (event-y e)
+                                   (event-others e)))))
       (bind (root-toplevel)
             #$<Return>$
             (lambda (e)
               (declare (ignore e))
-              (fire-event text-area insert-event))))))
+              (fire-event text-area
+                          insert-event
+                          :others ; also accepted: `:data' or `:user-data'
+                          "custom data"
+                          :x 11
+                          :y 237))))))
 
 (defun demo-classic-frame-background ()
   (with-nodgui ()
