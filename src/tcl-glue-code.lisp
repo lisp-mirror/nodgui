@@ -119,7 +119,7 @@
                                    \\+ \" $unicode_char+ \\+ \" \ %
                                    $timestamp \ %
                                    $delta \ %
-                                   \\+ \" $other+ \\+ \" \ %
+                                   $other  \ %
                                  > ])))))
 
   (defproc callback (s)

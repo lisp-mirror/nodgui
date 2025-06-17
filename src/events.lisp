@@ -53,8 +53,10 @@
                               (if (numberp data)
                                   data
                                   nil))
-              :others       (if (string= (elt properties 13)  ; 13
-                                         "")
+              :others       (if (or (null (elt properties 13))
+                                    (and (stringp (elt properties 13))
+                                         (string= (elt properties 13)  ; 13
+                                                  "")))
                                 nil
                                 (elt properties 13))))
 
@@ -208,7 +210,7 @@
                                  ,@(loop for (option value) on options by 'cddr
                                          collect `(,(format nil "-~(~a~)" option)
                                                        " "
-                                                   \"+ ,value \")))))))
+                                                   \"+ ,(format nil "~s" value) \")))))))
 (defun event-alias-info (virtual-event)
   (with-read-data ()
     (format-wish "senddatastring [event info {~a}]" virtual-event)))

@@ -545,7 +545,7 @@ event to read and blocking is set to nil"
         (with-lock-held ((wish-read-lock *wish*))
           (dbg "queue ~a" (q::container (wish-data-queue *wish*)))
           (let ((event (read-preserving-whitespace wstream t nil)))
-            (dbg "raw event ~a" event)
+            (dbg "raw event ~s" event)
             (if event
                 (verify-event event)
                 no-event-value))))

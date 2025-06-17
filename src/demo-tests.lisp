@@ -1811,7 +1811,7 @@
             (lambda (e)
               (insert-text text-area
                            (format nil
-                                   "[~a] (~a,~a) virtual event fired. User data: \"~a\"~%"
+                                   "[~a] (~a,~a) virtual event fired. User data: ~s~%"
                                    (event-timestamp e)
                                    (event-x e)
                                    (event-y e)
@@ -1823,7 +1823,7 @@
               (fire-event text-area
                           insert-event
                           :others ; also accepted: `:data' or `:user-data'
-                          "custom data"
+                          '(1 :a "p")
                           :x 11
                           :y 237))))))
 
