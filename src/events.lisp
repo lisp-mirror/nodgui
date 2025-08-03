@@ -122,7 +122,7 @@
              (when (> (- ,fired-time ,saved-last-fired)
                       ,debounce-minimum-delay)
                (setf ,results (progn ,@actual-body)))
-             (setf ,last-fired ,fired-time)
+             (setf ,last-fired (current-time-milliseconds))
              ,results))))))
 
 (defparameter *lambda-frequency* 120
