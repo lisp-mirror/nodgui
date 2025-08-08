@@ -1,3 +1,14 @@
+* 2025-08-08 0.7.4.0
+- [new-feature]
+  - [MW] added selfcheck text entry widget;
+  - added two scalables themes;
+- [improvements]
+  - the library uses TK version 9;
+  - allowed use of s-expressions when passing custom data to 'fire-event';
+  - fixed 'fire-event' to accepts event options;
+  - added macro 'with-send-wish-atomic' to ensure all the call to 'send-wish' are protected by a lock;
+  - prevented closing  the pipe  to wish when  an reading  error occurs, this way users can wrap their code with 'handler-case' or similar tomanage the error signaled;
+
 * 2025-04-02 version 0.7.3.5
 - [bugfix]
   - wrapped message-box's body with 'with-read-data' macro, to prevent race conditions.

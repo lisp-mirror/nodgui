@@ -1,10 +1,103 @@
+2025-08-03 cage
+
+	* src/events.lisp:
+
+	- fixed 'lambda-debounce', was assuming (incorrectly) that the body of
+	the macro tooks no time.
+
+2025-06-17 cage
+
+	* src/demo-tests.lisp,
+	* src/events.lisp,
+	* src/tcl-glue-code.lisp,
+	* src/wish-communication.lisp:
+
+	- allowed use of s-expressions when passing custom data to
+	'fire-event'.
+
+2025-06-16 cage
+
+	* src/demo-tests.lisp,
+	* src/events.lisp,
+	* src/package.lisp:
+
+	- fixed 'fire-event' to accepts event options.
+
+2025-05-16 cage
+
+	* src/pixmap.lisp,
+	* src/text.lisp,
+	* src/wish-communication.lisp:
+
+	- added macro 'with-send-wish-atomic' to ensure all the call to
+	'send-wish' are protected by a lock.
+
+2025-05-03 cage
+
+	* src/demo-tests.lisp,
+	* src/package.lisp,
+	* src/pixmap.lisp,
+	* src/text.lisp,
+	* src/wish-communication.lisp:
+
+	- renamed 'with-send-wish-atomic' to 'with-send-wish-stream-atomic';
+	- fixed printing of stream printing, when debugging;
+	- prevented closing  the pipe  to wish when  an reading  error occurs,
+	this way users can wrap their code with 'handler-case' or similar to
+	manage the error signaled.
+	- added 'demo-non-local-exit-mainloop'.
+	- removed importing of nodgui.utils, used PLN, instead.
+
+2025-04-27 cage
+
+	* src/package.lisp,
+	* src/text.lisp:
+
+	- added function 'selected-text' to get the selected text in a 'text'
+	widget.
+
+2025-04-25 cage
+
+	* src/demo-tests.lisp,
+	* src/label.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/widget.lisp:
+
+	- added convenience function 'make-label';
+	- added function to manipulate selfcheck-entry slot:
+	'selfcheck-error-label';
+	- fixed some typos.
+	- added convenience function 'wrap-length'.
+
+2025-04-21 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	-[MW] added selfcheck text entry widget.
+
+2025-04-10 cage
+
+	* src/demo-tests.lisp,
+	* src/molecule-viewer.lisp:
+
+	- added molecule viewer demo.
+	- improved a bit interface of molecule viewer.
+
 2025-04-02 cage
 
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
 	* src/message.lisp,
 	* src/wish-communication.lisp:
 
 	- wrapped message-box's body with 'with-read-data' macro, to prevent
 	race conditions.
+	- increased version number;
+	- updated Changelog and NEWS files.
 
 2025-03-31 cage
 
