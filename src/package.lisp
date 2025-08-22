@@ -191,7 +191,8 @@
            #:threadp
            #:thread-alive-p
            #:define-compiler-macro*
-           #:copy-ffi-vector))
+           #:copy-ffi-vector
+           #:available-cpus-number))
 
 (defpackage :syncronized-queue
   (:use :cl
@@ -222,6 +223,16 @@
    #:queue-first
    #:queue-lock
    #:make-queue))
+
+(defpackage :nodgui.thread-pool
+  (:use :cl)
+  (:local-nicknames (:a :alexandria)
+                    (:q :syncronized-queue)
+                    (:u :nodgui.utils))
+  (:export
+   #:make-thread-pool
+   #:submit-task
+   #:receive-result))
 
 (defpackage :nodgui.base64
   (:use :cl
@@ -1504,7 +1515,8 @@
                     (:u    :nodgui.utils)
                     (:ctx  :nodgui.rendering-buffer-context)
                     (:pix  :nodgui.pixmap)
-                    (:vec2 :nodgui.vec2))
+                    (:vec2 :nodgui.vec2)
+                    (:tp   :nodgui.thread-pool))
   (:export
    #:buffer
    #:pixel-buffer-context

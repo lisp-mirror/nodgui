@@ -42,7 +42,7 @@
 
 	- renamed 'with-send-wish-atomic' to 'with-send-wish-stream-atomic';
 	- fixed printing of stream printing, when debugging;
-	- prevented closing  the pipe  to wish when  an reading  error occurs,
+	- prevented closing  the pipe  to wish when  a reading  error occurs,
 	this way users can wrap their code with 'handler-case' or similar to
 	manage the error signaled.
 	- added 'demo-non-local-exit-mainloop'.

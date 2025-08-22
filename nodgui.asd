@@ -51,6 +51,7 @@
                (:file "utils")
                (:file "synchronized-queue")
                (:file "non-blocking-queue")
+               (:file "thread-pool")
                (:file "base64")
                (:file "ubvec4")
                (:file "vec2")

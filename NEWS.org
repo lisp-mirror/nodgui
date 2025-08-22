@@ -7,7 +7,7 @@
   - allowed use of s-expressions when passing custom data to 'fire-event';
   - fixed 'fire-event' to accepts event options;
   - added macro 'with-send-wish-atomic' to ensure all the call to 'send-wish' are protected by a lock;
-  - prevented closing  the pipe  to wish when  an reading  error occurs, this way users can wrap their code with 'handler-case' or similar tomanage the error signaled;
+  - prevented closing the pipe to wish when a reading error occurs, this way users can wrap their code with 'handler-case' or similar tomanage the error signaled.
 
 * 2025-04-02 version 0.7.3.5
 - [bugfix]

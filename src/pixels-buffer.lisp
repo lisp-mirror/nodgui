@@ -1845,6 +1845,206 @@
                                          pixmap-height
                                          :aabb-clipping aabb-clipping)))
 
+(defun %subdivide (size slices-number)
+  ;;#.nodgui.config:default-optimization
+  (declare (optimize (speed 0) (debug 3) (safety 3)))
+  (declare (fixnum size slices-number))
+  (multiple-value-bind (integer-part fractional-part)
+      (floor (/ size slices-number))
+    (let* ((last-slice (truncate   (* fractional-part slices-number)))
+           (slices     (make-array (+ slices-number 2)
+                                   :initial-element integer-part
+                                   :element-type 'fixnum
+                                   :adjustable nil))
+           (results     (make-array (if (= last-slice 0)
+                                        (+ slices-number 1)
+                                        (+ slices-number 2))
+                                    :initial-element 0
+                                    :element-type 'fixnum
+                                    :adjustable nil)))
+      (setf (a:last-elt  slices) last-slice
+            (a:first-elt slices) 0
+            (a:last-elt  results) (- size (truncate fractional-part)))
+      (loop for i from 1 below (1- (length results)) do
+        (setf (elt results i)
+              (+ integer-part
+                 (elt results (1- i)))))
+      results)))
+
+(defparameter *pool-workers-number* (truncate (/ (u:available-cpus-number)
+                                                 2)))
+
+(defparameter *thread-pool* (tp:make-thread-pool *pool-workers-number*))
+
+(defun draw-multi-texture-mapped-polygon** (buffer width height vertices texels
+                                           textures
+                                           texture-width
+                                           texture-height
+                                           &key (aabb-clipping nil))
+  "Note: vertices must be provided in counterclockwise order. `TEXTURES` must be a list of bitmap data (see 'nodgui.pixmap:make-buffer') with the same width and heights."
+  #.nodgui.config:default-optimization
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare ((simple-array (unsigned-byte 32)) buffer))
+  (declare (fixnum width))
+  (declare ((simple-array vec2:vec2) vertices texels))
+  (declare (function *multi-texture-shader*))
+  (declare (list textures))
+  (declare ((or null (simple-array fixnum)) aabb-clipping))
+  (let* ((actual-vertices (float-vertices->fixnum-vertices vertices))
+         (aabb            (or aabb-clipping
+                              (polygon-create-aabb actual-vertices)))
+         (x-rendering-max-limit (min width
+                                     (the fixnum (iaabb2-max-x aabb))))
+         (x-rendering-min-limit (max 0
+                                     (the fixnum (iaabb2-min-x aabb)))))
+    (declare ((simple-array vec2:uivec2) vertices texels))
+    (declare ((simple-array fixnum) aabb))
+    (declare (fixnum x-rendering-max-limit x-rendering-min-limit))
+    (declare (dynamic-extent aabb actual-vertices
+                             x-rendering-max-limit
+                             x-rendering-min-limit))
+    (clip-y-polygon-aabb aabb height)
+    (let* ((stripes (%subdivide (- (iaabb2-max-y aabb)
+                                   (iaabb2-min-y aabb))
+                                *pool-workers-number*))
+           (results-count (1- (length stripes))))
+      (loop for ct = 0 then (1+ ct)
+            while (< ct results-count)
+            do
+               (tp:submit-task *thread-pool*
+                               (let ((count ct))
+                                 (lambda ()
+                                   (let ((ct count))
+                                     (loop for y fixnum
+                                           from (elt stripes ct) below (elt stripes (1+ ct)) by 1
+                                           do
+                                              (let ((intersections (polygon-collect-intersections-texture actual-vertices texels y)))
+                                                (declare (dynamic-extent intersections))
+                                                (loop for (intersection-a intersection-b) on intersections by 'cddr do
+                                                  (let* ((start-vertex-a   (polygon-intersection-start-vertex intersection-a))
+                                                         (end-vertex-a     (polygon-intersection-end-vertex intersection-a))
+                                                         (start-vertex-b   (polygon-intersection-start-vertex intersection-b))
+                                                         (end-vertex-b     (polygon-intersection-end-vertex intersection-b))
+                                                         (start-texel-a    (polygon-intersection-start-texel intersection-a))
+                                                         (end-texel-a      (polygon-intersection-end-texel intersection-a))
+                                                         (start-texel-b    (polygon-intersection-start-texel intersection-b))
+                                                         (end-texel-b      (polygon-intersection-end-texel intersection-b))
+                                                         (intersection-a-x (polygon-intersection-point intersection-a))
+                                                         (intersection-b-x (polygon-intersection-point intersection-b))
+                                                         (start-b-y        (vec2:uivec2-y start-vertex-b))
+                                                         (end-b-y          (vec2:uivec2-y end-vertex-b))
+                                                         (texel-weight-a   (/ (to:d (- (the fixnum (vec2:uivec2-y start-vertex-a))
+                                                                                       y))
+                                                                              (to:d+ (to:d (- (the fixnum (vec2:uivec2-y start-vertex-a))
+                                                                                              (the fixnum (vec2:uivec2-y end-vertex-a))))
+                                                                                     +epsilon-delta+)))
+                                                         (texel-weight-b   (/ (to:d (- start-b-y y))
+                                                                              (to:d+ (to:d (- start-b-y
+                                                                                              end-b-y))
+                                                                                     +epsilon-delta+)))
+                                                         (texel-t-start-a  (vec2:vec2-y start-texel-a))
+                                                         (texel-s-start-a  (vec2:vec2-x start-texel-a))
+                                                         (texel-t-end-a    (vec2:vec2-y end-texel-a))
+                                                         (texel-s-end-a    (vec2:vec2-x end-texel-a))
+                                                         (texel-t-start-b  (vec2:vec2-y start-texel-b))
+                                                         (texel-s-start-b  (vec2:vec2-x start-texel-b))
+                                                         (texel-t-end-b    (vec2:vec2-y end-texel-b))
+                                                         (texel-s-end-b    (vec2:vec2-x end-texel-b))
+                                                         (texel1-t         (to:dlerp texel-weight-a texel-t-start-a texel-t-end-a))
+                                                         (texel1-s         (to:dlerp texel-weight-a texel-s-start-a texel-s-end-a))
+                                                         (texel2-t         (to:dlerp texel-weight-b texel-t-start-b texel-t-end-b))
+                                                         (texel2-s         (if (= end-b-y start-b-y)
+                                                                               texel-s-end-b
+                                                                               (to:dlerp texel-weight-b texel-s-start-b texel-s-end-b))))
+                                                    (declare (dynamic-extent start-vertex-a
+                                                                             end-vertex-a
+                                                                             start-vertex-b
+                                                                             end-vertex-b
+                                                                             start-texel-a
+                                                                             end-texel-a
+                                                                             start-texel-b
+                                                                             end-texel-b
+                                                                             intersection-a-x
+                                                                             intersection-b-x
+                                                                             start-b-y
+                                                                             end-b-y
+                                                                             texel-weight-a
+                                                                             texel-weight-b
+                                                                             texel-t-start-a
+                                                                             texel-s-start-a
+                                                                             texel-t-end-a
+                                                                             texel-s-end-a
+                                                                             texel-t-start-b
+                                                                             texel-s-start-b
+                                                                             texel-t-end-b
+                                                                             texel-s-end-b
+                                                                             texel1-t
+                                                                             texel1-s
+                                                                             texel2-t
+                                                                             texel2-s))
+                                                    (declare (vec2:uivec2
+                                                              start-vertex-a
+                                                              end-vertex-a
+                                                              start-vertex-b
+                                                              end-vertex-b))
+                                                    (declare (fixnum intersection-a-x
+                                                                     intersection-b-x
+                                                                     start-b-y
+                                                                     end-b-y ))
+                                                    (declare (to::desired-type texel-weight-a
+                                                                               texel-weight-b
+                                                                               texel-t-start-a
+                                                                               texel-s-start-a
+                                                                               texel-t-end-a
+                                                                               texel-s-end-a
+                                                                               texel-t-start-b
+                                                                               texel-s-start-b
+                                                                               texel-t-end-b
+                                                                               texel-s-end-b
+                                                                               texel1-t
+                                                                               texel1-s
+                                                                               texel2-t
+                                                                               texel2-s))
+                                                    (let ((range (- intersection-b-x intersection-a-x)))
+                                                      (declare (fixnum range))
+                                                      (loop for x fixnum from (max intersection-a-x
+                                                                                   x-rendering-min-limit)
+                                                              below (min intersection-b-x
+                                                                         x-rendering-max-limit)
+                                                            by 1
+                                                            with delta-t = (to:d- texel2-t texel1-t)
+                                                            with delta-s = (to:d- texel2-s texel1-s)
+                                                            with actual-range = (to:d+ (to:d range)
+                                                                                       +epsilon-delta+)
+                                                            with t-increment = (to:d/ delta-t actual-range)
+                                                            with s-increment = (to:d/ delta-s actual-range)
+                                                            for interpolated-t = (to:d+ texel1-t
+                                                                                        (to:d* t-increment
+                                                                                               (to:d- (min 0f0
+                                                                                                           (to:d intersection-a-x)))))
+                                                              then (to:d+ interpolated-t
+                                                                          t-increment)
+                                                            for interpolated-s = (to:d+ texel1-s
+                                                                                        (to:d* s-increment
+                                                                                               (to:d- (min 0f0
+                                                                                                           (to:d intersection-a-x)))))
+                                                              then (to:d+ interpolated-s
+                                                                          s-increment)
+                                                            do
+                                                               (funcall *multi-texture-shader*
+                                                                        interpolated-s
+                                                                        interpolated-t
+                                                                        textures
+                                                                        texture-width
+                                                                        texture-height
+                                                                        buffer
+                                                                        width
+                                                                        height
+                                                                        x
+                                                                        y))))))))))))
+      (loop for i from 0 below results-count do
+        (tp:receive-result *thread-pool*)))))
+
 (defun draw-multi-texture-mapped-polygon* (buffer width height vertices texels
                                            textures
                                            texture-width
@@ -1874,7 +2074,7 @@
                              x-rendering-min-limit))
     (clip-y-polygon-aabb aabb height)
     (loop for y fixnum
-          from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1
+            from (iaabb2-min-y aabb) below (iaabb2-max-y aabb) by 1
           do
              (let ((intersections (polygon-collect-intersections-texture actual-vertices texels y)))
                (declare (dynamic-extent intersections))

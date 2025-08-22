@@ -638,3 +638,13 @@
 
 (defun copy-ffi-vector (source-pointer destination-pointer octets-size)
   (%memcpy destination-pointer source-pointer octets-size))
+
+(defun available-cpus-number ()
+  #+linux
+  (let ((results (with-output-to-string (stream)
+                   (uiop:run-program (list "nproc" "--all")
+                                        :output       stream
+                                        :error-output stream))))
+    (or (ignore-errors (parse-integer results :junk-allowed t))
+        1))
+  #-linux 1)

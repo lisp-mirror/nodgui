@@ -1626,3 +1626,88 @@
           (setf *animation*
                 (make-animation :thread
                                 (make-thread #'draw-multi))))))))
+
+(defun circular-wave-texture (&optional (width 4096) (height 4096))
+  (let ((pixmap (pixmap::make-pixmap width height))
+        (center (vec2:vec2 (to:d 0.5) (to:d 0.5))))
+    (pixmap::loop-matrix (pixmap x y)
+      (let* ((normalized  (vec2:vec2 (to:d (/ x width))
+                                     (to:d (/ y height))))
+             (dist        (vec2:vec2- normalized center))
+             (color-level (to:dsin (to:d* (to:d 24.0) (vec2:vec2-length dist))))
+             (color       (truncate (to:d* (to:d/ (to:d+ (to:d 1.0)
+                                                         color-level)
+                                                  (to:d 2.0))
+                                           (to:d 255)))))
+        (setf (pixmap:pixel@ pixmap x y)
+              (nodgui.ubvec4:ubvec4 color color color 255))))
+    (pixmap:sync-data-to-bits pixmap)
+    pixmap))
+
+;; single thread: ~0.43s
+;; 4 threads:     ~0.11s
+;; 12 threads:    ~0.07s
+(defun profile-multi-texture-polygon ()
+  (setf px:*multi-texture-shader* #'multi-texture-shader-wrap-replace)
+  (let* ((sdl-context      nil)
+         (context-buffer   nil)
+         (context-width    nil)
+         (context-height   nil)
+         (polygon-vertices (px:make-polygon-vertex-array (list (vec2:vec2 0 0)
+                                                               (vec2:vec2 4096 0)
+                                                               (vec2:vec2 4096 4096)
+                                                               (vec2:vec2 0 4096))))
+         (polygon-tex-coordinates (px:make-polygon-texture-coordinates-array
+                                   (list (vec2:vec2 0 0)
+                                         (vec2:vec2 1 0)
+                                         (vec2:vec2 1 1)
+                                         (vec2:vec2 0 1))))
+         (textures                (progn
+                                    (format t "generating texture~%")
+                                    (prog1
+                                        (list (circular-wave-texture))
+                                      (format t "texture generated~%")))))
+    (flet ((draw-multi ()
+               (loop while (not (stop-drawing-thread-p *animation*)) do
+                 (ctx:sync *pixel-buffer-context*)
+                 (ctx:push-for-updating *pixel-buffer-context*
+                                        (lambda (dt)
+                                          (declare (ignore dt))
+                                          t)
+                                        :force-push nil)
+                 (ctx:push-for-rendering *pixel-buffer-context*
+                                         (lambda (dt)
+                                           (declare (ignore dt))
+                                           (time
+                                           (px:draw-multi-texture-mapped-polygon context-buffer
+                                                                                 context-width
+                                                                                 context-height
+                                                                                 polygon-vertices
+                                                                                 polygon-tex-coordinates
+                                                                                 textures)))))))
+      (with-nodgui ()
+        (let* ((sdl-frame   (ctx:make-sdl-frame 1024 1024))
+               (button-quit (make-instance 'button
+                                           :text    "quit"
+                                           :command (lambda ()
+                                                      (stop-animation)
+                                                      (ctx:quit-sdl *pixel-buffer-context*)
+                                                      (exit-nodgui)))))
+          (grid sdl-frame 1 0)
+          (grid button-quit 1 0 :sticky :s)
+          (wait-complete-redraw)
+          (setf sdl-context (make-instance 'px:pixel-buffer-context
+                                           :minimum-delta-t (ctx:fps->delta-t 30)
+                                           :non-blocking-queue-maximum-size 16
+                                           :event-loop-type :polling
+                                           :classic-frame   sdl-frame
+                                           :buffer-width    4096
+                                           :buffer-height   4096))
+          (setf context-buffer (px:buffer sdl-context))
+          (setf context-width  (ctx:width  sdl-context))
+          (setf context-height (ctx:height sdl-context))
+          (setf *pixel-buffer-context*  sdl-context)
+          (stop-animation)
+          (setf *animation*
+                (make-animation :thread
+                                (make-thread #'draw-multi))))))))
