@@ -157,7 +157,7 @@
 
 (pushnew :nodgui *features*)
 
-(pushnew :optimize-nodgui *features*)
+;; (pushnew :optimize-nodgui *features*)
 
 ;; (pushnew :debug-game *features*)
 

@@ -480,8 +480,8 @@
     (declare (to::desired-type flame-intensity))
     (lambda (pixel-source pixel-destination)
       (declare (fixnum pixel-source pixel-destination))
-      ;;#.nodgui.config:default-optimization
-      (declare (optimize (speed 3) (debug 0) (safety 0)))
+      #.nodgui.config:default-optimization
+      ;;(declare (optimize (speed 3) (debug 0) (safety 0)))
       (px:with-displace-pixel (r-source g-source b-source x)
                               pixel-source
         (declare (ignore x))
