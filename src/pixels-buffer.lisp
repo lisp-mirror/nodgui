@@ -1845,31 +1845,26 @@
                                          pixmap-height
                                          :aabb-clipping aabb-clipping)))
 
-(defun %subdivide (size slices-number)
-  ;;#.nodgui.config:default-optimization
-  (declare (optimize (speed 0) (debug 3) (safety 3)))
-  (declare (fixnum size slices-number))
-  (multiple-value-bind (integer-part fractional-part)
-      (floor (/ size slices-number))
-    (let* ((last-slice (truncate   (* fractional-part slices-number)))
-           (slices     (make-array (+ slices-number 2)
-                                   :initial-element integer-part
-                                   :element-type 'fixnum
-                                   :adjustable nil))
-           (results     (make-array (if (= last-slice 0)
-                                        (+ slices-number 1)
-                                        (+ slices-number 2))
-                                    :initial-element 0
-                                    :element-type 'fixnum
-                                    :adjustable nil)))
-      (setf (a:last-elt  slices) last-slice
-            (a:first-elt slices) 0
-            (a:last-elt  results) (- size (truncate fractional-part)))
-      (loop for i from 1 below (1- (length results)) do
-        (setf (elt results i)
-              (+ integer-part
-                 (elt results (1- i)))))
-      results)))
+(defun %subdivide (start-y size slices-number)
+  #.nodgui.config:default-optimization
+  ;;(declare (optimize (speed 0) (debug 3) (safety 3)))
+  (declare (fixnum start-y size slices-number))
+  (let* ((wide-stripe-height (floor (/ size slices-number)))
+         (thin-stripe-width  (- size (* wide-stripe-height slices-number)))
+         (results            (make-array (+ slices-number 1)
+                                         :initial-element start-y
+                                         :element-type 'fixnum
+                                         :adjustable nil)))
+    (declare (fixnum wide-stripe-height thin-stripe-width))
+    (declare ((simple-array fixnum) results))
+    (loop for i from 0 below (length results)
+          for offset from 0 by wide-stripe-height do
+      (incf (elt results i)
+            offset))
+    (setf (a:last-elt results)
+          (+ (the fixnum (a:last-elt results))
+             (the fixnum thin-stripe-width)))
+    results))
 
 (defparameter *pool-workers-number* (truncate (/ (u:available-cpus-number)
                                                  2)))
@@ -1904,7 +1899,8 @@
                              x-rendering-max-limit
                              x-rendering-min-limit))
     (clip-y-polygon-aabb aabb height)
-    (let* ((stripes (%subdivide (- (the fixnum (iaabb2-max-y aabb))
+    (let* ((stripes (%subdivide (iaabb2-min-y aabb)
+                                (- (the fixnum (iaabb2-max-y aabb))
                                    (the fixnum (iaabb2-min-y aabb)))
                                 *pool-workers-number*))
            (results-count (1- (length stripes)))
