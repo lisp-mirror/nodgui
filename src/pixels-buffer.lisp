@@ -1866,10 +1866,15 @@
              (the fixnum thin-stripe-width)))
     results))
 
-(defparameter *pool-workers-number* (truncate (/ (u:available-cpus-number)
-                                                 2)))
+(defparameter *pool-workers-number* 1)
 
-(defparameter *thread-pool* (tp:make-thread-pool *pool-workers-number*))
+(defparameter *thread-pool* nil)
+
+(defun maybe-initialize-thread-pool ()
+  (when (not *thread-pool*)
+    (setf *pool-workers-number* (truncate (/ (u:available-cpus-number)
+                                             2))
+          *thread-pool*         (tp:make-thread-pool *pool-workers-number*))))
 
 (defun draw-multi-texture-mapped-polygon* (buffer width height vertices texels
                                            textures

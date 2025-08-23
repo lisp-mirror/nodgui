@@ -1518,6 +1518,7 @@
                     (:vec2 :nodgui.vec2)
                     (:tp   :nodgui.thread-pool))
   (:export
+   #:maybe-initialize-thread-pool
    #:buffer
    #:pixel-buffer-context
    #:pixel@
