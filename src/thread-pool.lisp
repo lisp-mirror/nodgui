@@ -69,18 +69,3 @@
 
 (defun submit-task (pool task)
   (q:push-unblock (queue pool) task))
-
-(defun fib (i &optional (acc1 0) (acc2 1))
-  (declare (optimize (debug 0) (speed 3)))
-  (if (= i 0)
-      acc1
-      (fib (1- i) acc2 (+ acc1 acc2))))
-
-(defun %test ()
-  (let ((pool (make-thread-pool 12)))
-    (with-accessors ((workers workers)) pool
-      (time
-       (progn
-         (loop repeat 23
-               do (submit-task pool (lambda () (fib 490000))))
-         (loop repeat 23 do (receive-result pool)))))))
