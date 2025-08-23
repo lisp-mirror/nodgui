@@ -10,7 +10,7 @@
 ;; MERCHANTABILITY or FITNESS  FOR A PARTICULAR PURPOSE.   See the GNU
 ;; General Public License for more details.
 
-(in-package :syncronized-queue)
+(in-package :nodgui.synchronized-queue)
 
 (defclass synchronized-queue ()
   ((container

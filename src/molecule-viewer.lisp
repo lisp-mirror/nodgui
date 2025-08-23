@@ -32,7 +32,7 @@
   (:use :cl
    :nodgui)
   (:local-nicknames (:a       :alexandria)
-                    (:bq      :syncronized-queue)
+                    (:bq      :nodgui.synchronized-queue)
                     (:q       :nodgui.non-blocking-queue)
                     (:to      :nodgui.typed-operations)
                     (:u       :nodgui.utils)

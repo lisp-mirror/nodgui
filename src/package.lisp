@@ -194,7 +194,7 @@
            #:copy-ffi-vector
            #:available-cpus-number))
 
-(defpackage :syncronized-queue
+(defpackage :nodgui.synchronized-queue
   (:use :cl
         :nodgui.utils)
   (:local-nicknames (:a :alexandria))
@@ -227,7 +227,7 @@
 (defpackage :nodgui.thread-pool
   (:use :cl)
   (:local-nicknames (:a :alexandria)
-                    (:q :syncronized-queue)
+                    (:q :nodgui.synchronized-queue)
                     (:u :nodgui.utils))
   (:export
    #:make-thread-pool
@@ -1475,7 +1475,7 @@
 (defpackage nodgui.rendering-buffer-context
   (:use :cl)
   (:local-nicknames (:a   :alexandria)
-                    (:bq  :syncronized-queue)
+                    (:bq  :nodgui.synchronized-queue)
                     (:q   :nodgui.non-blocking-queue)
                     (:u   :nodgui.utils))
   (:export
@@ -1509,7 +1509,7 @@
   (:use :cl)
   (:local-nicknames (:a    :alexandria)
                     (:p    :esrap)
-                    (:bq   :syncronized-queue)
+                    (:bq   :nodgui.synchronized-queue)
                     (:q    :nodgui.non-blocking-queue)
                     (:to   :nodgui.typed-operations)
                     (:u    :nodgui.utils)
@@ -1592,7 +1592,7 @@
 (defpackage nodgui.opengl-frame
   (:use :cl)
   (:local-nicknames (:a       :alexandria)
-                    (:bq      :syncronized-queue)
+                    (:bq      :nodgui.synchronized-queue)
                     (:q       :nodgui.non-blocking-queue)
                     (:to      :nodgui.typed-operations)
                     (:u       :nodgui.utils)
@@ -1618,7 +1618,7 @@
         #:nodgui.tcl-emitter)
   (:local-nicknames (:a :alexandria)
                     (:p :esrap)
-                    (:q :syncronized-queue))
+                    (:q :nodgui.synchronized-queue))
   (:export #:syntax
            #:+wm-type-desktop+
            #:+wm-type-dock+
