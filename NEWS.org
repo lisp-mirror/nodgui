@@ -1,3 +1,7 @@
+* 2025-08-25 0.7.5.0
+- [improvements]
+  - rendering of texture mapped polygon uses parallel processing on system where multiple CPUs are available.
+
 * 2025-08-08 0.7.4.0
 - [new-feature]
   - [MW] added selfcheck text entry widget;

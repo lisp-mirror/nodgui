@@ -906,7 +906,7 @@
 
 (defmethod calculate ((object particle) world dt)
   #.nodgui.config:default-optimization
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  ;; (declare (optimize (speed 3) (debug 0) (safety 0)))
   (with-accessors ((particle-children particle-children)) object
     (loop for child in particle-children do
       (calculate child world dt))))

@@ -1,3 +1,46 @@
+2025-08-23 cage
+
+	* src/molecule-viewer.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/synchronized-queue.lisp,
+	* src/thread-pool.lisp,
+	* src/wish-communication.lisp:
+
+	- [pixel buffer] removed initialization of thread pool on the
+	  toplevel.
+	  SBCL is unable to save the system image when more
+	  than one thread is running.
+	- removed debug code.
+	- fixed package name.
+
+2025-08-22 cage
+
+	* Changelog,
+	* NEWS.org,
+	* game/entities.lisp,
+	* nodgui.asd,
+	* src/demo-pixels-buffer.lisp,
+	* src/package.lisp,
+	* src/pixels-buffer.lisp,
+	* src/thread-pool.lisp,
+	* src/utils.lisp:
+
+	- [pixel-buffer] using parallel processing to render texture mapped
+	polygons.
+	- [pixel buffer] fixed dynamic binding for texture mapped polygons
+	rendering.
+	- [pixel buffer] fixed and optimized '%subdivide'.
+
+2025-08-08 cage
+
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd:
+
+	- increased version number;
+	- updated News and chengelog files.
+
 2025-08-03 cage
 
 	* src/events.lisp:
