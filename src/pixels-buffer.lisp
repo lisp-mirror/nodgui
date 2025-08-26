@@ -1875,8 +1875,9 @@
 
 (defun maybe-initialize-thread-pool ()
   (when (not *thread-pool*)
-    (setf *pool-workers-number* (truncate (/ (u:available-cpus-number)
-                                             2))
+    (setf *pool-workers-number* (max (truncate (/ (u:available-cpus-number)
+                                                  2))
+                                     1)
           *thread-pool*         (tp:make-thread-pool *pool-workers-number*))))
 
 (defun draw-multi-texture-mapped-polygon* (buffer width height vertices texels
