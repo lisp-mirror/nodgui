@@ -1849,21 +1849,24 @@
   #.nodgui.config:default-optimization
   ;;(declare (optimize (speed 0) (debug 3) (safety 3)))
   (declare (fixnum start-y size slices-number))
-  (let* ((wide-stripe-height (floor (/ size slices-number)))
-         (thin-stripe-width  (- size (* wide-stripe-height slices-number)))
-         (results            (make-array (+ slices-number 1)
+  (setf slices-number
+        (min size slices-number))
+  (let* ((wide-stripe-height (max 1 (floor (/ size slices-number))))
+         (thin-stripe-width  (- size (the fixnum (* wide-stripe-height slices-number))))
+         (results-length     (+ slices-number 1))
+         (results            (make-array results-length
                                          :initial-element start-y
                                          :element-type 'fixnum
                                          :adjustable nil)))
     (declare (fixnum wide-stripe-height thin-stripe-width))
     (declare ((simple-array fixnum) results))
-    (loop for i from 0 below (length results)
-          for offset from 0 by wide-stripe-height do
-      (incf (elt results i)
-            offset))
-    (setf (a:last-elt results)
-          (+ (the fixnum (a:last-elt results))
-             (the fixnum thin-stripe-width)))
+    (declare (dynamic-extent wide-stripe-height results-length))
+    (incf (a:last-elt results)
+          (the fixnum thin-stripe-width))
+    (loop for i fixnum from 0 below results-length
+          for offset fixnum  from 0 by wide-stripe-height
+          do (incf (elt results i)
+                   offset))
     results))
 
 (defparameter *pool-workers-number* 1)
