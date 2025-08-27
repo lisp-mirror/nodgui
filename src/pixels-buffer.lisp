@@ -1855,22 +1855,40 @@
   (declare (fixnum start-y size slices-number))
   (setf slices-number
         (min size slices-number))
-  (let* ((wide-stripe-height (max 1 (floor (/ size slices-number))))
-         (thin-stripe-width  (- size (the fixnum (* wide-stripe-height slices-number))))
-         (results-length     (+ slices-number 1))
-         (results            (make-array results-length
-                                         :initial-element start-y
-                                         :element-type 'fixnum
-                                         :adjustable nil)))
-    (declare (fixnum wide-stripe-height thin-stripe-width))
+  (let* ((wide-stripe-height   (max 1 (floor (/ size slices-number))))
+         (thin-stripe-width    (- size (the fixnum (* wide-stripe-height
+                                                      slices-number))))
+         (results-length       (+ slices-number 1))
+         (distribute-max-index (- results-length 2))
+         (distribute-min-index (1- results-length))
+         (results              (make-array results-length
+                                           :initial-element start-y
+                                           :element-type 'fixnum
+                                           :adjustable nil)))
+    (declare (fixnum wide-stripe-height
+                     thin-stripe-width
+                     results-length
+                     distribute-max-index
+                     distribute-min-index))
     (declare ((simple-array fixnum) results))
-    (declare (dynamic-extent wide-stripe-height results-length))
-    (incf (a:last-elt results)
+    (declare (dynamic-extent wide-stripe-height
+                             thin-stripe-width
+                             results-length
+                             distribute-max-index
+                             distribute-min-index))
+    (incf (the fixnum (aref results slices-number))
           (the fixnum thin-stripe-width))
     (loop for i fixnum from 0 below results-length
           for offset fixnum  from 0 by wide-stripe-height
           do (incf (elt results i)
                    offset))
+    (loop for ct fixnum from 0
+          for i from 1 below thin-stripe-width
+          do
+             (let ((start-distribute (rem i distribute-max-index)))
+               (declare (fixnum start-distribute))
+               (loop for j from start-distribute below distribute-min-index
+                     do (incf (elt results j)))))
     results))
 
 (defparameter *pool-workers-number* 1)

@@ -1653,10 +1653,11 @@
          (context-buffer   nil)
          (context-width    nil)
          (context-height   nil)
+         (texture-size     4096)
          (polygon-vertices (px:make-polygon-vertex-array (list (vec2:vec2 0 0)
-                                                               (vec2:vec2 4096 0)
-                                                               (vec2:vec2 4096 4096)
-                                                               (vec2:vec2 0 4096))))
+                                                               (vec2:vec2 texture-size 0)
+                                                               (vec2:vec2 texture-size texture-size)
+                                                               (vec2:vec2 0 texture-size))))
          (polygon-tex-coordinates (px:make-polygon-texture-coordinates-array
                                    (list (vec2:vec2 0 0)
                                          (vec2:vec2 1 0)
@@ -1679,7 +1680,7 @@
                                          (lambda (dt)
                                            (declare (ignore dt))
                                            (time
-                                           (px:draw-multi-texture-mapped-polygon context-buffer
+                                            (px:draw-multi-texture-mapped-polygon context-buffer
                                                                                  context-width
                                                                                  context-height
                                                                                  polygon-vertices
@@ -1701,8 +1702,8 @@
                                            :non-blocking-queue-maximum-size 16
                                            :event-loop-type :polling
                                            :classic-frame   sdl-frame
-                                           :buffer-width    4096
-                                           :buffer-height   4096))
+                                           :buffer-width    texture-size
+                                           :buffer-height   texture-size))
           (setf context-buffer (px:buffer sdl-context))
           (setf context-width  (ctx:width  sdl-context))
           (setf context-height (ctx:height sdl-context))
