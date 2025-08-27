@@ -1648,8 +1648,8 @@
   #.nodgui.config:default-optimization
   (declare ((simple-array fixnum) aabb))
   (declare (fixnum buffer-height))
-  (if (or (< (iaabb2-max-y aabb) 0)
-          (> (iaabb2-min-y aabb) buffer-height))
+  (if (or (<= (iaabb2-max-y aabb) 0)
+          (>= (iaabb2-min-y aabb) buffer-height))
       nil
       (progn
         (when (< (iaabb2-min-y aabb) 0)
