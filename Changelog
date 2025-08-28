@@ -1,3 +1,33 @@
+2025-08-27 cage
+
+	* src/demo-pixels-buffer.lisp,
+	* src/pixels-buffer.lisp:
+
+	- [pixel buffer] modified '%subdivide' to distribute strips size more
+	evenly.
+	- [pixel buffer] fixed 'clip-y-polygon-aabb', consider invalid
+	polygons that touch screen's top and bottom borders.
+
+2025-08-26 cage
+
+	* src/pixels-buffer.lisp:
+
+	- [pixel buffer] ensured that the number of silces is no bigger than
+	the size of the polygon's height.
+	- [pixel buffer] ensured that at least a worker is allocated in the
+	thread pool.
+	- [pixel buffer] prevented crash of '%subdivide' when a texture mapped
+	polygon is placed totally above or below the buffer.
+
+2025-08-25 cage
+
+	* Changelog,
+	* NEWS.org,
+	* game/entities.lisp,
+	* nodgui.asd:
+
+	- removed duplicated declaration.
+
 2025-08-23 cage
 
 	* src/molecule-viewer.lisp,
@@ -8,9 +38,9 @@
 	* src/wish-communication.lisp:
 
 	- [pixel buffer] removed initialization of thread pool on the
-	  toplevel.
-	  SBCL is unable to save the system image when more
-	  than one thread is running.
+	toplevel.
+	SBCL is unable to save the system image when more than one thread is
+	running.
 	- removed debug code.
 	- fixed package name.
 
