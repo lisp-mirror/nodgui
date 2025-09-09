@@ -236,6 +236,14 @@
               (member submodifier '("display" "any") :test #'string-equal)))
   (format nil "~@d~@[~( ~a~)~] ~(~a~)" count submodifier units))
 
+(defun make-index-modifier-to (units &optional (submodifier nil))
+  (assert (or (null submodifier)
+              (member submodifier '("display" "any") :test #'string-equal)))
+  (assert (member units
+                  '("linestart" "lineend" "wordstart" "wordend")
+                  :test #'string-equal))
+  (format nil "~@[~(~a~) ~]~(~a~)" submodifier units))
+
 (defun make-indices (indices &rest modifiers)
   (apply #'join-with-strings (append (list indices) modifiers) (list " ")))
 
@@ -257,6 +265,8 @@
        1)
       ((string-equal token "-")
        -1)
+      ((string-equal token "to")
+       :to)
       (t
        nil))))
 
@@ -347,10 +357,14 @@
   (p-coordinate-number (list :dummy (first modifier-specification))))
 
 (defun p-modifier (modifier-specification sign)
-  (let ((offset      (* sign (p-coordinates-offset modifier-specification)))
-        (units       (second modifier-specification))
-        (submodifier (third modifier-specification)))
-    (make-index-modifier offset units submodifier)))
+  (if (eq sign :to)
+      (let ((units       (first modifier-specification))
+            (submodifier (second modifier-specification)))
+        (make-index-modifier-to units submodifier))
+      (let ((offset      (* sign (p-coordinates-offset modifier-specification)))
+            (units       (second modifier-specification))
+            (submodifier (third modifier-specification)))
+        (make-index-modifier offset units submodifier))))
 
 (defgeneric parse-indices (indices-specification))
 

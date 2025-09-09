@@ -41,7 +41,10 @@
       (parse '(+ :end 14 :chars)))
   (assert-equality #'string=
       "3.end -3 chars"
-      (parse '(- (:line 3 :char :end) 3 :chars)))
+                   (parse '(- (:line 3 :char :end) 3 :chars)))
+  (assert-equality #'string=
+                   "1.0 lineend"
+                   (nodgui:parse-indices '(to (:line 1 :char 0) :lineend)))
   (assert-condition error
       (parse '(+ (:line 3 :char 0) 14 :atoms)))
   (assert-condition error
