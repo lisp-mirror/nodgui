@@ -1,3 +1,17 @@
+2025-09-09 cage
+
+	* src/text.lisp,
+	* test/test-text-indices.lisp:
+
+	- fixed text index parsing for modifiers like: 'lineend'.
+
+2025-08-28 cage
+
+	* Changelog,
+	* NEWS.org:
+
+	- updated NEWS and Changelog files.
+
 2025-08-27 cage
 
 	* src/demo-pixels-buffer.lisp,
