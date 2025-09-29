@@ -816,7 +816,7 @@ The function THEME-NAMES will return both the default and the custom themes.")
     (format-wish "senddatastring [focus]")))
 
 (defun widget-with-focus ()
-  (focus nil))
+  (widget-path->widget (focus nil)))
 
 (defun force-focus (widget)
   (format-wish "focus -force ~a" (widget-path widget))
