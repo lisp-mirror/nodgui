@@ -805,9 +805,18 @@ The function THEME-NAMES will return both the default and the custom themes.")
                                (mapcar (lambda (a) (theme-name a)) custom))
                        :test #'string=))))
 
-(defun focus (widget)
-  (format-wish "focus ~a" (widget-path widget))
-  widget)
+(defgeneric focus (object))
+
+(defmethod focus ((object widget))
+  (format-wish "focus ~a" (widget-path object))
+  object)
+
+(defmethod focus ((object null))
+  (with-read-data ()
+    (format-wish "senddatastring [focus]")))
+
+(defun widget-with-focus ()
+  (focus nil))
 
 (defun force-focus (widget)
   (format-wish "focus -force ~a" (widget-path widget))

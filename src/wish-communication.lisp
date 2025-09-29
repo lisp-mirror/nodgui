@@ -83,6 +83,8 @@
   (read-data-lock           (make-lock "read-data"))
   (flush-lock               (make-lock "flush"))
   (read-lock                (make-lock "read"))
+  (widgets-set-lock         (make-lock "widget-set"))
+  (widgets-set               '())
   (accept-garbage-for-next-event  nil)
   (discard-send-wish        nil)
   ;; This is should be a function that takes a thunk, and calls it in
@@ -125,6 +127,20 @@
 (defun pop-mainloop-coordination-data ()
   (setf (wish-main-loop-coordination-data *wish*)
         (pop (wish-saved-main-loop-coordination-data *wish*))))
+
+(defun widget-path->widget (widget-path)
+  (with-lock-held ((wish-widgets-set-lock *wish*))
+    (cdr (assoc widget-path
+                (wish-widgets-set *wish*)
+                :test #'string=))))
+
+(defun widget-add-to-set (widget)
+  (with-lock-held ((wish-widgets-set-lock *wish*))
+    (setf (wish-widgets-set *wish*)
+          (acons (%widget-path widget)
+                 widget
+                 (wish-widgets-set *wish*)))
+    widget))
 
 ;;; global connection information
 
@@ -808,6 +824,7 @@ error-strings) are ignored."
                                                              *default-toplevel-name*)))
            (*wish*                   (make-nodgui-connection)))
       (nodgui.pixels-canvas:maybe-initialize-thread-pool)
+      (initialize-root-toplevel-widget)
       (if (null (wish-stream *wish*))
           (start-wish-pipe stream)
           (restart-case (nodgui-error "There is already an inferior wish.")

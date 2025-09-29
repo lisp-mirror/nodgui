@@ -88,8 +88,14 @@ giving the path of tkobjects."
   (when grid
     (apply #'grid w grid)))
 
-(defvar *tk* (make-instance 'widget :name "." :path ".")
+(defparameter *tk* nil
   "Dummy widget to access the tk root object")
+
+(defun initialize-root-toplevel-widget ()
+  (setf *tk*
+        (make-instance 'widget :name "." :path "."))
+  (widget-add-to-set *tk*)
+  *tk*)
 
 (defun root-toplevel ()
   *tk*)
@@ -116,7 +122,8 @@ giving the path of tkobjects."
       (prog1
           (setf (slot-value widget 'widget-path)
                 (create-path (master widget) (name widget)))
-        (create widget))))
+        (create widget)
+        (widget-add-to-set widget))))
 
 (defgeneric create (w))
 

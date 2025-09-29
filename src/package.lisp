@@ -1807,6 +1807,7 @@
            #:root-toplevel-title
            #:set-root-toplevel-title
            #:focus
+           #:widget-with-focus
            #:+tk-default-font+
            #:+tk-text-font+
            #:+tk-fixed-font+
