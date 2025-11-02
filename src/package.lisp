@@ -2086,6 +2086,12 @@
            #:wm-title
            #:wm-state
            #:with-hourglass
+           #:+widget-default+
+           #:+startup-file+
+           #:+user-default+
+           #:+interactive+
+           #:option-clear
+           #:option-add
            #:notebook-index
            #:notebook-add
            #:notebook-tab

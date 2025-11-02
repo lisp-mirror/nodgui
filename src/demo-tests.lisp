@@ -233,6 +233,9 @@
                                                    :text "Non local mainloop exit"
                                                    :command
                                                    (lambda () (demo-non-local-exit-mainloop))))
+           (demo-option-widget      (make-instance 'button
+                                                   :text "Widgets options"
+                                                   :command (lambda () (demo-options))))
            (b-quit                  (make-instance 'button
                                                    :text    "Quit lisp 🙂"
                                                    :command (lambda ()
@@ -295,7 +298,8 @@
       (grid demo-selfcheck-entry     17 0 :sticky :nswe)
       (grid demo-non-local-exit      17 1 :sticky :nswe)
       (grid demo-classic-frame-background 17 2 :sticky :nswe)
-      (grid b-quit                   18 0 :sticky :nswe :columnspan 3)
+      (grid demo-option-widget 18 0 :sticky :nswe)
+      (grid b-quit             19 0 :sticky :nswe :columnspan 3)
       (grid-columnconfigure (root-toplevel) :all :weight 1)
       (grid-rowconfigure    (root-toplevel) :all :weight 1))))
 
@@ -2029,3 +2033,13 @@
                                           (return-from exit nil)))
                                       (clipboard-append "Never reached"))))))
       (grid-implicit (list button)))))
+
+(defun demo-options (&key theme)
+  (with-nodgui (:theme theme)
+    (let ((label (make-instance 'label
+                                :text "In this themo the listbox's fonts that appears at the bottom of the combobox has been customized changing the option: \"*TCombobox*Listbox.font\""))
+          (combobox-1 (make-instance 'combobox
+                                     :values '(item1 item2 item3))))
+      (grid-implicit (list label))
+      (grid-implicit (list combobox-1))
+      (option-add "*TCombobox*Listbox.font" "Sans 24"))))

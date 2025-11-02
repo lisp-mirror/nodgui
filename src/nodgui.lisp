@@ -972,3 +972,30 @@ The function THEME-NAMES will return both the default and the custom themes.")
                  `(when ,w
                     (configure ,w :cursor "")))
                widgets)))
+
+(defun option-clear ()
+  (send-wish "option clear"))
+
+(defmacro gen-option-constant (option-value)
+  `(a:define-constant ,(format-fn-symbol t
+                                         "+~a+"
+                                         (camel-case->snail-case option-value))
+     ,option-value
+     :test #'string=))
+
+(gen-option-constant "widgetDefault")
+
+(gen-option-constant "startupFile")
+
+(gen-option-constant "userDefault")
+
+(gen-option-constant "interactive")
+
+(defun option-add (pattern value &optional (priority +interactive+))
+  (assert (member priority
+                  (list +widget-default+
+                        +startup-file+
+                        +user-default+
+                        +interactive+)
+                  :test #'string=))
+  (format-wish "option add {~a} {~a} ~a" pattern value priority))
