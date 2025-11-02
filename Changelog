@@ -1,3 +1,31 @@
+2025-11-02 cage
+
+	* src/demo-tests.lisp,
+	* src/nodgui.lisp,
+	* src/package.lisp:
+
+	- added functions 'option-clear' and 'option-add', to manipulate the
+	database of the widgets options.
+
+2025-09-29 cage
+
+	* src/nodgui.lisp,
+	* src/package.lisp,
+	* src/widget.lisp,
+	* src/wish-communication.lisp:
+
+	- added 'widget-to-focus' function (and all related internal
+	function).
+	- ensured 'widget-with-focus' returns a widget object, if possible.
+
+2025-09-10 cage
+
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd:
+
+	- increased version number.
+
 2025-09-09 cage
 
 	* src/text.lisp,
