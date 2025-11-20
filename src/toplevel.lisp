@@ -43,7 +43,8 @@
   "toplevel"
   (when (title widget)
     (wm-title widget (title widget)))
-  (unless (protocol-destroy widget)
+  (when (not (or (eq (protocol-destroy widget) :none)
+                 (protocol-destroy widget)))
     (format-wish "wm protocol ~a WM_DELETE_WINDOW {wm withdraw ~a}" (widget-path widget) (widget-path widget))))
 
 (defun make-toplevel (master)
