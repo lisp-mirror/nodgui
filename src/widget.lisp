@@ -93,7 +93,7 @@ giving the path of tkobjects."
 
 (defun initialize-root-toplevel-widget ()
   (setf *tk*
-        (make-instance 'toplevel :name "." :path "." :protocol-destroy :none))
+        (make-instance 'toplevel :name "." :path "." :on-close :none))
   (widget-add-to-set *tk*)
   *tk*)
 
