@@ -1870,6 +1870,7 @@
            #:set-selection
            #:set-cursor-index
            #:clear-selection
+           #:insert-at-cursor
            #:input-box
            #:insert-object
            #:interior

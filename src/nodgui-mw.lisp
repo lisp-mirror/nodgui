@@ -2305,8 +2305,7 @@ will shift the selected item up o down respectively."))
                  :master  master
                  :text    text
                  :command (lambda ()
-                            (setf (text output-entry)
-                                  (strcat (text output-entry) key)))))
+                            (insert-at-cursor output-entry text))))
 
 (defun virtual-keyboard-row (keys output-entry master
                              &key

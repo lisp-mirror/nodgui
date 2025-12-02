@@ -79,3 +79,7 @@
 (defmethod clear-selection ((object entry))
   (format-wish (tclize  `(,(widget-path object) " selection clear ")))
   object)
+
+(defmethod insert-at-cursor ((object entry) text)
+  (format-wish (tclize  `(,(widget-path object) " insert insert " , text)))
+  object)
