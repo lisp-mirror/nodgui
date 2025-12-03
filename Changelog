@@ -1,11 +1,36 @@
+2025-12-02 cage
+
+	* src/entry.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- [MW][virtual keyboard] allowed insert character where the cursor is;
+	- added 'insert-at-cursor'.
+
+2025-11-20 cage
+
+	* src/toplevel.lisp,
+	* src/widget.lisp,
+	* src/wish-communication.lisp:
+
+	- changed the root toplevel from an instance of 'widget' to an
+	instance of 'toplevel' class.
+	- fixed slot initarg for root toplevel instance.
+	- initialize root toplevel after the pipe to wish is ready.
+
 2025-11-02 cage
 
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
 	* src/demo-tests.lisp,
 	* src/nodgui.lisp,
 	* src/package.lisp:
 
 	- added functions 'option-clear' and 'option-add', to manipulate the
 	database of the widgets options.
+	- increased version number;
+	- updated Changelog and NEWS files.
 
 2025-09-29 cage
 

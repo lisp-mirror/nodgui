@@ -1,3 +1,7 @@
+* 2025-12-03 0.7.6.1
+
+This version improve usability of the virtual keyboard.
+
 * 2025-11-02 0.7.6.0
 - [new-feature]
   - added "option-clear" and "option-add" to manipulate database of widgets options.
