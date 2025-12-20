@@ -2457,10 +2457,16 @@ will shift the selected item up o down respectively."))
                                              (lambda ()
                                                (let ((text-preview (text preview)))
                                                  (when (not (string-empty-p text-preview))
-                                                   (setf (text preview)
-                                                         (subseq text-preview
-                                                                 0
-                                                                 (1- (length text-preview))))))))))
+                                                   (let ((cursor-index (cursor-index preview)))
+                                                     (when (> cursor-index 0)
+                                                       (setf (text preview)
+                                                             (strcat (subseq text-preview
+                                                                             0
+                                                                             (1- cursor-index))
+                                                                     (subseq text-preview
+                                                                             cursor-index)))
+                                                       (set-cursor-index preview
+                                                                         (1- cursor-index))))))))))
         (grid preview 0 0 :sticky :news :columnspan 4)
         (grid shift-button 1 0 :sticky :news)
         (grid close-button 1 1 :sticky :news)
