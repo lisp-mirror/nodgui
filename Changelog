@@ -1,3 +1,24 @@
+2025-12-20 cage
+
+	* src/entry.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- [virtual keyboard] fixed backspace (deletes the character before the
+	cursor, not the character at the end of the string).
+	- allowed inserting a space in an entry using 'insert-at-cursor';
+	- [virtual keyboard] added 'make-space-virtual-key-row';
+	- [virtual keyboard] fixed space key;
+	- [virtual keyboard] fixed labels of keys.
+
+2025-12-03 cage
+
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd:
+
+	- increased version number.
+
 2025-12-02 cage
 
 	* src/entry.lisp,
