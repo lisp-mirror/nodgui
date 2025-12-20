@@ -81,5 +81,5 @@
   object)
 
 (defmethod insert-at-cursor ((object entry) text)
-  (format-wish (tclize  `(,(widget-path object) " insert insert " , text)))
+  (format-wish (tclize  `(,(widget-path object) " insert insert " {+ ,text })))
   object)

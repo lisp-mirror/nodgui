@@ -2303,6 +2303,7 @@
    #:right-button-image
    #:label
    #:near-values-generator
+   #:make-space-virtual-key-row
    #:make-virtual-keyboard-key
    #:virtual-keyboard-row
    #:make-virtual-keyboard-rows

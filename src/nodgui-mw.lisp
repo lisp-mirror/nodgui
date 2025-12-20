@@ -2303,7 +2303,7 @@ will shift the selected item up o down respectively."))
 (defun make-virtual-keyboard-key (key output-entry master &key (text key))
   (make-instance 'button
                  :master  master
-                 :text    text
+                 :text    key
                  :command (lambda ()
                             (insert-at-cursor output-entry text))))
 
@@ -2330,17 +2330,17 @@ will shift the selected item up o down respectively."))
         collect
         (virtual-keyboard-row row output-entry master)))
 
+(defun make-space-virtual-key-row (output-entry master columnspan)
+  (list (make-virtual-key-row
+         :widgets (list (make-virtual-keyboard-key "Space"
+                                                   output-entry
+                                                   master
+                                                   :text " "))
+         :columnspan columnspan)))
+
 (defun virtual-keyboard-default-layout (output-entry master master-shift)
-  (let ((space-row (list (virtual-keyboard-row " "
-                                               output-entry
-                                               master
-                                               :columnspan 11
-                                               :texts '("Space"))))
-        (space-row-shift (list (virtual-keyboard-row " "
-                                                     output-entry
-                                                     master-shift
-                                                     :columnspan 11
-                                                     :texts '("Space")))))
+  (let ((space-row (make-space-virtual-key-row output-entry master 11))
+        (space-row-shift (make-space-virtual-key-row output-entry master-shift 11)))
     (values (append (make-virtual-keyboard-rows output-entry
                                                 master
                                                 "\\1234567890'ì"
