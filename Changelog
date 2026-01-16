@@ -1,15 +1,29 @@
+2026-01-16 cage
+
+	* src/demo-tests.lisp,
+	* src/vec2.lisp,
+	* src/wish-communication.lisp:
+
+	- added missing conditional reader macros to allow nodgui-lite to
+	works.
+
 2025-12-20 cage
 
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
 	* src/entry.lisp,
 	* src/nodgui-mw.lisp,
 	* src/package.lisp:
 
 	- [virtual keyboard] fixed backspace (deletes the character before the
 	cursor, not the character at the end of the string).
-	- allowed inserting a space in an entry using 'insert-at-cursor';
+	- allowed insterting a spce in an entry using 'insert-at-cursor';
 	- [virtual keyboard] added 'make-space-virtual-key-row';
 	- [virtual keyboard] fixed space key;
 	- [virtual keyboard] fixed labels of keys.
+	- increased version number;
+	- updated news and changelog.
 
 2025-12-03 cage
 
