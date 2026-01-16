@@ -823,7 +823,7 @@ error-strings) are ignored."
            (*wish-args*              (append-wish-args (list +arg-toplevel-name+
                                                              *default-toplevel-name*)))
            (*wish*                   (make-nodgui-connection)))
-      (nodgui.pixels-canvas:maybe-initialize-thread-pool)
+      #-nodgui-lite (nodgui.pixels-canvas:maybe-initialize-thread-pool)
       (if (null (wish-stream *wish*))
           (start-wish-pipe stream)
           (restart-case (nodgui-error "There is already an inferior wish.")

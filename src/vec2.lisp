@@ -304,7 +304,7 @@
   (declare (list control-points))
   (declare (fixnum degree))
   "2d interpolation
-   Parameter: a lust of `vec2` representing the control points of the spline (the interpolation will pass through this points with a smooth trajectory
+   Parameter: a list of `vec2` representing the control points of the spline (the interpolation will pass through this points with a smooth trajectory
    Returns three values:
    - an interpolator function
    - the start value for interpolator

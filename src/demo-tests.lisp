@@ -219,6 +219,7 @@
                                                    :text "Custom theme"
                                                    :command (lambda ()
                                                               (demo-custom-theme))))
+           #-nodgui-lite
            (demo-molecule-viewer    (make-instance 'button
                                                    :text "Molecule viewer (requires glut library)"
                                                    :command
