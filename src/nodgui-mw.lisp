@@ -1045,7 +1045,15 @@
     :accessor current-year-entry)
    (all-days-buttons
     :initform '()
-    :accessor all-days-buttons))
+    :accessor all-days-buttons)
+   (today-button-background
+    :initarg :today-button-background
+    :initform (make-tk-color :red)
+    :accessor today-button-background)
+   (today-button-foreground
+    :initarg :today-button-foreground
+    :initform (make-tk-color :black)
+    :accessor today-button-foreground))
   (:documentation "A widget to choose a date"))
 
 (defun time-as-list (univ-time)
@@ -1111,7 +1119,9 @@
                    (current-month-entry current-month-entry)
                    (all-days-buttons    all-days-buttons)
                    (universal-timestamp universal-timestamp)
-                   (on-pressed-cb       on-pressed-cb)) date-object
+                   (on-pressed-cb       on-pressed-cb)
+                   (today-button-background today-button-background)
+                   (today-button-foreground today-button-foreground)) date-object
     (map nil #'destroy all-days-buttons)
     (with-time-as-list (decoded-now (get-universal-time))
       (with-time-as-list (decoded-current universal-timestamp)
@@ -1141,11 +1151,16 @@
                                                        7)))
                                 (col         (- (+ start-dow dom)
                                                 (* 7 row))))
-                           (when (= (time-date-of decoded-now)
-                                    (time-date-of decoded-probe))
-                             (let ((style  (make-style corner-style (:extend "TButton")
-                                                       :font
-                                                       (font-create "" :underline t))))
+                           (when (and (= (time-date-of decoded-now)
+                                         (time-date-of decoded-probe))
+                                      (= (time-year-of decoded-now)
+                                         (time-year-of decoded-probe))
+                                      (= (time-month-of decoded-now)
+                                         (time-month-of decoded-probe)))
+                             (let ((style  (make-style corner-style
+                                               (:extend "TButton")
+                                               :background today-button-background
+                                               :foreground today-button-foreground)))
                                (style-configure dom-button style)
                                (apply-style style)))
                            (grid dom-button (+ row 3) col :sticky :news)

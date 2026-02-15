@@ -2281,6 +2281,8 @@
    #:date-picker
    #:current-month-entry
    #:current-year-entry
+   #:today-button-background
+   #:today-button-foreground
    #:on-pressed-cb
    #:universal-timestamp
    #:password-entry
