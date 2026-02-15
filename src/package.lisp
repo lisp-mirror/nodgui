@@ -2279,6 +2279,8 @@
    #:text-input-dialog
    #:listbox-dialog
    #:date-picker
+   #:current-month-entry
+   #:current-year-entry
    #:on-pressed-cb
    #:universal-timestamp
    #:password-entry
