@@ -1143,8 +1143,11 @@
                                                 (* 7 row))))
                            (when (= (time-date-of decoded-now)
                                     (time-date-of decoded-probe))
-                             (setf (text dom-button) (wrap-with (text dom-button)
-                                                                +date-today-dom-wrapper+)))
+                             (let ((style  (make-style corner-style (:extend "TButton")
+                                                       :font
+                                                       (font-create "" :underline t))))
+                               (style-configure dom-button style)
+                               (apply-style style)))
                            (grid dom-button (+ row 3) col :sticky :news)
                            (push dom-button all-days-buttons))))))
                  all-days))))))
