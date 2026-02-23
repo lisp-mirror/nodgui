@@ -1056,7 +1056,7 @@
     :accessor today-button-foreground)
    (before-adding-to-gui-hook
     :initarg :before-adding-to-gui-hook
-    :initform (lambda (button row column date)
+    :initform (lambda (button row column date-time-list)
                 (declare (ignore row column date-time-list))
                 button)
     :accessor before-adding-to-gui-hook))
