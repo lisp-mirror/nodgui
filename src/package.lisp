@@ -2279,6 +2279,7 @@
    #:text-input-dialog
    #:listbox-dialog
    #:date-picker
+   #:before-adding-to-gui-hook
    #:current-month-entry
    #:current-year-entry
    #:today-button-background

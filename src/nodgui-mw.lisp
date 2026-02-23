@@ -1053,7 +1053,13 @@
    (today-button-foreground
     :initarg :today-button-foreground
     :initform (make-tk-color :black)
-    :accessor today-button-foreground))
+    :accessor today-button-foreground)
+   (before-adding-to-gui-hook
+    :initarg :before-adding-to-gui-hook
+    :initform (lambda (button row column date)
+                (declare (ignore row column date-time-list))
+                button)
+    :accessor before-adding-to-gui-hook))
   (:documentation "A widget to choose a date"))
 
 (defun time-as-list (univ-time)
@@ -1137,7 +1143,8 @@
                    (with-time-as-list (decoded-probe (date-build-universal-time* date-object
                                                                                  (1+ dom)))
                      (let ((current-month (time-month-of decoded-current)))
-                       (when (= current-month (time-month-of decoded-probe))
+                       (when (= current-month
+                                (time-month-of decoded-probe))
                          (let* ((dom-button (make-instance 'button
                                                            :command
                                                            (lambda ()
@@ -1149,7 +1156,7 @@
                                 (row         (floor (/ (+ start-dow
                                                           dom)
                                                        7)))
-                                (col         (- (+ start-dow dom)
+                                (column         (- (+ start-dow dom)
                                                 (* 7 row))))
                            (when (and (= (time-date-of decoded-now)
                                          (time-date-of decoded-probe))
@@ -1163,7 +1170,13 @@
                                                :foreground today-button-foreground)))
                                (style-configure dom-button style)
                                (apply-style style)))
-                           (grid dom-button (+ row 3) col :sticky :news)
+                           (setf dom-button
+                                 (funcall (before-adding-to-gui-hook date-object)
+                                          dom-button
+                                          row
+                                          column
+                                          decoded-probe))
+                           (grid dom-button (+ row 3) column :sticky :news)
                            (push dom-button all-days-buttons))))))
                  all-days))))))
     date-object)
