@@ -14,6 +14,9 @@
 
 (named-readtables:in-readtable nodgui.syntax:nodgui-syntax)
 
+(defun generate-style-name ()
+  (make-symbol (string-upcase (create-name))))
+
 (defun serialize->layout (list)
   (with-output-to-string (stream)
     (labels ((%atom->layout (atom)
@@ -269,12 +272,16 @@
 
 (defmacro make-style (name (&key (extend nil) (action nil)) &rest options-pairs)
   `(make-instance 'style
-                  :name    ,(symbol->stylename name)
+                  :name    ,(cond
+                             ((symbolp name)
+                              `(symbol->stylename ',name))
+                             (t
+                              `(symbol->stylename ,name)))
                   :parent  ,(cond
                               ((null extend)
                                nil)
                               ((symbolp extend)
-                               (symbol->stylename extend))
+                               `(symbol->stylename ',extend))
                               (t
                                (to-s extend)))
                   :action  ,action

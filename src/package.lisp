@@ -2184,6 +2184,7 @@
            #:+tseparator+
            #:+tsizegrip+
            #:+treeview+
+           #:generate-style-name
            #:style
            #:apply-style
            #:make-style

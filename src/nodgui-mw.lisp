@@ -1157,25 +1157,25 @@
                                                           dom)
                                                        7)))
                                 (column         (- (+ start-dow dom)
-                                                (* 7 row))))
-                           (when (and (= (time-date-of decoded-now)
-                                         (time-date-of decoded-probe))
-                                      (= (time-year-of decoded-now)
-                                         (time-year-of decoded-probe))
-                                      (= (time-month-of decoded-now)
-                                         (time-month-of decoded-probe)))
-                             (let ((style  (make-style corner-style
-                                               (:extend "TButton")
-                                               :background today-button-background
-                                               :foreground today-button-foreground)))
-                               (style-configure dom-button style)
-                               (apply-style style)))
+                                                   (* 7 row))))
                            (setf dom-button
                                  (funcall (before-adding-to-gui-hook date-object)
                                           dom-button
                                           row
                                           column
                                           decoded-probe))
+                           (when (and (= (time-date-of decoded-now)
+                                         (time-date-of decoded-probe))
+                                      (= (time-year-of decoded-now)
+                                         (time-year-of decoded-probe))
+                                      (= (time-month-of decoded-now)
+                                         (time-month-of decoded-probe)))
+                             (let* ((style  (make-style (generate-style-name)
+                                                (:extend "TButton")
+                                                :background today-button-background
+                                                :foreground today-button-foreground)))
+                               (style-configure dom-button style)
+                               (apply-style style)))
                            (grid dom-button (+ row 3) column :sticky :news)
                            (push dom-button all-days-buttons))))))
                  all-days))))))
