@@ -2388,6 +2388,20 @@ will shift the selected item up o down respectively."))
                     space-row-shift)
             t)))
 
+(defun virtual-keyboard-numerical-layout (output-entry master master-shift)
+  (values (make-virtual-keyboard-rows output-entry
+                                      master
+                                      "123"
+                                      "456"
+                                      "789"
+                                      ":0.")
+          (make-virtual-keyboard-rows output-entry
+                                      master-shift
+                                      "+-*"
+                                      "/^√"
+                                      "()="
+                                      ".%,")))
+
 (defclass virtual-keyboard (frame)
   ((output
     :initform nil

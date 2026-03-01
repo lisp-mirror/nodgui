@@ -2314,6 +2314,7 @@
    #:virtual-keyboard-row
    #:make-virtual-keyboard-rows
    #:virtual-keyboard-default-layout
+   #:virtual-keyboard-numerical-layout
    #:virtual-keyboard
    #:output
    #:preview
