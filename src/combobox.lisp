@@ -36,4 +36,4 @@
 (defgeneric (setf options) (value widget))
 
 (defmethod (setf options) (values (combobox combobox))
-  (format-wish "~a configure -values {~{ \{~a\}~}}" (widget-path combobox) values))
+  (format-wish "~a configure -values {~{ ~a~}}" (widget-path combobox) values))

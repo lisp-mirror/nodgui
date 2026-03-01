@@ -465,7 +465,10 @@
              (sc (make-instance 'scrolled-canvas :borderwidth 2 :relief :raised))
              (c  (canvas sc))
              (spinbox-label (make-instance 'label :text "A spinbox →"))
-             (spinbox (make-instance 'spinbox :from 0 :to 10 :increment 1))
+             (spinbox (make-instance 'spinbox
+                                     :from 0
+                                     :to 10
+                                     :increment 1))
              (lines nil)
              (mb (make-menubar))
              (mfile (make-menu mb "File" ))
@@ -757,11 +760,18 @@
   (with-nodgui (:theme theme)
     (let* ((c (make-instance 'combobox
                              :text "foo"
-                             :values '("bar" "baz" "foo bar")))
+                             :values '("bar" "baz" "foo bar" "foo$1" "[bar]")))
            (add (make-instance 'button
                                :text    "Add values"
                                :command (lambda ()
-                                          (setf (options c) (list 1 2 "asdf xx" "bb" "cc")))))
+                                          (setf (options c)
+                                                (list 1
+                                                      2
+                                                      "asdf xx"
+                                                      "bb"
+                                                      "cc"
+                                                      "e$f"
+                                                      "[baz]")))))
            (ok (make-instance 'button
                               :text "Ok"
                               :command (lambda ()
@@ -1918,15 +1928,15 @@
     (let ((spinbox (make-instance 'label-spinbox
                                   :relief :sunken
                                   :borderwidth 3
-                                  :label-text "Monday"
+                                  :label-text "[Monday]"
                                   :near-values-generator
-                                  (let ((dow '("Monday"
-                                               "Tuesday"
-                                               "Wednesday"
-                                               "Thursday"
-                                               "Friday"
-                                               "Saturday"
-                                               "Sunday")))
+                                  (let ((dow '("[Monday]"
+                                               "[Tuesday]"
+                                               "[Wednesday]"
+                                               "[Thursday]"
+                                               "[Friday]"
+                                               "[Saturday]"
+                                               "[Sunday]")))
                                     (lambda (value)
                                       (let* ((index (position value dow :test #'string=))
                                              (previous-index (if (< (1- index)
