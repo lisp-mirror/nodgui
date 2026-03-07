@@ -23,6 +23,7 @@
   exportselection
   justify
   height
+  placeholder
   postcommand
   state
   style

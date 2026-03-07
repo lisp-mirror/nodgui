@@ -365,10 +365,15 @@
       (xscrollincrement xscrollincrement "~@[ -xscrollincrement {~(~a~)}~]" xscrollincrement "")
       (yscrollcommand yscrollcommand "~@[ -yscrollcommand {~(~a~)}~]" yscrollcommand "")
       (yscrollincrement yscrollincrement "~@[ -yscrollincrement {~(~a~)}~]" yscrollincrement "")
-      (tile                                 ; name
-       tile                                 ; key
-       " -tile ~a"                          ; format control string
-       (lisp-bool->tcl tile)                ; code
+      (tile
+       tile
+       " -tile ~a"
+       (lisp-bool->tcl tile)
+       "")
+      (placeholder                          ; name
+       placeholder                          ; key
+       "~@[ -placeholder \"~a\"~]"          ; format control string
+       placeholder                          ; code
        "")))                                ; comment
 
   (defparameter *class-args* '())

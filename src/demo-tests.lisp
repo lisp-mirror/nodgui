@@ -759,7 +759,7 @@
   (setf *debug-tk* t)
   (with-nodgui (:theme theme)
     (let* ((c (make-instance 'combobox
-                             :text "foo"
+                             :placeholder "placeholder text"
                              :values '("bar" "baz" "foo bar" "foo$1" "[bar]")))
            (add (make-instance 'button
                                :text    "Add values"
