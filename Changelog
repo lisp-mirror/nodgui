@@ -1,11 +1,71 @@
+2026-03-15 cage
+
+	* src/pixels-buffer.lisp:
+
+	- fixed 'fill-rectangle', nothing was drawn if the rectangle had width
+	or height equal to 1 pixel
+	- also optimized a bit the drawing loop and removed a double drawing.
+
+2026-03-07 cage
+
+	* src/combobox.lisp,
+	* src/demo-tests.lisp,
+	* src/widget-helpers.lisp:
+
+	- added placeholder text in combobox widget.
+
+2026-03-01 cage
+
+	* src/combobox.lisp,
+	* src/demo-tests.lisp,
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/widget-helpers.lisp:
+
+	- added 'virtual-keyboard-numerical-layout'.
+	- removed double escaping of values in spinbox and combo widgets.
+
+2026-02-24 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp,
+	* src/styles.lisp:
+
+	- added 'generate-style-name' to prevent two styles with the same
+	name, overwriting each other.
+
+2026-02-23 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- added hook: 'before-adding-to-gui-hook' to expand the option for
+	styling day of month buttons.
+	- fixed arguments list.
+
+2026-02-15 cage
+
+	* src/nodgui-mw.lisp,
+	* src/package.lisp:
+
+	- exported symbols for entries in the date picker widget.
+	- [MW] improved appearance of current date in date picker widget.
+	- [MW] used colors to highlight current date in date picker widget.
+
 2026-01-16 cage
 
+	* Changelog,
+	* NEWS.org,
+	* nodgui-lite.asd,
+	* nodgui.asd,
 	* src/demo-tests.lisp,
 	* src/vec2.lisp,
 	* src/wish-communication.lisp:
 
 	- added missing conditional reader macros to allow nodgui-lite to
 	works.
+	- increased version number;
+	- updated changelog.
 
 2025-12-20 cage
 

@@ -1,3 +1,18 @@
+* 2026-03-15 0.7.6.4
+
+- [new features]
+  - added a virtual numeric keypad.
+- [improvements]
+  - added placeholder text in combobox widget.
+  - improved appearance of date picker widget and
+    added hook: to expand the option for styling day
+    of month buttons.
+- [bugfix]
+  - removed double escaping of values in spinbox and combo widgets;
+  - fixed 'fill-rectangle', nothing was drawn if the rectangle
+    had width or height equal to 1 pixel;
+  - fixed bug that generated corrupted output in spinbox and combo widgets.
+
 * 2025-12-20 0.7.6.3
 
 This version fixes a bugs that prevented nodgui-lite to works.
