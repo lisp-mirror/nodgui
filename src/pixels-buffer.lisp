@@ -494,34 +494,35 @@
                                        bottom-right-y))
            (width                  (to:f- clipped-bottom-right-x clipped-top-left-x))
            (height                 (to:f- clipped-bottom-right-y clipped-top-left-y))
-           (w/2                    (ash width  -1))
-           (h/2                    (ash height -1))
-           (color                  (pix:assemble-color r g b a)))
+           (color                 (pix:assemble-color r g b a)))
       (declare (dynamic-extent clipped-top-left-x
                                clipped-top-left-y
                                clipped-bottom-right-x
                                clipped-bottom-right-y
                                width
-                               height
-                               w/2
-                               h/2
-                               color))
+                               height))
       (declare (fixnum clipped-top-left-x
                        clipped-top-left-y
                        clipped-bottom-right-x
                        clipped-bottom-right-y
                        width
                        height
-                       w/2
-                       h/2
                        color))
-      (loop for column from clipped-top-left-x below (to:f+ clipped-top-left-x w/2) do
-        (loop for row from clipped-top-left-y below (to:f+ clipped-top-left-y h/2) do
-          (set-pixel@ buffer buffer-width column             row r g b a)
-          (set-pixel-color@ buffer buffer-width (to:f+ column w/2) row color)
-          (set-pixel-color@ buffer buffer-width column             (to:f+ row h/2) color)
-          (set-pixel-color@ buffer buffer-width column             (to:f+ row h/2) color)
-          (set-pixel-color@ buffer buffer-width (to:f+ column w/2) (to:f+ row h/2) color)))
+      (if (or (= width 1)
+              (= height 1))
+          (loop for column from clipped-top-left-x below (to:f+ clipped-top-left-x width) do
+            (loop for row from clipped-top-left-y below (to:f+ clipped-top-left-y height) do
+              (set-pixel-color@ buffer buffer-width column row color)))
+          (let ((w/2 (ash width  -1))
+                (h/2 (ash height -1)))
+            (declare (dynamic-extent w/2 h/2))
+            (declare (fixnum w/2 h/2))
+            (loop for column from clipped-top-left-x below (to:f+ clipped-top-left-x w/2) do
+              (loop for row from clipped-top-left-y below (to:f+ clipped-top-left-y h/2) do
+                (set-pixel-color@ buffer buffer-width column             row color)
+                (set-pixel-color@ buffer buffer-width (to:f+ column w/2) row color)
+                (set-pixel-color@ buffer buffer-width column             (to:f+ row h/2) color)
+                (set-pixel-color@ buffer buffer-width (to:f+ column w/2) (to:f+ row h/2) color)))))
       buffer)))
 
 (defun pixel-inside-buffer-p (width height x y)
