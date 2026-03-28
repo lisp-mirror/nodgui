@@ -1,10 +1,28 @@
+2026-03-28 cage
+
+	* src/combobox.lisp,
+	* src/demo-tests.lisp,
+	* src/widget-helpers.lisp:
+
+	- fixed bug in combo box: string that contained spaces was splitted in
+	multiple values.
+	for example
+	(setf (options combo) '("foo and bar"))
+	resulted in a combo with 3 values ("foo" "and" "bar"),
+	instead of a single value: "foo and bar".
+
 2026-03-15 cage
 
+	* Changelog,
+	* NEWS.org,
+	* nodgui.asd,
 	* src/pixels-buffer.lisp:
 
 	- fixed 'fill-rectangle', nothing was drawn if the rectangle had width
 	or height equal to 1 pixel
 	- also optimized a bit the drawing loop and removed a double drawing.
+	- increased version number;
+	- updated Changelog and news file.
 
 2026-03-07 cage
 

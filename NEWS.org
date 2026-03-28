@@ -1,3 +1,16 @@
+* 2026-03-28 0.7.6.5
+
+This version fixes a bug in combobox widget.
+
+When setting values of the combobox strings that contained spaces was splitted in multiple values.
+
+For example:
+#+BEGIN_SRC lisp
+  (setf (options combo) '("foo and bar"))
+#+END_SRC
+
+resulted in a combo with 3 values ("foo" "and" "bar"), instead of a single value: "foo and bar".
+
 * 2026-03-15 0.7.6.4
 
 - [new features]
