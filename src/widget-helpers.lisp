@@ -346,7 +346,7 @@
       (value value "~@[ -value {~(~a~)}~]" value "")
       (value-radio-button nil "~@[ -value {~(~a~)}~]" (radio-button-value widget)
        "value for the radio button group to take, when the button is selected")
-      (values values "~@[ -values {~{~a~^ ~}}~]" values "")
+      (values values "~@[ -values {~{\"~a\"~^ ~}}~]" values "")
       (variable
        variable
        "~@[ -variable {~(~a~)}~]"
