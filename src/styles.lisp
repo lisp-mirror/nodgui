@@ -56,7 +56,7 @@
 (p:defrule children (and children-option blanks "{")
   (:constant nil))
 
-(p:defrule blank (or #\space #\Newline #\Tab)
+(p:defrule blank (or #\Space #\Newline #\Tab)
   (:constant nil))
 
 (p:defrule blanks (* blank)
