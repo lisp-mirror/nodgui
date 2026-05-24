@@ -31,3 +31,7 @@
   text)
 
 (defwrapper progressbar (widget tkvariable) () "ttk::progressbar")
+
+(defmethod (setf value) (val (object progressbar))
+  (configure object :value val)
+  val)
