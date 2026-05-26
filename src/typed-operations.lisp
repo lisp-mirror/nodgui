@@ -132,6 +132,12 @@
   (declare (desired-type radians))
   (d* radians +radians->degree-factor+))
 
+(defun smoothstep (x)
+  (a:clamp (d- (d* 3f0 (dexpt x 2f0))
+               (d* 2f0 (dexpt x 3f0)))
+           0f0
+           1.0))
+
 ;;;; constants
 
 (a:define-constant +2pi+ (d (* 2.0f0 pi)) :test #'=)
