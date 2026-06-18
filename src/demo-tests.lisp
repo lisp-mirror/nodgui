@@ -450,7 +450,9 @@
              (f (make-instance 'frame :master bar))
              (l (make-instance 'label :master f :text "Test:"))
              (b3 (make-instance 'button :master f :text  "Ok." :command 'test-rotation))
-             (e (make-instance 'entry :master bar))
+             (e (make-instance 'entry
+                               :placeholder "placeholder text"
+                               :master bar))
              (b4 (make-instance 'button
                                 :master  bar
                                 :text    "get!"

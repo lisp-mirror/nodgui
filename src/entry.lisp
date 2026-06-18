@@ -30,6 +30,7 @@
   exportselection
   invalidcommand
   justify
+  placeholder
   show
   state
   style
