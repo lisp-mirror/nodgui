@@ -2440,7 +2440,7 @@ will shift the selected item up o down respectively."))
 
 (defmethod initialize-instance :after ((object virtual-keyboard)
                                        &key
-                                         (preview-placeholder-text "Click to enter input")
+                                         (preview-placeholder-text "Input preview")
                                          (close-button-text  "close")
                                          (cancel-button-text "cancel")
                                          (shift-button-text  "shift")
