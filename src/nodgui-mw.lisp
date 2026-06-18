@@ -2440,6 +2440,7 @@ will shift the selected item up o down respectively."))
 
 (defmethod initialize-instance :after ((object virtual-keyboard)
                                        &key
+                                         (preview-placeholder-text "Click to enter input")
                                          (close-button-text  "close")
                                          (cancel-button-text "cancel")
                                          (shift-button-text  "shift")
@@ -2458,6 +2459,7 @@ will shift the selected item up o down respectively."))
     (setf layout-frame       (make-instance 'frame :master object)
           layout-frame-shift (make-instance 'frame :master object))
     (setf preview (make-instance 'entry
+                                 :placeholder preview-placeholder-text
                                  :master object
                                  :text   (text output)))
     (flet ((add-frame-layout (frame-to-add frame-to-forget)
