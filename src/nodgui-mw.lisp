@@ -2045,6 +2045,12 @@ will shift the selected item up o down respectively."))
           (autocomplete-set-text-from-selected candidates-widget autocomplete-entry-widget)
           :exclusive t)
     (bind autocomplete-entry-widget
+          #$<KeyPress-Escape>$
+          (lambda (event)
+            (declare (ignore event))
+            (hide-candidates object))
+          :exclusive t)
+    (bind autocomplete-entry-widget
           #$<KeyPress>$
           (autocomplete-key-press-clsr candidates-widget
                                        autocomplete-entry-widget
