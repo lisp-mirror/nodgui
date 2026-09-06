@@ -99,7 +99,7 @@
                                                                     :use-horizontal-scrolling-p nil
                                                                     :read-only t)))
                                     (setf (nodgui:text text-widget)
-                                          (format nil "© cage Released under GPLv3+~%for information: https://www.autistici.org/interzona/nodgui.html"))
+                                          (format nil "© cage Released under GPLv3+~%for information: https://www.twistfold.it/"))
                                     (pack text-widget))))))))
 
 (defun clear-sdl-window (&key (context *pixel-buffer-context*) (force nil))

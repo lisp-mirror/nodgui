@@ -12,7 +12,7 @@
 
 ***  you need TK version 9 to run this code
 
-***   Version ~0.4.0~ broke the user API, see [[https://www.autistici.org/interzona/nodgui.html#orgb574adf][here]] for more information about how your code is affected and how to fix it.
+***   Version ~0.4.0~ broke the user API, see [[https://www.twistfold.it/nodgui.html#orgb574adf][here]] for more information about how your code is affected and how to fix it.
 
 ** Features
 
@@ -170,7 +170,7 @@ All of the above libraries are available on quicklisp.
 
 * Documentation
    please follow
-   [[https://www.autistici.org/interzona/nodgui.html][this link for documentation and news]].
+   [[https://www.twistfold.it/nodgui.html][this link for documentation and news]].
 
 * License
 
