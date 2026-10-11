@@ -1,3 +1,7 @@
+* TODO tk 9.1 [0%]
+** TODO add option "textangle" to widget label
+** TODO add new command "toggleswitch"
+https://www.tcl-lang.org/man/tcl9.1/TkCmd/ttk_toggleswitch.html
 * TODO fix notebook [20%]
 ** DONE https://github.com/herth/ltk/pull/2/commits/64cb7e86519749c9f212729ab28af92c628315aa
 ** TODO notebook-insert
